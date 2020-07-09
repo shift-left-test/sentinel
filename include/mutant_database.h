@@ -27,8 +27,13 @@ public:
       std::string operator_name, clang::SourceLocation start_loc,
       clang::SourceLocation end_loc, std::string targeted_token,
       std::string mutated_token, int target_line);
+  void addMutantTarget(
+      std::string operator_name, clang::SourceLocation start_loc,
+      clang::SourceLocation end_loc, std::string targeted_token,
+      std::string mutated_token, int target_line);
 
   void writeMutantToDatabaseFile(const MutantEntry &entry);
+  void writeMutantTargetsToFile();
   void generateMutantSrcFile(const MutantEntry &entry);
   void generateToolOutput();
 
@@ -43,6 +48,7 @@ private:
   clang::Rewriter rewriter_;
 
   MutantEntryTable mutant_entry_table;
+  MutantEntryTable mutant_target_table;
   Configuration *config;
 
   // std::string input_filename_;

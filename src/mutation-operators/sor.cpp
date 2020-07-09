@@ -7,6 +7,7 @@ using namespace std;
 using namespace clang;
 
 set<string> shift_operators{">>", "<<"};
+set<string> shift_assignments{">>=", "<<="};
 
 bool SOR::canMutate(
     clang::Stmt *s, Configuration *config, CompilerInstance &comp_inst) {
@@ -34,7 +35,8 @@ bool SOR::canMutate(
   //     getColumnNumber(src_mgr, start_loc) + binary_operator.length());
   
   // Return true if the binary operator used is a logical operator.
-  return shift_operators.find(binary_operator) != shift_operators.end();
+  return shift_operators.find(binary_operator) != shift_operators.end() ||
+         shift_assignments.find(binary_operator) != shift_assignments.end();
 
   // StmtContext &stmt_context = context->getStmtContext();
   // return context->IsRangeInMutationRange(SourceRange(start_loc, end_loc)) &&
@@ -52,6 +54,20 @@ void SOR::mutate(clang::Stmt *s, MutantDatabase *database) {
       database->getCompilerInstance().getSourceManager(),
       getPreciseLocation(
           bo->getOperatorLoc(), database->getCompilerInstance(), true));
+
+  string token{bo->getOpcodeStr()};
+  string mutated_token{""};
+  SourceManager &src_mgr = database->getCompilerInstance().getSourceManager();
+  SourceLocation start_loc = bo->getOperatorLoc();
+  SourceLocation end_loc = src_mgr.translateLineCol(
+      src_mgr.getMainFileID(),
+      getLineNumber(src_mgr, start_loc),
+      getColumnNumber(src_mgr, start_loc) + token.length());  
+  database->addMutantTarget(
+        name, start_loc, end_loc, token, mutated_token, target_line);
+
+  if (shift_assignments.find(token) != shift_assignments.end())
+    return;
 
   mutateOperator(bo, database, target_line);
   mutateWholeExpr(bo, database, target_line);

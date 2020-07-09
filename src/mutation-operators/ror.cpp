@@ -53,6 +53,17 @@ void ROR::mutate(clang::Stmt *s, MutantDatabase *database) {
       getPreciseLocation(
           bo->getOperatorLoc(), database->getCompilerInstance(), true));
 
+  string token{bo->getOpcodeStr()};
+  string mutated_token{""};
+  SourceManager &src_mgr = database->getCompilerInstance().getSourceManager();
+  SourceLocation start_loc = bo->getOperatorLoc();
+  SourceLocation end_loc = src_mgr.translateLineCol(
+      src_mgr.getMainFileID(),
+      getLineNumber(src_mgr, start_loc),
+      getColumnNumber(src_mgr, start_loc) + token.length());  
+  database->addMutantTarget(
+        name, start_loc, end_loc, token, mutated_token, target_line);
+
   mutateOperator(bo, database, target_line);
   mutateWholeExpr(bo, database, target_line);
 }

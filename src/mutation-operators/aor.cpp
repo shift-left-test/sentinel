@@ -7,6 +7,7 @@ using namespace std;
 using namespace clang;
 
 set<string> arithmetic_operators{"+", "-", "*", "/", "%"};
+set<string> arithmetic_assignments{"+=", "-=", "*=", "/=", "%="};
 
 bool AOR::canMutate(
     clang::Stmt *s, Configuration *config, CompilerInstance &comp_inst) {
@@ -26,7 +27,8 @@ bool AOR::canMutate(
     return false;
 
   // Return true if the binary operator used is a logical operator.
-  return arithmetic_operators.find(binary_operator) != arithmetic_operators.end();
+  return arithmetic_operators.find(binary_operator) != arithmetic_operators.end() || 
+         arithmetic_assignments.find(binary_operator) != arithmetic_assignments.end();
 
   // SourceLocation start_loc = bo->getOperatorLoc();
   // SourceManager &src_mgr = comp_inst.getSourceManager();
@@ -54,6 +56,20 @@ void AOR::mutate(clang::Stmt *s, MutantDatabase *database) {
       database->getCompilerInstance().getSourceManager(),
       getPreciseLocation(
           bo->getOperatorLoc(), database->getCompilerInstance(), true));
+
+  string token{bo->getOpcodeStr()};
+  string mutated_token{""};
+  SourceManager &src_mgr = database->getCompilerInstance().getSourceManager();
+  SourceLocation start_loc = bo->getOperatorLoc();
+  SourceLocation end_loc = src_mgr.translateLineCol(
+      src_mgr.getMainFileID(),
+      getLineNumber(src_mgr, start_loc),
+      getColumnNumber(src_mgr, start_loc) + token.length());  
+  database->addMutantTarget(
+        name, start_loc, end_loc, token, mutated_token, target_line);
+
+  if (arithmetic_assignments.find(token) != arithmetic_assignments.end())
+    return;
 
   mutateOperator(bo, database, target_line);
   mutateWholeExpr(bo, database, target_line);

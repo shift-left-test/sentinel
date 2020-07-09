@@ -8,7 +8,7 @@
 
 #include "clang/Basic/SourceLocation.h"
 enum Mutators {
-  aor, bor, lcr, ror, sbr, sor, uoi
+  aor, bor, lcr, ror, sbr, sor, uoi, uor
 }; 
 
 typedef std::map<std::string, std::vector<int>> FilenameToLineMap;
