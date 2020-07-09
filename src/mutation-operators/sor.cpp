@@ -56,6 +56,8 @@ void SOR::mutate(clang::Stmt *s, MutantDatabase *database) {
           bo->getOperatorLoc(), database->getCompilerInstance(), true));
 
   string token{bo->getOpcodeStr()};
+  if (token.length() > 2)
+    token = token.substr(0, token.length()-1);
   string mutated_token{""};
   SourceManager &src_mgr = database->getCompilerInstance().getSourceManager();
   SourceLocation start_loc = bo->getOperatorLoc();

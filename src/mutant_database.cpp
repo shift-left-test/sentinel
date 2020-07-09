@@ -210,22 +210,22 @@ void MutantDatabase::writeMutantTargetsToFile() {
   for (auto line_map_iter: mutant_target_table) {
     for (auto entry: line_map_iter.second) {
       // write name of operator  
-      mutant_db_file << entry.getOperatorName() << ", ";
+      mutant_db_file << entry.getOperatorName() << ",";
 
       // write targeted token
       string targeted_token = entry.getTargetedToken();
       formatToken(targeted_token);
-      mutant_db_file << "\"" << targeted_token << "\", ";
+      mutant_db_file << targeted_token << ",";
 
       // write orignal target filename
-      mutant_db_file << "\"" << config->getInputFilenameWithPath() << "\", "; 
+      mutant_db_file << config->getInputFilenameWithPath() << ","; 
 
       // write mutant file name
-      mutant_db_file << getNextMutantFilename() << ", "; 
+      // mutant_db_file << getNextMutantFilename() << ","; 
 
       // write information about mutation location
-      mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ", ";
-      mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ", ";
+      mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
+      mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
 
       // write mutated token
       // string mutated_token = entry.getMutatedToken();
