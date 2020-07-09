@@ -117,7 +117,7 @@ void ParseOptionO()
 void ParseMutatorList()
 {
   if (mutator_list.size() == 0) {
-    g_selected_mutators = {aor, bor, lcr, ror, sbr, sor, uoi};
+    g_selected_mutators = {aor, bor, lcr, ror, sbr, sor, uoi, uor};
     return;
   }
 

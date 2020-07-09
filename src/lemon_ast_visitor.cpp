@@ -42,6 +42,9 @@ LemonASTVisitor::LemonASTVisitor(
       case uoi:
         mutation_operators.push_back(new UOI());
         break;
+      case uor:
+        mutation_operators.push_back(new UOR());
+        break;
       default:
         cerr << "Unknown mutation operators: " << selected_mutators[i] << endl;
         exit(1);      
