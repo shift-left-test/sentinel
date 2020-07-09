@@ -1,0 +1,1539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1390" failures="0" disabled="1" errors="0" timestamp="2020-04-28T17:30:38" time="0.433" name="AllTests">
+  <testsuite name="ARendererFrameworkLogic" tests="16" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="generatesPublishedRendererCommand" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesReceiveRendererCommand" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnpublishRendererCommand" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="handlesSceneActionListWithFlush" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="doesntHandleSceneActionsWithoutFlush" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="buffersSceneActionsUntilFlush" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="buffersSceneActionsUntilFlushForDifferentScenes" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnpublishRendererCommandsForScenesFromDisconnectedClient" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnpublishRendererCommandsForScenesFromDisconnectedClient_DoesNotModifyOtherClientsScene" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="requestsResourcesViaResourceComponentWithCorrectProviderID" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="cancelsResourceRequestViaResourceComponent" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnsubscribeRendererCommandsWhenDetectingSceneActionListCounterMismatch" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="expectsCountingSceneActionsFromStartAfterInitializeScene" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="expectsCountingSceneActionsFromStartAfterRepublish" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnsubscribeRendererCommandsWhenContinueCountingSceneActionListAfterInitializeScene" status="run" time="0" classname="ARendererFrameworkLogic" />
+    <testcase name="generatesUnpublishRendererCommandsWhenParticipantDisconnectAndStartsAgainWithNewCounter" status="run" time="0" classname="ARendererFrameworkLogic" />
+  </testsuite>
+  <testsuite name="ABinaryShaderCache" tests="12" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="canStoreAndGetBinaryShader" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsNoShaderAvailableIfShaderCachedButWithWrongFormat" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsNoShaderAvailableIfShaderNotCachedAndDeviceReportsFormatZeroSupported" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="canReturnFalseWhenBinaryShaderNotInCache" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="canSaveToAndLoadFromBinaryShaderFile" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="canReturnFalseWhenTryToLoadFromNonExistFile" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsSuccessOnCorrectFile" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsFailOnFileToLarge" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsFailOnFileToShort" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsFailOnFileShorterThanHeader" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsFailOnNotMatchingChecksum" status="run" time="0" classname="ABinaryShaderCache" />
+    <testcase name="reportsFailOnInvalidFileVersion" status="run" time="0" classname="ABinaryShaderCache" />
+  </testsuite>
+  <testsuite name="ABufferLinks" tests="5" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoLinksInitially" status="run" time="0" classname="ABufferLinks" />
+    <testcase name="canAddLink" status="run" time="0" classname="ABufferLinks" />
+    <testcase name="canAddAndRemoveLink" status="run" time="0" classname="ABufferLinks" />
+    <testcase name="canAddAndRemoveMultipleLinks" status="run" time="0" classname="ABufferLinks" />
+    <testcase name="removingLinkDoesNotAffectOtherLinks" status="run" time="0" classname="ABufferLinks" />
+  </testsuite>
+  <testsuite name="AClientResourceUploadingManager" tests="13" failures="0" disabled="0" errors="0" time="0.016">
+    <testcase name="hasNothingToUploadUnloadInitially" status="run" time="0.001" classname="AClientResourceUploadingManager" />
+    <testcase name="reportsItemsToUploadWhenRegsitryHasProvidedResource" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="reportsItemsToUnloadWhenRegsitryHasUnusedResource" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="uploadsProvidedResource" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="unloadsUnusedResource" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="setsBrokenStatusForResourceFailedToUpload" status="run" time="0.001" classname="AClientResourceUploadingManager" />
+    <testcase name="uploadsAllProvidedResourcesInOneUpdate_defaultUploadStrategy" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="willUnloadAnyRemainingResourcesWhenDestructed" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="uploadsAtLeastOneResourcePerUpdateIfOutOfTimeBudget" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="uploadsBatchOfResourceBeforeCheckingIfOutOfTimeBudget" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="checksTimeBudgetForEachLargeResourceWhenUploading" status="run" time="0.001" classname="AClientResourceUploadingManager" />
+    <testcase name="checksTimeBudgetForEachEffectWhenUploading" status="run" time="0" classname="AClientResourceUploadingManager" />
+    <testcase name="uploadsOnlyResourcesFittingIntoTimeBudgetInOneUpdate" status="run" time="0.013" classname="AClientResourceUploadingManager" />
+  </testsuite>
+  <testsuite name="AClientResourceUploadingManager_KeepingEffects" tests="2" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="willNotUnloadEffectResourceUntilDestructor" status="run" time="0" classname="AClientResourceUploadingManager_KeepingEffects" />
+    <testcase name="doesNotReportKeptEffectAsPendingUnload" status="run" time="0" classname="AClientResourceUploadingManager_KeepingEffects" />
+  </testsuite>
+  <testsuite name="AClientResourceUploadingManager_WithVRAMCache" tests="5" failures="0" disabled="0" errors="0" time="0.002">
+    <testcase name="willUploadResourcesEvenIfExceedingCacheSize" status="run" time="0.001" classname="AClientResourceUploadingManager_WithVRAMCache" />
+    <testcase name="willUnloadUnusedCachedResourcesIfCacheSizeExceeded" status="run" time="0" classname="AClientResourceUploadingManager_WithVRAMCache" />
+    <testcase name="willOnlyUnloadResourcesWhenNewResourcesAreToBeUploadedAndSoThatCacheSizeIsUsedAtMaximum" status="run" time="0" classname="AClientResourceUploadingManager_WithVRAMCache" />
+    <testcase name="willNotUnloadAnyCachedUnusedResourceIfThereIsEnoughRemainingCacheAvailable" status="run" time="0.001" classname="AClientResourceUploadingManager_WithVRAMCache" />
+    <testcase name="willUnloadResourcesOfSameOrGreaterSizeOfResourcesToBeUploaded_AlreadyUsingMoreThanCacheSize" status="run" time="0" classname="AClientResourceUploadingManager_WithVRAMCache" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkCachedScene" tests="4" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="canSetAndGetValue" status="run" time="0" classname="ADataReferenceLinkCachedScene" />
+    <testcase name="canSetValueDirectlyWithoutUpdatingFallbackValue" status="run" time="0" classname="ADataReferenceLinkCachedScene" />
+    <testcase name="canRestoreFallbackValue" status="run" time="0" classname="ADataReferenceLinkCachedScene" />
+    <testcase name="storesFallbackValueWhenSlotAllocated" status="run" time="0" classname="ADataReferenceLinkCachedScene" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManager" tests="8" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="failsToCreateLinkOfMismatchingDataTypes" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="canResolveLinkedData" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="canResolveLinkedDataToMultipleConsumers" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="doesNotResolveLinkedDataIfConsumerUnlinked" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="confidenceTest_canResolveLinkedWithThreeScenesAndTwoLinks" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="unlinkedDataFallsBackToPreviousValue" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="dataFallsBackToPreviouslySetValueIfProviderSceneDestroyed" status="run" time="0" classname="ADataReferenceLinkManager" />
+    <testcase name="confidenceTest_createTwoLinksChangeValueAndUnlink" status="run" time="0" classname="ADataReferenceLinkManager" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/0" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="int" status="run" time="0" classname="ADataReferenceLinkManagerTyped/0" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/1" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="float" status="run" time="0" classname="ADataReferenceLinkManagerTyped/1" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/2" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector2" status="run" time="0" classname="ADataReferenceLinkManagerTyped/2" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/3" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector3" status="run" time="0" classname="ADataReferenceLinkManagerTyped/3" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/4" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector4" status="run" time="0" classname="ADataReferenceLinkManagerTyped/4" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/5" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector2i" status="run" time="0" classname="ADataReferenceLinkManagerTyped/5" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/6" tests="1" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector3i" status="run" time="0.001" classname="ADataReferenceLinkManagerTyped/6" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/7" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Vector4i" status="run" time="0" classname="ADataReferenceLinkManagerTyped/7" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/8" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Matrix22f" status="run" time="0" classname="ADataReferenceLinkManagerTyped/8" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/9" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Matrix33f" status="run" time="0" classname="ADataReferenceLinkManagerTyped/9" />
+  </testsuite>
+  <testsuite name="ADataReferenceLinkManagerTyped/10" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="confidenceTest_linkAndChangeAndUnlink" type_param="ramses_internal::Matrix44f" status="run" time="0" classname="ADataReferenceLinkManagerTyped/10" />
+  </testsuite>
+  <testsuite name="ADefaultRendererResourceCache" tests="13" failures="0" disabled="0" errors="0" time="0.008">
+    <testcase name="canStoreAndGetResource" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="doesNotAttempToStoreItemsTooLargeForCache" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="canReturnFalseIfResourceNotInCache" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="unloadsOldestAddedItemWhenOutOfSpace" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="canSaveAndLoadFromFile" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailOnFileNotFound" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsSuccessOnCorrectFile" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailOnFileToLarge" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailOnFileToShort" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailOnFileShorterThanHeader" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailForAnyByteCorruptionInFile" status="run" time="0.008" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailOnInvalidFileVersion" status="run" time="0" classname="ADefaultRendererResourceCache" />
+    <testcase name="reportsFailWhenCacheTooSmall" status="run" time="0" classname="ADefaultRendererResourceCache" />
+  </testsuite>
+  <testsuite name="AInternalDisplayConfig" tests="6" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="hasDefaultValues" status="run" time="0" classname="AInternalDisplayConfig" />
+    <testcase name="setAndGetValues" status="run" time="0" classname="AInternalDisplayConfig" />
+    <testcase name="getsValuesAssignedFromCommandLine" status="run" time="0" classname="AInternalDisplayConfig" />
+    <testcase name="getsOrthoParamsAssignedFromCommandLine" status="run" time="0" classname="AInternalDisplayConfig" />
+    <testcase name="canBeCompared" status="run" time="0" classname="AInternalDisplayConfig" />
+    <testcase name="canBeCompared_Offscreen" status="run" time="0" classname="AInternalDisplayConfig" />
+  </testsuite>
+  <testsuite name="ADisplayController" tests="12" failures="0" disabled="0" errors="0" time="0.003">
+    <testcase name="canBeCreatedAndDestroyed" status="run" time="0.001" classname="ADisplayController" />
+    <testcase name="createsFramebuffer" status="run" time="0" classname="ADisplayController" />
+    <testcase name="queriesSurfaceIfItCanRenderNewFrame" status="run" time="0" classname="ADisplayController" />
+    <testcase name="enablesContextOnBeginFrame" status="run" time="0" classname="ADisplayController" />
+    <testcase name="activatesBufferAndClearsOnClearBuffer" status="run" time="0" classname="ADisplayController" />
+    <testcase name="swapsBuffersAndCallsFrameRenderedOnEndFrame" status="run" time="0.001" classname="ADisplayController" />
+    <testcase name="canHandleWindowEvents" status="run" time="0" classname="ADisplayController" />
+    <testcase name="canBeCreatedAndDestroyedWithWarping" status="run" time="0" classname="ADisplayController" />
+    <testcase name="hasZeroPositionAndRotationWithDefaultConfiguration" status="run" time="0" classname="ADisplayController" />
+    <testcase name="canSetItsPositionAndRotation" status="run" time="0" classname="ADisplayController" />
+    <testcase name="readsPixels" status="run" time="0" classname="ADisplayController" />
+    <testcase name="failsToReadsPixelsIfOutOfBoundaries" status="run" time="0.001" classname="ADisplayController" />
+  </testsuite>
+  <testsuite name="ADisplayEventHandler" tests="9" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="createsRendererEventOnKeyPressEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnKeyReleasedEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnMouseMoveEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventAndInvokesTouchHandlerOnMouseEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnMouseEventWindowEnter" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnMouseEventWindowLeave" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnWindowClosedEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnWindowResizeEvent" status="run" time="0" classname="ADisplayEventHandler" />
+    <testcase name="createsRendererEventOnWindowMoveEvent" status="run" time="0" classname="ADisplayEventHandler" />
+  </testsuite>
+  <testsuite name="ADisplaySetup" tests="18" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="hasNoBuffersInitially" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canRegisterFramebufferInfoWithInitialValues" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canRegisterNonInterruptibleOBInfoWithInitialValues" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canRegisterInterruptibleOBInfoWithInitialValues" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canBeQueriedForAnyRegisteredTypeOfBufferViaItsHandle" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canUnregisterOB" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="marksNewlyRegisteredBuffersToRerender" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canSetRerenderFlagOfABuffer" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canMapAndUnmapSceneToBuffer" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="storesAssignedScenesInRenderingOrder" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="triggersRerenderForBufferWithMappedOrUnmappedScene" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canSetSceneShown" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="triggersRerenderForBufferWithChangedSceneShowState" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canSetClearColorForAnyRegisteredBuffer" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="triggersRerenderForBufferWithChangedClearColor" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="getsListOfInterruptibleBuffersToRerenderStartingFromInterruptedBuffer" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="getsListOfInterruptibleBuffersToRerenderStartingFromInterruptedBufferAndOnlyThoseMarkedToRerender" status="run" time="0" classname="ADisplaySetup" />
+    <testcase name="canAssignAnAlreadyAssignedSceneToAnotherBufferAndPreserveShowState" status="run" time="0" classname="ADisplaySetup" />
+  </testsuite>
+  <testsuite name="EDeviceTypeIdTest" tests="4" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="IsDeviceEnabled" status="run" time="0" classname="EDeviceTypeIdTest" />
+    <testcase name="AllValueContainsGL4_2_Core" status="run" time="0" classname="EDeviceTypeIdTest" />
+    <testcase name="AllValueContainsGL4_5" status="run" time="0" classname="EDeviceTypeIdTest" />
+    <testcase name="AllValueContainsEDeviceTypeId_GL_ES_3_0" status="run" time="0" classname="EDeviceTypeIdTest" />
+  </testsuite>
+  <testsuite name="AnEmbeddedCompositingManager" tests="16" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="CanUploadAndDeleteStreamTexture" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="ReturnsInvalidDeviceResourceHandleForInvalidStreamSourceId" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanGetCorrectDeviceHandleForValidStreamTextureId" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanUpdateCompositingResources" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanNotifyClients" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="UploadsOneCompositedTextureForTwoEqualStreamTexturesSourceIds" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="UploadsTwoCompositedTextureForTwoDifferentStreamTextureSourceIds" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="DoesNotDeleteCompositedTextureThatIsStillReferenced" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="DeletesCompositedTextureThatHadSeveralReferencesWhenItHasNoMoreReferences" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanUploadAndDeleteStreamTextureWithAvailableContent" status="run" time="0.001" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_NoChange" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_IfStreamSourceBecomesAvailable" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_EmptyAfterDispatching" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_IfStreamSourceBecomesUnavailable" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_MultipleStreamTexturesInSameScene" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+    <testcase name="CanDispatchrStreamTexturesStateChange_MultipleStreamTexturesInMultipleScenes" status="run" time="0" classname="AnEmbeddedCompositingManager" />
+  </testsuite>
+  <testsuite name="IntersectionUtilsTest" tests="20" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="canIntersectTriangle1" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="canIntersectTriangle2" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectRayNotPointingToTriangle" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectRayPrallelToTriangle" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectTriangleBehindRay1" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectTriangleBehindRay2" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectTriangleBehindRay3" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectTriangleBehindRay4" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectTriangleBehindRay5" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="canCalculateNormalOfPlane" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="canPickSingleTriangle" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noPickSingleTriangleTranslatedAwayFromPick" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="canIntersectMultipleTriangleGeometry" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="noIntersectPickNotPointingToMultipleTriangles" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="findsPickedObjectInSceneWhenIntersected" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="findsMultiplePickedObjectsNotOverlappingInSceneWhenIntersected" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="findsMultiplePickedObjectsOverlappingInSceneWhenIntersected" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="picksIntersectionPointAtNearestTriangleInPickable" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="canSortPickedPickablesWithDistanceWhenPickablesUseDifferentCameras" status="run" time="0" classname="IntersectionUtilsTest" />
+    <testcase name="handlesPickableViewportCorrectly" status="run" time="0" classname="IntersectionUtilsTest" />
+  </testsuite>
+  <testsuite name="ALinkManager/0" tests="11" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoDependenciesInitially" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="canCreateLinkFromConsumerToProvider" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="reportsNoLinksForConsumerSceneIfSceneLinksRemoved" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="reportsNoLinksForConsumerSceneIfProviderSceneDestroyed" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="reportsNoLinksForSceneWithRemovedLink" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="createsTwoLinksSameProviderDifferentConsumers" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="failsToCreateLinkIfConsumerAlreadyLinked" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="failsToRemoveLinkIfConsumerNotLinked" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+    <testcase name="failsToRemoveLinkIfConsumerAlreadyUnlinked" type_param="ramses_internal::LinkManagerBase" status="run" time="0" classname="ALinkManager/0" />
+  </testsuite>
+  <testsuite name="ALinkManager/1" tests="11" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoDependenciesInitially" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="canCreateLinkFromConsumerToProvider" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="reportsNoLinksForConsumerSceneIfSceneLinksRemoved" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="reportsNoLinksForConsumerSceneIfProviderSceneDestroyed" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="reportsNoLinksForSceneWithRemovedLink" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="createsTwoLinksSameProviderDifferentConsumers" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="failsToCreateLinkIfConsumerAlreadyLinked" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="failsToRemoveLinkIfConsumerNotLinked" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+    <testcase name="failsToRemoveLinkIfConsumerAlreadyUnlinked" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ALinkManager/1" />
+  </testsuite>
+  <testsuite name="ALinkManager/2" tests="11" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="reportsNoDependenciesInitially" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="canCreateLinkFromConsumerToProvider" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="reportsNoLinksForConsumerSceneIfSceneLinksRemoved" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="reportsNoLinksForConsumerSceneIfProviderSceneDestroyed" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="reportsNoLinksForSceneWithRemovedLink" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="createsTwoLinksSameProviderDifferentConsumers" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="failsToCreateLinkIfConsumerAlreadyLinked" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0.001" classname="ALinkManager/2" />
+    <testcase name="failsToRemoveLinkIfConsumerNotLinked" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+    <testcase name="failsToRemoveLinkIfConsumerAlreadyUnlinked" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ALinkManager/2" />
+  </testsuite>
+  <testsuite name="ALinkManager/3" tests="11" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoDependenciesInitially" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="canCreateLinkFromConsumerToProvider" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="reportsNoLinksForConsumerSceneIfSceneLinksRemoved" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="reportsNoLinksForConsumerSceneIfProviderSceneDestroyed" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="reportsNoLinksForSceneWithRemovedLink" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="createsTwoLinksSameProviderDifferentConsumers" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="failsToCreateLinkIfConsumerAlreadyLinked" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="failsToRemoveLinkIfConsumerNotLinked" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+    <testcase name="failsToRemoveLinkIfConsumerAlreadyUnlinked" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ALinkManager/3" />
+  </testsuite>
+  <testsuite name="APendingClientResourcesUtils" tests="12" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="marksNewResourcesAsNewlyAdded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="ignoresNewResourcesIfPreviouslyUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="consolidatesNewResourcesWithPreviouslyNeededAndUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="marksRemovedResourcesAsUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="marksRemovedResourcesPreviouslyNeededAsNewlyUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="consolidatesRemovedResourcesWithPreviouslyNeededAndUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="keepsNewlyNeededResourcesIfNotPendingUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="consolidatesNewlyNeededResourcesIfPendingUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="addsNewlyUnneededResourcesAsPendingUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="ignoresNewlyUnneededResourcesIfAlreadyPendingUnneeded" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="consolidatesNeededAndUnneededIntoInUse" status="run" time="0" classname="APendingClientResourcesUtils" />
+    <testcase name="confidenceTest_multipleIterationsOfConsolidationsOfAddedAndRemovedResources" status="run" time="0" classname="APendingClientResourcesUtils" />
+  </testsuite>
+  <testsuite name="APendingSceneResourcesUtils" tests="11" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="appliesSceneResourceActions" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="appliesSceneResourceActions_Unloads" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="getsSceneResourcesFromSceneAndApliesThem" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="cancelsOutCreateAndDeleteDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="doesNotCancelOutDestroyAndCreateDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="doesNotCancelOutCreateAndDeleteOfDifferentHandlesDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="keepsAdditionalCreateActionAfterCanceledCreateAndDeleteDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="keepsAdditionalDestroyActionAfterCanceledCreateAndDeleteDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="squashesBufferUpdateActionsToSingleActionDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="removesAnyDataBufferUpdateActionsBeforeDestroyDuringConsolidation" status="run" time="0" classname="APendingSceneResourcesUtils" />
+    <testcase name="keepsDataBufferUpdateActionForNewlyCreatedAfterRemovedPreviousUpdatesDueToDestroy" status="run" time="0" classname="APendingSceneResourcesUtils" />
+  </testsuite>
+  <testsuite name="APlatformFactoryTest" tests="10" failures="0" disabled="0" errors="0" time="0.002">
+    <testcase name="CanCreateAndDestroyRenderBackend" status="run" time="0.001" classname="APlatformFactoryTest" />
+    <testcase name="RenderBackendCreationFailsIfWindowFailsInitialization" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="RenderBackendCreationFailsIfContextFailsInitialization" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="RenderBackendCreationFailsIfDeviceFailsInitialization" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="RenderBackendCreationFailsIfEmbeddedCompositorFailsInitialization" status="run" time="0.001" classname="APlatformFactoryTest" />
+    <testcase name="CanCreateAndDestroyPerRendererComponents_WithoutSystemCompositorController" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="CanCreateRenderBackendIfSystemCompositorControllerIsNotEnabled" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="CanCreateAndDestroyPerRendererComponents_WithSystemCompositorController" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="DestroysSystemCompositorIfItFailsInitialization" status="run" time="0" classname="APlatformFactoryTest" />
+    <testcase name="RenderBackendCreationFailsIfSystemCompositorControllerFailedInitialization" status="run" time="0" classname="APlatformFactoryTest" />
+  </testsuite>
+  <testsuite name="ARenderExecutorInternalState" tests="21" failures="0" disabled="1" errors="0" time="0.001">
+    <testcase name="hasIdentityProjectionMatrixInDefaultState" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="setsSceneState" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="setsRendererViewMatrix" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="updatesCameraRelatedMatricesWhenSettingCamera" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="updatesCameraPositionSemanticValueWhenSettingCamera" status="run" time="0.001" classname="ARenderExecutorInternalState" />
+    <testcase name="DISABLED_setsFramebufferProjectionMatrixWhenSettingCameraOfTypeRenderer" status="notrun" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="updatesProjectionMatrixWhenSettingPerspectiveCamera" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="updatesProjectionMatrixWhenSettingOrthographicCamera" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="setRenderableUpdatesAllModelDependentMatrices" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToDepthRenderStateTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToBlendRenderStateTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToRasterizerRenderStateTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToDefaultDeviceHandlesTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToRenderTargetTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToRenderPassTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="initialSetToViewportTriggersChange" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="canResetCachedStates" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="canIncrementAndGetRenderPassAndRenderableIdx" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="incrementingRenderPassIdxResetsRenderableIdxButNotFlattenedIdx" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="reportsExceedingOfTimeBudget" status="run" time="0" classname="ARenderExecutorInternalState" />
+    <testcase name="reportsExceedingOfTimeBudgetOnlyAfterItIsReallyExceeded" status="run" time="0" classname="ARenderExecutorInternalState" />
+  </testsuite>
+  <testsuite name="CustomMatrixPrinter" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="PrintsMatrixValuesNotAByteString" status="run" time="0" classname="CustomMatrixPrinter" />
+  </testsuite>
+  <testsuite name="ARenderExecutor" tests="25" failures="0" disabled="0" errors="0" time="0.015">
+    <testcase name="RendersEmptyFrameForEmptyScene" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RenderRenderPassIntoRenderTarget" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="RenderRenderableWithoutIndexArray" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="RenderMultipleConsecutiveRenderPassesIntoOneRenderTarget" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RenderMultipleRenderPassesIntoMultipleRenderTargets" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="ResetsCachedRenderStatesAfterClearingRenderTargets" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RenderMultipleRenderPassesIntoOneRenderTargetAndEachClearsWithDifferentFlags" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="DoesNotRenderRenderableIfResourcesInvalid" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="DoesNotRenderRenderableWithNoResourcesAssigned" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="DoesNotRenderRenderableWithoutDataInstance" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="expectVirtualUpdateSceneDefaultMatricesIdentity" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="VirtualSceneViewMatrixChangeViaDefaultCameraTransformation" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RendersRenderableWithRendererProjection" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="RendersMultipleRenderableInstancesWithRendererProjection" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="RendersRenderableWithOrthographicProjection" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RendersRenderableInTwoPassesUsingTheSameCamera" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="RenderStatesAppliedOnceIfSameForMultipleRenderables" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="RenderStatesAppliedForEachRenderableIfDifferent" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="UpdatesModelMatrixWhenChangingTranslationRotationOrScalingOfNode" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="AppliesParentTransformationToBothChildNodes" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="ExecutesBlitPass" status="run" time="0.001" classname="ARenderExecutor" />
+    <testcase name="ActivatesRenderTargetForRenderPassAfterExecutingBlitPass" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="willRenderAllRenderablesIfWithinTimeBudget" status="run" time="0" classname="ARenderExecutor" />
+    <testcase name="willRenderAtLeastOneRenderableBatchIfExceededTimeBudget" status="run" time="0.002" classname="ARenderExecutor" />
+    <testcase name="willContinueRenderingWhereLeftOffLastRenderWhenInterrupted" status="run" time="0.004" classname="ARenderExecutor" />
+  </testsuite>
+  <testsuite name="ARendererCachedScene" tests="57" failures="0" disabled="0" errors="0" time="0.004">
+    <testcase name="HasEmptyRenderPassCacheForEmptyScene" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderPassAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="HasEmptyRenderableCacheForEmptyPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="HasEmptyRenderableCacheForPassWithEmptyRenderGroup" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderablesPerPassAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderableOfNestedRenderGroupAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderableAddedBetweenTwoUpdates" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderableOfNestedRenderGroupAddedBetweenTwoUpdates" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderablesPerPassPerGroupAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenDeleted" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenDeletedAndRemovedFromRenderGroup" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenItsNestedRenderGroupIsRemovedFromRenderGroup" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderPassFromCacheWhenDeleted" status="run" time="0.001" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderablesFromCacheWhenTheirPassDeleted" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenItsRenderGroupDeleted" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesMultiplePassesAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderablesContainedInTwoPassesAfterUpdate" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderablesContainedInTwoPassesAndDifferentRenderGroups" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CachesRenderablesContainedInTwoPassesAndSharedRenderGroup" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenDeletedAndContainedInTwoPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenDeletedAndContainedInTwoRenderGroups" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenDeletedAndContainedInRenderGroupSharedByTwoPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetInvisibleAndContainedInTwoPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetOffAndContainedInTwoPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetInvisibleAndContainedInTwoRenderGroups" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetOffAndContainedInTwoRenderGroups" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetInvisibleAndContainedInRenderGroupSharedByTwoPasses" status="run" time="0.001" classname="ARendererCachedScene" />
+    <testcase name="RemovesRenderableFromCacheWhenSetOffAndContainedInRenderGroupSharedByTwoPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RetrievesOrderedRenderPassesBasedOnSetRenderOrder" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="SkipDisabledRenderPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="cachesReenabledRenderPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RenderGroupsAreOrdererdWithinRenderPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RenderablesInRenderGroupAreOrdered" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="SameRenderableHasDifferentOrderInDifferentGroupAndPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RenderableOrderCanBeChangedWhenReaddingToGroupAfterGroupAlreadyInPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="RenderGroupOrderCanBeChangedWhenReaddingToPass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="confidenceTest_RenderGroupOrderIsMovedFromOnePassToAnotherWithDifferentOrder" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="ordersRenderablesWithSameEffectTogether" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="explicitOrderingOverridesSameEffectGrouping" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="renderablesFromDifferentGroupsWillNotBeOrderedTogetherEvenIfHaveSameEffect" status="run" time="0.001" classname="ARendererCachedScene" />
+    <testcase name="ordersRenderablesByEffectAndThenByGeometryIntance" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="updatesWorldMatrixCacheForRenderable" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="updatesWorldMatrixCacheForRenderable_LinksVersionEquivalentToRegularVersionIfNoTransformationLinksInvolved" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CanSortPassesWithRenderOrder_RenderPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CanSortPassesWithRenderOrder_BlitPasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="CanSortPassesWithRenderOrder_RenderAndBlitPassesTogether" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="UpdatesRenderOrderIfNewBlitPassesAreAllocated" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="UpdatesRenderOrderIfBlitPassesAreReleased" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="UpdatesRenderOrderIfBlitPassesRenderOrderIsUpdated" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="UpdatesRenderOrderIfBlitPassIsEnabledOrDisabled" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="doesNotCacheRenderPassWithoutCamera" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="cachesRenderOncePassTillMarkedAsRendered" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="doesNotCacheDisabledRenderOncePass" status="run" time="0.001" classname="ARendererCachedScene" />
+    <testcase name="cachesReenabledRenderOncePassTillMarkedAsRendered" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="cachesRetriggeredRenderOncePass" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="cachesAllRetriggeredRenderOncePasses" status="run" time="0" classname="ARendererCachedScene" />
+    <testcase name="confidenceTest_enabledRenderPassOnceIsCachedTillMarkedAsRendered_regardlessOfPreviousStates" status="run" time="0" classname="ARendererCachedScene" />
+  </testsuite>
+  <testsuite name="ARendererResourceRegistry" tests="24" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="doesNotContainAnythingInitially" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="canRegisterResource" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="registeredResourceHasCorrectStatus" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourceIsNotContainedAnymore" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="canAddSceneUsageRef" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="canRemoveSceneUsageRef" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="canChangeResourceStatus" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="canSetResourceData" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="newlyRegisteredResourceIsInRegisteredList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="requestedResourceIsRemovedFromRegisteredList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourceIsRemovedFromRegisteredList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="requestedResourceIsInRequestedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="providedResourceIsRemovedFromRequestedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourceIsRemovedFromRequestedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="providedResourceIsInProvidedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="uploadedResourceIsRemovedFromProvidedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="brokenResourceIsRemovedFromProvidedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourceIsRemovedFromProvidedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="onlyResourcesThatBecameUnreferencedAreInUnusedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourcesAreRemovedFromUnusedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="previouslyUnusedResourceIsRemovedFromUnusedListWhenUsedAgain" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="onlyResourcesThatBecameUnreferencedAndNotUploadedAreInUnusedNotUploadedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="unregisteredResourcesAreRemovedFromUnusedNotUploadedList" status="run" time="0" classname="ARendererResourceRegistry" />
+    <testcase name="previouslyUnusedResourceIsRemovedFromUnusedNotUploadedListWhenUsedAgain" status="run" time="0" classname="ARendererResourceRegistry" />
+  </testsuite>
+  <testsuite name="ARendererCommandBuffer" tests="4" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="gracefullyHandlesSceneActionsArrivingAfterUnsubscribe" status="run" time="0" classname="ARendererCommandBuffer" />
+    <testcase name="parsesCommandsForScreenshotPrintingWithFilename" status="run" time="0" classname="ARendererCommandBuffer" />
+    <testcase name="parsesCommandsForScreenshotPrintingWithDisplayIDs" status="run" time="0" classname="ARendererCommandBuffer" />
+    <testcase name="canFetchAllTypesOfRendererCommands" status="run" time="0" classname="ARendererCommandBuffer" />
+  </testsuite>
+  <testsuite name="ARendererCommandContainer" tests="3" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="isEmptyAfterCreation" status="run" time="0" classname="ARendererCommandContainer" />
+    <testcase name="canAddAndGetCommand" status="run" time="0" classname="ARendererCommandContainer" />
+    <testcase name="canClearCommands" status="run" time="0" classname="ARendererCommandContainer" />
+  </testsuite>
+  <testsuite name="ARendererCommands" tests="37" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="hasEmptyCommandQueueAfterCreation" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForScenePublication" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneUnpublication" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneCreation" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneSubscription" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneUnsubscription" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneDeletion" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSceneActions" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForCreatingDisplay" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForDestroyingDisplay" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForMappingSceneOnDisplay" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForShowingSceneOnDisplay" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForWarpingDataUpdate" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForReadPixels" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForDataLinking" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsOffscreenBuffer" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsSceneToBufferAssignment" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForUnmappingSceneFromDisplays" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForHidingSceneOnDisplay" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForDisplayMovement" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForLogging" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="clearsCommands" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsToListIviSurfacesInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForSettingVisibilityInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForSettingSurfaceOpacityInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForSettingSurfaceRectangleInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForAddingSurfaceToLayerInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForSettingLayerVisibilityInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForRemovingSurfaceFromLayerInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForDestroySurfaceInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForTakingScreenshotInSystemCompositorController" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandsForSetClearColor" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSettingFrameTimerLimits" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSettingLimitFlushesBeforeForceApply" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSettingLimitFlushesBeforeSceneForceUnsubscribed" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForSettingSkippingUnmodifiedBuffersFeature" status="run" time="0" classname="ARendererCommands" />
+    <testcase name="createsCommandForPickEvent" status="run" time="0" classname="ARendererCommands" />
+  </testsuite>
+  <testsuite name="AInternalRendererConfig" tests="9" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="hasDefaultValues" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canEnableSystemCompositorControl" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canGetSetWaylandSocketEmbedded" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canGetSetWaylandSocketEmbeddedGroupName" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canGetSetWaylandSocketEmbeddedFD" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canSetGetKPIFilename" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canSetGetMaxFramecallbackPollTime" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="canSetGetWaylandDisplayForSystemCompositorController" status="run" time="0" classname="AInternalRendererConfig" />
+    <testcase name="getsValuesAssignedFromCommandLine" status="run" time="0" classname="AInternalRendererConfig" />
+  </testsuite>
+  <testsuite name="ARendererEventCollector" tests="16" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="CanAddRendererEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddRendererEventWithPixelData" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddRendererEventWithDisplayConfig" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddSceneStateEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddRendererEventWithLinkInfo" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddRendererEventWithBufferLinkInfo" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddRendererEventWithBufferCreateDestroy" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddSceneFlushEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddKeyPressEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddMouseEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddWindowClosedEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddStreamSurfaceAvailableEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddStreamSurfaceUnavailableEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddAndDispatchWindowResizeEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddAndDispatchWindowMoveEvent" status="run" time="0" classname="ARendererEventCollector" />
+    <testcase name="CanAddAndDispatchObjectsPickedEvent" status="run" time="0" classname="ARendererEventCollector" />
+  </testsuite>
+  <testsuite name="ARendererLogContext" tests="7" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="activatesLogLevelFlagsErrorCorrectly" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="activatesLogLevelFlagsWarnCorrectly" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="activatesLogLevelFlagsInfoCorrectly" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="activatesLogLevelFlagsDetailsCorrectly" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="matchesAllNodesByDefault" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="matchesExactHandle" status="run" time="0" classname="ARendererLogContext" />
+    <testcase name="matchesAllNodesWithWildcard" status="run" time="0" classname="ARendererLogContext" />
+  </testsuite>
+  <testsuite name="ARendererResourceManager" tests="36" failures="0" disabled="0" errors="0" time="0.011">
+    <testcase name="PerformsCorrectlyResourceLifecycle" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="SplitsResourceRequestsByProvidingScene" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="ResourceIsRequestedByAllScenesUsingIt" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="RequestedResourceHasCorrectStatus" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="RequestedAndArrivedResourceHasCorrectStatus" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="unrequestingResourceThatWasNotUploadedYetWillNotReportItAsPendingForUploadAnymore" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="DeletesResourceUsedBySingleSceneWhenUnrequested" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="requestingAnUnloadedResourceAgainShouldUploadItAgain" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="deletesNoLongerNeededResourcesWhenSceneDestroyed" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="callsEmbeddedCompositingManagerForUploadingAndUnloadingStreamTexture" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="doesNotDeleteResourcesNeededByAnotherSceneWhenSceneDestroyed" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUpdateAndUnloadDataBuffer_IndexBuffer" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUpdateAndUnloadDataBuffer_VertexBuffer" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUpdateAndUnloadTextureBuffer_WithOneMipLevel" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUpdateAndUnloadTextureBuffer_WithSeveralMipLevels" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUnloadTextureSampler" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUnloadRenderTargetBuffer" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUnloadBlitPassRenderTargets" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUploadAndUnloadRenderTargetWithBuffers" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="GetsInvalidDeviceHandleForUnknownOffscreenBuffer" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="UploadsOffscreenBufferWithColorAndDepthStencilAttached" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="UploadsOffscreenBufferWithDoubleBuffering" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="CanUnloadOffscreenBuffer" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="CanUnloadDoubleBufferedOffscreenBuffer" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="UploadAndDeleteValidShader" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="UploadInvalidShaderResultsInBrokenResource" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="UnrequestingResourceThatDidNotArriveDoesNotDeleteItFromGPU" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="reportsNoArrivedResourcesIfRequestedUnavailableResource" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="rerequestsResourceIfUnavailableForSeveralUpdateIterations" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="doesNotRerequestsResourceAfterItArrived" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="doesNotRerequestsResourceAfterItIsUnrequested" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="unloadsAllSceneResources" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="hasResourceCacheWithoutItemAndDoesNotWantToCacheIt" status="run" time="0.001" classname="ARendererResourceManager" />
+    <testcase name="hasResourceCacheWithoutItemAndWantsToCacheIt" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canStoreAndRetrieveFromResourceCache" status="run" time="0" classname="ARendererResourceManager" />
+    <testcase name="canUnreferenceAllResourcesUsedByAScene" status="run" time="0.001" classname="ARendererResourceManager" />
+  </testsuite>
+  <testsuite name="ARendererResourceManagerWithDisabledEffectDeletion" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="DeletesEffectOnlyWhenDestructed_NotWhenUnrequested" status="run" time="0" classname="ARendererResourceManagerWithDisabledEffectDeletion" />
+  </testsuite>
+  <testsuite name="ARendererSceneResourceRegistry" tests="13" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="doesNotContainAnythingInitially" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveRenderBuffer" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveRenderTarget" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveBlitPass" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveStreamTexture" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canGetStreamTextureData" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveDataBuffers" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canGetDataBufferDeviceHandle" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canGetDataBufferType" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveTextureBuffers" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canGetTextureBufferAttributes" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canAddAndRemoveTextureSamplers" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+    <testcase name="canGetTextureSamplerDeviceHandle" status="run" time="0" classname="ARendererSceneResourceRegistry" />
+  </testsuite>
+  <testsuite name="ARendererSceneUpdater" tests="217" failures="0" disabled="0" errors="0" time="0.206">
+    <testcase name="doesNotGenerateRendererEventForUnnamedFlush" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="generatesRendererEventForNamedFlush" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="preallocatesSceneForSizesProvidedInFlushInfo" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresSceneActionsForNotSubscribedScene" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresSceneActionsForNotReceivedScene" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresSceneActionsAddedAfterSceneWasUnsubscribed" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresSceneActionsAddedAfterSceneWasUnsubscribedByError" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresSceneActionsAddedBetweenUnsubscriptionAndResubscription" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canCreateAndDestroyDisplayContext" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canNotDestroyNonExistantDisplay" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canNotDestroyDisplayIfItHasMapRequestedScenes" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canNotDestroyDisplayIfItHasMappedScenes" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canNotDestroyDisplayIfItHasRenderedScenes" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDestroyDisplayIfMappedSceneGetsUnmapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canDestroyDisplayIfMappedSceneGetsUnpublished" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="destroyingSceneUpdaterUnmapsAnyMappedSceneFromRenderer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="destroyingSceneUpdaterDestroysAllDisplayContexts" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="renderOncePassesAreRetriggeredWhenSceneMapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canHideSceneIfNotShownYet" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canNotUnmapSceneWhichWasRequestedToBeShown" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canUnsubscribeSceneIfSubscriptionRequested" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canUnsubscribeSceneIfSubscriptionPending" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canCreateOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canCreateDoubleBufferedOffscreenBuffer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateOffscreenBufferOnUnknownDisplay" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateOffscreenBufferWithSameID" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDestroyOffscreenBuffer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canDestroyDoubleBufferedOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="failsToDestroyOffscreenBufferOnUnknownDisplay" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToDestroyUnknownOffscreenBuffer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canAssignSceneToOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canAssignSceneToFramebuffer_MultipleTimes" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidence_failsToDestroyOffscreenBufferIfScenesAreAssignedToIt_DestroysAfterSceneIsAssignedToFramebuffer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="setsClearColorForOB" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="setsClearColorForFBIfNoOBSpecified" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotSetClearColorIfOBSpecifiedButNotFound" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="updatesDataLinks" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="updatesDataLinksAlsoIfProviderSceneNotShown" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotUpdatesDataLinksIfConsumerSceneNotShown" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="removesTextureLinkWhenProviderSceneUnmapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="removesTextureLinkWhenConsumerSceneUnmapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateTextureLinkIfProviderSceneNotMapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateTextureLinkIfConsumerSceneNotMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateTextureLinkIfBothProviderAndConsumerSceneNotMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateTextureLinkIfProviderSceneMappedToDifferentDisplayThanConsumerScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="triggersRemovalOfBufferLinkWhenBufferDestroyed" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_triggersRemovalOfBufferLinkWhenConsumerSceneUnmapped_keepsOtherConsumerLinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateBufferLinkIfConsumerSceneNotMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="failsToCreateBufferLinkIfProviderBufferIsFromAnotherDisplay" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotApplySceneActionsIfUpdateTimeBudgetExceeded" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="interruptsApplyingBigFlushWithLimitedBudgetAndFinishesAfterSeveralUpdates" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="interruptsApplyingManySmallFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="interruptsApplyingSeveralBigFlushesWithLimitedBudgetAndFinishesAfterSeveralUpdates" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="continuesApplyingPendingSceneActionsNextUpdateAfterUpdateTimeBudgetExceeded" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="continuesApplyingPendingSceneActionsNextUpdateAfterUpdateTimeBudgetExceeded_inMappedState" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresUpdateTimeBudgetIfThereIsNoOtherSceneToBlock" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresUpdateTimeBudgetIfSceneIsShown" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="willMapSceneOnlyAfterAllPartialFlushesApplied" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="willShowSceneOnlyAfterAllPartialFlushesApplied" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="willShowSceneAsSoonAsPartialFlushAppliedEvenIfOtherFlushesPending" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_appliesMultipleConsecutiveFlushesBasedOnUpdateTimeBudget" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="generatesNamedFlushEventAfterItIsFullyAppliedWhenInterrupted" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="updateSceneStreamTexturesDirtinessGeneratesEventsForNewAndObsoleteStreamSurfaces" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_IfStreamTextureStateIsNotUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfStreamTextureStateIsUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfStreamSourceContentIsUpdated" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfNonEmptyFlushApplied" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnEmptyScene" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_IfEmptyFlushAppliedOnNonEmptyScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfSynchFlushAppliedWithExistingClientResources" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_IfSynchFlushCouldNotBeAppliedDueToMissingClientResource" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_IfSynchFlushAppliedAfterMissingClientResourceArrives" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_DataLinking_IfSceneIsConsumerAndProviderSceneIsUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_DataLinking_IfSceneIsProviderAndConsumerIsUpdated" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_DataLinking_IndirectlyDependantConsumersIfProviderUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_DataLinking_OnlyDependantConsumersIfProviderUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_DataLinking_IfSceneConsumesFromAnotherConsumerOfDifferentLinkingType" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_DataLinking_ConfidenceTest" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_TextureLinking_IfSceneIsConsumerAndProviderSceneIsUpdated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_TextureLinking_ConfidenceTest" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_TransformationLinking_IfSceneIsConsumerAndProviderSceneIsUpdated" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_TransformationLinking_ConfidenceTest" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_IfSceneConsumesFromModifiedOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_IfSceneConsumesFromModifiedOffscreenBufferWithSeveralScenes" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_OffscreenBufferLinking_UnmodifiedProviderToOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_TwoConsumersFromModifiedOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_IndirectConsumerFromModifiedOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="DoesNotMarkSceneAsModified_OffscreenBufferLinking_ConsumerFromUnmodifiedOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_ConfidenceTest1" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_OffscreenBufferLinking_ConfidenceTest2" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfOffscreenBufferLinkedToScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_IfOffscreenBufferUnlinkedFromScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarksSceneAsModified_WhenProviderSceneAssignedToOBIsShownAfterOBLinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_IfTransformationConsumerAndProviderLinkedOrUnlinked" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_IfDataConsumerAndProviderLinkedOrUnlinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="MarkSceneAsModified_IfTextureConsumerAndProviderLinkedOrUnlinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfInterruptedSceneIsHidden" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneIsHidden" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneIsShown" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotResetInterruptedRenderingIfAnotherSceneIsMapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotResetInterruptedRenderingIfAnotherSceneIsUnmapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfInterruptedSceneAssignedToFramebuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneAssignedToFramebuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneAssignedToOffscreenBuffer" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneLinkedToOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfAnotherSceneUnlinkedFromOffscreenBuffer" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfTransformationLinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfTransformationUnlinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfDataLinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfDataUnlinked" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfTexturesLinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfTexturesUnlinked" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfOffscreenBufferCreated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfOffscreenBufferDeleted" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfDisplayCreated" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfDisplayDestroyed" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="blocksFlushesForSceneAssignedToInterruptibleOBWhenThereIsInterruption" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotBlockFlushesForSceneAssignedToNormalOBWhenThereIsInterruption" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resetsInterruptedRenderingIfMaximumNumberOfPendingFlushesReached" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationForSubscribedSceneButWithNoFurtherFlushes" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotReportExpirationForNotShownSceneBeingFlushedRegularly" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationForNotShownSceneNotBeingFlushed" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpiredForNotShownScene" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotReportExpirationForSceneBeingFlushedAndRenderedRegularly" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationForSceneBeingFlushedButNotRenderedRegularly" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotReportExpirationForSceneBeingFlushedButNotRenderedBecauseItIsHidden" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationForSceneNotBeingFlushedOnlyRendered" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byRenderingRegularlyAgain" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpirationForSceneNotBeingRenderedRegularly_byHidingSceneAndKeepingRegularFlushes" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotReportExpirationForSceneBeingFlushedRegularlyButSkippedRenderingDueToEmptyFlushes" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationForNotShownSceneBeingFlushedButBlockedByMissingResource" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsExpirationSceneBeingFlushedAndRenderedButBlockedByMissingResource" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpirationForSceneBeingFlushedAndRenderedButBlockedByMissingResource" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withEmptyFlush" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withNonEmptyFlush" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withEmptyFlush_rendered" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withNonEmptyFlush_rendered" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withEmptyFlush_hiddenAfterRendered" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_withNonEmptyFlush_hiddenAfterRendered" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_whileModifyingScene_confidenceTest" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_whenHiddenInBetweenFlushes_confidenceTest" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="canDisableExpirationChecking_whenHiddenInBetweenEmptyFlushes_confidenceTest" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpiration_byDisablingExpiration" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpiration" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpiration_byDisablingExpirationWithNonEmptyFlush" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsRecoveryAfterExpirationOfRenderedContent_byDisablingExpirationWithNonEmptyFlush" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="ignoresPickEventForUnknownScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reportsNoPickedObjectsForSceneWithNoPickableObjects" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="reportsPickedObjects" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByMappedSceneWhenSceneGetsUnpublished" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByMapRequestedSceneWhenSceneGetsUnpublished" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByRenderedSceneWhenSceneGetsUnpublished" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByMappedSceneWhenSceneGetsUnsubscribedByError" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByMapRequestedSceneWhenSceneGetsUnsubscribedByError" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByRenderedSceneWhenSceneGetsUnsubscribedByError" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestsResourcesInUseByMappedSceneWhenUpdaterDestructed" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_doesNotRequestOrUnrequestResourcesIfSceneNotMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="uploadsSceneResourcesAtMappingTime" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="uploadsResourcesNextUpdateAfterSceneMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="updatesDirtynessOfMappedSceneResources" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="updatesScenesStreamTexturesCache_SingleScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="updatesScenesStreamTexturesCache_MultipleScenes" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="unrequestedResourceIsCanceledNextUpdateCycleIfTriggeredBySyncFlush" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="updatesDirtinessOfRenderedSceneResources" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_appliesPendingFlushesAlwaysIfSceneNotMapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_pendingFlushesAreNotAppliedIfResourcesNotReady" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_whenSceneBecomesReadyPendingFlushesAreAppliedInOrderAtOnce" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multiplePendingFlushesPerRenderLoopAreAppliedInOrderAtOnce" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_pendingFlushesAreAppliedOnlyAfterResourcesAreReady" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_pendingFlushesAreAppliedIfBlockingDirtyResourceNotUsedAnymore" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multipleFlushesChangingResourceDependencyNotAppliedUntilResolved" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_pendingFlushesWillBeAppliedIfSceneGetsUnmapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_resourceUsedByRenderedSceneUnreferencedInSyncFlushWillBeUnrequestedOnceFlushIsReady" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_resourceUsedByRenderedSceneUnreferencedAndReferencedInSyncFlushesWillMakeFlushReadyAgain" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_syncFlush_mappedSceneWithBlockingSyncFlushGetsUnmappedAndRemapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="newRenderTargetIsUploadedOnlyAfterPendingFlushApplied" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetIsUnloadedOnlyAfterPendingFlushAppliedIfAlreadyUsedByRendererScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetIsUploadedOnceWhenMappedIfCreatedBeforeMapping" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetIsUploadedOnceWhenCreatedIfAlreadyMapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unloadsAndUploadsRenderTargetWithSameHandleDestroyedAndCreatedInSameLoop" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotUploadOrUnloadRenderTargetWithSameHandleCreatedAndDestroyedInSameLoop" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="doesNotReuploadResourcesForSceneUnmappedAndMappedToSameDisplay" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="resourcesAreReuploadedAfterSceneRemapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetAndBuffersAreReuploadedAfterSceneRemapped" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="blitPassesReuploadedAfterSceneRemapped" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_syncFlush_twoDisplaysEachWithSceneAndSyncFlushAppliedAfterResourcesReady" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_waitingForResourceAndUnmapWillRequestThatResourceWithNextMap" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canDestroyDisplayIfThereArePendingUploadsDueToLimitedUploadTimeBudget" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="onlyMapsASceneIfAllNeededResourcesAreUploaded" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="onlyMapsASceneIfAllNeededResourcesAreUploaded_WithTwoDifferentInvalidResourcesUsed" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canUnmapSceneWhenSceneIsMapRequestedWithMapFailedEvent" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canUnmapSceneWhenSceneIsMappingAndUploadingWithMapFailedEvent" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="unmappingSceneWhenSceneIsMappingAndUploadingWillUnloadItsResources" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="canUnmapSceneWhenSceneIsMappingAndUploadingAndInMiddleOfPartialFlush" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canHideSceneWhenSceneIsRequestedToBeShownButInMiddleOfPartialFlush_WillTriggerFailShowEvent" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_canRemapSceneWhenSceneIsMappingAndUploadingAndInMiddleOfPartialFlush" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetIsUploadedInCorrectOrderRightAfterUnblockedMappingBeforeResourceCacheUpdate" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="renderTargetIsUploadedInCorrectOrderAfterSceneMappedWithShowRequestAndBlockingFlushComingAtSameTime" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multipleFlushesWithRemoveAndAddResourceReferenceWhileAlreadyBlockedByInvalidResource" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multipleFlushesWithAddAndRemoveResourceReferenceWhileAlreadyBlockedByInvalidResource" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multipleFlushesWithRemoveAndAddAndRemoveResourceReferenceWhileAlreadyBlockedByInvalidResource" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="syncFlush_multipleFlushesWithAddAndRemoveAndAddResourceReferenceWhileAlreadyBlockedByInvalidResource" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="pendingResourceAndProvidedResourceAreBothUnreferencedAtTheSameTime" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="queriesRendererResourceCacheBeforeRequestingResources" status="run" time="0" classname="ARendererSceneUpdater" />
+    <testcase name="willMapSceneAfterMaximumNumberOfPendingFlushesReached" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="forceAppliesPendingFlushesAfterMaximumNumberReachedWhenSceneMappedOrRendered" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="reactsOnDynamicChangesOfFlushForceApplyLimit" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="applyingPendingFlushesAfterMaximumNumberOfPendingFlushesReachedDoesNotAffectOtherScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="forceUnsubscribesSceneIfItHasTooManyPendingFlushesDueToNoTimeToApplyThem_Subscribed" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="forceUnsubscribesSceneIfItHasTooManyPendingFlushesDueToNoTimeToApplyThem_Mapped" status="run" time="0.002" classname="ARendererSceneUpdater" />
+    <testcase name="reactsToChangesToForceUnsubscribeFlushLimit" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="nonBlockingFlushesGetAppliedEvenIfSceneIsBlockedToBeMappedDueToInvalidResourceFromBefore" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canUnmapSceneWithPendingFlushAndRequestMapInSingleLoop" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="canUnmapSceneWithPendingFlushAndRequestMapAndAddAnotherPendingFlushInSingleLoop" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="forceUnsubscribesSceneIfSceneResourcesUploadExceedsBudgetWhileMapping" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="forceUnsubscribesSceneIfSceneResourcesUploadExceedsBudgetWhileMapping_doesNotAffectOtherAlreadyRenderedScene" status="run" time="0.001" classname="ARendererSceneUpdater" />
+    <testcase name="confidenceTest_forcePendingFlushWithNewResourcesBeingRequestedAndRandomlyUnrequestedAndRandomlyFailingToUpload" status="run" time="0.054" classname="ARendererSceneUpdater" />
+  </testsuite>
+  <testsuite name="ARendererScenes" tests="5" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="isEmptyInitially" status="run" time="0" classname="ARendererScenes" />
+    <testcase name="isEmptyInitiallyConst" status="run" time="0" classname="ARendererScenes" />
+    <testcase name="createsSceneAndStagingInfo" status="run" time="0" classname="ARendererScenes" />
+    <testcase name="destroysSceneAndStagingInfo" status="run" time="0" classname="ARendererScenes" />
+    <testcase name="canIterateOverScenes" status="run" time="0" classname="ARendererScenes" />
+  </testsuite>
+  <testsuite name="ARendererStatistics" tests="22" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="tracksDrawCallsPerFrame" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksFrameCount" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksSceneRenderedCount" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="untracksScene" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksSceneArrivedFlushesIndependentlyFromFrames" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksFramesWhereSceneFlushArrived" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksFramesWhereSceneFlushApplied" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksFramesWhereSceneFlushBlocked" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksMaximumConsecutiveFramesWhereSceneFlushNotApplied" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksMaximumConsecutiveFramesWhereSceneFlushBlocked" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksFramebufferAndOffscreenBufferSwapCounts" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksInterruptibleOffscreenBuffer" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="untracksOffscreenBuffer" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksStreamTextureSource" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="logsValidNumbersWhenStreamTextureInactive" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="untracksStreamTextureSource" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksInterruptedFlushes" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="doesNotLogInterruptedFlushesIfThereAreNone" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksClientResourceUploads" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksSceneResourceUploads" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="tracksShaderCompilationAndTimes" status="run" time="0" classname="ARendererStatistics" />
+    <testcase name="confidenceTest_fullLogOutput" status="run" time="0" classname="ARendererStatistics" />
+  </testsuite>
+  <testsuite name="AResourceCachedScene" tests="64" failures="0" disabled="0" errors="0" time="0.006">
+    <testcase name="EmptyRenderableIsMarkedAsDirty" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithAllResourcesMarkedAsClean" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithNoGeometryAndNoUniformsMarkedAsDirty" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithNoVerticesMarkedAsDirty" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithNoIndicesButNotUsedMarkedAsClean" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithInvalidTextureSamplerHandleMarkedAsDirty" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanExplicitlyMarkDirtyRenderableUsingSampler" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanExplicitlyMarkDirtyAllRenderablesUsingSampler" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithAllResourcesAvailableButTextureResourceMarkedAsDirty" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithAllResourcesAndRenderBufferMarkedClean" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableCleanAfterGeometryResourcesBecameValid" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableCleanAfterUniformResourcesBecameValid" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfNoGeometryDataInstanceAssigned" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfNoUniformDataInstanceAssigned" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfGeometryDataInstanceIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfUniformDataInstanceIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfDataInstanceFieldIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfDataTextureSamplerIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="EmptyRenderableVectorIsNotDirty" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ReportsNotDirtyWithSingleNotDirtyElementInRenderableVector" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ReportsNotDirtyWithMultipleNotDirtyElementsInRenderableVector" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ReportsDirtyWithMultipleDirtyElementsInRenderableVector" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ReportsDirtyWithMixedElementsInRenderableVector" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="updatesCacheForNewRenderTarget" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="releasedAndRecreateRenderableWithSameHandleResetsItsDirtiness" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="releasedAndRecreateDataInstanceWithSameHandleResetsItsCache" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="releasedAndRecreateTextureSamplerWithSameHandleResetsItsCache" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="releasedAndRecreateRenderTargetWithSameHandleResetsItsCache" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="releasedAndRecreateBlitPassWithSameHandleResetsItsCache" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ResettingResourceCacheMarksAllHandlesInvalid" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ResettingResourceCacheDoesNotAffectReleasedRenderables" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="ResizesBlitPassesDeviceHandleCache" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="updatesCacheForNewBlitPasses" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanExplicitlyMarkDirtyRenderableUsingStreamTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithStreamTextureMarkedDirty_BySettingForceFallbackImage" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithStreamTextureMarkedDirty_ByUnsettingForceFallbackImage" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithStreamTextureMarkedDirty_DueToMissingFallbackTextureAndStreamSourceNotAvailable" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="RenderableWithStreamTextureMarkedDirty_DueToMissingFallbackTextureAndForceFallbackIsSet" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceAvailableAndFallbackNotAvailable_UsesCompositedTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceAvailableAndFallbackAvailable_UsesCompositedTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_StreamSourceBecomesUnavailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_StreamSourceAvailableAndFallbackAvailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_StreamSourceNotAvailableAndFallbackAvailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_AfterSourceAlreadyAvailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsSet_AfterSourceNotAvailable_UsesFallbackTexture" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsUnset_SourceAvailable_UsesCompositedTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForSamplerWithStreamTexture_ForceFallbackIsUnset_SourceNotAvailable_UsesFallbackTexture" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForDataBuffer" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForDataBuffer_AfterSwitchingFromNonExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForDataBuffer_AfterSwitchingFromAnExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfDataBufferIsChanged" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForDataBuffer_DoesNotChangeHandleIfContentOfDataBufferIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyAfterSwitchingFromDataBufferToNonExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="GetsCorrectDeviceHandleAfterSwitchingFromDataBufferToExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForTextureBuffer" status="run" time="0.001" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForTextureBuffer_AfterSwitchingFromNonExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForTextureBuffer_AfterSwitchingFromAnExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyIfTextureBufferIsChanged" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="CanGetDeviceHandleForTextureBuffer_DoesNotChangeHandleIfContentOfTextureBufferIsUpdated" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="MarksRenderableDirtyAfterSwitchingFromTextureBufferToNonExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="GetsCorrectDeviceHandleAfterSwitchingFromTextureBufferToExistingResource" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="willForceUpdateCacheIfDataInstanceAssignedToAnotherRenderable" status="run" time="0" classname="AResourceCachedScene" />
+    <testcase name="willForceUpdateCacheIfRenderableVisibilityModeChangesToVisible" status="run" time="0" classname="AResourceCachedScene" />
+  </testsuite>
+  <testsuite name="AResourceCachedSceneWithoutIndexArrayAvailable" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="RenderableWithIndicesNotAvailableMarkedAsDirty" status="run" time="0" classname="AResourceCachedSceneWithoutIndexArrayAvailable" />
+  </testsuite>
+  <testsuite name="AResourceUploader" tests="23" failures="0" disabled="0" errors="0" time="0.004">
+    <testcase name="uploadsVertexArrayResource" status="run" time="0.001" classname="AResourceUploader" />
+    <testcase name="uploadsIndexArrayResource16" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTexture2DResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTexture2DResourceWithNonDefaultTextureSwizzleArray" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTexture2DResourceWithMipGen" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTexture3DResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTexture3DResourceWithMipGen" status="run" time="0.001" classname="AResourceUploader" />
+    <testcase name="uploadsTextureCubeResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsTextureCubeResourceWithMipGen" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsEffectResourceWithoutBinaryShaderCache" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="ifShaderShouldNotBeCachedNoDownloadWillHappen" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsEffectResourceWithBinaryShaderCacheWhenCacheMissingAndCachingSupported" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsEffectResourceWithBinaryShaderCacheWhenCacheHit" status="run" time="0.001" classname="AResourceUploader" />
+    <testcase name="uploadsEffectResourceWithBrokenBinaryShaderCache" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="doesNotTryToGetBinaryShaderFromDeviceIfEffectDidNotCompile" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="providesSupportedBinaryShaderFormatsOnlyOnce" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="unloadsVertexArrayResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="unloadsIndexArrayResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="unloadsTexture2DResource" status="run" time="0.001" classname="AResourceUploader" />
+    <testcase name="unloadsTexture3DResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="unloadsTextureCubeResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="unloadsEffectResource" status="run" time="0" classname="AResourceUploader" />
+    <testcase name="uploadsWithMultipleRenderBackends" status="run" time="0" classname="AResourceUploader" />
+  </testsuite>
+  <testsuite name="ASceneDependencyChecker" tests="15" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="isEmptyInitially" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canAddDependencyToIndependentScenes" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveDependencyOfDependentScenes" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="returnsCorrectDependencyListForOneDependency" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canNotAddReverseDependencyToDependentScenes" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canAddMultipleDependenciesForOneScene" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canAddMultipleDependenciesForMultipleScenes" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canAddMultipleCascadingDependenciesForMultipleScenes" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveSingleDependentScene" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveSingleSceneWithDependency" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveSingleDependentSceneFromCascadingDependency" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveSingleSceneWithDependencyFromCascadingDependency" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveSingleDependentSceneWithDependenciesFromCascadingDependency" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="canRemoveDependencyAddedTwiceWithTwoRemovalsOnly" status="run" time="0" classname="ASceneDependencyChecker" />
+    <testcase name="confidenceTest_complexDependencyHierarchy" status="run" time="0" classname="ASceneDependencyChecker" />
+  </testsuite>
+  <testsuite name="ASceneExpirationMonitor" tests="29" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="reportInvalidTSForScenesWithNoExpiration" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="doesNotCheckAnythingIfNoScenesMonitored" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="doesNotGenerateEventIfZeroLimit" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="TSFromFlushAppliedDoesNotAffectRenderedTS" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="lastTSFromFlushAppliedBecomesRenderedTSWhenSceneReportedRendered" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="renderedTSIsResetIfSceneHidden" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="renderedTSIsTakenFromLastAppliedFlushIfSceneRenderedAgainAfterHidden" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="doesNotGenerateEventIfLimitNotExceeded" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="canHandleTimeStampInFutureAndTreatsAsNotExceeded" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfAppliedFlushTSExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfLastAppliedFlushTSExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfRenderedTSExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfLastAppliedFlushTSExpiredEvenIfRenderedTSNotExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfLastPendingFlushExpired" status="run" time="0.001" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventIfAnyOfPendingFlushesExpiredEvenIfAppliedAndRenderedNotExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventOnlyOnceIfExpiredAndCheckedMultipleTimesWithSingleApplyOnly" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="evaluatesExpirationBasedOnLimitFromLastAppliedFlush" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventForAllScenesWhereAppropriate" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesEventOnlyOnceIfSceneKeepsBeingExpired" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesRecoveryEventWhenExceedingStops" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesRecoveryEventOnlyOnceWhenExceedingStopsAndKeepsBelowLimit" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="willReportSceneThatKeepsBeingFlushedButNotRendered" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="willNotReportSceneThatKeepsBeingFlushedButHidden" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="willReportSceneThatKeepsBeingRenderedButNotFlushed" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="doesNotGenerateEventIfLastRenderedTSExpiredButSceneHidden" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="generatesRecoveryEventIfRenderedTSExpiredButSceneGetsHiddenAndNewFlushesArrive" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="confidenceTest_checkingOfOneSceneDoesNotAffectCheckingOfOtherScene" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="confidenceTest_severalScenesWithDifferentBehaviorAndLimits" status="run" time="0" classname="ASceneExpirationMonitor" />
+    <testcase name="stopsMonitoringScene" status="run" time="0" classname="ASceneExpirationMonitor" />
+  </testsuite>
+  <testsuite name="ASceneLinksManager/0" tests="19" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsLinkCreationEvent" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="reportsLinkRemovalEvent" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="reportsProviderSlotRemoved" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="reportsConsumerSlotRemoved" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="removesLinkForSceneWithRemovedProviderSlot" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="removesLinkForSceneWithRemovedConsumerSlot" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateSecondLinkToConsumer" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinkForInvalidSceneId" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinkForInvalidDataSlotId" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinkForSwappedDataSlotId" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinkForSwappedConsumerAndProvider" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinkTwiceForSameConsumer" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToRemoveLinkForInvalidSceneId" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToRemoveLinkForInvalidDataSlotId" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToRemoveLinkWhenProvidingProviderInsteadOfConsumer" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToRemoveLinkIfThereIsNoLink" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+    <testcase name="removesAllLinksToProviderOnProviderSlotDestruction" type_param="ramses_internal::TransformationLinkManager" status="run" time="0" classname="ASceneLinksManager/0" />
+  </testsuite>
+  <testsuite name="ASceneLinksManager/1" tests="19" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsLinkCreationEvent" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="reportsLinkRemovalEvent" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="reportsProviderSlotRemoved" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="reportsConsumerSlotRemoved" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="removesLinkForSceneWithRemovedProviderSlot" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="removesLinkForSceneWithRemovedConsumerSlot" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateSecondLinkToConsumer" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinkForInvalidSceneId" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinkForInvalidDataSlotId" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinkForSwappedDataSlotId" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinkForSwappedConsumerAndProvider" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinkTwiceForSameConsumer" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToRemoveLinkForInvalidSceneId" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToRemoveLinkForInvalidDataSlotId" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToRemoveLinkWhenProvidingProviderInsteadOfConsumer" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToRemoveLinkIfThereIsNoLink" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+    <testcase name="removesAllLinksToProviderOnProviderSlotDestruction" type_param="ramses_internal::DataReferenceLinkManager" status="run" time="0" classname="ASceneLinksManager/1" />
+  </testsuite>
+  <testsuite name="ASceneLinksManager/2" tests="19" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsLinkCreationEvent" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="reportsLinkRemovalEvent" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="reportsProviderSlotRemoved" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="reportsConsumerSlotRemoved" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="removesLinkForSceneWithRemovedProviderSlot" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="removesLinkForSceneWithRemovedConsumerSlot" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateSecondLinkToConsumer" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinkForInvalidSceneId" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinkForInvalidDataSlotId" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinkForSwappedDataSlotId" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinkForSwappedConsumerAndProvider" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinkTwiceForSameConsumer" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToRemoveLinkForInvalidSceneId" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToRemoveLinkForInvalidDataSlotId" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToRemoveLinkWhenProvidingProviderInsteadOfConsumer" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToRemoveLinkIfThereIsNoLink" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="failsToCreateLinksCausingCyclicDependency" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="canLinkUnlinkAndLinkAgain" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+    <testcase name="removesAllLinksToProviderOnProviderSlotDestruction" type_param="ramses_internal::TextureLinkManager" status="run" time="0" classname="ASceneLinksManager/2" />
+  </testsuite>
+  <testsuite name="SceneLinksTextureManager" tests="2" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="unlinksTextureLinksForUnmappedProviderScene" status="run" time="0" classname="SceneLinksTextureManager" />
+    <testcase name="unlinksTextureLinksForUnmappedConsumerScene" status="run" time="0" classname="SceneLinksTextureManager" />
+  </testsuite>
+  <testsuite name="ASceneLinks" tests="5" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoLinksForUnlinkedScenes" status="run" time="0" classname="ASceneLinks" />
+    <testcase name="canAddLink" status="run" time="0" classname="ASceneLinks" />
+    <testcase name="canAddAndRemoveLink" status="run" time="0" classname="ASceneLinks" />
+    <testcase name="canAddAndRemoveMultipleLinks" status="run" time="0" classname="ASceneLinks" />
+    <testcase name="removingLinkDoesNotAffectOtherLinks" status="run" time="0" classname="ASceneLinks" />
+  </testsuite>
+  <testsuite name="ASceneStateExecutor" tests="106" failures="0" disabled="0" errors="0" time="0.032">
+    <testcase name="canPublishUnknownScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotPublishAlreadyPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishAlreadyPublishedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishSceneRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishSubscriptionPendingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishMapRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishMappingAndUploadingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishRenderedRequestedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canUnpublishRenderedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnpublishUnknownScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canRequestSubscriptionForPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForUnknownScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForSceneAlreadyRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForSubscriptionPendingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForAlreadySubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForMapRequestedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForRenderedRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotRequestSubscriptionForRenderedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canUnsubscribeAlreadySubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnsubscribeSceneRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnsubscribeReceivedSceneWithSubscriptionPending" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeUnknownScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribePublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeMapRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeMappingAndUploadingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeRenderedRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnsubscribeRenderedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canRequestMappingForSubscribedSceneOnExistingDisplay" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canMapRequestSceneOnExistingDisplay" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapSubscribedSceneOnNonExistingDisplay" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapAlreadyMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapPublishedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapSubscriptionRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapReceivedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapUnknownScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapASceneWhichIsMapRequested" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapASceneWhichIsRenderedRequested" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotMapASceneWhichIsRendered" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotHidePublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideSubscriptionRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideSubscriptionPendingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideMapRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideMappingAndUploadingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotHideASceneWhichIsMapped" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnmapMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapUnknownScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapSceneRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapSceneSubscriptionPending" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canUnmapMapRequestedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canUnmapMappingAndUploadingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapRenderedRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotUnmapRenderedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canReceiveSceneRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveUnknownScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceivePublishedSceneNotRequestedForSubscription" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveAlreadyReceivedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveMapRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveMappingAndUploadingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveMappedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveFlushForPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canNotReceiveFlushForNotReceivedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="publishesScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canGetClientGuidOfKnownScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="requestsSubscriptionForPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="receivesSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="receivesFlushForReceivedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesSceneRequestedForSubscription" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesReceivedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesMapRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesMappingAndUploadingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesRenderedRequestedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="unpublishesRenderedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unsubscribesSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unsubscribesSubscriptionRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="unsubscribesSubscriptionPendingScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesPublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesSubscriptionRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesSubscriptionPendingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesMapRequestedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesMappingAndUploadingScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesMappedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesRenderRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="forceUnsubscribesRenderedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="requestsMappingOfSubscribedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="mapsSubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="renderRequestsMappedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="rendersRenderedRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="hidesRenderedRequestedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="hidesRenderedScene" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="unmapsMappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canRepublishUnpublishedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canResubscribeUnsubscribedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="canResubscribeSceneUnsubscribedByError" status="run" time="0.001" classname="ASceneStateExecutor" />
+    <testcase name="canRemapUnmappedScene" status="run" time="0" classname="ASceneStateExecutor" />
+    <testcase name="getsUnknownStateForUnknownScene" status="run" time="0" classname="ASceneStateExecutor" />
+  </testsuite>
+  <testsuite name="ASceneStateInfo" tests="7" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="IsInitializedCorrectly" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanAddScene" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanRemoveScene" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanAddAndRemoveMultipleScenes" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanGetSceneState" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanSetSceneState" status="run" time="0" classname="ASceneStateInfo" />
+    <testcase name="CanGetClientGuid" status="run" time="0" classname="ASceneStateInfo" />
+  </testsuite>
+  <testsuite name="AStereoDisplayController" tests="5" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="InitializesEyePositionsToZero" status="run" time="0.001" classname="AStereoDisplayController" />
+    <testcase name="InitializesRenderTargetDeviceHandlesForBothEyesToFramebuffer" status="run" time="0" classname="AStereoDisplayController" />
+    <testcase name="InitializesViewportsToHalfScreenSplittingVertically" status="run" time="0" classname="AStereoDisplayController" />
+    <testcase name="InitializesProjectionToHalfScreenSplittingVertically" status="run" time="0" classname="AStereoDisplayController" />
+    <testcase name="ExecutesSceneForBothEyesWithProperViewport" status="run" time="0" classname="AStereoDisplayController" />
+  </testsuite>
+  <testsuite name="ATextureLinkManager" tests="43" failures="0" disabled="0" errors="0" time="0.005">
+    <testcase name="reportsNoLinkForSamplerInitially" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsLinkForSamplerWhenLinked" status="run" time="0.001" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndUnlinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndProviderSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndProviderSceneUnmapped" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSceneUnmapped" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenUnlinked" status="run" time="0.001" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenConsumerSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenConsumerSceneUnmapped" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenProviderSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenProviderSceneUnmapped" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="doesNotMarkRenderableUsingSamplerDirtyWhenUnlinkedWithoutBeingLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenLinkedAndProviderSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenLinkedAndProviderSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenLinkedAndConsumerSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsLinkForSamplerWhenLinkedBuffer" status="run" time="0.001" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenBufferLinkedAndUnlinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenBufferLinkedAndConsumerSceneUnmapped" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenBufferLinkedAndBufferRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenBufferLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenBufferUnlinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="doesNotMarkRenderableUsingSamplerDirtyWhenUnlinkedWithoutBeingBufferLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenBufferLinkedAndConsumerSlotRemoved" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="marksRenderableUsingSamplerDirtyWhenBufferLinkedAndBufferRemoved" status="run" time="0.001" classname="ATextureLinkManager" />
+    <testcase name="reportsLinkAndMarksRenderableUsingSamplerDirtyWhenProviderChangesTextureAssignedToSlot" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="canCreateTextureLinkAndBufferLink" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="failsToCreateLinkIfAlreadyBufferLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="failsToCreateBufferLinkIfAlreadyLinked" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndProviderSceneRemoved_KeepsBufferLink" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndBufferRemoved_KeepsTextureLink" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSceneRemoved_BufferAndTextureLinks" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndProviderSlotRemoved_KeepsBufferLink" status="run" time="0.001" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved_KeepsBufferLink" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSlotRemoved_KeepsTextureLink" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="reportsNoLinkForSamplerWhenLinkedAndConsumerSceneUnmapped_BufferAndTextureLinks" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="canCreateTextureLinkAndBufferLinkIfPreviouslyUsingRenderTarget" status="run" time="0" classname="ATextureLinkManager" />
+    <testcase name="unlinkingTextureAndBufferFallsBackToPreviouslySetRenderTarget" status="run" time="0" classname="ATextureLinkManager" />
+  </testsuite>
+  <testsuite name="ATransformationLinkCachedScene" tests="20" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="resolvesSingleDataDependency" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="resolvesSingleDataDependencyForChildNodeOfConsumer" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="resolvesSingleDataDependencyWithLinkToSceneWithRoot" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="doesNotAffectSceneWhenLinkingItsChildAsConsumer" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="doesNotAffectSceneWithConsumerWhenLinkingItsChildAsProvider" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="resolvesTransformationAcrossTwoLinks" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="resolvesTransformationAndPropagatesToChild" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="resolvesTransformationAndPropagatesToSceneWithNoTransforms" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="fallsBackToOriginalTransformationWhenProviderSlotIsRemoved" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="fallsBackToOriginalTransformationWhenConsumerSlotIsRemoved" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="recomputesDirtyTransformationWhenProviderSlotIsRemoved" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="recomputesDirtyTransformationWhenConsumerSlotIsRemoved" status="run" time="0.001" classname="ATransformationLinkCachedScene" />
+    <testcase name="recomputesDirtyTransformationWhenProviderTransformationChanges" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="recomputesDirtyTransformationWhenProviderSceneRemoved" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canreleaseDataSlotOnUnlinkedProvider" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canreleaseDataSlotOnUnlinkedConsumer" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canTriggerCorrectEventWhenAllocateTransformProviderSlot" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canTriggerCorrectEventWhenReleaseTransformProviderSlot" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canTriggerCorrectEventWhenAllocateTransformConsumerSlot" status="run" time="0" classname="ATransformationLinkCachedScene" />
+    <testcase name="canTriggerCorrectEventWhenReleaseTransformConsumerSlot" status="run" time="0" classname="ATransformationLinkCachedScene" />
+  </testsuite>
+  <testsuite name="ATransformationLinkManager" tests="21" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="reportsNoLinkForInvalidNode" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsNoLinkForNonlinkedNode" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsExistingLinkForNodeAssociatedWithLink" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsNoLinkToProviderForProviderNode" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="retrievesWorldTransformationFromLinkedProviderNode" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="retrievesObjectTransformationFromLinkedProviderNode" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsNoLinksForSceneWithRemovedLink" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsNoLinksForConsumerSceneIfDestroyed" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="reportsNoLinksForConsumerSceneIfProviderSceneDestroyed" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="canLinkUnlinkAndLinkAgain" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="removesLinkForSceneWithRemovedProviderSlot" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="removesLinkForSceneWithRemovedConsumerSlot" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="createsTwoLinksSameProviderDifferentConsumers" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="removesAllLinksToProviderOnProviderSlotDestruction" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="removingAllLinksToProviderOnProviderSlotDestructionDoesNotAffectOtherLinks" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="canPropagateTransformationDirtinessToConsumerScene" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="propagatesTransformationDirtinessToConsumerWhenCreatingLink" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="propagatesTransformationDirtinessToConsumerWhenRemovingLink" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="doesNotPropagateTransformationDirtinessToConsumerWhenRemovingLinkFailed" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="propagatesTransformationDirtinessToConsumerWhenNodeTransformationModified" status="run" time="0" classname="ATransformationLinkManager" />
+    <testcase name="propagatesTransformationDirtinessToConsumerWhenProviderSceneDestroyed" status="run" time="0" classname="ATransformationLinkManager" />
+  </testsuite>
+  <testsuite name="AWarpingPass" tests="1" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="ValidRenderBackendCallsOnExecute" status="run" time="0" classname="AWarpingPass" />
+  </testsuite>
+  <testsuite name="AWindowedRenderer" tests="3" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="doesNotCrashWhenCreatedAndDestroyed" status="run" time="0.001" classname="AWindowedRenderer" />
+    <testcase name="canCreateAndDestroyDisplayInSingleLoop" status="run" time="0" classname="AWindowedRenderer" />
+    <testcase name="updatesSystemCompositorControllerInUpdate" status="run" time="0" classname="AWindowedRenderer" />
+  </testsuite>
+  <testsuite name="AWindowedRendererWithDisplay" tests="6" failures="0" disabled="0" errors="0" time="0.002">
+    <testcase name="doesNotCrashWhenCreatedAndDestroyed" status="run" time="0" classname="AWindowedRendererWithDisplay" />
+    <testcase name="takeScreenshotGeneratesSuccessEvent" status="run" time="0.001" classname="AWindowedRendererWithDisplay" />
+    <testcase name="takeScreenshotGeneratesFailEvent" status="run" time="0" classname="AWindowedRendererWithDisplay" />
+    <testcase name="saveScreenshotToFileWithFullscreenDoesNotGenerateEvent" status="run" time="0.001" classname="AWindowedRendererWithDisplay" />
+    <testcase name="saveScreenshotToFileOnNotExistentDisplayDoesNotGenerateEvent" status="run" time="0" classname="AWindowedRendererWithDisplay" />
+    <testcase name="saveScreenshotToFileFailsAndDoesNotGenerateEvent" status="run" time="0" classname="AWindowedRendererWithDisplay" />
+  </testsuite>
+  <testsuite name="AScreenshot" tests="5" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="executesScreenshotNoArgsDefined" status="run" time="0" classname="AScreenshot" />
+    <testcase name="executesScreenshotWithFilename" status="run" time="0" classname="AScreenshot" />
+    <testcase name="executesScreenshotWithDisplay" status="run" time="0" classname="AScreenshot" />
+    <testcase name="brokenArgumentsAreNotExecuted" status="run" time="0" classname="AScreenshot" />
+    <testcase name="emptyOptionsAreValid" status="run" time="0" classname="AScreenshot" />
+  </testsuite>
+  <testsuite name="ARendererCommandExecutor" tests="76" failures="0" disabled="0" errors="0" time="0.027">
+    <testcase name="mapsSceneOnDisplay/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="mapsSceneOnDisplay/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="updatesWarpingMeshDataOnDisplay/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="updatesWarpingMeshDataOnDisplay/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="failsToUpdateWarpingMeshDataOnInvalidDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="failsToUpdateWarpingMeshDataOnInvalidDisplay/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="failsToUpdateWarpingMeshDataOnDisplayWithNoWarping/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="failsToUpdateWarpingMeshDataOnDisplayWithNoWarping/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="readPixelsFromDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="readPixelsFromDisplay/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="createsReadPixelsFailedEventIfTryingToReadPixelsFromInvalidDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createsReadPixelsFailedEventIfTryingToReadPixelsFromInvalidDisplay/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="readAndSavePixelsFromDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="readAndSavePixelsFromDisplay/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="readAndSaveFullscreenPixelsFromDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="readAndSaveFullscreenPixelsFromDisplay/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="createsNoReadPixelsFailedEventIfTryingToReadAndSavePixelsFromInvalidDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createsNoReadPixelsFailedEventIfTryingToReadAndSavePixelsFromInvalidDisplay/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createOffscreenBufferAndGenerateEvent/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="createOffscreenBufferAndGenerateEvent/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createInterruptibleOffscreenBufferAndGenerateEvent/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="createInterruptibleOffscreenBufferAndGenerateEvent/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="failsToCreateOffscreenBufferAndGeneratesFailEvent/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="failsToCreateOffscreenBufferAndGeneratesFailEvent/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="destroysOffscreenBufferAndGenerateEvent/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="destroysOffscreenBufferAndGenerateEvent/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="destroysInterruptibleOffscreenBufferAndGenerateEvent/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="destroysInterruptibleOffscreenBufferAndGenerateEvent/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="destroysOffscreenBufferAndGenerateFailEvent/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="destroysOffscreenBufferAndGenerateFailEvent/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="assignsSceneToOffscreenBuffer/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="assignsSceneToOffscreenBuffer/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="confidence_reassignsSceneToFramebufferAfterItWasAssignedToOffscreenBuffer_ThenDestroysOffscreenBuffer/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="confidence_reassignsSceneToFramebufferAfterItWasAssignedToOffscreenBuffer_ThenDestroysOffscreenBuffer/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenUnmappedSceneCouldNotBeAssignedToOffscreenBuffer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenUnmappedSceneCouldNotBeAssignedToOffscreenBuffer/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenSceneCouldNotBeAssignedToInvalidOffscreenBuffer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenSceneCouldNotBeAssignedToInvalidOffscreenBuffer/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenUnmappedSceneCouldNotBeAssignedToFramebuffer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="reportsFailEventWhenUnmappedSceneCouldNotBeAssignedToFramebuffer/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="triggersLinkOffscreenBufferToConsumer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="triggersLinkOffscreenBufferToConsumer/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createsAndDestroysDisplay/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="createsAndDestroysDisplay/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="linksTransformDataSlots/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="linksTransformDataSlots/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="unlinksTransformDataSlots/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="unlinksTransformDataSlots/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="processesSceneActions/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="processesSceneActions/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="executionClearsSceneActionsRegardlessOfStateOfTheSceneUsingThem/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="executionClearsSceneActionsRegardlessOfStateOfTheSceneUsingThem/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsLayerVisibility/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsLayerVisibility/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceVisibility/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceVisibility/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="listsIviSurfaces/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="listsIviSurfaces/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceOpacity/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceOpacity/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceRectangle/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setsSurfaceRectangle/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorAddSurfaceToLayer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorAddSurfaceToLayer/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorRemoveSurfaceFromLayer/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorRemoveSurfaceFromLayer/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorDestroySurface/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorDestroySurface/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorScreenshot/0" value_param="false" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="callsSystemCompositorScreenshot/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setClearColor/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setClearColor/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+    <testcase name="setFrameTimerLimits/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="setFrameTimerLimits/1" value_param="true" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="forwardsPickEventToSceneUpdater/0" value_param="false" status="run" time="0" classname="ARendererCommandExecutor" />
+    <testcase name="forwardsPickEventToSceneUpdater/1" value_param="true" status="run" time="0.001" classname="ARendererCommandExecutor" />
+  </testsuite>
+  <testsuite name="ARenderer" tests="152" failures="0" disabled="0" errors="0" time="0.08">
+    <testcase name="ListIviSurfacesInSystemCompositorController/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="ListIviSurfacesInSystemCompositorController/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="SetsVisibilityInSystemCompositorController/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="SetsVisibilityInSystemCompositorController/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="TakesScreenshotFromSystemCompositorController/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="TakesScreenshotFromSystemCompositorController/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersOneLoopWithSingleDisplayController/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersOneLoopWithSingleDisplayController/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersOneLoopWithTwoDisplayControllers/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersOneLoopWithTwoDisplayControllers/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="unregisteredSceneIsNotMapped/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="unregisteredSceneIsNotMapped/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotMapCreatedScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotMapCreatedScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="canMapSceneOnDisplay/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="canMapSceneOnDisplay/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneToNativeFramebufferOfDisplayWhenMappingScene/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="assignsSceneToNativeFramebufferOfDisplayWhenMappingScene/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneToOffscreenBuffer/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneToOffscreenBuffer/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneToInterruptibleOffscreenBuffer/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneToInterruptibleOffscreenBuffer/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="assignsSceneFromInterruptibleOffscreenBufferToNormalOB/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="assignsSceneFromInterruptibleOffscreenBufferToNormalOB/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferIfThereIsSceneAssignedToIt/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferIfThereIsSceneAssignedToIt/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="SetsLayerVisibilityInSystemCompositorController/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="SetsLayerVisibilityInSystemCompositorController/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotClearOffscreenBufferIfThereIsNoSceneAssignedToIt/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotClearOffscreenBufferIfThereIsNoSceneAssignedToIt/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferIfThereIsSceneAssignedToItAndNotShown/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferAndFramebufferWithRelatedColors/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferAndFramebufferWithRelatedColors/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsFramebufferWithCustomClearColor/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearsFramebufferWithCustomClearColor/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferWithCustomClearColor/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearsOffscreenBufferWithCustomClearColor/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsBothFramebufferAndOffscreenBufferWithDifferentClearColors/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearsBothFramebufferAndOffscreenBufferWithDifferentClearColors/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumberOfEnableContexts/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="twoDisplaysAndTwoOffscreenBuffersWithContentCauseCorrectNumberOfEnableContexts/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt_MultipleDisplaysAndBuffers/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_clearsOffscreenBufferIfThereIsSceneAssignedToIt_MultipleDisplaysAndBuffers/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenBufferAndRemapped/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="sceneGetsAssignedToFramebufferIfPreviouslyAssignedToOffscreenBufferAndRemapped/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersScenesInOrderAccordingToLocalOrderWithinDisplayBuffer/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="confidence_assignsSceneToOffscreenBufferAndReassignsToFramebuffer/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidence_assignsSceneToOffscreenBufferAndReassignsToFramebuffer/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="returnsInvalidDisplayWhenQueryingLocationOfUnmappedScene/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="returnsInvalidDisplayWhenQueryingLocationOfUnmappedScene/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotRenderAMappedScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotRenderAMappedScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersMappedAndShownScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersMappedAndShownScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenes/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenes/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesWithAscendingRenderOrder/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesWithAscendingRenderOrder/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesWithDescendingRenderOrder/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesWithDescendingRenderOrder/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesEachADifferentDisplay/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersTwoMappedAndShownScenesEachADifferentDisplay/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotRenderSceneThatWasNotMapped/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotRenderSceneThatWasNotMapped/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotRenderUnmappedScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotRenderUnmappedScene/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOnly/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="remappingAndReshowingSceneResultsInRenderingOnAnotherDisplayOnly/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMapping/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_mapAndShowTwoScenesOnTwoDisplaysAndSwapTheirMapping/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="skipsFrameIfDisplayControllerCanNotRenderNewFrame/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="skipsFrameIfDisplayControllerCanNotRenderNewFrame/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="canTakeASingleScreenshot/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="canTakeASingleScreenshot/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="canTakeMultipleScreenshotsForMultipleDisplays/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="canTakeMultipleScreenshotsForMultipleDisplays/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="failsToCreateScreenshot/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="failsToCreateScreenshot/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="willIgnoreScreenshotIfDisplayIsDestroyedAtTheSameTime/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willIgnoreScreenshotIfDisplayIsDestroyedAtTheSameTime/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="marksRenderOncePassesAsRenderedAfterRenderingScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="marksRenderOncePassesAsRenderedAfterRenderingScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotClearAndRerenderIfNoChangeToScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotClearAndRerenderIfNoChangeToScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotSkipClearAndRerenderIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotClearAndRerenderOffscreenBufferIfNoChangeToScene/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotSkipClearAndRerenderOffscreenBufferIfNoChangeToSceneButSkippingUnmodifiedBuffersDisabled/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderIfSceneMarkedAsChanged/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndRerenderIfSceneMarkedAsChanged/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndRerenderOffscreenBufferIfSceneMarkedAsChanged/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssignedFromOneToTheOther/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderBothFramebufferAndOffscreenBufferIfSceneAssignedFromOneToTheOther/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndRerenderBufferIfSceneHidden/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderBufferIfSceneHidden/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndRerenderBufferIfClearColorChanged/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderBufferIfClearColorChanged/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColorChanges/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndRerenderBothFramebufferAndOffscreenBufferIfOBClearColorChanges/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndSwapInterruptibleOBOnlyOnceIfNoMoreShownScenes/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="clearAndSwapInterruptibleOBOnlyOnceIfNoMoreMappedScenes/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rerendersFramebufferIfWarpingDataChanged/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rerendersFramebufferIfWarpingDataChanged/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersScenesToFBAndOBWithNoInterruption/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersScenesToFBAndOBWithNoInterruption/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotSwapOffscreenBufferIfRenderingIntoItInterrupted/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfterFinishing/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotClearAndPassesPreviousStateWhenInterruptedAndSwapsAfterFinishing/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="rendersScenesToFBEvenIfOBInterrupted/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="rendersScenesToFBEvenIfOBInterrupted/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="alwaysRendersScenesToFBWhenModifiedEvenIfOBInterrupted/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotSkipFramesTillAllInterruptionsFinishedAndRendered/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotSkipFramesTillAllInterruptionsFinishedAndRendered/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes_FirstSceneNeverInterrupted/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleScenes_FirstSceneNeverInterrupted/1" value_param="true" status="run" time="0" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffers/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffers/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffersAndScenes/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleOffscreenBuffersAndScenes/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplays/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplays/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysMultipleOBMulitpleScenes/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysMultipleOBMulitpleScenes/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysWithNormalOBAndInterruptibleOB/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="interruptingEveryFrameGetsToAllRenderedState_withMultipleDisplaysWithNormalOBAndInterruptibleOB/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInterrupted/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneInterrupted/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAnotherInterruptibleOBInterrupted/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="willRerenderSceneThatWasRenderedAndModifiedWhileOtherSceneOnAnotherInterruptibleOBInterrupted/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithinBudget/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="willRenderAllScenesFromAllDisplaysAndBuffersInOneFrameIfWithinBudget/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAreModifiedAtDifferentStatesOfInterruptionsAndExpectedToBeReRendered/0" value_param="false" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="confidenceTest_combinationOfMultipleScenesAndOBsWhereScenesAreModifiedAtDifferentStatesOfInterruptionsAndExpectedToBeReRendered/1" value_param="true" status="run" time="0.002" classname="ARenderer" />
+    <testcase name="canMapSceneWhileThereIsInterruption/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="canMapSceneWhileThereIsInterruption/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="doesNotReportSceneIfNotRenderedToExpirationMonitor/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="doesNotReportSceneIfNotRenderedToExpirationMonitor/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="reportsSceneAsRenderedToExpirationMonitor/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="reportsSceneAsRenderedToExpirationMonitor/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+    <testcase name="reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRenderedAndNotDuringInterruption/0" value_param="false" status="run" time="0" classname="ARenderer" />
+    <testcase name="reportsSceneAsRenderedToExpirationMonitorOnlyAfterFullyRenderedAndNotDuringInterruption/1" value_param="true" status="run" time="0.001" classname="ARenderer" />
+  </testsuite>
+</testsuites>

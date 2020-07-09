@@ -1,0 +1,5 @@
+Orignal Filename,Mutant Name,Mutation Operator,Start Line#,Start Col#,Target Token,Mutated Token
+/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/StringUtils.cpp,StringUtils.MUT1.cpp,ROR,36,17,nEnd < 0,1
+/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/StringUtils.cpp,StringUtils.MUT2.cpp,SBR,38,17,nEnd = string.size(),
+/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/StringUtils.cpp,StringUtils.MUT3.cpp,SBR,41,13,if (nEnd > nStart),
+/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/StringUtils.cpp,StringUtils.MUT4.cpp,ROR,49,20,nStart < strLength,0

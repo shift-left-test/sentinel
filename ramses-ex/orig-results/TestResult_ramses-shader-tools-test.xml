@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="43" failures="0" disabled="0" errors="0" timestamp="2020-04-28T17:30:39" time="0.027" name="AllTests">
+  <testsuite name="AnEffectResourceCreator" tests="5" failures="0" disabled="0" errors="0" time="0.013">
+    <testcase name="canCreateEffectResourceFromGlslShaders" status="run" time="0.005" classname="AnEffectResourceCreator" />
+    <testcase name="canCreateEffectWithCorrectNameWhenEffectNameIsNotProvided" status="run" time="0.002" classname="AnEffectResourceCreator" />
+    <testcase name="reportsErrorWhenCreatingFromInvalidShader" status="run" time="0.002" classname="AnEffectResourceCreator" />
+    <testcase name="canWriteEffectIdWithHighLevelResourceHash" status="run" time="0.002" classname="AnEffectResourceCreator" />
+    <testcase name="canWriteEffectIdWithLowLevelResourceHash" status="run" time="0.002" classname="AnEffectResourceCreator" />
+  </testsuite>
+  <testsuite name="ARamsesEffectFromGLSLShaderArguments" tests="16" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithShortName" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithFullName" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="canGenerateEffectNameCorrectlyWhenEffectNameIsNotProvided" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputVertexShaderIsNotAvailable" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputFragmentShaderIsNotAvailable" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputEffectConfigIsNotAvailable" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenOutputResourceFileIsNotAvailable" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputVertexShaderDoesNotExist" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputFragmentShaderDoesNotExist" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputEffectConfigDoesNotExist" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWheInputEffectConfigFileIsNotValid" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="canParseEffectIdShortName" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="canParseEffectIdLongName" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="canParseEffectIdTypeRenderer" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="effectIdNameParseFailsWhenIdTypeMissing" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+    <testcase name="effectIdTypeParseFailsForUnknownType" status="run" time="0" classname="ARamsesEffectFromGLSLShaderArguments" />
+  </testsuite>
+  <testsuite name="ARamsesShaderFromGLSLShaderArguments" tests="16" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithShortName" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithFullName" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputVertexShaderIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputFragmentShaderIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputEffectConfigIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenOutputVertexShaderIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenOutputFragmentShaderIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenOutputHashIsNotAvailable" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputVertexShaderDoesNotExist" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputFragmentShaderDoesNotExist" status="run" time="0.001" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenInputEffectConfigDoesNotExist" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWheInputEffectConfigFileIsNotValid" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenEffectIdTypeMissing" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="reportsErrorWhenEffectIdTypeUnknown" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="supportsNecessaryEffectIdTypes" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+    <testcase name="hasDefaultShaderName" status="run" time="0" classname="ARamsesShaderFromGLSLShaderArguments" />
+  </testsuite>
+  <testsuite name="AShaderConverter" tests="6" failures="0" disabled="0" errors="0" time="0.013">
+    <testcase name="canConvertShaderFromGlslShaderWithCompilerDefines" status="run" time="0.002" classname="AShaderConverter" />
+    <testcase name="canConvertShaderFromGlslShaderWithoutCompilerDefines" status="run" time="0.003" classname="AShaderConverter" />
+    <testcase name="reportsErrorWhenConvertingInvalidShader" status="run" time="0.001" classname="AShaderConverter" />
+    <testcase name="generateHashFileWithLowLevelHash" status="run" time="0.002" classname="AShaderConverter" />
+    <testcase name="generateHashFileWithHighLevelHash" status="run" time="0.003" classname="AShaderConverter" />
+    <testcase name="generateHashFileWithHighLevelHashWithCorrectEffectName" status="run" time="0.002" classname="AShaderConverter" />
+  </testsuite>
+</testsuites>

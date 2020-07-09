@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="11" failures="0" disabled="0" errors="0" timestamp="2020-04-28T17:30:39" time="0.01" name="AllTests">
+  <testsuite name="AFilePathsConfig" tests="4" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="canLoadCorrectlyWhenAllLinesAreValid" status="run" time="0.001" classname="AFilePathsConfig" />
+    <testcase name="isFineToLoadValidFiles" status="run" time="0" classname="AFilePathsConfig" />
+    <testcase name="reportsErrorWhenLoadANonExistConfig" status="run" time="0" classname="AFilePathsConfig" />
+    <testcase name="reportsErrorWhenLoadAConfigContainingInvalidFilePath" status="run" time="0" classname="AFilePathsConfig" />
+  </testsuite>
+  <testsuite name="ARamsesResourcePackerArguments" tests="6" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithShortName" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+    <testcase name="canLoadCorrectlyWhenAllParametersAreProvidedWithFullName" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+    <testcase name="reportsErrorWhenInputResourceFilesConfigIsNotAvailable" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+    <testcase name="reportsErrorWhenOutputResourceFileIsNotAvailable" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+    <testcase name="reportsErrorWhenInputResourceFilesConfigDoesNotExist" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+    <testcase name="reportsErrorWhenInputResourceFilesConfigIsNotValid" status="run" time="0" classname="ARamsesResourcePackerArguments" />
+  </testsuite>
+  <testsuite name="AResourcePacker" tests="1" failures="0" disabled="0" errors="0" time="0.009">
+    <testcase name="canPackMultipleResourceFilesCorrectly" status="run" time="0.009" classname="AResourcePacker" />
+  </testsuite>
+</testsuites>
