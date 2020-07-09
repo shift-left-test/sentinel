@@ -1,6 +1,0 @@
-Orignal Filename,Mutant Name,Mutation Operator,Start Line#,Start Col#,Target Token,Mutated Token
-/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/CommandLineParser.cpp,CommandLineParser.MUT1.cpp,ROR,21,76,==,>=
-/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/CommandLineParser.cpp,CommandLineParser.MUT2.cpp,SBR,24,17,cmdLineArg.setName(startsWithDash ? StringUtils::Trim(argv[index]) : argv[index]),
-/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/CommandLineParser.cpp,CommandLineParser.MUT3.cpp,LCR,37,25,doesNotStartWithDash || isNumber,0
-/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/CommandLineParser.cpp,CommandLineParser.MUT4.cpp,SBR,39,25,cmdLineArg.setValue(nextElement),
-/home/ssd/locphan/llvm-project/clang/tools/lemon/temp/ramses/framework/Core/Utils/src/CommandLineParser.cpp,CommandLineParser.MUT5.cpp,UOI,40,25,index,((index)--)
