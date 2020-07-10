@@ -188,16 +188,7 @@ protected:
 
     // database_file << "Orignal Filename,Mutant Name,Mutation Operator,";
     // database_file << "Start Line#,Start Col#,Target Token,Mutated Token" << endl;
-    database_file << "{" << endl;
-    database_file << "  \"filename\":\"" << g_config->getInputFilenameWithPath() << "\"," << endl;
-    database_file << "  \"mutants\": [\n    {" << endl;
-    database_file.close();
-
     g_database->generateToolOutput();
-
-    ofstream database_file(database_filename.data(), ios::trunc);
-    database_file << "  ]\n}" << endl;
-    database_file.close();
     cout << "=======================================\n";
   }
 

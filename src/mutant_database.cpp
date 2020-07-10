@@ -18,28 +18,28 @@ using namespace std;
 
 void formatToken(string &token) {
   // === output formatting ===
-  // If token contains comma or newline character, database will not look good.
-  // Cut the token at the first comma or newline character found.
-  // Can disable later if requested.
-  // cout << "token is " << token << endl;
-  size_t pos_comma = token.find(",");
-  size_t pos_newline = token.find("\n");
-  size_t len = 0;
+  // if the token contains comma or newline chracter then the token need to be 
+  // enclosed in double quotes.
+  bool contain_special_character = false;
+  string temp = token;
+  token = "";
 
-  if (pos_comma == string::npos && pos_newline != string::npos)
-    len = pos_newline;
-  else if (pos_comma != string::npos && pos_newline == string::npos)
-    len = pos_comma;
-  else if (pos_comma != string::npos && pos_newline != string::npos)
-    len = min(pos_newline, pos_comma);
-  
-  if (len != 0) {
-    token = token.substr(0, len);
-    if (token[0] == '\"')
-      token.append("\"");
+  for (auto c: temp) {
+    if (c == ',' || c == '\n')
+      contain_special_character = true;
+    
+    // double quotes themselves in token have to be escaped by adding another 
+    // double quote next to them.
+    if (c == '\"') {
+      token += "\"\"";
+      continue;
+    }
+
+    token += c;
   }
-  // cout << "token now is " << token << endl;
-  // ======
+
+  if (contain_special_character)
+    token = "\"" + token + "\"";
 }
 
 MutantDatabase::MutantDatabase(
@@ -117,7 +117,7 @@ void MutantDatabase::addMutantEntry(
   }
 }
 
-/*void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
+void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
   // Open mutation database file in APPEND mode
   ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app);
 
@@ -125,37 +125,23 @@ void MutantDatabase::addMutantEntry(
   mutant_db_file << config->getInputFilenameWithPath() << ","; 
 
   // write mutant file name
-  mutant_db_file << getNextMutantFilename() << ","; 
+  // string mutant_filename{config->getOutputDir()};
+  string mutant_filename{""};
+  mutant_filename += getNextMutantFilename();
+  mutant_db_file << mutant_filename << ","; 
 
   // write name of operator  
   mutant_db_file << entry.getOperatorName() << ",";
 
-  // write information about mutation location
-  mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
-  mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
+  // write information about start mutation location
+  SourceLocation start_loc = src_mgr.getExpansionLoc(entry.getStartLocation());
+  mutant_db_file << getLineNumber(src_mgr, start_loc) << ",";
+  mutant_db_file << getColumnNumber(src_mgr, start_loc) << ",";
 
-  string targeted_token = entry.getTargetedToken();
-  formatToken(targeted_token);
-  mutant_db_file << targeted_token << ",";
-
-  string mutated_token = entry.getMutatedToken();
-  formatToken(mutated_token);
-  mutant_db_file << mutated_token << endl;
-
-  // close database file
-  mutant_db_file.close(); 
-}*/
-
-void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
-  // Open mutation database file in APPEND mode
-  ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app); 
-
-  // write name of operator  
-  mutant_db_file << entry.getOperatorName() << ",";
-
-  // write information about mutation location
-  mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
-  mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
+  // write information about end mutation location
+  SourceLocation end_loc = src_mgr.getExpansionLoc(entry.getEndLocation());
+  mutant_db_file << getLineNumber(src_mgr, end_loc) << ",";
+  mutant_db_file << getColumnNumber(src_mgr, end_loc) << ",";
 
   string targeted_token = entry.getTargetedToken();
   formatToken(targeted_token);
@@ -168,6 +154,29 @@ void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
   // close database file
   mutant_db_file.close(); 
 }
+
+// void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
+//   // Open mutation database file in APPEND mode
+//   ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app); 
+
+//   // write name of operator  
+//   mutant_db_file << entry.getOperatorName() << ",";
+
+//   // write information about mutation location
+//   mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
+//   mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
+
+//   string targeted_token = entry.getTargetedToken();
+//   formatToken(targeted_token);
+//   mutant_db_file << targeted_token << ",";
+
+//   string mutated_token = entry.getMutatedToken();
+//   formatToken(mutated_token);
+//   mutant_db_file << mutated_token << endl;
+
+//   // close database file
+//   mutant_db_file.close(); 
+// }
 
 void MutantDatabase::generateMutantSrcFile(const MutantEntry &entry) {
   Rewriter rewriter;
@@ -230,7 +239,7 @@ void MutantDatabase::generateToolOutput() {
     srand(time(NULL));  
     int random_mutant_idx = rand() % line_map_iter.second.size();
     writeMutantToDatabaseFile(line_map_iter.second[random_mutant_idx]);
-    generateMutantSrcFile(line_map_iter.second[random_mutant_idx]);
+    // generateMutantSrcFile(line_map_iter.second[random_mutant_idx]);
     incrementNextMutantfileId();
     mutant_count += 1;
   }
