@@ -28,7 +28,7 @@ Configuration::Configuration(
     exit(1);
   }
   mutant_database_filename += this->input_filename.substr(0, last_dot);
-  mutant_database_filename += "_mut_db.csv";
+  mutant_database_filename += "_mut_db.json";
 
   cout << "input_filename_withpath: " << input_filename_withpath << endl;
   cout << "input_filename: " << this->input_filename << endl;

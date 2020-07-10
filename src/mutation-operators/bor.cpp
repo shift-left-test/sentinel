@@ -7,7 +7,6 @@ using namespace std;
 using namespace clang;
 
 set<string> bitwise_operators{"|", "&", "^"};
-set<string> bitwise_assignments{"|=", "&=", "^="};
 
 bool BOR::canMutate(
     clang::Stmt *s, Configuration *config, CompilerInstance &comp_inst) {
@@ -35,8 +34,7 @@ bool BOR::canMutate(
   //     getColumnNumber(src_mgr, start_loc) + binary_operator.length());
   
   // Return true if the binary operator used is a logical operator.
-  return bitwise_operators.find(binary_operator) != bitwise_operators.end() || 
-         bitwise_assignments.find(binary_operator) != bitwise_assignments.end();
+  return bitwise_operators.find(binary_operator) != bitwise_operators.end();
 
   // StmtContext &stmt_context = context->getStmtContext();
   // return context->IsRangeInMutationRange(SourceRange(start_loc, end_loc)) &&
@@ -54,22 +52,6 @@ void BOR::mutate(clang::Stmt *s, MutantDatabase *database) {
       database->getCompilerInstance().getSourceManager(),
       getPreciseLocation(
           bo->getOperatorLoc(), database->getCompilerInstance(), true));
-
-  string token{bo->getOpcodeStr()};
-  if (token.length() > 1)
-    token = token.substr(0, token.length()-1);
-  string mutated_token{""};
-  SourceManager &src_mgr = database->getCompilerInstance().getSourceManager();
-  SourceLocation start_loc = bo->getOperatorLoc();
-  SourceLocation end_loc = src_mgr.translateLineCol(
-      src_mgr.getMainFileID(),
-      getLineNumber(src_mgr, start_loc),
-      getColumnNumber(src_mgr, start_loc) + token.length());  
-  database->addMutantTarget(
-        name, start_loc, end_loc, token, mutated_token, target_line);
-
-  if (bitwise_assignments.find(token) != bitwise_assignments.end())
-    return;
 
   mutateOperator(bo, database, target_line);
   mutateWholeExpr(bo, database, target_line);

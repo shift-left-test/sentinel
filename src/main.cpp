@@ -77,13 +77,6 @@ static llvm::cl::opt<bool> debug_on(
     llvm::cl::cat(LemonCategory)
 );
 
-static llvm::cl::opt<bool> do_generate_mutants(
-    "do_generate_mutants",
-    llvm::cl::desc("Trigger mutant generation."),
-    llvm::cl::Optional,
-    llvm::cl::cat(LemonCategory)
-);
-
 string g_output_dir = "./";
 FilenameToLineMap g_filename_to_line_map;
 vector<Mutators> g_selected_mutators;
@@ -117,7 +110,7 @@ void ParseOptionO()
 void ParseMutatorList()
 {
   if (mutator_list.size() == 0) {
-    g_selected_mutators = {aor, bor, lcr, ror, sbr, sor, uoi, uor};
+    g_selected_mutators = {aor, bor, lcr, ror, sbr, sor, uoi};
     return;
   }
 
@@ -183,32 +176,28 @@ protected:
     ASTFrontendAction::ExecuteAction();
     cout << "Mutation Complete!\n";
 
-    if (do_generate_mutants) {
-      string database_filename = g_config->getMutationDbFilename();
-      checkDatabaseFileExists();
+    string database_filename = g_config->getMutationDbFilename();
+    checkDatabaseFileExists();
 
-      // Open the file with mode TRUNC to create the file if not existed. 
-      ofstream database_file(database_filename.data(), ios::trunc);
-      if (!database_file.is_open()) {
-        std::cerr << "Failed to open file : " << strerror(errno) << std::endl;
-        exit(1);
-      }
+    // Open the file with mode TRUNC to create the file if not existed. 
+    ofstream database_file(database_filename.data(), ios::trunc);
+    if (!database_file.is_open()) {
+      std::cerr << "Failed to open file : " << strerror(errno) << std::endl;
+      exit(1);
+    }
 
-      // database_file << "Orignal Filename,Mutant Name,Mutation Operator,";
-      // database_file << "Start Line#,Start Col#,Target Token,Mutated Token" << endl;
-      // database_file << "{" << endl;
-      // database_file << "  \"filename\":\"" << g_config->getInputFilenameWithPath() << "\"," << endl;
-      // database_file << "  \"mutants\": [\n    {" << endl;
-      database_file.close();
+    // database_file << "Orignal Filename,Mutant Name,Mutation Operator,";
+    // database_file << "Start Line#,Start Col#,Target Token,Mutated Token" << endl;
+    database_file << "{" << endl;
+    database_file << "  \"filename\":\"" << g_config->getInputFilenameWithPath() << "\"," << endl;
+    database_file << "  \"mutants\": [\n    {" << endl;
+    database_file.close();
 
-      g_database->generateToolOutput();
-    }    
-    
-    g_database->writeMutantTargetsToFile();
+    g_database->generateToolOutput();
 
-    // ofstream database_file(database_filename.data(), ios::trunc);
-    // database_file << "  ]\n}" << endl;
-    // database_file.close();
+    ofstream database_file(database_filename.data(), ios::trunc);
+    database_file << "  ]\n}" << endl;
+    database_file.close();
     cout << "=======================================\n";
   }
 

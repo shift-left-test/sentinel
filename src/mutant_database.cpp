@@ -99,15 +99,13 @@ void MutantDatabase::addMutantEntry(
   auto line_map_iter = mutant_entry_table.find(target_line);
 
   // if this is the first mutant on this line to be recorded,
-  // add new entries.
+  // add new entries all the way down 3 levels.
   if (line_map_iter == mutant_entry_table.end()) {
     mutant_entry_table[target_line] = MutantEntryList();
     mutant_entry_table[target_line].push_back(new_entry);
-
-    /*mutant_target_table[target_line] = MutantEntryList();
-    mutant_target_table[target_line].push_back(new_entry);*/
   }
-  // Otherwise, check if there are any same mutant existed before adding.
+  // if this is not the first mutant on this line, 
+  // check if there are any same mutant existed before adding.
   else {
     for (auto entry: mutant_entry_table[target_line]) {
       if (new_entry == entry) {
@@ -116,124 +114,56 @@ void MutantDatabase::addMutantEntry(
     }
 
     mutant_entry_table[target_line].push_back(new_entry);
-
-    // This part is used to generate output file containing mutant target info.
-    // Mutants with the same targeted token, mutation operator, but different
-    // mutated token will be filtered.
-    // The output file required distinct distinct targeted token for each
-    // mutation operator.
-    /*for (auto entry: mutant_target_table[target_line]) {
-      if (new_entry.getStartLocation() == entry.getStartLocation() &&
-          new_entry.getTargetedToken().compare(entry.getTargetedToken()) == 0 &&
-          new_entry.getOperatorName().compare(entry.getOperatorName()) == 0)
-        return;
-    }
-
-    mutant_target_table[target_line].push_back(new_entry);*/
   }
 }
 
-void MutantDatabase::addMutantTarget(
-    std::string operator_name, clang::SourceLocation start_loc,
-    clang::SourceLocation end_loc, std::string targeted_token,
-    std::string mutated_token, int target_line) {
-  // This mutant is not in the targeted file.
-  if (src_mgr.getMainFileID().getHashValue() != src_mgr.getFileID(start_loc).getHashValue() ||
-      src_mgr.getMainFileID().getHashValue() != src_mgr.getFileID(end_loc).getHashValue())
-    return;
-
-  MutantEntry new_entry(
-      operator_name, targeted_token, mutated_token, start_loc, end_loc);    
-
-  auto line_map_iter = mutant_target_table.find(target_line);
-
-  // if this is the first mutant on this line to be recorded,
-  // add new entries.
-  if (line_map_iter == mutant_target_table.end()) {
-    mutant_target_table[target_line] = MutantEntryList();
-    mutant_target_table[target_line].push_back(new_entry);
-  }
-  // Otherwise, check if there are any same mutant existed before adding.
-  else {
-    // This part is used to generate output file containing mutant target info.
-    // Mutants with the same targeted token, mutation operator, but different
-    // mutated token will be filtered.
-    // The output file required distinct distinct targeted token for each
-    // mutation operator.
-    for (auto entry: mutant_target_table[target_line]) {
-      if (new_entry.getStartLocation() == entry.getStartLocation() &&
-          new_entry.getTargetedToken().compare(entry.getTargetedToken()) == 0 &&
-          new_entry.getOperatorName().compare(entry.getOperatorName()) == 0)
-        return;
-    }
-
-    mutant_target_table[target_line].push_back(new_entry);
-  }
-}
-
-void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
+/*void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
   // Open mutation database file in APPEND mode
   ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app);
 
-  // write name of operator  
-  mutant_db_file << entry.getOperatorName() << ", ";
-
-  // write targeted token
-  string targeted_token = entry.getTargetedToken();
-  formatToken(targeted_token);
-  mutant_db_file << targeted_token << ", ";
-
   // write orignal target filename
-  mutant_db_file << config->getInputFilenameWithPath() << ", "; 
+  mutant_db_file << config->getInputFilenameWithPath() << ","; 
 
   // write mutant file name
-  mutant_db_file << getNextMutantFilename() << ", "; 
+  mutant_db_file << getNextMutantFilename() << ","; 
+
+  // write name of operator  
+  mutant_db_file << entry.getOperatorName() << ",";
 
   // write information about mutation location
   mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
   mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
 
-  // write mutated token
+  string targeted_token = entry.getTargetedToken();
+  formatToken(targeted_token);
+  mutant_db_file << targeted_token << ",";
+
   string mutated_token = entry.getMutatedToken();
   formatToken(mutated_token);
-  mutant_db_file << mutated_token;
-  mutant_db_file << endl;
+  mutant_db_file << mutated_token << endl;
 
   // close database file
   mutant_db_file.close(); 
-}
+}*/
 
-void MutantDatabase::writeMutantTargetsToFile() {
+void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
   // Open mutation database file in APPEND mode
-  ofstream mutant_db_file(config->getOutputDir()+"/mutants.csv", ios::app);
+  ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app); 
 
-  for (auto line_map_iter: mutant_target_table) {
-    for (auto entry: line_map_iter.second) {
-      // write name of operator  
-      mutant_db_file << entry.getOperatorName() << ",";
+  // write name of operator  
+  mutant_db_file << entry.getOperatorName() << ",";
 
-      // write targeted token
-      string targeted_token = entry.getTargetedToken();
-      formatToken(targeted_token);
-      mutant_db_file << targeted_token << ",";
+  // write information about mutation location
+  mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
+  mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
 
-      // write orignal target filename
-      mutant_db_file << config->getInputFilenameWithPath() << ","; 
+  string targeted_token = entry.getTargetedToken();
+  formatToken(targeted_token);
+  mutant_db_file << targeted_token << ",";
 
-      // write mutant file name
-      // mutant_db_file << getNextMutantFilename() << ","; 
-
-      // write information about mutation location
-      mutant_db_file << getLineNumber(src_mgr, entry.getStartLocation()) << ",";
-      mutant_db_file << getColumnNumber(src_mgr, entry.getStartLocation()) << ",";
-
-      // write mutated token
-      // string mutated_token = entry.getMutatedToken();
-      // formatToken(mutated_token);
-      // mutant_db_file << mutated_token;
-      mutant_db_file << endl;
-    }
-  }
+  string mutated_token = entry.getMutatedToken();
+  formatToken(mutated_token);
+  mutant_db_file << mutated_token << endl;
 
   // close database file
   mutant_db_file.close(); 
