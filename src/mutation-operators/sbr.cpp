@@ -1,8 +1,9 @@
 #include "clang/AST/Expr.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ASTTypeTraits.h"
-//#include "clang/AST/ParentMapContext.h"
-
+#if LLVM_VERSION_MAJOR == 11
+#include "clang/AST/ParentMapContext.h"
+#endif
 #include "sbr.h"
 #include "lemon_utility.h"
 
