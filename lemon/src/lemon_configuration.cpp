@@ -17,7 +17,10 @@ Configuration::Configuration(
     debug_on(debug_opt), selected_mutators(mutators) {
   // Extract input filename only (without leading path)
   this->input_filename = getFilenameWithoutLeadingPath(input_filename_withpath);
-  targeted_lines = targetline_map->operator[](this->input_filename);
+
+  // Get specified target lines (if any).
+  if (targetline_map->find(this->input_filename) != targetline_map->end())
+    targeted_lines = targetline_map->operator[](this->input_filename);
 
   // Generate mutant database filename.
   mutant_database_filename = directory;
@@ -64,8 +67,9 @@ std::vector<Mutators> Configuration::getSelectedMutators() {
 // }
 
 bool Configuration::isTargetLine(int line) {
-  return std::find(targeted_lines.begin(), targeted_lines.end(), line) != \
-         targeted_lines.end();
+  return targeted_lines.size() == 0 || 
+         std::find(targeted_lines.begin(), targeted_lines.end(), line) != \
+            targeted_lines.end();
 }
 
 bool Configuration::debugIsOn() {

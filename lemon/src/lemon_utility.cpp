@@ -195,3 +195,22 @@ std::vector<int> splitStringToIntVector(std::string s, std::string delim) {
   ret.push_back(stoi(s));
   return ret;
 }
+
+void SplitStringIntoVector(string target, vector<string> &out_vector, 
+                           const string delimiter)
+{
+  size_t pos = 0;
+  string token;
+
+  while ((pos = target.find(delimiter)) != string::npos) {
+    token = target.substr(0, pos);
+    out_vector.push_back(token);
+    target.erase(0, pos + delimiter.length());
+  }
+  out_vector.push_back(target);
+}
+
+bool IsAllDigits(const string s)
+{
+  return !s.empty() && s.find_first_not_of("0123456789") == string::npos;
+}

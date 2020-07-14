@@ -62,10 +62,10 @@ static llvm::cl::list<Mutators> mutator_list(
   llvm::cl::cat(LemonCategory)
 );
 
-static llvm::cl::opt<string> target_filename(
+static llvm::cl::list<string> targets(
     "target",
-    llvm::cl::desc("Specify file contain targeted lines of each input file."),
-    llvm::cl::value_desc("filename"),
+    llvm::cl::desc("Specify target line(s) for a target file."),
+    llvm::cl::value_desc("filename:line1[,line2]"),
     llvm::cl::Optional,
     llvm::cl::cat(LemonCategory)
 );
@@ -118,32 +118,36 @@ void ParseMutatorList()
     g_selected_mutators.push_back(mutator_list[i]);
 }
 
-void ParseTargetFilename()
+void ParseTargets()
 {
-  if (target_filename.empty()) return;
-  if (!fileExists(target_filename)) {
-    cerr << "Invalid filename for -target: " << select_output_dir << endl;
-    exit(1);
-  }
+  if (targets.empty())
+    return;
 
-  // Save data from target_file to g_filename_to_line_map
-  ifstream target_file(target_filename);
-  string line;
+  for (auto e: targets)
+  {
+    vector<string> temp;
+    SplitStringIntoVector(e, temp, string(":"));
 
-  while (getline(target_file, line)) {
-    rtrim(line);
-    if (line.length() == 0) continue;
-
-    size_t colon_loc = line.find_last_of(":");
-    if (colon_loc == string::npos) {
-      cerr << "Target file format is wrong" << endl;
+    if (temp.size() < 2)
+    {
+      cerr << "Target line not specified properly: " << e << endl;
+      cerr << "Please check --target option usage with lemon --help\n";
       exit(1);
     }
 
-    string filename = getFilenameWithoutLeadingPath(line.substr(0, colon_loc));
-    cout << "Target lines for " << filename << ": ";
-    g_filename_to_line_map[filename] = splitStringToIntVector(line.substr(colon_loc+1), ",");
+    string filename = getFilenameWithoutLeadingPath(temp[0]);
+    cout << "Specified target lines for " << filename << ": ";
+    g_filename_to_line_map[filename] = splitStringToIntVector(temp[1], ",");
   }
+
+  // DEBUGGING
+  // for (auto e: g_rs_list)
+  // {
+  //   cout << e.first << " has range start\n";
+  //   for (auto d: e.second)
+  //     cout << d << " ";
+  //   cout << endl;
+  // }
 }
 
 void ParseDebugOption()
@@ -224,7 +228,7 @@ int main(int argc, const char **argv) {
 
   ParseMutatorList();
   ParseOptionO();
-  ParseTargetFilename();
+  ParseTargets();
   ParseDebugOption();
 
   for (auto file: op.getSourcePathList()) {

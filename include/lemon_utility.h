@@ -41,6 +41,10 @@ bool isPointerType(clang::Expr *e);
 bool isArrayType(clang::Expr *e);
 std::string getFilenameWithoutLeadingPath(std::string filename);
 std::vector<int> splitStringToIntVector(std::string s, std::string delim);
+void SplitStringIntoVector(std::string target, 
+                           std::vector<std::string> &out_vector, 
+                           const std::string delimiter);
+bool IsAllDigits(const std::string s);
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
