@@ -44,6 +44,14 @@ static llvm::cl::opt<string> select_output_dir(
     llvm::cl::cat(LemonCategory)
 );
 
+static llvm::cl::opt<int> limit_mutant_num(
+    "maxmutant",
+    llvm::cl::desc("Specify maximum number of generated mutants."),
+    llvm::cl::value_desc("number"),
+    llvm::cl::Optional,
+    llvm::cl::cat(LemonCategory)
+);
+
 // static llvm::cl::list<string> OptionM(
 //     "m", llvm::cl::desc("Specify mutant operator name to use"), 
 //     llvm::cl::value_desc("mutator_name"),
@@ -164,7 +172,8 @@ public:
     // CI.getDiagnostics().setClient(new IgnoringDiagConsumer());
 
     g_config = new Configuration(InFile.str(), &g_filename_to_line_map,
-                                 debug_on, g_selected_mutators, g_output_dir);
+                                 debug_on, g_selected_mutators, 
+                                 limit_mutant_num, g_output_dir);
     g_database = new MutantDatabase(CI, g_config);
     cout << "---------------------------------------\n";
 

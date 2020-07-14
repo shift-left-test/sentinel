@@ -7,14 +7,14 @@ using namespace std;
 
 Configuration::Configuration()
   : input_filename_withpath(""), input_filename(""), output_directory("/"), 
-    debug_on(false) {
+    debug_on(false), limit_num_of_mutant(0) {
 }
 
 Configuration::Configuration(
     std::string input_filename, FilenameToLineMap *targetline_map,
-    bool debug_opt,  vector<Mutators> mutators, std::string directory)
+    bool debug_opt,  vector<Mutators> mutators, int limit, std::string directory)
   : input_filename_withpath(input_filename), output_directory(directory),
-    debug_on(debug_opt), selected_mutators(mutators) {
+    debug_on(debug_opt), selected_mutators(mutators), limit_num_of_mutant(limit) {
   // Extract input filename only (without leading path)
   this->input_filename = getFilenameWithoutLeadingPath(input_filename_withpath);
 
@@ -74,6 +74,10 @@ bool Configuration::isTargetLine(int line) {
 
 bool Configuration::debugIsOn() {
   return debug_on;
+}
+
+int Configuration::getLimitNumOfMutants() {
+  return limit_num_of_mutant;
 }
 
 /*std::pair<bool, vector<int>> Configuration::containTargetLine(int start, int end) {

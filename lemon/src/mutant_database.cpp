@@ -228,7 +228,7 @@ void MutantDatabase::generateMutantSrcFile(const MutantEntry &entry) {
 // generate mutant file and write to database file
 void MutantDatabase::generateToolOutput() {
   int mutant_count = 0;
-
+  int limit = config->getLimitNumOfMutants();
   // cout << "there are " << mutant_entry_table.size() << "target lines\n";
 
   for (auto line_map_iter: mutant_entry_table) {
@@ -242,6 +242,9 @@ void MutantDatabase::generateToolOutput() {
     generateMutantSrcFile(line_map_iter.second[random_mutant_idx]);
     incrementNextMutantfileId();
     mutant_count += 1;
+
+    if (limit > 0 && mutant_count >= limit)
+      break;
   }
 
   cout << "Number of mutants generated for " << config->getInputFilename();

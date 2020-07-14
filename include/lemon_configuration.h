@@ -20,7 +20,8 @@ public:
   
   Configuration(
       std::string input_filename, FilenameToLineMap *targetline_map,
-      bool debug_opt, std::vector<Mutators> mutators, std::string directory = "./");
+      bool debug_opt, std::vector<Mutators> mutators, int limit, 
+      std::string directory = "./");
 
   // Getters
   std::string getInputFilename();
@@ -32,7 +33,7 @@ public:
   bool isTargetLine(int line);
   bool debugIsOn();
   // std::pair<bool, std::vector<int>> containTargetLine(int start, int end);
-  // int getLimitNumOfMutants();
+  int getLimitNumOfMutants();
 
 private:
   std::string input_filename_withpath;
@@ -41,7 +42,7 @@ private:
   std::string output_directory;
   bool debug_on;
   std::vector<Mutators> selected_mutators;
-  // int limit_num_of_mutant;
+  int limit_num_of_mutant;
 
   // A map from each target file name to a list of changed lines (if available)
   // FilenameToLineMap file_to_targetlines_map;
