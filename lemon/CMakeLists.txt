@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-include_directories(include)
-include_directories(include/mutation-operators)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include/mutation-operators)
 
 if (NOT LLVM_CONFIG_BIN)
   set(LLVM_CONFIG_BIN "llvm-config")
