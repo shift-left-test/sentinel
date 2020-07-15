@@ -126,9 +126,9 @@ void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
 
   // write mutant file name
   // string mutant_filename{config->getOutputDir()};
-  string mutant_filename{""};
-  mutant_filename += getNextMutantFilename();
-  mutant_db_file << mutant_filename << ","; 
+  // string mutant_filename{""};
+  // mutant_filename += getNextMutantFilename();
+  // mutant_db_file << mutant_filename << ","; 
 
   // write name of operator  
   mutant_db_file << entry.getOperatorName() << ",";
