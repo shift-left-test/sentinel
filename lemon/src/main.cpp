@@ -88,6 +88,7 @@ static llvm::cl::opt<bool> debug_on(
 string g_output_dir = "./";
 FilenameToLineMap g_filename_to_line_map;
 vector<Mutators> g_selected_mutators;
+vector<string> g_target_files;
 
 Configuration *g_config;
 MutantDatabase *g_database;
@@ -126,23 +127,31 @@ void ParseMutatorList()
     g_selected_mutators.push_back(mutator_list[i]);
 }
 
-void ParseTargets()
+void ParseTargets(const vector<string> &targets)
 {
-  if (targets.empty())
-    return;
-
   for (auto e: targets)
   {
+    // If specified target does not contain colon (:), 
+    // user did not specified any specific lines to mutate --> mutate all lines.
+    // Push the filename directly into the list of targets g_target_files.
+    if (e.find(":") == string::npos) {
+      g_target_files.push_back(e);
+      continue;
+    }
+
+    // Otherwise, split filename and target lines.
+    // Store information into g_filename_to_line_map with filename as key.
     vector<string> temp;
     SplitStringIntoVector(e, temp, string(":"));
 
     if (temp.size() < 2)
     {
-      cerr << "Target line not specified properly: " << e << endl;
-      cerr << "Please check --target option usage with lemon --help\n";
+      cerr << "Target file not specified properly: " << e << endl;
+      cerr << "Proper usage: <filename>[:line1[,line2,...]]\n";
       exit(1);
     }
 
+    g_target_files.push_back(temp[0]);
     string filename = getFilenameWithoutLeadingPath(temp[0]);
     cout << "Specified target lines for " << filename << ": ";
     g_filename_to_line_map[filename] = splitStringToIntVector(temp[1], ",");
@@ -229,6 +238,7 @@ private:
       else 
         break;
     }
+
   }
 };
 
@@ -237,10 +247,10 @@ int main(int argc, const char **argv) {
 
   ParseMutatorList();
   ParseOptionO();
-  ParseTargets();
+  ParseTargets(op.getSourcePathList());
   ParseDebugOption();
 
-  for (auto file: op.getSourcePathList()) {
+  for (auto file: g_target_files) {
     if (op.getCompilations().getCompileCommands(file).size() > 1)
     {
       cout << file << " has more than 1 compile commands\n" << endl;
@@ -255,9 +265,11 @@ int main(int argc, const char **argv) {
       // getchar();
       continue;
     }
+
+    ClangTool Tool(op.getCompilations(), file);
+    // process command line option
+    Tool.run(newFrontendActionFactory<GenerateMutant>().get());
   }
 
-  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-  // process command line option
-  return Tool.run(newFrontendActionFactory<GenerateMutant>().get());
+  return 0;
 }

@@ -239,7 +239,7 @@ void MutantDatabase::generateToolOutput() {
     srand(time(NULL));  
     int random_mutant_idx = rand() % line_map_iter.second.size();
     writeMutantToDatabaseFile(line_map_iter.second[random_mutant_idx]);
-    generateMutantSrcFile(line_map_iter.second[random_mutant_idx]);
+    // generateMutantSrcFile(line_map_iter.second[random_mutant_idx]);
     incrementNextMutantfileId();
     mutant_count += 1;
 
