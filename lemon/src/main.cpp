@@ -199,14 +199,16 @@ protected:
     cout << "Mutation Complete!\n";
 
     string database_filename = g_config->getMutationDbFilename();
-    checkDatabaseFileExists();
+    // checkDatabaseFileExists();
 
     // Open the file with mode TRUNC to create the file if not existed. 
-    ofstream database_file(database_filename.data(), ios::trunc);
+    // ofstream database_file(database_filename.data(), ios::trunc);
+    ofstream database_file(database_filename.data(), ios::app);
     if (!database_file.is_open()) {
       std::cerr << "Failed to open file : " << strerror(errno) << std::endl;
       exit(1);
     }
+    database_file.close();
 
     // database_file << "Orignal Filename,Mutant Name,Mutation Operator,";
     // database_file << "Start Line#,Start Col#,Target Token,Mutated Token" << endl;
@@ -242,6 +244,32 @@ private:
   }
 };
 
+void checkDatabaseFileExists() {
+  // Check if there is any file with same name as database file.
+  string database_filename = g_output_dir+"mutant_db.csv";
+  while (fileExists(database_filename)) {
+    // If there is, ask the user if they want to keep the file
+    cout << "File " << database_filename << " already exists\n";
+    string keepFile = "";
+    while (keepFile.compare("y") != 0 && keepFile.compare("n") != 0) {
+      cout << "Do you want to keep the file (y/n)? ";
+      keepFile = "";
+      cin >> keepFile;
+    }
+
+    if (keepFile.compare("y") == 0 || keepFile.compare("Y") == 0) {
+      cout << "Press Enter after you have moved the file.";
+      // First one to flush the newline from above cin. 
+      std::cin.ignore(std::numeric_limits <std::streamsize>::max(), '\n');
+      // Second to wait.
+      std::cin.ignore(std::numeric_limits <std::streamsize>::max(), '\n');
+    }
+    else 
+      break;
+  }
+
+}
+
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, LemonCategory);
 
@@ -249,6 +277,8 @@ int main(int argc, const char **argv) {
   ParseOptionO();
   ParseTargets(op.getSourcePathList());
   ParseDebugOption();
+
+  checkDatabaseFileExists();
 
   for (auto file: g_target_files) {
     if (op.getCompilations().getCompileCommands(file).size() > 1)

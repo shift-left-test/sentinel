@@ -23,15 +23,16 @@ Configuration::Configuration(
     targeted_lines = targetline_map->operator[](this->input_filename);
 
   // Generate mutant database filename.
-  mutant_database_filename = directory;
-  size_t last_dot = this->input_filename.find_last_of(".");
-  if (last_dot == string::npos) {
-    // Input file does not have ending .c or .cpp
-    std::cerr << input_filename_withpath << " may not be a C/C++ file\n";
-    exit(1);
-  }
-  mutant_database_filename += this->input_filename.substr(0, last_dot);
-  mutant_database_filename += "_mut_db.csv";
+  mutant_database_filename = directory + "mutant_db.csv";
+  // mutant_database_filename = directory;
+  // size_t last_dot = this->input_filename.find_last_of(".");
+  // if (last_dot == string::npos) {
+  //   // Input file does not have ending .c or .cpp
+  //   std::cerr << input_filename_withpath << " may not be a C/C++ file\n";
+  //   exit(1);
+  // }
+  // mutant_database_filename += this->input_filename.substr(0, last_dot);
+  // mutant_database_filename += "_mut_db.csv";
 
   cout << "input_filename_withpath: " << input_filename_withpath << endl;
   cout << "input_filename: " << this->input_filename << endl;
