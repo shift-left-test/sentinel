@@ -19,12 +19,14 @@ public:
   Configuration();
   
   Configuration(
-      std::string input_filename, FilenameToLineMap *targetline_map,
+      std::string input_filename, std::string specified_filename,
+      FilenameToLineMap *targetline_map,
       bool debug_opt, std::vector<Mutators> mutators, int limit, 
       std::string directory = "./");
 
   // Getters
   std::string getInputFilename();
+  std::string getSpecifiedInputFilename();
   std::string getMutationDbFilename();
   std::string getOutputDir();
   std::string getInputFilenameWithPath();
@@ -38,6 +40,7 @@ public:
 private:
   std::string input_filename_withpath;
   std::string input_filename;
+  std::string input_filename_specified;
   std::string mutant_database_filename;
   std::string output_directory;
   bool debug_on;

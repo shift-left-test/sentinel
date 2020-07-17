@@ -11,10 +11,12 @@ Configuration::Configuration()
 }
 
 Configuration::Configuration(
-    std::string input_filename, FilenameToLineMap *targetline_map,
+    std::string input_filename, std::string specified_filename,
+    FilenameToLineMap *targetline_map,
     bool debug_opt,  vector<Mutators> mutators, int limit, std::string directory)
   : input_filename_withpath(input_filename), output_directory(directory),
-    debug_on(debug_opt), selected_mutators(mutators), limit_num_of_mutant(limit) {
+    input_filename_specified(specified_filename), debug_on(debug_opt), 
+    selected_mutators(mutators), limit_num_of_mutant(limit) {
   // Extract input filename only (without leading path)
   this->input_filename = getFilenameWithoutLeadingPath(input_filename_withpath);
 
@@ -45,6 +47,10 @@ std::string Configuration::getInputFilename() {
 
 std::string Configuration::getInputFilenameWithPath() {
   return input_filename_withpath;
+}
+
+std::string Configuration::getSpecifiedInputFilename() {
+  return input_filename_specified;
 }
 
 std::string Configuration::getMutationDbFilename() {

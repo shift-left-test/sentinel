@@ -86,6 +86,7 @@ static llvm::cl::opt<bool> debug_on(
 );
 
 string g_output_dir = "./";
+string g_specified_filename;
 FilenameToLineMap g_filename_to_line_map;
 vector<Mutators> g_selected_mutators;
 vector<string> g_target_files;
@@ -180,7 +181,8 @@ public:
     // Disable target file compilation message (warnings or errors).
     // CI.getDiagnostics().setClient(new IgnoringDiagConsumer());
 
-    g_config = new Configuration(InFile.str(), &g_filename_to_line_map,
+    g_config = new Configuration(InFile.str(), g_specified_filename,
+                                 &g_filename_to_line_map,
                                  debug_on, g_selected_mutators, 
                                  limit_mutant_num, g_output_dir);
     g_database = new MutantDatabase(CI, g_config);
@@ -264,8 +266,11 @@ void checkDatabaseFileExists() {
       // Second to wait.
       std::cin.ignore(std::numeric_limits <std::streamsize>::max(), '\n');
     }
-    else 
+    else {
+      ofstream database_file(database_filename.data(), ios::trunc);
+      database_file.close();
       break;
+    }
   }
 
 }
@@ -295,6 +300,9 @@ int main(int argc, const char **argv) {
       // getchar();
       continue;
     }
+
+    g_specified_filename = file;
+    cout << file << endl;
 
     ClangTool Tool(op.getCompilations(), file);
     // process command line option

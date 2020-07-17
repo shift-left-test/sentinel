@@ -122,7 +122,7 @@ void MutantDatabase::writeMutantToDatabaseFile(const MutantEntry &entry) {
   ofstream mutant_db_file(config->getMutationDbFilename().data(), ios::app);
 
   // write orignal target filename
-  mutant_db_file << config->getInputFilenameWithPath() << ","; 
+  mutant_db_file << config->getSpecifiedInputFilename() << ","; 
 
   // write mutant file name
   // string mutant_filename{config->getOutputDir()};
