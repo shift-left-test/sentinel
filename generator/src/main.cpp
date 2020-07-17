@@ -3,6 +3,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <stdexcept>
+#include <cstdlib>
 
 using namespace std;
 
@@ -107,8 +108,11 @@ public:
 };
 
 void printUsageMsg() {
-  cout << "Usage: generator <mutants.csv> <num>" << endl;
-  cout << "Description: generate <num>th mutant of <mutants.csv>." << endl;
+  cout << "Usage: generator <mutant info> -<b/r>" << endl;
+  cout << "Description: generate mutant using <mutant info>." << endl;
+  cout << "             if -b is given, the original file is backed up.\n";
+  cout << "             if -r is given, the backup version is copied back to ";
+  cout << "its original location." << endl;
 }
 
 bool fileExists(const std::string& name) {
@@ -179,20 +183,43 @@ string getTargetLine(string mutant_filename, int line_num) {
   exit(1);
 }
 
-void generateMutant(string info) {
+void generateMutant(string info, string option) {
   if (info.size() == 0) {
     cerr << "No information specified for target mutant." << endl;
     exit(1);
   }
 
   Mutant m{info};
+
+  string backup_filename{m.orig_filename+".orig"};
+  string command;
+  // If -b is given, then backup file is made by creating a copy of the original
+  // file with .orig appended to original filename.
+  // If -r is given, move the backup file back to its original location.
+  // If the file does not exist, 
+  if (option.compare("-b") == 0) {
+    cout << "Creating backup: " << backup_filename << endl;
+    command = "cp " + m.orig_filename + " " + backup_filename;
+    system(command.c_str());
+  }
+  else {
+    if (!fileExists(backup_filename)) {
+      cerr << "Backup file does not exist: " << backup_filename << endl;
+      exit(1);
+    }
+
+    cout << "Original file is recovered: " << m.orig_filename << endl;
+    command = "mv " + backup_filename + " " + m.orig_filename;
+    system(command.c_str());
+    return;
+  }
+
   cout << "Mutating " << m.orig_filename << endl;
-  cout << "Generating mutant file: " << m.mutant_filename << endl;
+  // cout << "Genercd ..ating mutant file: " << m.mutant_filename << endl;
   printf("From line %d col %d to line %d col %d\n", m.start_line, m.start_col, 
                                                     m.end_line, m.end_col);
   printf("Mutating \"%s\" to \"%s\"\n", m.target_token.c_str(), 
                                         m.mutated_token.c_str());
-
 
   ifstream orig_file(m.orig_filename);
   ofstream mutant_file(m.mutant_filename, ios::trunc);
@@ -222,31 +249,37 @@ void generateMutant(string info) {
 
   orig_file.close();
   mutant_file.close();
+
+  command = "mv " + m.mutant_filename + " " + m.orig_filename;
+  system(command.c_str()); 
 }
 
 int main(int argc, char const **argv)
 {
-  if (argc != 3) {
+  if (argc < 3) {
     printUsageMsg();
     return 1;
   }
 
   // Check if input csv file exists
-  string mutant_filename{argv[1]};
-  if (!fileExists(mutant_filename)) {
-    cerr << "Input <mutants.csv> file does not exist: " << mutant_filename << endl;
-    exit(1);
-  }
+  // string mutant_filename{argv[1]};
+  // if (!fileExists(mutant_filename)) {
+  //   cerr << "Input <mutants.csv> file does not exist: " << mutant_filename << endl;
+  //   exit(1);
+  // }
 
   // Check if line number is a positive integer larger than 1.
-  int line_num = parseLineNum(argv[2]);
+  // int line_num = parseLineNum(argv[2]);
 
   // Get target line. 
   // Exit if line is empty. (line number may be larger than file length)
-  string target_line = getTargetLine(mutant_filename, line_num);
+  // string target_line = getTargetLine(mutant_filename, line_num);
   
+  string target_line = argv[1];
+  string option = argv[2];
+
   // Generate mutant based on target line
-  generateMutant(target_line);
+  generateMutant(target_line, option);
 
   return 0;
 }
