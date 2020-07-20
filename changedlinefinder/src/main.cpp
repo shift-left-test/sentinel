@@ -1,7 +1,9 @@
 #include <git2.h>
 #include <string>
 
-typedef struct {} diff_data;
+typedef struct {
+    std::string root;
+} diff_data;
 
 int each_file_cb(const git_diff_delta *delta, float progress, void *payload)
 {
@@ -15,12 +17,14 @@ int each_binary_cb(const git_diff_delta *delta, const git_diff_binary *binary, v
 
 int each_hunk_cb(const git_diff_delta *delta, const git_diff_hunk * hunk, void *payload)
 {
+    diff_data * data = (diff_data*)payload;
+
     std::string filePath(delta->new_file.path);
 
     if (delta->new_file.path && (filePath.substr(filePath.size() - 4) == ".cpp" || filePath.substr(filePath.size() - 2) == ".c")) {
         if (hunk->new_start > 0) {
             for(int i = 0; i < hunk->new_lines; i++) {
-                printf("%s:%d\n", delta->new_file.path, hunk->new_start + i);
+                printf("%s/%s:%d\n", data->root.c_str(), delta->new_file.path, hunk->new_start + i);
             }
         }
     }
@@ -81,7 +85,7 @@ int main(int argc, char const **argv)
         return 1;
     }
 
-    diff_data d;
+    diff_data d = { repo_path };
 
     if (git_diff_foreach(diff, each_file_cb, each_binary_cb, each_hunk_cb, each_line_cb, &d)) {
 
