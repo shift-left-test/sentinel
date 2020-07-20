@@ -23,9 +23,14 @@ int each_hunk_cb(const git_diff_delta *delta, const git_diff_hunk * hunk, void *
 
     if (delta->new_file.path && (filePath.substr(filePath.size() - 4) == ".cpp" || filePath.substr(filePath.size() - 2) == ".c")) {
         if (hunk->new_start > 0) {
+            printf("%s/%s:", data->root.c_str(), delta->new_file.path);
             for(int i = 0; i < hunk->new_lines; i++) {
-                printf("%s/%s:%d\n", data->root.c_str(), delta->new_file.path, hunk->new_start + i);
+                if (i != 0) {
+                    printf(",");
+                }
+                printf("%d", hunk->new_start + i);
             }
+            printf("\n");
         }
     }
 
