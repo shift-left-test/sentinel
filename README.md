@@ -1,57 +1,21 @@
-# Mutation Testing Framework
+# sentinel
 
-## System Requirements
+[![Build Status](http://10.177.233.77:8080/buildStatus/icon?job=sentinel)](http://10.177.233.77:8080/job/sentinel/)
 
-This program has been developed/tested on Ubuntu 18.04.4 LTS.
+> The mutation testing tool for the meta-shift project
 
-- Clang/LLVM 11.0.0
-- CMake 3.10.2
-- Ninja 1.10.0
-- Python 3.6.9
+## How to build
 
-## Installation Instructions
+    $ cmake .
+    $ make all
 
-To install [Ninja](https://ninja-build.org/):
 
-```
-git clone https://github.com/martine/ninja.git
-cd ninja
-git checkout release
-./bootstrap.py
-sudo cp ninja /usr/bin/
-```
+## How to test
 
-To install [Clang/LLVM](https://clang.llvm.org/docs/LibASTMatchersTutorial.html):
+    $ cmake -DENABLE_TEST=ON .
+    $ make all test coverage
 
-```
-mkdir ~/clang-llvm
-cd ~/clang-llvm
-git clone https://github.com/llvm/llvm-project.git
-mkdir build && cd build
-cmake -G Ninja ../llvm -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_BUILD_TESTS=ON
-ninja
-ninja check       # Test LLVM only.
-ninja clang-test  # Test Clang only.
-ninja install
-```
 
-To install the Mutation Testing Framework, clone the project into ~/clang-llvm/clang/tools/
+## Licenses
 
-```
-cd ~/clang-llvm/clang/tools/
-git clone http://mod.lge.com/hub/loc.phan/mutation-testing-framework.git
-echo 'add_subdirectory(mutation-testing-framework)' >> CMakeLists.txt
-cd ~/clang-llvm/build
-ninja
-```
-
-Install [python-gitlab](https://python-gitlab.readthedocs.io/en/stable/index.html) to run extract-targetlines-from-commit.py 
-
-```
-sudo pip install --upgrade python-gitlab
-```
-
-## UNRESOLVED POTENTIAL ISSUES
-
-1. Mutate 2 files with same name.
-2. SBR deletes a 'big' statement (e.g. if, for, while) with label
+The project source code is available under MIT license. See [LICENSE](LICENSE).

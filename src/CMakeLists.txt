@@ -20,21 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-
-project(sentinel VERSION 0.0.1)
-
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/scripts)
-
-include(CMakeUtils)
-
-set_cxx_standard(14)
-set_default_build_type(Release)
-
-if(ENABLE_TEST)
-  enable_static_analysis(NO_IWYU)
-  enable_testing()
-  enable_test_coverage()
-endif()
-
-add_all_subdirectories()
+build_static_library(
+  NAME echo
+  SRCS echo.cpp
+  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
+)
