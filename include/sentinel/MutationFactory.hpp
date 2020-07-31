@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2019 Sung Gon Kim
+  Copyright (c) 2020 Sung Gon Kim
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,45 @@
   SOFTWARE.
 */
 
-#include "sentinel/echo.hpp"
+#ifndef INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_
+#define INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_
 
-int echo(int value) {
-  return value;
-}
+#include <memory>
+#include "sentinel/MutableGenerator.hpp"
+#include "sentinel/Mutables.hpp"
+#include "sentinel/MutableSelector.hpp"
+#include "sentinel/SourceLines.hpp"
+
+
+namespace sentinel {
+
+/**
+ * @brief MutationFactory class
+ */
+class MutationFactory {
+ public:
+  /**
+   * @brief Default constructor
+   *
+   * @param generator Mutation generator
+   * @param selector Mutation selector
+   */
+  MutationFactory(const std::shared_ptr<MutableGenerator>& generator,
+                  const std::shared_ptr<MutableSelector>& selector);
+
+  /**
+   * @brief Populate mutables from the given source lines
+   *
+   * @param sourceLines lines of the source
+   * @return list of mutables
+   */
+  Mutables populate(const SourceLines& sourceLines);
+
+ private:
+  std::shared_ptr<MutableGenerator> mGenerator;
+  std::shared_ptr<MutableSelector> mSelector;
+};
+
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_

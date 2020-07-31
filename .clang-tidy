@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,clang-diagnostic-*,clang-analyzer-*,*,*,-llvm-include-order,-hicpp-*'
+Checks:         'clang-diagnostic-*,clang-analyzer-*,*,-fuchsia-default-arguments,-modernize-use-equals-delete,-hicpp-use-equals-delete,-cppcoreguidelines-pro-type-vararg,-hicpp-vararg,-cppcoreguidelines-owning-memory,-cert-err58-cpp,-cppcoreguidelines-special-member-functions,-hicpp-special-member-functions,-llvm-include-order,-hicpp-signed-bitwise'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

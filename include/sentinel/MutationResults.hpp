@@ -22,12 +22,33 @@
   SOFTWARE.
 */
 
-#include <gtest/gtest.h>
-#include "sentinel/echo.hpp"
+#ifndef INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
+#define INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 
-class SampleTest : public ::testing::Test {
+#include <string>
+#include "sentinel/Persistence.hpp"
+
+namespace sentinel {
+
+/**
+ * @brief MutationResults class
+ */
+class MutationResults : public Persistence {
+ public:
+  /**
+   * @brief Default constructor
+   *
+   * @param path to the result data
+   */
+  explicit MutationResults(const std::string& path);
+
+  void load() override;
+  void save() override;
+
+ private:
+  std::string mPath;
 };
 
-TEST_F(SampleTest, testEcho) {
-  EXPECT_EQ(1, echo(1));
-}
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_

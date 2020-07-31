@@ -1,0 +1,55 @@
+/*
+  MIT License
+
+  Copyright (c) 2020 Sung Gon Kim
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
+#ifndef INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
+#define INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
+
+#include "sentinel/Logger.hpp"
+
+
+namespace sentinel {
+
+/**
+ * @brief DefaultLogger class
+ */
+class DefaultLogger : public Logger {
+ public:
+  /**
+   * @brief Default constructor
+   *
+   * @param name of the logger
+   */
+  explicit DefaultLogger(const std::string& name);
+
+  void error(const std::string& message) override;
+  void info(const std::string& message) override;
+  void warn(const std::string& message) override;
+
+ private:
+  std::string mName;
+};
+
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_

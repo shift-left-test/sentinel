@@ -21,7 +21,11 @@
 # SOFTWARE.
 
 build_static_library(
-  NAME echo
-  SRCS echo.cpp
+  NAME sentinel-core
+  SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
+       UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
+       MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
+       MutationResults.cpp XMLReport.cpp HTMLReport.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
+  LIBS tinyxml2
 )
