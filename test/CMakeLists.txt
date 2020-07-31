@@ -24,8 +24,11 @@ if(NOT ENABLE_TEST)
   return()
 endif()
 
+find_package(LibGit2 REQUIRED)
+include_directories(${LIBGIT2_INCLUDE_DIR})
+
 build_test_program(
   NAME unittest
-  SRCS SampleTest.cpp
-  LIBS echo tinyxml2
+  SRCS GitHarnessTest.cpp harness/git_harness.cpp
+  LIBS echo tinyxml2 ${LIBGIT2_LIBRARIES} 
   )
