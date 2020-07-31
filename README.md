@@ -4,16 +4,13 @@
 
 > The mutation testing tool for the meta-shift project
 
-## How to build
 
-    $ cmake .
-    $ make all
+## How to run tests
 
-
-## How to test
-
-    $ cmake -DENABLE_TEST=ON .
-    $ make all test coverage
+    $ docker run --rm -it cart.lge.com/swte/yocto-dev:18.04
+    $ git clone http://mod.lge.com/hub/yocto/addons/sentinel.git
+    $ cd sentinel
+    $ ./build.sh
 
 
 ## Licenses
