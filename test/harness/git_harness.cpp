@@ -35,7 +35,6 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
-
 #include "git_harness.hpp"
 
 // Create a folder and git init.
@@ -348,4 +347,3 @@ void convertToCharArray(std::vector<std::string> *from,
 #ifndef NDEBUG
 #define NDEBUG 1
 #endif
-
