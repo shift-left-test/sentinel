@@ -24,8 +24,11 @@ if(NOT ENABLE_TEST)
   return()
 endif()
 
-build_test_program(
-  NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp
-  LIBS sentinel-core git-harness
+find_package(LibGit2 REQUIRED)
+
+build_static_library(
+  NAME git-harness
+  SRCS git_harness.cpp
+  PUBLIC_HEADERS . ${LIBGIT2_INCLUDE_DIR}
+  LIBS ${LIBGIT2_LIBRARIES}
 )
