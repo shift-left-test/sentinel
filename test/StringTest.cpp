@@ -117,13 +117,6 @@ TEST_F(StringTest, testContainsReturnFalseWhenInvalidArgsGiven) {
   EXPECT_FALSE(util::string::contains(BLANK, HELLO_WORLD));
 }
 
-TEST_F(StringTest, testFormatReturnExpectedFormattedCharacters) {
-  EXPECT_STREQ(HELLO_WORLD,
-               util::string::format("%s %s", HELLO, WORLD).c_str());
-  EXPECT_STREQ("12.0cde",
-               util::string::format("%d%.1f%c%s", 1, 2.0, 'c', "de").c_str());
-}
-
 TEST_F(StringTest, testSplitReturnSplittedTokens) {
   std::vector<std::string> expected = { HELLO, WORLD };
   EXPECT_EQ(expected, util::string::split(HELLO_WORLD));

@@ -21,11 +21,14 @@
 # SOFTWARE.
 
 build_static_library(
-  NAME sentinel-core
-  SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
-       UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
-       MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
-       MutationResults.cpp XMLReport.cpp HTMLReport.cpp
-  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
-  LIBS tinyxml2 fmt
+  NAME fmt
+  SRCS src/format.cc src/os.cc
+  PUBLIC_HEADERS include
+)
+
+set_target_properties(
+  fmt PROPERTIES
+  CXX_CLANG_TIDY ""
+  CXX_CPPCHECK ""
+  CXX_CPPLINT ""
 )

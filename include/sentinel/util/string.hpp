@@ -144,35 +144,6 @@ inline bool contains(const std::string& haystack,
   return haystack.find(needle) != std::string::npos;
 }
 
-namespace internal {
-
-template <typename T>
-inline T to_const(const T& o) {
-  return o;
-}
-
-inline const char* to_const(const std::string& o) {
-  return o.c_str();
-}
-
-}  // namespace internal
-
-/**
- * @brief Create a formatted string
- *
- * @param fmt format
- * @param args arguments
- * @return formatted string
- */
-template <typename ... Args>
-inline std::string format(const std::string& fmt, const Args& ... args) {
-  std::size_t size = std::snprintf(nullptr, 0, fmt.c_str(),
-                                   internal::to_const(args) ...) + 1;
-  std::unique_ptr<char[]> buf(new char[size]);
-  std::snprintf(buf.get(), size, fmt.c_str(), internal::to_const(args) ...);
-  return std::string(buf.get(), size -1);
-}
-
 /**
  * @brief Split a string with the given delimiter
  *
