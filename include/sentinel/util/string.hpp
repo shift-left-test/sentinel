@@ -200,8 +200,10 @@ inline std::vector<std::string> split(const std::string& s,
  * @param delim delimiter
  * @return joined string
  */
-template <typename T>
-inline std::string join(T first, T last, const std::string& delim) {
+template <typename Iterator>
+inline std::string join(const std::string& delim,
+                        Iterator first,
+                        Iterator last) {
   std::string s;
   while (first != last) {
     s.append(*first);
@@ -220,9 +222,10 @@ inline std::string join(T first, T last, const std::string& delim) {
  * @param delim delimiter
  * @return joined string
  */
-inline std::string join(const std::vector<std::string>& tokens,
-                        const std::string& delim) {
-  return join(tokens.begin(), tokens.end(), delim);
+template <typename T>
+inline std::string join(const std::string& delim,
+                        const T& tokens) {
+  return join(delim, std::begin(tokens), std::end(tokens));
 }
 
 }  // namespace string
