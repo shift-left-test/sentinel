@@ -122,9 +122,15 @@ TEST_F(StringTest, testSplitReturnSplittedTokens) {
   EXPECT_EQ(expected, util::string::split(HELLO_WORLD));
 }
 
-TEST_F(StringTest, testJoinReturnJoinedCharacters) {
+TEST_F(StringTest, testJoinReturnJoinedCharactersWhenVectorStrGiven) {
   std::vector<std::string> input = { HELLO, WORLD };
   EXPECT_STREQ(HELLO_WORLD, util::string::join(SPACE, input).c_str());
+}
+
+TEST_F(StringTest, testJoinReturnJoinedCharactersWhenVariadicArgsGiven) {
+  EXPECT_STREQ("a", util::string::join("", "a").c_str());
+  EXPECT_STREQ("ab", util::string::join("", "a", "b").c_str());
+  EXPECT_STREQ("abc", util::string::join("", "a", "b", "c").c_str());
 }
 
 }  // namespace sentinel

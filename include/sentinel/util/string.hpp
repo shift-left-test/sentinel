@@ -164,39 +164,38 @@ inline std::vector<std::string> split(const std::string& s,
 }
 
 /**
- * @brief Join given strings into a string
+ * @brief Join the given characters into a string
  *
- * @param first start iterator
- * @param last end iterator
  * @param delim delimiter
+ * @param tokens to join
  * @return joined string
  */
-template <typename Iterator>
 inline std::string join(const std::string& delim,
-                        Iterator first,
-                        Iterator last) {
-  std::string s;
+                        const std::vector<std::string>& tokens) {
+  std::ostringstream oss;
+  auto first = std::begin(tokens);
+  auto last = std::end(tokens);
   while (first != last) {
-    s.append(*first);
+    oss << *first;
     if (first != std::prev(last)) {
-      s.append(delim);
+      oss << delim;
     }
-    first++;
+    ++first;
   }
-  return s;
+  return oss.str();
 }
 
 /**
- * @brief Join given strings into a string
+ * @brief Join the given characters into a string
  *
+ * @param delim delimter
  * @param tokens to join
- * @param delim delimiter
  * @return joined string
  */
-template <typename T>
+template <typename ... Arg>
 inline std::string join(const std::string& delim,
-                        const T& tokens) {
-  return join(delim, std::begin(tokens), std::end(tokens));
+                        const Arg&... tokens) {
+  return join(delim, { tokens ... });
 }
 
 }  // namespace string
