@@ -22,62 +22,69 @@
   SOFTWARE.
 */
 
-// to use assertion
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <sys/stat.h>
 #include <unistd.h>
-#include <cassert>
 #include <cstdlib>
-#include <iostream>
-#include <fstream>
 #include <cstring>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 #include "git_harness.hpp"
 
-// Create a folder and git init.
-// By default, git repo /temp/temp_repo is created.
-GitHarness& GitHarness::initiateGitRepo(std::string dir_name) {
+namespace sentinel {
+
+GitHarness::GitHarness(std::string& dir_name) : repo(nullptr) {
+  git_libgit2_init();
+
   // Create the directory.
   // Exit with error message if it already existed or fail to generate
-  assert(!directoryExists(dir_name));
+  if (directoryExists(dir_name)) {
+    throw std::runtime_error(dir_name + " already exists");
+  }
+
   executeSystemCommand("mkdir "+dir_name, "Fail to make directory: "+dir_name);
 
   // git init
-  if (git_repository_init(&repo, dir_name.c_str(), false)) {
+  if (git_repository_init(&repo, dir_name.c_str(), 0) != 0) {
     std::cerr << "git init fails." << std::endl;
     exit(1);
   }
 
   repo_path = dir_name;
-  return *this;
 }
 
 // Create a folder within git directory.
 // The folder path should be relative w.r.t. repo path
-GitHarness& GitHarness::addFolder(std::string folder_name) {
-  assert(repo != nullptr);
-  assert(!directoryExists(repo_path+"/"+folder_name));
-  folder_name = repo_path + "/" + folder_name;
-  executeSystemCommand("mkdir "+folder_name,
+GitHarness& GitHarness::addFolder(const std::string& folder_name) {
+  if (directoryExists(repo_path+"/"+folder_name)) {
+    throw std::runtime_error(folder_name + " already exists");
+  }
+
+  executeSystemCommand("mkdir "+repo_path+"/"+folder_name,
                        "Fail to make directory: "+folder_name);
 
   return *this;
 }
 
 // Create a file at specified location (relative path w.r.t repo path)
-GitHarness& GitHarness::addFile(std::string filename, std::string content) {
-  assert(repo != nullptr);
-  assert(!fileExists(repo_path+"/"+filename));
-  filename = repo_path + "/" + filename;
+GitHarness& GitHarness::addFile(const std::string& filename,
+                                const std::string& content) {
+  if (fileExists(repo_path+"/"+filename)) {
+    throw std::runtime_error(filename + " already exists");
+  }
 
-  executeSystemCommand("touch "+filename,
-                       "Fail to make file: "+filename);
+  std::string new_filename_str = repo_path + "/" + filename;
+  std::ofstream new_file(new_filename_str.c_str(), std::ios::app);
+  if (new_file.fail()) {
+    throw std::runtime_error("Fail to make file " + filename);
+  }
 
-  std::ofstream new_file(filename.c_str(), std::ios::app);
   new_file << content;
+  if (new_file.bad()) {
+    throw std::runtime_error("Error writing to file " + filename);
+  }
+
   new_file.close();
   return *this;
 }
@@ -86,17 +93,19 @@ GitHarness& GitHarness::addFile(std::string filename, std::string content) {
 // If line number is negative or exceed file length, the code is appended to
 // end of file.
 // By default, code is appended to end of file.
-GitHarness& GitHarness::addCode(std::string filename, std::string &content,
+GitHarness& GitHarness::addCode(const std::string& filename,
+                                const std::string& content,
                                 int line, int col) {
-  assert(repo != nullptr);
-
-  filename = repo_path + "/" + filename;
-  assert(fileExists(filename));
+  std::string filename_full = repo_path + "/" + filename;
+  if (!fileExists(filename_full)) {
+    throw std::runtime_error(filename_full + " does not exist");
+  }
 
   // Create a temporary file to modify file content.
   // Temporary filename is filename.temp
-  std::ifstream orig_file(filename);
-  std::ofstream changed_file(filename+".temp");
+  std::ifstream orig_file(filename_full, std::ios_base::in);
+  std::ofstream changed_file(filename_full+".temp",
+                             std::ios_base::out | std::ios_base::trunc);
 
   int line_idx = 0;
   std::string line_str;
@@ -112,48 +121,41 @@ GitHarness& GitHarness::addCode(std::string filename, std::string &content,
     // Column number starts from 1.
     // For target line, if column number is negative, content is added to
     // end of line.
-    if (col <= 0 || col > line_str.length())
+    if (col <= 0 || col > line_str.length()) {
       changed_file << line_str << content << std::endl;
-    else
+    } else {
       changed_file << line_str.substr(0, col-1) << content
                    << line_str.substr(col-1, std::string::npos) << std::endl;
+    }
   }
 
   // If line number is negative or exceeding length of file, content is added
   // to end of file.
-  if (line <= 0 || line > line_idx)
+  if (line <= 0 || line > line_idx) {
     changed_file << content;
+  }
 
   orig_file.close();
   changed_file.close();
 
   // replace original file with changed file.
-  executeSystemCommand("mv " + filename + ".temp " + filename,
+  executeSystemCommand("mv " + filename_full + ".temp " + filename_full,
                        "Fail to replace original file with temp file.");
   return *this;
 }
 
-// Delete code between (start_line, start_col) and (end_line, end_col).
-// A negative line number indicates end of file.
-// A negative column number indicates end of line.
-/*GitHarness& GitHarness::deleteCode(std::string &filename, int start_line,
-                                   int end_line, int start_col, int end_col) {
-  assert(repo != nullptr);
-  assert(fileExists(filename));
-  return *this;
-}*/
-
 // Delete multiple line of codes. Code line starts from 1.
-GitHarness& GitHarness::deleteCode(std::string filename,
-                                   std::vector<int> lines) {
-  assert(repo != nullptr);
-  filename = repo_path + "/" + filename;
-  assert(fileExists(filename));
+GitHarness& GitHarness::deleteCode(const std::string& filename,
+                                   const std::vector<int>& lines) {
+  std::string filename_full = repo_path + "/" + filename;
+  if (!fileExists(filename_full)) {
+    throw std::runtime_error(filename_full + " does not exist");
+  }
 
   // Create a temporary file to modify file content.
   // Temporary filename is filename.temp
-  std::ifstream orig_file(filename);
-  std::ofstream changed_file(filename+".temp");
+  std::ifstream orig_file(filename_full);
+  std::ofstream changed_file(filename_full+".temp");
 
   int line_idx = 0;
   std::string line_str;
@@ -162,31 +164,37 @@ GitHarness& GitHarness::deleteCode(std::string filename,
 
     // If line_idx is in vector lines, then the line is skipped.
     // Otherwise, the line is added to temp file.
-    if (std::find(lines.begin(), lines.end(), line_idx) != lines.end())
+    if (std::find(lines.begin(), lines.end(), line_idx) != lines.end()) {
       continue;
-    else
-      changed_file << line_str << std::endl;
+    }
+
+    changed_file << line_str << std::endl;
   }
 
   orig_file.close();
   changed_file.close();
 
   // replace original file with changed file.
-  executeSystemCommand("mv " + filename + ".temp " + filename,
+  executeSystemCommand("mv " + filename_full + ".temp " + filename_full,
                        "Fail to replace original file with temp file.");
   return *this;
 }
 
 // git add <filenames>
-GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
-  assert(repo != nullptr);
-  for (int i = 0; i < filenames.size(); i++)
-    assert(fileExists(repo_path + "/" + filenames[i]));
+GitHarness& GitHarness::stageFile(std::vector<std::string>& filenames) {
+  for (const auto& filename : filenames) {
+    if (!fileExists(repo_path + "/" + filename)) {
+      throw std::runtime_error(filename + " does not exist");
+    }
+  }
 
-  git_index_matched_path_cb matched_cb = NULL;
-  git_index *index;
+  git_index_matched_path_cb matched_cb = nullptr;
+  git_index* index;
   std::vector<char*> argv;
-  convertToCharArray(&filenames, &argv);
+  argv.reserve(filenames.size());
+  for (auto& s : filenames) {
+    argv.push_back(&s[0]);
+  }
 
   git_strarray array = {argv.data(), argv.size()};
   struct index_options options = {0};
@@ -209,20 +217,17 @@ GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
 }
 
 // git commit -m "messasge"
-GitHarness& GitHarness::commit(std::string message) {
-  assert(repo != nullptr);
-
+GitHarness& GitHarness::commit(const std::string& message) {
   git_oid new_commit_id, tree_oid;
-  git_tree *tree;
-  git_index *index;
-  git_object *parent = nullptr;
-  git_reference *ref = nullptr;
-  git_signature *signature;
+  git_tree* tree;
+  git_index* index;
+  git_object* parent = nullptr;
+  git_reference* ref = nullptr;
+  git_signature* signature;
 
   int error = git_revparse_ext(&parent, &ref, repo, "HEAD");
   if (error == GIT_ENOTFOUND) {
     std::cerr << "HEAD not found. Creating first commit\n";
-    error = 0;
   } else if (error != 0) {
     std::cerr << "git commit error\n";
   }
@@ -237,13 +242,15 @@ GitHarness& GitHarness::commit(std::string message) {
   libgitErrorCheck(git_signature_now(&signature, "Loc Phan",
                                      "loc.phan@lge.com"),
                    "Error creating signature");
-
   libgitErrorCheck(git_commit_create_v(&new_commit_id, repo, "HEAD", signature,
                                        signature, "UTF-8", message.c_str(),
-                                       tree, parent ? 1 : 0, parent),
+                                       tree, (parent != nullptr) ? 1 : 0,
+                                       parent),
                    "Error creating commit");
   commit_ids.push_back(new_commit_id);
 
+  git_object_free(parent);
+  git_reference_free(ref);
   git_index_free(index);
   git_signature_free(signature);
   git_tree_free(tree);
@@ -254,9 +261,6 @@ GitHarness& GitHarness::commit(std::string message) {
 // git tag -a <tag_name> -m "message"
 /*GitHarness& GitHarness::addTag(std::string tag_name, std::string commit_id,
                                std::string message) {
-  assert(repo != nullptr);
-  assert(tag_name.length() > 0);
-
   git_signature *tagger;
   git_oid oid;
   git_object *target;
@@ -274,76 +278,93 @@ GitHarness& GitHarness::commit(std::string message) {
 }*/
 
 // git tag <tag_name> <commit_id>
-GitHarness& GitHarness::addTagLightweight(std::string tag_name,
-                                          git_oid oid) {
-  assert(repo != nullptr);
-  assert(tag_name.length() > 0);
+GitHarness& GitHarness::addTagLightweight(const std::string& tag_name,
+                                          const std::string& oid_str) {
+  if (tag_name.empty()) {
+    throw std::runtime_error("Tag name is empty");
+  }
 
-  // git_oid oid;
+  git_oid oid;
   git_object *target;
-  char buf[GIT_OID_HEXSZ + 1];
-  git_oid_tostr(buf, sizeof(buf), &oid);
+  const char* buf = oid_str.c_str();
 
-  libgitErrorCheck(git_revparse_single(&target, repo, buf),
+  libgitErrorCheck(git_oid_fromstrp(&oid, buf),
+                   "Error retrieving commit");
+  libgitErrorCheck(git_revparse_single(&target, repo,
+                   static_cast<const char*>(buf)),
                    "Unable to identify commit");
   libgitErrorCheck(
       git_tag_create_lightweight(&oid, repo, tag_name.c_str(), target, 0),
       "Unable to create lightweight tag");
 
   git_object_free(target);
+
   return *this;
 }
 
-git_oid GitHarness::getLatestCommitId() {
-  assert(commit_ids.size() > 0);
-  return commit_ids.back();
+// git tag <tag_name>
+GitHarness& GitHarness::addTagLightweight(const std::string& tag_name) {
+  std::string oid = getLatestCommitId();
+  addTagLightweight(tag_name, oid);
+  return *this;
+}
+
+std::string GitHarness::getLatestCommitId() {
+  if (commit_ids.empty()) {
+    throw std::range_error("No commit was made yet");
+  }
+
+  char buf[GIT_OID_HEXSZ + 1];
+  git_oid_tostr(static_cast<char*>(buf), sizeof(buf), &commit_ids.back());
+  std::string ret(static_cast<char*>(buf), GIT_OID_HEXSZ + 1);
+  return ret;
 }
 
 git_repository* GitHarness::getGitRepo() {
   return repo;
 }
 
-bool directoryExists(const std::string &directory) {
+void GitHarness::libgitErrorCheck(int error, const char* msg) {
+  if (error == 0) {
+    return;
+  }
+
+  std::cerr << msg << std::endl;
+  exit(1);
+}
+
+// TODO(loc.phan): replace with function in filesystem module
+bool directoryExists(const std::string& directory) {
   if (!directory.empty()) {
     if (access(directory.c_str(), 0) == 0) {
-      struct stat status;
+      struct stat status = {};
       stat(directory.c_str(), &status);
 
-      if (status.st_mode & S_IFDIR)
+      if ((status.st_mode & S_IFDIR) != 0) {
         return true;
+      }
     }
   }
 
   return false;
 }
 
-bool fileExists(const std::string &name) {
-  struct stat buffer;
+// TODO(loc.phan): replace with function in filesystem module
+bool fileExists(const std::string& name) {
+  struct stat buffer = {};
   return (stat (name.c_str(), &buffer) == 0);
 }
 
-void executeSystemCommand(std::string command, std::string error_msg) {
-  int status = system(command.c_str());
+// TODO(loc.phan): replace with function in filesystem module
+void executeSystemCommand(const std::string& command,
+                          const std::string& error_msg) {
+  int status = std::system(command.c_str());
   if (status != 0 && error_msg.length() > 0) {
     std::cerr << error_msg << std::endl;
     exit(1);
   }
 }
 
-void libgitErrorCheck(int error, const char *msg) {
-  if (!error)
-    return;
-  std::cerr << msg << std::endl;
-  exit(1);
-}
+}  // namespace sentinel
 
-void convertToCharArray(std::vector<std::string> *from,
-                        std::vector<char*> *to) {
-  to->reserve(from->size());
-  for (auto& s : *from)
-    to->push_back(&s[0]);
-}
 
-#ifndef NDEBUG
-#define NDEBUG 1
-#endif
