@@ -26,6 +26,6 @@ endif()
 
 build_test_program(
   NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp
+  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
   LIBS sentinel-core git-harness
 )

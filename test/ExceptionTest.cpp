@@ -22,27 +22,24 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_EXCEPTIONS_FILEEXISTSEXCEPTION_HPP_
-#define INCLUDE_SENTINEL_EXCEPTIONS_FILEEXISTSEXCEPTION_HPP_
-
+#include <gtest/gtest.h>
 #include <cerrno>
+#include <stdexcept>
 #include "sentinel/exceptions/IOException.hpp"
 
 
 namespace sentinel {
 
-/**
- * @brief FileExistsException class
- */
-class FileExistsException : public IOException {
- public:
-  /**
-   * @brief Default constructor
-   */
-  FileExistsException() : IOException(EEXIST) {
-  }
+class ExceptionTest : public ::testing::Test {
 };
 
-}  // namespace sentinel
+TEST_F(ExceptionTest, testIOExceptionType) {
+  EXPECT_THROW(throw IOException(EEXIST), std::runtime_error);
+}
 
-#endif  // INCLUDE_SENTINEL_EXCEPTIONS_FILEEXISTSEXCEPTION_HPP_
+TEST_F(ExceptionTest, testIOExceptionMessage) {
+  EXPECT_STREQ("File exists", IOException(EEXIST).what());
+  EXPECT_STREQ("Operation not permitted", IOException(EPERM).what());
+}
+
+}  // namespace sentinel

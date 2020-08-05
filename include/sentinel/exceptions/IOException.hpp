@@ -32,6 +32,8 @@
 
 namespace sentinel {
 
+#include <string>
+
 /**
  * @brief IOException class
  */
@@ -43,7 +45,7 @@ class IOException : public std::runtime_error {
    * @param error code
    */
   explicit IOException(int error) :
-      IOException(std::strerror(error), error) {
+      IOException(error, std::strerror(error)) {
   }
 
   /**
@@ -52,8 +54,8 @@ class IOException : public std::runtime_error {
    * @param error code
    * @param message of the error
    */
-  IOException(int error, const char* message) :
-      std::runtime_error(message), mError(error) {
+  IOException(int error, const std::string& message) :
+      std::runtime_error(message.c_str()), mError(error) {
   }
 
   int error() const {
