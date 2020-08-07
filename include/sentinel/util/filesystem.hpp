@@ -228,12 +228,12 @@ inline void removeDirectories(const std::string& path) {
  * @return temporary file name.
  */
 inline std::string tempPath(const std::string& pre_template) {
-  std::string filename = pre_template + "XXXXXX";
-  if (mkstemp(&filename[0]) == -1) {
+  std::string filename_template = pre_template + "XXXXXX";
+  if (mkstemp(&filename_template[0]) == -1) {
     throw IOException(errno);
   }
-  removeFile(filename);
-  return filename;
+  removeFile(filename_template);
+  return filename_template;
 }
 
 /**
@@ -242,13 +242,15 @@ inline std::string tempPath(const std::string& pre_template) {
  * @throw IOException a unique name cannot be created.
  *
  * @param name_template template of directory name.
+ *
+ * @return temporary directory name.
  */
 inline std::string tempDirectory(const std::string& pre_template) {
-  std::string dirname = pre_template + "XXXXXX";
-  if (mkdtemp(&dirname[0]) == nullptr) {
+  std::string dirname_template = pre_template + "XXXXXX";
+  if (mkdtemp(&dirname_template[0]) == nullptr) {
     throw IOException(errno);
   }
-  return dirname;
+  return dirname_template;
 }
 
 /**

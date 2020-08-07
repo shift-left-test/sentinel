@@ -181,19 +181,19 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
 
 // git add <filenames>
 GitHarness& GitHarness::stageFile(std::vector<std::string>& filenames) {
-  for (const auto& filename : filenames) {
-    if (!util::filesystem::isRegularFile(repo_path + "/" + filename)) {
-      throw IOException(EINVAL);
-    }
+  if (std::any_of(
+          filenames.cbegin(),
+          filenames.cend(),
+          [this](std::string s){
+              return !util::filesystem::isRegularFile(repo_path+"/"+s);})) {
+    throw IOException(EINVAL);
   }
 
   git_index_matched_path_cb matched_cb = nullptr;
   git_index* index;
   std::vector<char*> argv;
-  argv.reserve(filenames.size());
-  for (auto& s : filenames) {
-    argv.push_back(&s[0]);
-  }
+  std::transform(filenames.begin(), filenames.end(), std::back_inserter(argv),
+                 [](std::string& s) -> char* {return &s[0];});
 
   git_strarray array = {argv.data(), argv.size()};
   struct index_options options = {0};
