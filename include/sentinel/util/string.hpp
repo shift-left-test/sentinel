@@ -188,6 +188,18 @@ inline std::string join(const std::string& delim,
 /**
  * @brief Join the given characters into a string
  *
+ * @param delim delimiter
+ * @param tokens to join
+ * @return joined string
+ */
+inline std::string join(const char delim,
+                        const std::vector<std::string>& tokens) {
+  return join(std::string(1, delim), tokens);
+}
+
+/**
+ * @brief Join the given characters into a string
+ *
  * @param delim delimter
  * @param tokens to join
  * @return joined string
@@ -196,6 +208,19 @@ template <typename ... Arg>
 inline std::string join(const std::string& delim,
                         const Arg&... tokens) {
   return join(delim, { tokens ... });
+}
+
+/**
+ * @brief Join the given characters into a string
+ *
+ * @param delim delimter
+ * @param tokens to join
+ * @return joined string
+ */
+template <typename ... Arg>
+inline std::string join(const char delim,
+                        const Arg&... tokens) {
+  return join(std::string(1, delim), { tokens ... });
 }
 
 }  // namespace string

@@ -25,15 +25,13 @@
 #ifndef INCLUDE_SENTINEL_UTIL_FILESYSTEM_HPP_
 #define INCLUDE_SENTINEL_UTIL_FILESYSTEM_HPP_
 
-#include <cstring>
 #include <dirent.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
+#include <cstdlib>
+#include <cstring>
 #include <algorithm>
 #include <string>
-
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -94,10 +92,10 @@ inline bool isRegularFile(const std::string& path) {
 inline std::string dirname(const std::string& path) {
   auto position = path.find_last_of(SEPARATOR, path.size() - 2);
   if (position == std::string::npos) {
-    return ".";
+    return std::string(1, DOT);
   }
   if (position == 0) {
-    return "/";
+    return std::string(1, SEPARATOR);
   }
   return path.substr(0, position);
 }
@@ -119,11 +117,10 @@ inline std::string filename(std::string path) {
 /**
  * @brief Create a new directory at given path.
  *
+ * @param path to new folder (name included).
  * @throw IOException given path already exists, or
  *                    a component of the path prefix does not exist, or
  *                    a component of the path prefix is not a director.
- *
- * @param path to new folder (name included).
  */
 inline void createDirectory(const std::string& path) {
   if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
@@ -135,14 +132,13 @@ inline void createDirectory(const std::string& path) {
  * @brief Create a new directory at given path.
  *        Create parent directory if needed.
  *
- * @throw IOException given path already exists.
- *
  * @param path to new folder.
+ * @throw IOException given path already exists.
  */
 inline void createDirectories(const std::string& path) {
   bool existed = true;
-  for (std::string::const_iterator iter = path.begin(); iter != path.end(); ) {
-    std::string::const_iterator nextSlash = std::find(iter, path.end(), SEPARATOR);
+  for (auto iter = path.begin(); iter != path.end(); ) {
+    auto nextSlash = std::find(iter, path.end(), SEPARATOR);
     std::string currentPath = std::string(path.begin(), nextSlash);
 
     if (!exists(currentPath)) {
@@ -152,7 +148,7 @@ inline void createDirectories(const std::string& path) {
 
     iter = nextSlash;
     if (iter != path.end()) {
-      ++iter;      
+      ++iter;
     }
   }
 
@@ -163,13 +159,12 @@ inline void createDirectories(const std::string& path) {
 
 /**
  * @brief Delete a specified empty directory.
- * 
+ *
+ * @param path to target directory.
  * @throw IOException given path is not an empty directory, or
  *                    given path last component is . or .., or
  *                    given path is not a directory, or
- *                    given path does not exist. 
- *
- * @param path to target directory.
+ *                    given path does not exist.
  */
 inline void removeDirectory(const std::string& path) {
   if (rmdir(path.c_str()) != 0) {
@@ -220,7 +215,7 @@ inline void removeDirectories(const std::string& path) {
 
 /**
  * @brief Create a temporary file name with given template.
- * 
+ *
  * @throw IOException a unique name cannot be created.
  *
  * @param pre_template front part of file name template, before XXXXXX
@@ -262,8 +257,8 @@ inline std::string tempDirectory(const std::string& pre_template) {
  */
 template <typename ... Arg>
 inline std::string join(const std::string& path1,
-		        const Arg&... paths) {
-  return sentinel::util::string::join(std::string(1, SEPARATOR), {path1, paths ...});
+                        const Arg&... paths) {
+  return sentinel::util::string::join(SEPARATOR, {path1, paths ...});
 }
 
 /**

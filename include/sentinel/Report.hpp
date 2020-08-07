@@ -35,6 +35,11 @@ namespace sentinel {
  */
 class Report {
  public:
+  /**
+   * @brief Save the report to the given path
+   *
+   * @param path to save the report
+   */
   virtual void save(const std::string& path) = 0;
 };
 

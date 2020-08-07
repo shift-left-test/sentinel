@@ -28,11 +28,10 @@
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
+#include <string>
 
 
 namespace sentinel {
-
-#include <string>
 
 /**
  * @brief IOException class
@@ -58,6 +57,11 @@ class IOException : public std::runtime_error {
       std::runtime_error(message.c_str()), mError(error) {
   }
 
+  /**
+   * @brief Return the error code
+   *
+   * @return errno
+   */
   int error() const {
     return -mError;
   }

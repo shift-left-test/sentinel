@@ -43,6 +43,6 @@ class Persistence {
   virtual void save() = 0;
 };
 
-}  // namesapce sentinel
+}  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_PERSISTENCE_HPP_

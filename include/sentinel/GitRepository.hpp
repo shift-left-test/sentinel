@@ -45,6 +45,11 @@ class GitRepository : public Repository {
    */
   explicit GitRepository(const std::string& path);
 
+  /**
+   * @brief Return the source lines
+   *
+   * @return SourceLines object
+   */
   SourceLines getSourceLines();
   std::shared_ptr<SourceTree> getSourceTree() override;
 

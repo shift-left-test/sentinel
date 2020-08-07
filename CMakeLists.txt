@@ -35,6 +35,7 @@ if(ENABLE_TEST)
   enable_static_analysis(NO_IWYU)
   enable_testing()
   enable_test_coverage()
+  enable_doxygen()
 endif()
 
 add_all_subdirectories()

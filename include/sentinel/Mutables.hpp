@@ -37,9 +37,26 @@ namespace sentinel {
  */
 class Mutables : public Persistence {
  public:
+  /**
+   * @brief Default constructor
+   *
+   * @param path to the mutables
+   */
   explicit Mutables(const std::string& path);
 
+  /**
+   * @brief Add the given mutable to the object
+   *
+   * @param m mutable object
+   */
   void add(const Mutable& m);
+
+  /**
+   * @brief Return a mutable object at the given index
+   *
+   * @param index for the object
+   * @return Mutable object
+   */
   Mutable get(std::size_t index);
   void load() override;
   void save() override;

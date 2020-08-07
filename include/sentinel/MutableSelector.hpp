@@ -38,7 +38,7 @@ class MutableSelector {
   /**
    * @brief Returns selected mutables under certain conditions
    *
-   * @param mutable candidates
+   * @param mutables candidates
    * @return selected mutables
    */
   virtual Mutables select(const Mutables& mutables) = 0;
