@@ -28,8 +28,7 @@
 namespace sentinel {
 
 DefaultLogger::DefaultLogger(const std::string& name) :
-    mName(name) {
-  mFormatString = "{name}::{type}::{message}";
+    mName(name), mFormatString("{name}::{type}::{message}") {
 }
 
 DefaultLogger::DefaultLogger(const std::string& name,
