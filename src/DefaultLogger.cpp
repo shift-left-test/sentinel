@@ -29,18 +29,36 @@ namespace sentinel {
 
 DefaultLogger::DefaultLogger(const std::string& name) :
     mName(name) {
+  mFormatString = "{name}::{type}::{message}";
+}
+
+DefaultLogger::DefaultLogger(const std::string& name,
+    const std::string& formatString) :
+    mName(name),
+    mFormatString(formatString) {
+  // Exception occurs when formatString has unexpected arguments
+  try {
+    fmt::format(mFormatString, fmt::arg("name", "ARGCHK"),
+      fmt::arg("type", "ARGCHK"), fmt::arg("message", "ARGCHK"));
+  }
+  catch (const fmt::format_error& e) {
+    throw InvalidArgumentException(e.what());
+  }
 }
 
 void DefaultLogger::error(const std::string& message) {
-  (void) message;
+  std::cerr << fmt::format(mFormatString, fmt::arg("name", mName),
+      fmt::arg("type", "ERROR"), fmt::arg("message", message)) << std::endl;
 }
 
 void DefaultLogger::info(const std::string& message) {
-  (void) message;
+  std::cout << fmt::format(mFormatString, fmt::arg("name", mName),
+      fmt::arg("type", "INFO"), fmt::arg("message", message)) << std::endl;
 }
 
 void DefaultLogger::warn(const std::string& message) {
-  (void) message;
+  std::cerr << fmt::format(mFormatString, fmt::arg("name", mName),
+      fmt::arg("type", "WARN"), fmt::arg("message", message)) << std::endl;
 }
 
 }  // namespace sentinel

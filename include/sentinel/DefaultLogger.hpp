@@ -25,6 +25,12 @@
 #ifndef INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
 #define INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
 
+#include <fmt/core.h>
+#include <fmt/chrono.h>
+#include <iostream>
+#include <string>
+#include <utility>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 
 
@@ -36,17 +42,41 @@ namespace sentinel {
 class DefaultLogger : public Logger {
  public:
   /**
-   * @brief Default constructor
+   * @brief Constructor with name of the logger
    *
    * @param name of the logger
    */
   explicit DefaultLogger(const std::string& name);
-
+  /**
+   * @brief Constructor with name of the logger and format string
+   *
+   * @param name of the logger
+   * @param formatString of the logger - {name}, {type}, {message} can be used as named arguments
+   * @throw sentinel::InvalidArgumentException when unexpected arguments are in formatString
+   */
+  explicit DefaultLogger(const std::string& name,
+      const std::string& formatString);
+  /**
+   * @brief Print a error message to cerr
+   *
+   * @param message error message
+   */
   void error(const std::string& message) override;
+  /**
+   * @brief Print a info message to cout
+   *
+   * @param message info message
+   */
   void info(const std::string& message) override;
+  /**
+   * @brief Print a warn message to cerr
+   *
+   * @param message warn message
+   */
   void warn(const std::string& message) override;
 
  private:
+  std::string mFormatString;
   std::string mName;
 };
 
