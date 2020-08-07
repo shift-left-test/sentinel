@@ -211,7 +211,7 @@ function(build_executable)
       PRIVATE ${BUILD_PRIVATE_HEADERS})
   endif()
 
-  if(CMAKE_CXX_STANDARD)
+  if(DEFINED CMAKE_CXX_STANDARD)
     set(CXX_STANDARD_VALUE ${CMAKE_CXX_STANDARD})
   else()
     set(CXX_STANDARD_VALUE 14)
