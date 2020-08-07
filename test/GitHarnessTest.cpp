@@ -28,6 +28,8 @@
 #include <memory>
 #include <stdexcept>
 #include "harness/git_harness.hpp"
+#include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 namespace sentinel {
 
@@ -39,12 +41,14 @@ class GitHarnessTest : public ::testing::Test {
 
   void SetUp() override {
     repo_name = "temp_repo";
-    executeSystemCommand("rm -rf temp_repo", "Fail to delete temp_repo folder");
+    if (util::filesystem::exists("temp_repo")) {
+      util::filesystem::removeDirectories("temp_repo");
+    }
     repo = std::make_shared<GitHarness>(repo_name);
   }
 
   void TearDown() override {
-    executeSystemCommand("rm -rf temp_repo", "Fail to delete temp_repo folder");
+    util::filesystem::removeDirectories("temp_repo");
   }
 
   static void getStagedAndUnstagedFiles(
@@ -102,10 +106,10 @@ class GitHarnessTest : public ::testing::Test {
 // Action: create a new directory and git init
 // Expected Output: new directory created, containing .git folder
 TEST_F(GitHarnessTest, init_Normal) {
-  EXPECT_TRUE(directoryExists(repo_name));
+  EXPECT_TRUE(util::filesystem::isDirectory(repo_name));
 
   std::string git_dir = repo_name + "/.git";
-  EXPECT_TRUE(directoryExists(git_dir));
+  EXPECT_TRUE(util::filesystem::isDirectory(git_dir));
 }
 
 // Action: initiate a git repo twice
@@ -121,7 +125,7 @@ TEST_F(GitHarnessTest, init_DirAlreadyExist) {
 // Expected Output: folder created at within repo at correct location
 TEST_F(GitHarnessTest, addFolder_Normal) {
   repo->addFolder("temp");
-  EXPECT_TRUE(directoryExists("temp_repo/temp"));
+  EXPECT_TRUE(util::filesystem::isDirectory("temp_repo/temp"));
 }
 
 // Action: call addFolder with a folder that already exist
@@ -135,7 +139,8 @@ TEST_F(GitHarnessTest, addFolder_FolderExisted) {
 // Expected Output: assertion errors
 TEST_F(GitHarnessTest, addFolder_InvalidPath) {
   std::string msg = "Fail to make directory";
-  EXPECT_DEATH({repo->addFolder("unexisted/temp");}, msg.c_str());
+  // EXPECT_DEATH({repo->addFolder("unexisted/temp");}, msg.c_str());
+  EXPECT_THROW(repo->addFolder("unexisted/temp"), IOException);
 }
 
 // Action: create new file in git repo with empty main function
@@ -146,7 +151,7 @@ TEST_F(GitHarnessTest, addFile_Normal) {
   repo->addFile(filename, content);
 
   filename = repo_name + "/" + filename;
-  EXPECT_TRUE(fileExists(filename));
+  EXPECT_TRUE(util::filesystem::isRegularFile(filename));
 
   std::ifstream created_file(filename.c_str());
   std::string inserted_content((std::istreambuf_iterator<char>(created_file)),

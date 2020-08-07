@@ -7,11 +7,6 @@
 
 namespace sentinel {
 
-bool directoryExists(const std::string& directory);
-bool fileExists(const std::string& name);
-void executeSystemCommand(const std::string& command, 
-                          const std::string& error_msg);
-
 class GitHarness
 {
 public:

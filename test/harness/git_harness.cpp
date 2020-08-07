@@ -31,6 +31,8 @@
 #include <iostream>
 #include <stdexcept>
 #include "git_harness.hpp"
+#include "sentinel/util/filesystem.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
 
@@ -39,11 +41,11 @@ GitHarness::GitHarness(std::string& dir_name) : repo(nullptr) {
 
   // Create the directory.
   // Exit with error message if it already existed or fail to generate
-  if (directoryExists(dir_name)) {
-    throw std::runtime_error(dir_name + " already exists");
+  if (util::filesystem::isDirectory(dir_name)) {
+    throw IOException(EEXIST);
   }
 
-  executeSystemCommand("mkdir "+dir_name, "Fail to make directory: "+dir_name);
+  util::filesystem::createDirectory(dir_name);
 
   // git init
   if (git_repository_init(&repo, dir_name.c_str(), 0) != 0) {
@@ -57,12 +59,11 @@ GitHarness::GitHarness(std::string& dir_name) : repo(nullptr) {
 // Create a folder within git directory.
 // The folder path should be relative w.r.t. repo path
 GitHarness& GitHarness::addFolder(const std::string& folder_name) {
-  if (directoryExists(repo_path+"/"+folder_name)) {
-    throw std::runtime_error(folder_name + " already exists");
+  if (util::filesystem::isDirectory(repo_path+"/"+folder_name)) {
+    throw IOException(EEXIST);
   }
 
-  executeSystemCommand("mkdir "+repo_path+"/"+folder_name,
-                       "Fail to make directory: "+folder_name);
+  util::filesystem::createDirectory(repo_path + "/" + folder_name);
 
   return *this;
 }
@@ -70,8 +71,8 @@ GitHarness& GitHarness::addFolder(const std::string& folder_name) {
 // Create a file at specified location (relative path w.r.t repo path)
 GitHarness& GitHarness::addFile(const std::string& filename,
                                 const std::string& content) {
-  if (fileExists(repo_path+"/"+filename)) {
-    throw std::runtime_error(filename + " already exists");
+  if (util::filesystem::isRegularFile(repo_path+"/"+filename)) {
+    throw IOException(EEXIST);
   }
 
   std::string new_filename_str = repo_path + "/" + filename;
@@ -97,8 +98,8 @@ GitHarness& GitHarness::addCode(const std::string& filename,
                                 const std::string& content,
                                 int line, int col) {
   std::string filename_full = repo_path + "/" + filename;
-  if (!fileExists(filename_full)) {
-    throw std::runtime_error(filename_full + " does not exist");
+  if (!util::filesystem::isRegularFile(filename_full)) {
+    throw IOException(EINVAL);
   }
 
   // Create a temporary file to modify file content.
@@ -139,8 +140,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  executeSystemCommand("mv " + filename_full + ".temp " + filename_full,
-                       "Fail to replace original file with temp file.");
+  util::filesystem::rename(filename_full+".temp", filename_full);
   return *this;
 }
 
@@ -148,8 +148,8 @@ GitHarness& GitHarness::addCode(const std::string& filename,
 GitHarness& GitHarness::deleteCode(const std::string& filename,
                                    const std::vector<int>& lines) {
   std::string filename_full = repo_path + "/" + filename;
-  if (!fileExists(filename_full)) {
-    throw std::runtime_error(filename_full + " does not exist");
+  if (!util::filesystem::isRegularFile(filename_full)) {
+    throw IOException(EINVAL);
   }
 
   // Create a temporary file to modify file content.
@@ -175,16 +175,15 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  executeSystemCommand("mv " + filename_full + ".temp " + filename_full,
-                       "Fail to replace original file with temp file.");
+  util::filesystem::rename(filename_full+".temp", filename_full);
   return *this;
 }
 
 // git add <filenames>
 GitHarness& GitHarness::stageFile(std::vector<std::string>& filenames) {
   for (const auto& filename : filenames) {
-    if (!fileExists(repo_path + "/" + filename)) {
-      throw std::runtime_error(filename + " does not exist");
+    if (!util::filesystem::isRegularFile(repo_path + "/" + filename)) {
+      throw IOException(EINVAL);
     }
   }
 
@@ -331,38 +330,6 @@ void GitHarness::libgitErrorCheck(int error, const char* msg) {
 
   std::cerr << msg << std::endl;
   exit(1);
-}
-
-// TODO(loc.phan): replace with function in filesystem module
-bool directoryExists(const std::string& directory) {
-  if (!directory.empty()) {
-    if (access(directory.c_str(), 0) == 0) {
-      struct stat status = {};
-      stat(directory.c_str(), &status);
-
-      if ((status.st_mode & S_IFDIR) != 0) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-// TODO(loc.phan): replace with function in filesystem module
-bool fileExists(const std::string& name) {
-  struct stat buffer = {};
-  return (stat (name.c_str(), &buffer) == 0);
-}
-
-// TODO(loc.phan): replace with function in filesystem module
-void executeSystemCommand(const std::string& command,
-                          const std::string& error_msg) {
-  int status = std::system(command.c_str());
-  if (status != 0 && error_msg.length() > 0) {
-    std::cerr << error_msg << std::endl;
-    exit(1);
-  }
 }
 
 }  // namespace sentinel

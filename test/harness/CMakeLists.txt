@@ -30,5 +30,5 @@ build_static_library(
   NAME git-harness
   SRCS git_harness.cpp
   PUBLIC_HEADERS . ${LIBGIT2_INCLUDE_DIR}
-  LIBS ${LIBGIT2_LIBRARIES}
+  LIBS sentinel-core ${LIBGIT2_LIBRARIES}
 )
