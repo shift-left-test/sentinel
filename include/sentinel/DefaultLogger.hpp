@@ -25,12 +25,7 @@
 #ifndef INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
 #define INCLUDE_SENTINEL_DEFAULTLOGGER_HPP_
 
-#include <fmt/core.h>
-#include <fmt/chrono.h>
-#include <iostream>
 #include <string>
-#include <utility>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 
 

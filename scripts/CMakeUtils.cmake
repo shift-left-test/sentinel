@@ -211,13 +211,19 @@ function(build_executable)
       PRIVATE ${BUILD_PRIVATE_HEADERS})
   endif()
 
+  if(CMAKE_CXX_STANDARD)
+    set(CXX_STANDARD_VALUE ${CMAKE_CXX_STANDARD})
+  else()
+    set(CXX_STANDARD_VALUE 14)
+  endif()
+
   if(BUILD_TYPE STREQUAL "TEST")
     find_package(Threads REQUIRED)
     find_package(GTest REQUIRED)
     find_package(GMock REQUIRED)
 
     set_target_properties(${BUILD_NAME} PROPERTIES
-      CXX_STANDARD 14
+      CXX_STANDARD ${CXX_STANDARD_VALUE}
       CXX_STANDARD_REQUIRED ON
       CXX_EXTENSIONS OFF
     )

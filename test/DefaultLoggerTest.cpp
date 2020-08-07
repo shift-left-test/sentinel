@@ -25,214 +25,128 @@
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <string>
+#include <memory>
+#include "sentinel/Logger.hpp"
 #include "sentinel/DefaultLogger.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 
 namespace sentinel {
 
 class DefaultLoggerTest : public ::testing::Test {
  protected:
-  static constexpr const char* LOGGER_NAME_MYLOGGER = "MYLOGGER";
-  static constexpr const char* LOGGER_NAME_CUSTOMLOGGER = "CUSTOMLOGGER";
-  static constexpr const char* LOG_MESSAGE_START = "START";
-  static constexpr const char* LOG_MESSAGE_EMPTY = "";
-  static constexpr const char* DEFAULT_LOG_FORMAT = "{name}::{type}::{message}";
-  static constexpr const char* CUSTOM_LOG_FORMAT = "{message}({name}|{type})";
-  static constexpr const char* CUSTOM_LOG_FORMAT_WRONG = "{wrong_arg}";
-  static constexpr const char* CUSTOM_LOG_FORMAT_EMPTY = "";
-  static constexpr const char* LOG_TYPE_INFO = "INFO";
-  static constexpr const char* LOG_TYPE_ERROR = "ERROR";
-  static constexpr const char* LOG_TYPE_WARN = "WARN";
+  void captureStdout() {
+    testing::internal::CaptureStdout();
+  }
+
+  std::string getCapturedStdout() {
+    return testing::internal::GetCapturedStdout();
+  }
+
+  void captureStderr() {
+    testing::internal::CaptureStderr();
+  }
+
+  std::string getCapturedStderr() {
+    return testing::internal::GetCapturedStderr();
+  }
+
+  void CHECK_INFO(const std::string& message,
+                  const std::string& expected) {
+    testing::internal::CaptureStdout();
+    logger->info(message);
+    EXPECT_EQ(expected, testing::internal::GetCapturedStdout());
+  }
+
+  void CHECK_WARN(const std::string& message,
+                  const std::string& expected) {
+    testing::internal::CaptureStderr();
+    logger->warn(message);
+    EXPECT_EQ(expected, testing::internal::GetCapturedStderr());
+  }
+
+  void CHECK_ERROR(const std::string& message,
+                   const std::string& expected) {
+    testing::internal::CaptureStderr();
+    logger->error(message);
+    EXPECT_EQ(expected, testing::internal::GetCapturedStderr());
+  }
+
+  static constexpr const char* LOGGER_NAME = "MYLOGGER";
+  static constexpr const char* START_MESSAGE = "START";
+  static constexpr const char* EMPTY_MESSAGE = "";
+  static constexpr const char* DEFAULT_FORMAT = "{name}::{type}::{message}";
+  static constexpr const char* CUSTOM_FORMAT = "{message}({name}|{type})";
+  static constexpr const char* WRONG_FORMAT = "{wrong_arg}";
+  static constexpr const char* EMPTY_FORMAT = "";
+
+  std::shared_ptr<Logger> logger;
 };
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerInfoWithDefaultFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_MYLOGGER);
-
-  testing::internal::CaptureStdout();
-  logger.info(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStdout();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_INFO),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
-
-  testing::internal::CaptureStdout();
-  logger.info(LOG_MESSAGE_EMPTY);
-  capturedOutput
-      = testing::internal::GetCapturedStdout();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_INFO),
-          fmt::arg("message", LOG_MESSAGE_EMPTY)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME);
+  CHECK_INFO(START_MESSAGE, "MYLOGGER::INFO::START\n");
+  CHECK_INFO(EMPTY_MESSAGE, "MYLOGGER::INFO::\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerInfoWithCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT);
-
-  testing::internal::CaptureStdout();
-  logger.info(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStdout();
-
-  EXPECT_EQ(
-      fmt::format(CUSTOM_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_CUSTOMLOGGER),
-          fmt::arg("type", LOG_TYPE_INFO),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, CUSTOM_FORMAT);
+  CHECK_INFO(START_MESSAGE, "START(MYLOGGER|INFO)\n");
+  CHECK_INFO(EMPTY_MESSAGE, "(MYLOGGER|INFO)\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerInfoWithEmptyCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT_EMPTY);
-
-  testing::internal::CaptureStdout();
-  logger.info(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStdout();
-
-  EXPECT_EQ(std::string("\n"),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, EMPTY_FORMAT);
+  CHECK_INFO(START_MESSAGE, "\n");
+  CHECK_INFO(EMPTY_MESSAGE, "\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerWarnWithDefaultFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_MYLOGGER);
-
-  testing::internal::CaptureStderr();
-  logger.warn(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_WARN),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
-
-  testing::internal::CaptureStderr();
-  logger.warn(LOG_MESSAGE_EMPTY);
-  capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_WARN),
-          fmt::arg("message", LOG_MESSAGE_EMPTY)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME);
+  CHECK_WARN(START_MESSAGE, "MYLOGGER::WARN::START\n");
+  CHECK_WARN(EMPTY_MESSAGE, "MYLOGGER::WARN::\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerWarnWithCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT);
-
-  testing::internal::CaptureStderr();
-  logger.warn(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(CUSTOM_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_CUSTOMLOGGER),
-          fmt::arg("type", LOG_TYPE_WARN),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, CUSTOM_FORMAT);
+  CHECK_WARN(START_MESSAGE, "START(MYLOGGER|WARN)\n");
+  CHECK_WARN(EMPTY_MESSAGE, "(MYLOGGER|WARN)\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerWarnWithEmptyCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT_EMPTY);
-
-  testing::internal::CaptureStderr();
-  logger.warn(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(std::string("\n"),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, EMPTY_FORMAT);
+  CHECK_WARN(START_MESSAGE, "\n");
+  CHECK_WARN(EMPTY_MESSAGE, "\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerErrWithDefaultFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_MYLOGGER);
-
-  testing::internal::CaptureStderr();
-  logger.error(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_ERROR),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
-
-  testing::internal::CaptureStderr();
-  logger.error(LOG_MESSAGE_EMPTY);
-  capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(DEFAULT_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_MYLOGGER),
-          fmt::arg("type", LOG_TYPE_ERROR),
-          fmt::arg("message", LOG_MESSAGE_EMPTY)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME);
+  CHECK_ERROR(START_MESSAGE, "MYLOGGER::ERROR::START\n");
+  CHECK_ERROR(EMPTY_MESSAGE, "MYLOGGER::ERROR::\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerErrWithCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT);
-
-  testing::internal::CaptureStderr();
-  logger.error(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(
-      fmt::format(CUSTOM_LOG_FORMAT + std::string("\n"),
-          fmt::arg("name", LOGGER_NAME_CUSTOMLOGGER),
-          fmt::arg("type", LOG_TYPE_ERROR),
-          fmt::arg("message", LOG_MESSAGE_START)),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, CUSTOM_FORMAT);
+  CHECK_ERROR(START_MESSAGE, "START(MYLOGGER|ERROR)\n");
+  CHECK_ERROR(EMPTY_MESSAGE, "(MYLOGGER|ERROR)\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerErrWithEmptyCustomFormat) {
-  sentinel::DefaultLogger logger(
-      LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT_EMPTY);
-
-  testing::internal::CaptureStderr();
-  logger.error(LOG_MESSAGE_START);
-  std::string capturedOutput
-      = testing::internal::GetCapturedStderr();
-
-  EXPECT_EQ(std::string("\n"),
-      capturedOutput);
+  logger = std::make_shared<DefaultLogger>(LOGGER_NAME, EMPTY_FORMAT);
+  CHECK_ERROR(START_MESSAGE, "\n");
+  CHECK_ERROR(EMPTY_MESSAGE, "\n");
 }
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerWithWrongFormat) {
   EXPECT_THROW({
     try {
-      sentinel::DefaultLogger logger(
-          LOGGER_NAME_CUSTOMLOGGER, CUSTOM_LOG_FORMAT_WRONG);
+      DefaultLogger logger(LOGGER_NAME, WRONG_FORMAT);
     }
-    catch (const sentinel::InvalidArgumentException& e){
+    catch (const InvalidArgumentException& e){
       EXPECT_STREQ("argument not found", e.what());
       throw;
     }
-  }, sentinel::InvalidArgumentException);
+  }, InvalidArgumentException);
 }
 
 }  // namespace sentinel

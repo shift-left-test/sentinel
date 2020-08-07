@@ -28,7 +28,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/scripts)
 
 include(CMakeUtils)
 
-set_cxx_standard(14)
+set_cxx_standard(17)
 set_default_build_type(Release)
 
 if(ENABLE_TEST)
