@@ -20,15 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-build_static_library(
+build_external_static_library(
   NAME tinyxml2
   SRCS src/tinyxml2.cpp
   PUBLIC_HEADERS include
-)
-
-set_target_properties(
-  tinyxml2 PROPERTIES
-  CXX_CLANG_TIDY ""
-  CXX_CPPCHECK ""
-  CXX_CPPLINT ""
 )

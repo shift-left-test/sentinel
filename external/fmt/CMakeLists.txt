@@ -20,15 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-build_static_library(
+build_external_static_library(
   NAME fmt
   SRCS src/format.cc src/os.cc
   PUBLIC_HEADERS include
-)
-
-set_target_properties(
-  fmt PROPERTIES
-  CXX_CLANG_TIDY ""
-  CXX_CPPCHECK ""
-  CXX_CPPLINT ""
 )
