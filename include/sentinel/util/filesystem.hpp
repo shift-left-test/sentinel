@@ -175,10 +175,9 @@ inline void removeDirectory(const std::string& path) {
 /**
  * @brief Delete a specified file.
  *
+ * @param path to target directory.
  * @throw IOException given path is not a file, or
  *                    given path does not exist.
- *
- * @param path to target directory.
  */
 inline void removeFile(const std::string& path) {
   if (std::remove(path.c_str()) != 0) {
@@ -216,11 +215,9 @@ inline void removeDirectories(const std::string& path) {
 /**
  * @brief Create a temporary file name with given template.
  *
- * @throw IOException a unique name cannot be created.
- *
  * @param pre_template front part of file name template, before XXXXXX
- *
  * @return temporary file name.
+ * @throw IOException a unique name cannot be created.
  */
 inline std::string tempPath(const std::string& pre_template) {
   std::string filename_template = pre_template + "XXXXXX";
@@ -234,11 +231,9 @@ inline std::string tempPath(const std::string& pre_template) {
 /**
  * @brief Create a temporary directory whose name follows the given template.
  *
- * @throw IOException a unique name cannot be created.
- *
  * @param name_template template of directory name.
- *
  * @return temporary directory name.
+ * @throw IOException a unique name cannot be created.
  */
 inline std::string tempDirectory(const std::string& pre_template) {
   std::string dirname_template = pre_template + "XXXXXX";
@@ -258,24 +253,21 @@ inline std::string tempDirectory(const std::string& pre_template) {
 template <typename ... Arg>
 inline std::string join(const std::string& path1,
                         const Arg&... paths) {
-  return sentinel::util::string::join(SEPARATOR, {path1, paths ...});
+  return string::join(SEPARATOR, {path1, paths ...});
 }
 
 /**
  * @brief Replace the file dest with the file src.
  *
- * @throw IOException src is not an exising file, or
- *                    dest is an existing directory.
- *
  * @param src replacing file
  * @param dest to-be-replaced file
+ * @throw IOException src is not an exising file, or
+ *                    dest is an existing directory.
  */
 inline void rename(const std::string& src, const std::string& dest) {
   if (!isRegularFile(src)) {
-    //  ||  (exists(dest) && !isRegularFile(dest))) {
     throw IOException(EINVAL);
   }
-
   if (std::rename(src.c_str(), dest.c_str()) != 0) {
     throw IOException(errno);
   }

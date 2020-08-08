@@ -23,25 +23,23 @@
 */
 
 #include <gtest/gtest.h>
-
 #include <fstream>
 #include <iostream>
 #include <string>
-
 #include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {
 
 class FilesystemTest : public ::testing::Test {
- protected:
-  static constexpr const char* FILE = "fixture/file";
-  static constexpr const char* NESTED_FILE = "fixture/dir/file";
-  static constexpr const char* DIRECTORY = "fixture/dir";
-  static constexpr const char* NESTED_DIRECTORY = "fixture/dir/dir";
-  static constexpr const char* UNKNOWN_PATH = "unknown/unknown";
-  static constexpr const char* UNKNOWN_NESTED_PATH = "fixture/dir/unknown";
 };
+
+static constexpr const char* FILE = "fixture/file";
+static constexpr const char* NESTED_FILE = "fixture/dir/file";
+static constexpr const char* DIRECTORY = "fixture/dir";
+static constexpr const char* NESTED_DIRECTORY = "fixture/dir/dir";
+static constexpr const char* UNKNOWN_PATH = "unknown/unknown";
+static constexpr const char* UNKNOWN_NESTED_PATH = "fixture/dir/unknown";
 
 TEST_F(FilesystemTest, testExistsReturnTrueWhenValidFilesGiven) {
   EXPECT_TRUE(util::filesystem::exists(FILE));

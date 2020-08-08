@@ -35,22 +35,6 @@ namespace sentinel {
 
 class DefaultLoggerTest : public ::testing::Test {
  protected:
-  void captureStdout() {
-    testing::internal::CaptureStdout();
-  }
-
-  std::string getCapturedStdout() {
-    return testing::internal::GetCapturedStdout();
-  }
-
-  void captureStderr() {
-    testing::internal::CaptureStderr();
-  }
-
-  std::string getCapturedStderr() {
-    return testing::internal::GetCapturedStderr();
-  }
-
   void CHECK_INFO(const std::string& message,
                   const std::string& expected) {
     testing::internal::CaptureStdout();
@@ -72,16 +56,16 @@ class DefaultLoggerTest : public ::testing::Test {
     EXPECT_EQ(expected, testing::internal::GetCapturedStderr());
   }
 
-  static constexpr const char* LOGGER_NAME = "MYLOGGER";
-  static constexpr const char* START_MESSAGE = "START";
-  static constexpr const char* EMPTY_MESSAGE = "";
-  static constexpr const char* DEFAULT_FORMAT = "{name}::{type}::{message}";
-  static constexpr const char* CUSTOM_FORMAT = "{message}({name}|{type})";
-  static constexpr const char* WRONG_FORMAT = "{wrong_arg}";
-  static constexpr const char* EMPTY_FORMAT = "";
-
   std::shared_ptr<Logger> logger;
 };
+
+static constexpr const char* LOGGER_NAME = "MYLOGGER";
+static constexpr const char* START_MESSAGE = "START";
+static constexpr const char* EMPTY_MESSAGE = "";
+static constexpr const char* DEFAULT_FORMAT = "{name}::{type}::{message}";
+static constexpr const char* CUSTOM_FORMAT = "{message}({name}|{type})";
+static constexpr const char* WRONG_FORMAT = "{wrong_arg}";
+static constexpr const char* EMPTY_FORMAT = "";
 
 TEST_F(DefaultLoggerTest, testDefaultLoggerInfoWithDefaultFormat) {
   logger = std::make_shared<DefaultLogger>(LOGGER_NAME);

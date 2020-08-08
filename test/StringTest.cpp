@@ -30,17 +30,17 @@
 namespace sentinel {
 
 class StringTest : public ::testing::Test {
- protected:
-  static constexpr const char* SPACE_HELLO_WORLD_SPACE = " HELLO WORLD ";
-  static constexpr const char* SPACE_HELLO_WORLD = " HELLO WORLD";
-  static constexpr const char* HELLO_WORLD_SPACE = "HELLO WORLD ";
-  static constexpr const char* HELLO_WORLD = "HELLO WORLD";
-  static constexpr const char* hello_world = "hello world";
-  static constexpr const char* HELLO = "HELLO";
-  static constexpr const char* WORLD = "WORLD";
-  static constexpr const char* SPACE = " ";
-  static constexpr const char* BLANK = "";
 };
+
+static constexpr const char* SPACE_HELLO_WORLD_SPACE = " HELLO WORLD ";
+static constexpr const char* SPACE_HELLO_WORLD = " HELLO WORLD";
+static constexpr const char* HELLO_WORLD_SPACE = "HELLO WORLD ";
+static constexpr const char* HELLO_WORLD = "HELLO WORLD";
+static constexpr const char* hello_world = "hello world";
+static constexpr const char* HELLO = "HELLO";
+static constexpr const char* WORLD = "WORLD";
+static constexpr const char* SPACE = " ";
+static constexpr const char* BLANK = "";
 
 TEST_F(StringTest, testStartsWithReturnTrueWhenValidArgsGiven) {
   EXPECT_TRUE(util::string::startsWith(HELLO_WORLD, HELLO_WORLD));
