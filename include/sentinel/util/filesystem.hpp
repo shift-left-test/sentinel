@@ -115,6 +115,19 @@ inline std::string filename(std::string path) {
 }
 
 /**
+ * @brief Join the given paths with slash ('/')
+ *
+ * @param path1 the first path
+ * @param paths the other paths, in order.
+ * @return joined path
+ */
+template <typename ... Arg>
+inline std::string join(const std::string& path1,
+                        const Arg&... paths) {
+  return string::join(SEPARATOR, {path1, paths ...});  // NOLINT
+}
+
+/**
  * @brief Create a new directory at given path.
  *
  * @param path to new folder (name included).
@@ -195,12 +208,12 @@ inline void removeDirectories(const std::string& path) {
   DIR *d = opendir(path.c_str());
   if (d != nullptr) {
     struct dirent *entry = nullptr;
-    while ((entry = readdir(d))) {
-      if (strcmp(entry->d_name, ".") == 0 ||
-          strcmp(entry->d_name, "..") == 0) {
+    while ((entry = readdir(d)) != nullptr) {
+      if (std::strcmp(static_cast<const char *>(entry->d_name), ".") == 0 ||
+          std::strcmp(static_cast<const char *>(entry->d_name), "..") == 0) {
         continue;
       }
-      std::string subpath = path + SEPARATOR + std::string(entry->d_name);
+      auto subpath = join(path, entry->d_name);
       if (isDirectory(subpath)) {
         removeDirectories(subpath);
       } else {
@@ -241,19 +254,6 @@ inline std::string tempDirectory(const std::string& pre_template) {
     throw IOException(errno);
   }
   return dirname_template;
-}
-
-/**
- * @brief Join the given paths with slash ('/')
- *
- * @param path1 the first path
- * @param paths the other paths, in order.
- * @return joined path
- */
-template <typename ... Arg>
-inline std::string join(const std::string& path1,
-                        const Arg&... paths) {
-  return string::join(SEPARATOR, {path1, paths ...});
 }
 
 /**

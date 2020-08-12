@@ -27,18 +27,15 @@
 #include <fstream>
 #include <memory>
 #include <stdexcept>
-#include "harness/git_harness.hpp"
+#include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/filesystem.hpp"
+
 
 namespace sentinel {
 
 class GitHarnessTest : public ::testing::Test {
  protected:
-  // GitHarnessTest() : repo_name("temp_repo");
-  // GitHarnessTest() = default;
-  // ~GitHarnessTest() = default;
-
   void SetUp() override {
     repo_name = "temp_repo";
     if (util::filesystem::exists("temp_repo")) {
@@ -424,5 +421,3 @@ TEST_F(GitHarnessTest, addTagLightweight_TaggedCommit) {
 }
 
 }  // namespace sentinel
-
-

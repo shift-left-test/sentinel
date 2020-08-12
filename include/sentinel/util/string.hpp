@@ -151,8 +151,7 @@ inline bool contains(const std::string& haystack,
  * @param delim delimiter
  * @return list of splitted strings
  */
-inline std::vector<std::string> split(const std::string& s,
-                                      const char delim = ' ') {
+inline std::vector<std::string> split(const std::string& s, char delim = ' ') {
   std::vector<std::string> tokens;
   std::istringstream ss;
   ss.str(s);
@@ -192,7 +191,7 @@ inline std::string join(const std::string& delim,
  * @param tokens to join
  * @return joined string
  */
-inline std::string join(const char delim,
+inline std::string join(char delim,
                         const std::vector<std::string>& tokens) {
   return join(std::string(1, delim), tokens);
 }
@@ -207,7 +206,7 @@ inline std::string join(const char delim,
 template <typename ... Arg>
 inline std::string join(const std::string& delim,
                         const Arg&... tokens) {
-  return join(delim, { tokens ... });
+  return join(delim, { tokens ... });  // NOLINT
 }
 
 /**
@@ -218,7 +217,7 @@ inline std::string join(const std::string& delim,
  * @return joined string
  */
 template <typename ... Arg>
-inline std::string join(const char delim,
+inline std::string join(char delim,
                         const Arg&... tokens) {
   return join(std::string(1, delim), { tokens ... });
 }

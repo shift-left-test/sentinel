@@ -30,13 +30,14 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include "git_harness.hpp"
+#include "git-harness/GitHarness.hpp"
 #include "sentinel/util/filesystem.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
 
-GitHarness::GitHarness(std::string& dir_name) : repo(nullptr) {
+GitHarness::GitHarness(const std::string& dir_name) :
+    repo(nullptr) {
   git_libgit2_init();
 
   // Create the directory.
@@ -54,6 +55,11 @@ GitHarness::GitHarness(std::string& dir_name) : repo(nullptr) {
   }
 
   repo_path = dir_name;
+}
+
+GitHarness::~GitHarness() {
+  git_repository_free(repo);
+  git_libgit2_shutdown();
 }
 
 // Create a folder within git directory.
@@ -180,12 +186,12 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
 }
 
 // git add <filenames>
-GitHarness& GitHarness::stageFile(std::vector<std::string>& filenames) {
-  if (std::any_of(
-          filenames.cbegin(),
-          filenames.cend(),
-          [this](std::string s){
-              return !util::filesystem::isRegularFile(repo_path+"/"+s);})) {
+GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
+  auto noRegularFile = [&](const auto& s) {
+    auto path = util::filesystem::join(repo_path, s);
+    return !util::filesystem::isRegularFile(path);
+  };
+  if (std::any_of(filenames.begin(), filenames.end(), noRegularFile)) {
     throw IOException(EINVAL);
   }
 
@@ -333,5 +339,3 @@ void GitHarness::libgitErrorCheck(int error, const char* msg) {
 }
 
 }  // namespace sentinel
-
-

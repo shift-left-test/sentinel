@@ -131,3 +131,7 @@ CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
 html/
 test/result/
+
+GPATH
+GRTAGS
+GTAGS

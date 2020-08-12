@@ -7,16 +7,19 @@
 
 namespace sentinel {
 
-class GitHarness
-{
+class GitHarness {
 public:
   /**
    * @brief Default constructor. Create a new git repo with given folder name.
    *
    * @param dir_name name of new git folder.
    */
-  explicit GitHarness(std::string& dir_name);
-  ~GitHarness() { git_repository_free(repo); git_libgit2_shutdown(); }
+  explicit GitHarness(const std::string& dir_name);
+
+  /**
+   * @brief Default destructor
+   */
+  virtual ~GitHarness();
 
   /**
    * @brief Create a new folder within the git repo.
@@ -59,8 +62,8 @@ public:
    *                 with to git repo path.
    * @param lines    list of target lines to delete.
    */
-  GitHarness& deleteCode(const std::string& filename, 
-		         const std::vector<int>& lines);  
+  GitHarness& deleteCode(const std::string& filename,
+		         const std::vector<int>& lines);
 
   /**
    * @brief Implementation of git add <filenames>.
@@ -68,7 +71,7 @@ public:
    * @param filenames list of relative file paths (target file name included)
    *                  with respect to git repo path.
    */
-  GitHarness& stageFile(std::vector<std::string>& filenames);
+  GitHarness& stageFile(std::vector<std::string> filenames);
 
   /**
    * @brief Implementation of git commit -m <message>
@@ -76,7 +79,7 @@ public:
    * @param message commit message.
    */
   GitHarness& commit(const std::string& message);
-  
+
   /**
    * @brief Implementation of git tag <tag name> <commit id>.
    *
@@ -85,7 +88,7 @@ public:
    */
   GitHarness& addTagLightweight(const std::string& tag_name,
                                 const std::string& oid_str);
-  
+
   /**
    * @brief Implementation of git tag <tag name>. Tag the head commit.
    *
@@ -135,5 +138,3 @@ struct index_options {
 }  // namespace sentinel
 
 #endif  // GIT_HARNESS_H
-
-
