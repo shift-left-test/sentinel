@@ -205,9 +205,9 @@ inline void removeFile(const std::string& path) {
  * @param path to new folder.
  */
 inline void removeDirectories(const std::string& path) {
-  DIR *d = opendir(path.c_str());
+  DIR* d = opendir(path.c_str());
   if (d != nullptr) {
-    struct dirent *entry = nullptr;
+    struct dirent* entry = nullptr;
     while ((entry = readdir(d)) != nullptr) {
       if (std::strcmp(static_cast<const char *>(entry->d_name), ".") == 0 ||
           std::strcmp(static_cast<const char *>(entry->d_name), "..") == 0) {
@@ -228,32 +228,32 @@ inline void removeDirectories(const std::string& path) {
 /**
  * @brief Create a temporary file name with given template.
  *
- * @param pre_template front part of file name template, before XXXXXX
+ * @param prefix front part of file name template, before XXXXXX
  * @return temporary file name.
  * @throw IOException a unique name cannot be created.
  */
-inline std::string tempPath(const std::string& pre_template) {
-  std::string filename_template = pre_template + "XXXXXX";
-  if (mkstemp(&filename_template[0]) == -1) {
+inline std::string tempPath(const std::string& prefix = "") {
+  auto path = prefix + "XXXXXX";
+  if (mkstemp(&path[0]) == -1) {
     throw IOException(errno);
   }
-  removeFile(filename_template);
-  return filename_template;
+  removeFile(path);
+  return path;
 }
 
 /**
  * @brief Create a temporary directory whose name follows the given template.
  *
- * @param name_template template of directory name.
+ * @param prefix template of directory name.
  * @return temporary directory name.
  * @throw IOException a unique name cannot be created.
  */
-inline std::string tempDirectory(const std::string& pre_template) {
-  std::string dirname_template = pre_template + "XXXXXX";
-  if (mkdtemp(&dirname_template[0]) == nullptr) {
+inline std::string tempDirectory(const std::string& prefix = "") {
+  auto path = prefix + "XXXXXX";
+  if (mkdtemp(&path[0]) == nullptr) {
     throw IOException(errno);
   }
-  return dirname_template;
+  return path;
 }
 
 /**
