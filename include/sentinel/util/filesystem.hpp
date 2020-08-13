@@ -226,6 +226,21 @@ inline void removeDirectories(const std::string& path) {
 }
 
 /**
+ * @brief Create a temporary file with the given template.
+ *
+ * @param prefix of the filename
+ * @return temporary filename
+ * @throw IOException if not able to create a file
+ */
+inline std::string tempFilename(const std::string& prefix = "") {
+  auto path = prefix + "XXXXXX";
+  if (mkstemp(&path[0]) == -1) {
+    throw IOException(errno);
+  }
+  return path;
+}
+
+/**
  * @brief Create a temporary file name with given template.
  *
  * @param prefix front part of file name template, before XXXXXX
@@ -233,10 +248,7 @@ inline void removeDirectories(const std::string& path) {
  * @throw IOException a unique name cannot be created.
  */
 inline std::string tempPath(const std::string& prefix = "") {
-  auto path = prefix + "XXXXXX";
-  if (mkstemp(&path[0]) == -1) {
-    throw IOException(errno);
-  }
+  auto path = tempFilename(prefix);
   removeFile(path);
   return path;
 }

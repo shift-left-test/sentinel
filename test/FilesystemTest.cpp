@@ -32,14 +32,43 @@
 namespace sentinel {
 
 class FilesystemTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    using util::filesystem::join;
+    using util::filesystem::tempFilename;
+    using util::filesystem::tempPath;
+    using util::filesystem::tempDirectory;
+
+    BASE = tempDirectory("fixture");
+    FILE = tempFilename(join(BASE, "file"));
+    DIRECTORY = tempDirectory(join(BASE, "dir"));
+    NESTED_FILE = tempFilename(join(DIRECTORY, "file"));
+    NESTED_DIRECTORY = tempDirectory(join(DIRECTORY, "dir"));
+    UNKNOWN_PATH = "unknown/unknown";
+    UNKNOWN_NESTED_PATH = tempPath(join(DIRECTORY, "unknown"));
+  }
+
+  void TearDown() override {
+    util::filesystem::removeDirectories(BASE);
+  }
+
+  std::string BASE;
+  std::string FILE;
+  std::string NESTED_FILE;
+  std::string DIRECTORY;
+  std::string NESTED_DIRECTORY;
+  std::string UNKNOWN_PATH;
+  std::string UNKNOWN_NESTED_PATH;
 };
 
+/*
 static constexpr const char* FILE = "fixture/file";
 static constexpr const char* NESTED_FILE = "fixture/dir/file";
 static constexpr const char* DIRECTORY = "fixture/dir";
 static constexpr const char* NESTED_DIRECTORY = "fixture/dir/dir";
 static constexpr const char* UNKNOWN_PATH = "unknown/unknown";
 static constexpr const char* UNKNOWN_NESTED_PATH = "fixture/dir/unknown";
+*/
 
 TEST_F(FilesystemTest, testExistsReturnTrueWhenValidFilesGiven) {
   EXPECT_TRUE(util::filesystem::exists(FILE));
@@ -100,21 +129,20 @@ TEST_F(FilesystemTest, testFilename) {
 }
 
 TEST_F(FilesystemTest, testCreateAndRemoveDirectoryWhenValidDirsGiven) {
-  util::filesystem::createDirectory("fixture/temp");
-  EXPECT_TRUE(util::filesystem::isDirectory("fixture/temp"));
+  auto temp1 = util::filesystem::tempPath("temp");
+  auto temp2 = util::filesystem::join(temp1, "temp");
 
-  util::filesystem::removeDirectory("fixture/temp");
-  EXPECT_FALSE(util::filesystem::exists("fixture/temp"));
+  util::filesystem::createDirectory(temp1);
+  EXPECT_TRUE(util::filesystem::isDirectory(temp1));
 
-  util::filesystem::createDirectories("fixture/temps/temp");
-  std::ofstream tempfile1("fixture/temps/temp1.txt");
-  tempfile1.close();
-  std::ofstream tempfile2("fixture/temps/temp/temp2.txt");
-  tempfile1.close();
-  EXPECT_TRUE(util::filesystem::isDirectory("fixture/temps/temp"));
+  util::filesystem::removeDirectory(temp1);
+  EXPECT_FALSE(util::filesystem::exists(temp1));
 
-  util::filesystem::removeDirectories("fixture/temps");
-  EXPECT_FALSE(util::filesystem::exists("fixture/temps"));
+  util::filesystem::createDirectories(temp2);
+  EXPECT_TRUE(util::filesystem::exists(temp2));
+
+  util::filesystem::removeDirectories(temp2);
+  EXPECT_FALSE(util::filesystem::exists(temp2));
 }
 
 TEST_F(FilesystemTest, testCreateAndRemoveDirectoryWhenInvalidDirsGiven) {
