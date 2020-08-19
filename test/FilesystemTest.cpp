@@ -175,7 +175,7 @@ TEST_F(FilesystemTest, testTempDirectory) {
 TEST_F(FilesystemTest, testJoinPath) {
   EXPECT_STREQ("a", util::filesystem::join("a").c_str());
   EXPECT_STREQ("a/b", util::filesystem::join("a", "b").c_str());
-  EXPECT_STREQ("a/b/c", util::filesystem::join("a", "b", "c").c_str());
+  EXPECT_STREQ("a1/b1/c1", util::filesystem::join("a1", "b1", "c1").c_str());
 }
 
 TEST_F(FilesystemTest, testRenameWorksWhenBothFilesExist) {

@@ -122,6 +122,39 @@ class GitHarness {
   GitHarness& addTagLightweight(const std::string& tag_name);
 
   /**
+   * @brief Implementation of git checkout -b <branch_name>.
+   *
+   * @param branch_name name of new branch
+   * @param commit_id   ID of commit from which new branch is created.
+   */
+  GitHarness& createBranch(const std::string& branch_name);
+  GitHarness& createBranch(const std::string& branch_name,
+                           const std::string& commit_id);
+
+  /**
+   * @brief Implementation of git checkout <branch_name>.
+   *        Checkout an existing branch.
+   *
+   * @param branch_name name of target branch
+   */
+  GitHarness& checkoutBranch(const std::string& branch_name);
+
+  /**
+   * @brief Implementation of git merge <branch1> [<branch2> ...]
+   *
+   * @param branches names of branches to merge to HEAD
+   */
+  GitHarness& merge(const std::string& branch);
+  GitHarness& merge(const std::vector<std::string>& branches);
+
+  template <typename ... Arg>
+  inline GitHarness& merge(const Arg&... branches) {
+    std::vector<std::string> v = {branches ...};  // NOLINT
+    return merge(v);
+  }
+
+
+  /**
    * @brief Get HEAD commit id.
    */
   std::string getLatestCommitId();

@@ -314,6 +314,168 @@ GitHarness& GitHarness::addTagLightweight(const std::string& tag_name) {
   return *this;
 }
 
+GitHarness& GitHarness::createBranch(const std::string& branch_name) {
+  return createBranch(branch_name, "HEAD");
+}
+
+GitHarness& GitHarness::createBranch(const std::string& branch_name,
+                                     const std::string& commit_id) {
+  git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
+  git_reference* branch = nullptr;
+  git_commit* target_commit = nullptr;
+  git_oid oid;
+  const char* buf = commit_id.c_str();
+  git_object* object = nullptr;
+
+  checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+  if (git_oid_fromstrp(&oid, buf) < 0) {
+    libgitErrorCheck(git_reference_name_to_id(&oid, repo, commit_id.c_str()),
+                     "Fail to retrieve git_oid");
+  }
+
+  libgitErrorCheck(git_commit_lookup(&target_commit, repo, &oid),
+                    "Fail to retrieve commit");
+  libgitErrorCheck(git_object_lookup(&object, repo, &oid, GIT_OBJ_ANY),
+                   "Fail to retrieve object");
+  libgitErrorCheck(git_checkout_tree(
+                       repo,
+                       object,
+                       &checkout_opts),
+                   "Fail to checkout tree");
+  libgitErrorCheck(git_branch_create(&branch, repo, branch_name.c_str(),
+                                     target_commit, 0),
+                   "Fail to create new branch");
+
+  const char* target_head = git_reference_name(branch);
+  libgitErrorCheck(git_repository_set_head(repo, target_head),
+                   "Fail to update HEAD reference");
+
+  git_object_free(object);
+  git_reference_free(branch);
+  git_commit_free(target_commit);
+
+  return *this;
+}
+
+GitHarness& GitHarness::checkoutBranch(const std::string& branch_name) {
+  git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
+  git_oid oid;
+  git_object* object = nullptr;
+  git_reference* branch = nullptr;
+
+  checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+  libgitErrorCheck(git_branch_lookup(&branch, repo, branch_name.c_str(),
+                                     GIT_BRANCH_LOCAL),
+                   "Fail to retrieve branch");
+  libgitErrorCheck(git_object_lookup(&object, repo,
+                                     git_reference_target(branch),
+                                     GIT_OBJ_ANY),
+                   "Fail to retrieve object");
+  libgitErrorCheck(git_checkout_tree(repo, object, &checkout_opts),
+                   "Fail to checkout tree");
+
+  const char* target_head = git_reference_name(branch);
+  libgitErrorCheck(git_repository_set_head(repo, target_head),
+                   "Fail to update HEAD reference");
+
+  git_object_free(object);
+  git_reference_free(branch);
+
+  return *this;
+}
+
+GitHarness& GitHarness::merge(const std::vector<std::string>& branches) {
+  for (const std::string& branch : branches) {
+    merge(branch);
+  }
+
+  return *this;
+}
+
+
+GitHarness& GitHarness::merge(const std::string& branch) {
+  // simple merge for non-conflict branches
+  git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
+  git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
+
+  merge_opts.flags = GIT_MERGE_FAIL_ON_CONFLICT;
+  merge_opts.file_flags = GIT_MERGE_FILE_STYLE_DIFF3;
+
+  checkout_opts.checkout_strategy = GIT_CHECKOUT_FORCE |
+                                    GIT_CHECKOUT_ALLOW_CONFLICTS;
+
+  git_annotated_commit* target = nullptr;
+  git_reference* branch_ref = nullptr;
+
+  libgitErrorCheck(git_branch_lookup(&branch_ref, repo, branch.c_str(),
+                                     GIT_BRANCH_LOCAL),
+                   "Fail to retrieve branch");
+  libgitErrorCheck(git_annotated_commit_from_ref(&target, repo,
+                                                 branch_ref),
+                   "Fail to create git_annotated_commit");
+  libgitErrorCheck(
+      git_merge(
+          repo,
+          const_cast<const git_annotated_commit**>(&target),  // NOLINT
+          1, &merge_opts, &checkout_opts),
+      "merge failed");
+
+  // Prepare commit message
+  std::string commit_msg{"Merge branch " + branch + " into "};
+  git_reference* head_ref;
+  libgitErrorCheck(git_repository_head(&head_ref, repo),
+                   "failed to get repo HEAD");
+  commit_msg += git_reference_name(head_ref);
+
+  // Prepare parent commits
+  git_commit* parents[2];
+
+  libgitErrorCheck(git_commit_lookup(&parents[0], repo,
+                                     git_reference_target(head_ref)),
+                   "Fail to find HEAD commit");
+  libgitErrorCheck(git_commit_lookup(&parents[1], repo,
+                                     git_annotated_commit_id(target)),
+                   "Fail to find target branch commit");
+
+  // Create commit signature
+  git_signature* signature;
+  libgitErrorCheck(git_signature_now(&signature, "Loc Phan",
+                                     "loc.phan@lge.com"),
+                   "Error creating signature");
+
+  // Prepare commit tree and commit
+  git_oid commit_oid, tree_oid;
+  git_tree* tree;
+  git_index* index;
+
+  libgitErrorCheck(git_repository_index(&index, repo),
+                   "Could not open repository index");
+  libgitErrorCheck(git_index_write_tree(&tree_oid, index),
+                   "Could not write tree");
+  libgitErrorCheck(git_tree_lookup(&tree, repo, &tree_oid),
+                   "Error looking up tree");
+  libgitErrorCheck(git_commit_create(
+                       &commit_oid, repo, git_reference_name(head_ref),
+                       signature, signature, "UTF-8", commit_msg.c_str(),
+                       tree, 2,
+                       const_cast<const git_commit **>(parents)),  // NOLINT
+                   "Fail to create merge commit");
+  commit_ids.push_back(commit_oid);
+
+  // Clean up
+  git_repository_state_cleanup(repo);
+  git_reference_free(branch_ref);
+  git_annotated_commit_free(target);
+  git_commit_free(parents[0]);
+  git_commit_free(parents[1]);
+  git_reference_free(head_ref);
+  git_signature_free(signature);
+  git_tree_free(tree);
+  git_index_free(index);
+
+  return *this;
+}
+
 std::string GitHarness::getLatestCommitId() {
   if (commit_ids.empty()) {
     throw std::range_error("No commit was made yet");
@@ -333,8 +495,9 @@ void GitHarness::libgitErrorCheck(int error, const char* msg) {
   if (error == 0) {
     return;
   }
-
-  std::cerr << msg << std::endl;
+  std::cerr << error << std::endl;
+  throw IOException(EINVAL, msg);
+  // std::cerr << msg << std::endl;
   exit(1);
 }
 

@@ -397,7 +397,7 @@ TEST_F(GitHarnessTest, addTagLightweight_Normal) {
 
 // Action: tagging another commit using a used tag.
 // Expected Output: error message
-TEST_F(GitHarnessTest, addTagLightweight_TaggedCommit) {
+TEST_F(GitHarnessTest, addTagLightweight_FailWhenCommitAlreadyTagged) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::string message{"test commit_Normal"};
   std::string tag_name{"v0.1"};
@@ -416,8 +416,154 @@ TEST_F(GitHarnessTest, addTagLightweight_TaggedCommit) {
       .commit(message);
   target_oid = repo->getLatestCommitId();
   std::string error_msg = "Unable to create lightweight tag";
-  EXPECT_DEATH(repo->addTagLightweight(tag_name, target_oid),
-               error_msg.c_str());
+  EXPECT_THROW(repo->addTagLightweight(tag_name, target_oid),
+               IOException);
+}
+
+TEST_F(GitHarnessTest, createBranch_Normal) {
+  std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
+
+  repo->addFile("temp.cpp", initial_content);
+  repo->stageFile(target_files).commit(init_message);
+
+  std::string branch_name{"b1"};
+  repo->createBranch(branch_name);
+
+  // Check if branch b1 exists
+  git_reference *ref = nullptr;
+  EXPECT_EQ(git_branch_lookup(&ref, repo->getGitRepo(),
+                              branch_name.c_str(), GIT_BRANCH_LOCAL),
+            0);
+  git_reference_free(ref);
+}
+
+TEST_F(GitHarnessTest, checkoutBranch_Normal) {
+  std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
+
+  repo->addFile("temp.cpp", initial_content);
+  repo->stageFile(target_files).commit(init_message);
+
+  std::string branch_name{"b1"};
+  repo->createBranch(branch_name);
+
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b1_message{"b1 commit"};
+
+  repo->addFile("temp2.cpp", initial_content);
+  repo->stageFile(target_files2).commit(b1_message);
+
+  // After checkout, HEAD and master should point to the same commit.
+  // The repo should only contains temp.cpp and not temp2.cpp
+  repo->checkoutBranch("master");
+  git_reference* master_branch = nullptr;
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
+                    GIT_BRANCH_LOCAL);
+  git_oid head_oid;
+  git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
+  EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
+  EXPECT_FALSE(util::filesystem::exists("temp_repo/temp2.cpp"));
+
+  git_reference_free(master_branch);
+}
+
+TEST_F(GitHarnessTest, merge_Normal) {
+  std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
+
+  repo->addFile("temp.cpp", initial_content);
+  repo->stageFile(target_files).commit(init_message);
+
+  // Create branch b1 and add a new file.
+  std::vector<std::string> target_files1{"temp1.cpp"};
+  std::string b1_message{"b1: add temp1.cpp"};
+  repo->createBranch("b1");
+  repo->addFile("temp1.cpp", initial_content);
+  repo->stageFile(target_files1).commit(b1_message);
+
+  // Create branch b2 and add a new file.
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b2_message{"b2: add temp2.cpp"};
+  repo->checkoutBranch("master");
+  repo->createBranch("b2");
+  repo->addFile("temp2.cpp", initial_content);
+  repo->stageFile(target_files2).commit(b2_message);
+
+  // Add a new file in master branch
+  repo->checkoutBranch("master");
+  std::vector<std::string> target_files3{"temp3.cpp"};
+  std::string master_message{"master: add temp3.cpp"};
+  repo->addFile("temp3.cpp", initial_content);
+  repo->stageFile(target_files3).commit(master_message);
+
+  std::vector<std::string> target_branches{"b1", "b2"};
+  repo->merge(target_branches);
+
+  // After merge, HEAD and master should point to the same commit.
+  // The repo should contain both temp.cpp and temp2.cpp
+  repo->checkoutBranch("master");
+  git_reference* master_branch = nullptr;
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
+                    GIT_BRANCH_LOCAL);
+  git_oid head_oid;
+  git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
+  EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp1.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp2.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp3.cpp"));
+}
+
+TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
+  std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
+
+  repo->addFile("temp.cpp", initial_content);
+  repo->stageFile(target_files).commit(init_message);
+
+  // Create branch b1 and add a new file.
+  std::vector<std::string> target_files1{"temp1.cpp"};
+  std::string b1_message{"b1: add temp1.cpp"};
+  repo->createBranch("b1");
+  repo->addFile("temp1.cpp", initial_content);
+  repo->stageFile(target_files1).commit(b1_message);
+
+  // Create branch b2 and add a new file.
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b2_message{"b2: add temp2.cpp"};
+  repo->checkoutBranch("master");
+  repo->createBranch("b2");
+  repo->addFile("temp2.cpp", initial_content);
+  repo->stageFile(target_files2).commit(b2_message);
+
+  // Add a new file in master branch
+  repo->checkoutBranch("master");
+  std::vector<std::string> target_files3{"temp3.cpp"};
+  std::string master_message{"master: add temp3.cpp"};
+  repo->addFile("temp3.cpp", initial_content);
+  repo->stageFile(target_files3).commit(master_message);
+
+  repo->merge("b1", "b2");
+
+  // After merge, HEAD and master should point to the same commit.
+  // The repo should contain both temp.cpp and temp2.cpp
+  repo->checkoutBranch("master");
+  git_reference* master_branch = nullptr;
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
+                    GIT_BRANCH_LOCAL);
+  git_oid head_oid;
+  git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
+  EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp1.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp2.cpp"));
+  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp3.cpp"));
 }
 
 }  // namespace sentinel
