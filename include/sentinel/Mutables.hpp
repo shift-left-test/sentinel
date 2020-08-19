@@ -63,6 +63,7 @@ class Mutables : public Persistence {
 
  private:
   std::string mPath;
+  std::vector<Mutable> mData;
 };
 
 }  // namespace sentinel

@@ -43,50 +43,52 @@ class Mutable {
    * @brief Default constructor
    *
    * @param path to file from the source tree
-   * @param lineNumber line number for mutation
-   * @param column column index (from, to)
+   * @param first position to apply mutation
+   * @param last position to apply mutation
    * @param token to replace with
    */
   Mutable(const std::string& path,
-          int lineNumber,
-          const std::pair<int, int>& column,
+          const std::pair<int, int>& first,
+          const std::pair<int, int>& last,
           const std::string& token);
 
   /**
    * @brief Default constructor
    *
    * @param path to file from the source tree
-   * @param lineNumber line number for mutation
-   * @param first column index
-   * @param last column index
+   * @param firstLine line number of first position
+   * @param firstColumn column number of first position
+   * @param lastLine line number of last position
+   * @param lastColumn column number of last position
    * @param token to replace with
    */
   Mutable(const std::string& path,
-          int lineNumber,
-          int first,
-          int last,
+          int firstLine,
+	  int firstColumn,
+          int lastLine,
+          int lastColumn,
           const std::string& token);
 
   /**
-   * @brief Return the path
+   * @brief Return the path of mutated file.
    *
    * @return path to the file
    */
   std::string getPath() const;
 
   /**
-   * @brief Return the line number
+   * @brief Return the first position to apply mutation.
    *
-   * @return the line number
+   * @return line and column number of first position.
    */
-  int getLineNumber() const;
+  std::pair<int, int> getFirst() const;
 
   /**
-   * @brief Return the column information
+   * @brief Return the last position to apply mutation.
    *
-   * @return the column information (from, to)
+   * @return line and column number of last position.
    */
-  std::pair<int, int> getColumn() const;
+  std::pair<int, int> getLast() const;
 
   /**
    * @brief Return the token
@@ -95,17 +97,10 @@ class Mutable {
    */
   std::string getToken() const;
 
-  /**
-   * @brief Mutate the given source tree based on the mutable information
-   *
-   * @param sourceTree to mutate
-   */
-  void mutate(SourceTree sourceTree);
-
  private:
   std::string mPath;
-  int mLineNumber;
-  std::pair<int, int> mColumn;
+  std::pair<int, int> mFirst;
+  std::pair<int, int> mLast;
   std::string mToken;
 };
 
