@@ -37,15 +37,12 @@ namespace sentinel {
 class GitHarnessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name = "temp_repo";
-    if (util::filesystem::exists("temp_repo")) {
-      util::filesystem::removeDirectories("temp_repo");
-    }
+    repo_name = util::filesystem::tempPath("GitHarnessTest-");
     repo = std::make_shared<GitHarness>(repo_name);
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories("temp_repo");
+    util::filesystem::removeDirectories(repo_name);
   }
 
   static void getStagedAndUnstagedFiles(
@@ -122,7 +119,8 @@ TEST_F(GitHarnessTest, init_DirAlreadyExist) {
 // Expected Output: folder created at within repo at correct location
 TEST_F(GitHarnessTest, addFolder_Normal) {
   repo->addFolder("temp");
-  EXPECT_TRUE(util::filesystem::isDirectory("temp_repo/temp"));
+  EXPECT_TRUE(util::filesystem::isDirectory(
+    util::filesystem::join(repo_name, "temp")));
 }
 
 // Action: call addFolder with a folder that already exist
@@ -465,8 +463,10 @@ TEST_F(GitHarnessTest, checkoutBranch_Normal) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
-  EXPECT_FALSE(util::filesystem::exists("temp_repo/temp2.cpp"));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp.cpp")));
+  EXPECT_FALSE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp2.cpp")));
 
   git_reference_free(master_branch);
 }
@@ -513,10 +513,14 @@ TEST_F(GitHarnessTest, merge_Normal) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp1.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp2.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp3.cpp"));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp1.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp3.cpp")));
 }
 
 TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
@@ -560,10 +564,14 @@ TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp1.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp2.cpp"));
-  EXPECT_TRUE(util::filesystem::exists("temp_repo/temp3.cpp"));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp1.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(util::filesystem::exists(
+    util::filesystem::join(repo_name, "temp3.cpp")));
 }
 
 }  // namespace sentinel

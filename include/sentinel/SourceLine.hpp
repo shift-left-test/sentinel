@@ -36,7 +36,29 @@ namespace sentinel {
  */
 class SourceLine : public Source {
  public:
+  /**
+   * @brief Default constructor
+   *
+   * @param path source file path
+   *
+   * @param lineNumber soure line number
+   */
+  SourceLine(const char * path, int lineNumber);
+
+  /**
+   * @brief == operator overloading for std::find algorithm
+   *
+   * @param other other SourceLine instance
+   */
+  bool operator ==(const SourceLine & other) const {
+    return this->path_ == other.path_ && this->lineNumber_ == other.lineNumber_;
+  }
   std::string toString() override;
+
+ private:
+  std::string path_;
+  int lineNumber_;
+
 };
 
 }  // namespace sentinel
