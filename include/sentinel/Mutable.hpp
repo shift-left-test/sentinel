@@ -32,34 +32,57 @@
 
 namespace sentinel {
 
+/**
+ * @brief Location struct
+ */
+struct Location {
+  /**
+   * @brief Default constructor
+   *
+   * @param lineNum number
+   * @param colNum number
+   */
+  Location(int lineNum, int colNum) : line(lineNum), column(colNum) {}
+
+  /**
+   * @brief line number
+   */
+  int line;
+
+  /**
+   * @brief column number
+   */
+  int column;
+};
+
 class SourceTree;
 
 /**
  * @brief Mutable class
  */
-class Mutable {
+class Mutable {	
  public:
   /**
    * @brief Default constructor
    *
    * @param path to file from the source tree
-   * @param first position to apply mutation
-   * @param last position to apply mutation
+   * @param first location to apply mutation
+   * @param last location to apply mutation
    * @param token to replace with
    */
   Mutable(const std::string& path,
-          const std::pair<int, int>& first,
-          const std::pair<int, int>& last,
+          const Location& first,
+          const Location& last,
           const std::string& token);
 
   /**
    * @brief Default constructor
    *
    * @param path to file from the source tree
-   * @param firstLine line number of first position
-   * @param firstColumn column number of first position
-   * @param lastLine line number of last position
-   * @param lastColumn column number of last position
+   * @param firstLine line number of first location
+   * @param firstColumn column number of first location
+   * @param lastLine line number of last location
+   * @param lastColumn column number of last location
    * @param token to replace with
    */
   Mutable(const std::string& path,
@@ -77,18 +100,18 @@ class Mutable {
   std::string getPath() const;
 
   /**
-   * @brief Return the first position to apply mutation.
+   * @brief Return the first location to apply mutation.
    *
-   * @return line and column number of first position.
+   * @return line and column number of first location.
    */
-  std::pair<int, int> getFirst() const;
+  Location getFirst() const;
 
   /**
-   * @brief Return the last position to apply mutation.
+   * @brief Return the last location to apply mutation.
    *
-   * @return line and column number of last position.
+   * @return line and column number of last location.
    */
-  std::pair<int, int> getLast() const;
+  Location getLast() const;
 
   /**
    * @brief Return the token
@@ -99,8 +122,8 @@ class Mutable {
 
  private:
   std::string mPath;
-  std::pair<int, int> mFirst;
-  std::pair<int, int> mLast;
+  Location mFirst;
+  Location mLast;
   std::string mToken;
 };
 

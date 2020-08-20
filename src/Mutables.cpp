@@ -22,24 +22,94 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
+#include <cstdlib>
+#include <fstream>
+#include <stdexcept>
 #include <string>
 #include "sentinel/Mutable.hpp"
 #include "sentinel/Mutables.hpp"
+#include "sentinel/util/filesystem.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 
 namespace sentinel {
 
-Mutables::Mutables(const std::string& path) :
-    mPath(path) {
-}
+Mutables::Mutables(const std::string& path) : mPath(path) {}
 
 void Mutables::add(const Mutable& m) {
-  (void) m;
+  mData.push_back(m);
 }
 
 Mutable Mutables::get(std::size_t index) {
-  (void) index;
-  return Mutable("", 0, 0, 0, "");
+  if (index >= size()) {
+    throw std::out_of_range("Mutables: index out of range");
+  }
+
+  return mData[index];
+}
+
+int Mutables::size() { return mData.size(); }
+
+void Mutables::load() {
+  if (!util::filesystem::exists(mPath) ||
+      util::filesystem::isDirectory(mPath)) {
+    throw IOException(EINVAL);
+  }
+
+  std::ifstream inFile("example.txt");
+  std::string path, firstLine, firstCol, lastLine, lastCol, token;
+
+  while (getline(inFile, path, '\0')) {
+    // read Mutable information.
+    if (getline(inFile, firstLine, '\0')) {
+      throw IOException(EINVAL, "load: Insufficient Mutable information");
+    }
+
+    if (getline(inFile, firstCol, '\0')) {
+      throw IOException(EINVAL, "load: Insufficient Mutable information");
+    }
+
+    if (getline(inFile, lastLine, '\0')) {
+      throw IOException(EINVAL, "load: Insufficient Mutable information");
+    }
+
+    if (getline(inFile, lastCol, '\0')) {
+      throw IOException(EINVAL, "load: Insufficient Mutable information");
+    }
+
+    if (getline(inFile, token, '\0')) {
+      throw IOException(EINVAL, "load: Insufficient Mutable information");
+    }
+
+    mData.emplace_back(Mutable(path, std::stoi(firstLine), std::stoi(firstCol),
+                               std::stoi(lastLine), std::stoi(lastCol), token));
+
+    // read newline character and move on to the next Mutable on next line.
+    getline(inFile, path);
+  }
+
+  inFile.close();
+}
+
+void Mutables::save() {
+  std::ofstream outFile(mPath.c_str());
+
+  for (const auto& e : mData) {
+    Location first = e.getFirst();
+    Location last = e.getLast();
+    std::string mutableFormat{
+        "{1}\0{2}\0{3}\0{4}\0{5}\0{6}\0\n"};  // NOLINT
+    outFile << fmt::format(mutableFormat,
+                           fmt::arg("1", e.getPath()),
+                           fmt::arg("2", first.line),
+                           fmt::arg("3", first.column),
+                           fmt::arg("4", last.line),
+                           fmt::arg("5", last.column),
+                           fmt::arg("6", e.getToken()));
+  }
+
+  outFile.close();
 }
 
 }  // namespace sentinel

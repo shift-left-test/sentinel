@@ -30,38 +30,32 @@
 namespace sentinel {
 
 Mutable::Mutable(const std::string& path,
-                 int lineNumber,
-                 const std::pair<int, int>& column,
-                 const std::string& token) :
-    mPath(path), mLineNumber(lineNumber), mColumn(column), mToken(token) {
-}
+                 const Location& first,
+                 const Location& last,
+                 const std::string& token)
+    : mPath(path), mFirst(first), mLast(last), mToken(token) {}
 
 Mutable::Mutable(const std::string& path,
-                 int lineNumber,
-                 int first,
-                 int last,
-                 const std::string& token) :
-    Mutable(path, lineNumber, std::make_pair(first, last), token) {
-}
+                 int firstLine, int firstColumn,
+                 int lastLine, int lastColumn,
+                 const std::string& token)
+    : mPath(path), mFirst{firstLine, firstColumn},
+      mLast{lastLine, lastColumn}, mToken(token) {}
 
 std::string Mutable::getPath() const {
   return mPath;
 }
 
-int Mutable::getLineNumber() const {
-  return mLineNumber;
+Location Mutable::getFirst() const {
+  return mFirst;
 }
 
-std::pair<int, int> Mutable::getColumn() const {
-  return mColumn;
+Location Mutable::getLast() const {
+  return mLast;
 }
 
 std::string Mutable::getToken() const {
   return mToken;
-}
-
-void Mutable::mutate(SourceTree sourceTree) {
-  (void) sourceTree;
 }
 
 }  // namespace sentinel

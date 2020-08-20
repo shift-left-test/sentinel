@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_MUTABLES_HPP_
 #define INCLUDE_SENTINEL_MUTABLES_HPP_
 
+#include <vector>
 #include <string>
 #include "sentinel/Mutable.hpp"
 #include "sentinel/Persistence.hpp"
@@ -58,6 +59,32 @@ class Mutables : public Persistence {
    * @return Mutable object
    */
   Mutable get(std::size_t index);
+
+  /**
+   * @brief Return number of stored Mutable
+   *
+   * @return number of stored Mutable
+   */
+  int size();
+
+  /**
+   * @brief Return the iterator to the first Mutable in Mutables.
+   *
+   * @return iterator to the first Mutable.
+   */
+  inline std::vector<Mutable>::const_iterator begin() const {
+    return mData.cbegin();
+  }
+
+  /**
+   * @brief Return the iterator to the last Mutable in Mutables.
+   *
+   * @return iterator to the last Mutable.
+   */
+  inline std::vector<Mutable>::const_iterator end() const {
+    return mData.cend();
+  }
+
   void load() override;
   void save() override;
 
