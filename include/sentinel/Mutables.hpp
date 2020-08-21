@@ -85,6 +85,20 @@ class Mutables : public Persistence {
     return mData.cend();
   }
 
+  /**
+   * @brief Read a string literal from binary file.
+   *
+   * @return string read from file.
+   */
+  static std::string readStringFromFile(std::ifstream& inFile);
+
+  /**
+   * @brief Read an integer from binary file.
+   *
+   * @return int read from file.
+   */
+  static int readIntFromFile(std::ifstream& inFile);
+
   void load() override;
   void save() override;
 

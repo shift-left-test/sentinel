@@ -24,8 +24,16 @@ if(NOT ENABLE_TEST)
   return()
 endif()
 
+file(GLOB_RECURSE TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*Test.cpp")
+
 build_test_program(
   NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp DefaultLoggerTest.cpp
+  SRCS ${TEST_FILES}
   LIBS sentinel-core git-harness
 )
+
+# build_test_program(
+#   NAME unittest
+#   SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp DefaultLoggerTest.cpp
+#   LIBS sentinel-core git-harness
+# )

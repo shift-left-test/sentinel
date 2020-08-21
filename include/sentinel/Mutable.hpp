@@ -93,6 +93,14 @@ class Mutable {
           const std::string& token);
 
   /**
+   * @brief compare this Mutable with another. 
+   *
+   * @param other Mutable 
+   * @return True if Mutables are same. False otherwise
+   */
+  bool compare(const Mutable& other) const;
+
+  /**
    * @brief Return the path of mutated file.
    *
    * @return path to the file

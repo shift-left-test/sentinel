@@ -25,6 +25,7 @@
 #include <fmt/core.h>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include "sentinel/Mutable.hpp"
@@ -57,59 +58,72 @@ void Mutables::load() {
     throw IOException(EINVAL);
   }
 
-  std::ifstream inFile("example.txt");
-  std::string path, firstLine, firstCol, lastLine, lastCol, token;
+  std::ifstream inFile(mPath.c_str());
+  int num_mutants = readIntFromFile(inFile);
 
-  while (getline(inFile, path, '\0')) {
-    // read Mutable information.
-    if (getline(inFile, firstLine, '\0')) {
-      throw IOException(EINVAL, "load: Insufficient Mutable information");
-    }
-
-    if (getline(inFile, firstCol, '\0')) {
-      throw IOException(EINVAL, "load: Insufficient Mutable information");
-    }
-
-    if (getline(inFile, lastLine, '\0')) {
-      throw IOException(EINVAL, "load: Insufficient Mutable information");
-    }
-
-    if (getline(inFile, lastCol, '\0')) {
-      throw IOException(EINVAL, "load: Insufficient Mutable information");
-    }
-
-    if (getline(inFile, token, '\0')) {
-      throw IOException(EINVAL, "load: Insufficient Mutable information");
-    }
-
-    mData.emplace_back(Mutable(path, std::stoi(firstLine), std::stoi(firstCol),
-                               std::stoi(lastLine), std::stoi(lastCol), token));
-
-    // read newline character and move on to the next Mutable on next line.
-    getline(inFile, path);
+  for (int i = 0; i < num_mutants; ++i) {
+    std::string path = readStringFromFile(inFile);
+    std::string token = readStringFromFile(inFile);
+    int firstLine = readIntFromFile(inFile);
+    int firstColumn = readIntFromFile(inFile);
+    int lastLine = readIntFromFile(inFile);
+    int lastColumn = readIntFromFile(inFile);
+    mData.emplace_back(Mutable(path, firstLine, firstColumn,
+                               lastLine, lastColumn, token));
   }
 
   inFile.close();
 }
 
 void Mutables::save() {
-  std::ofstream outFile(mPath.c_str());
+  std::ofstream outFile(mPath.c_str(), std::ios::out | std::ios::binary);
+  int num_mutants = mData.size();
+  outFile.write(
+        reinterpret_cast<char *>(&num_mutants), sizeof(int));      //NOLINT
 
   for (const auto& e : mData) {
     Location first = e.getFirst();
     Location last = e.getLast();
-    std::string mutableFormat{
-        "{1}\0{2}\0{3}\0{4}\0{5}\0{6}\0\n"};  // NOLINT
-    outFile << fmt::format(mutableFormat,
-                           fmt::arg("1", e.getPath()),
-                           fmt::arg("2", first.line),
-                           fmt::arg("3", first.column),
-                           fmt::arg("4", last.line),
-                           fmt::arg("5", last.column),
-                           fmt::arg("6", e.getToken()));
+    std::string path = e.getPath();
+    std::string token = e.getToken();
+    size_t pathLength = path.size();
+    size_t tokenLength = token.size();
+
+    outFile.write(
+        reinterpret_cast<char *>(&pathLength), sizeof(size_t));   //NOLINT
+    outFile.write(path.c_str(), pathLength);
+    outFile.write(
+        reinterpret_cast<char *>(&tokenLength), sizeof(size_t));  //NOLINT
+    outFile.write(token.c_str(), tokenLength);
+    outFile.write(
+        reinterpret_cast<char *>(&first.line), sizeof(int));      //NOLINT
+    outFile.write(
+        reinterpret_cast<char *>(&first.column), sizeof(int));    //NOLINT
+    outFile.write(
+        reinterpret_cast<char *>(&last.line), sizeof(int));       //NOLINT
+    outFile.write(
+        reinterpret_cast<char *>(&last.column), sizeof(int));     //NOLINT
   }
 
   outFile.close();
+}
+
+std::string Mutables::readStringFromFile(std::ifstream& inFile) {
+  size_t length;
+  inFile.read(reinterpret_cast<char *>(&length), sizeof(size_t));  //NOLINT
+
+  char data[length+1];  //NOLINT
+  inFile.read(&data[0], length);
+  data[length] = '\0';
+  std::string res{&data[0]};
+
+  return res;
+}
+
+int Mutables::readIntFromFile(std::ifstream& inFile) {
+  int res;
+  inFile.read(reinterpret_cast<char *>(&res), sizeof(int));  //NOLINT
+  return res;
 }
 
 }  // namespace sentinel

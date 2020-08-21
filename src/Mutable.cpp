@@ -42,6 +42,15 @@ Mutable::Mutable(const std::string& path,
     : mPath(path), mFirst{firstLine, firstColumn},
       mLast{lastLine, lastColumn}, mToken(token) {}
 
+bool Mutable::compare(const Mutable& other) const {
+  return mPath == other.getPath() &&
+         mFirst.line == other.getFirst().line &&
+         mFirst.column == other.getFirst().column &&
+         mLast.line == other.getLast().line &&
+         mLast.column == other.getLast().column &&
+         mToken == other.getToken();
+}
+
 std::string Mutable::getPath() const {
   return mPath;
 }
