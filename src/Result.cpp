@@ -22,24 +22,55 @@
   SOFTWARE.
 */
 
+#include <tinyxml2/tinyxml2.h>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {
 
-Result::Result(const std::string& path) :
-    mPath(path) {
+Result::Result(const std::string& path) {
+  mPassedTC.clear();
+  auto xmlFiles = util::filesystem::findFilesInDirUsingExt(path, {"xml"});
+  for (const std::string& xmlPath : xmlFiles) {
+    tinyxml2::XMLDocument doc;
+    auto errcode = doc.LoadFile(xmlPath.c_str());
+    if (errcode != 0) {
+      throw sentinel::XMLException(errcode);
+    }
+    tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
+    for (tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite") ;
+        p != nullptr ; p = p->NextSiblingElement("testsuite")) {
+      for (tinyxml2::XMLElement *q = p->FirstChildElement("testcase") ;
+          q != nullptr ; q = q->NextSiblingElement("testcase")) {
+        if (std::string(q->Attribute("status")) == std::string("run")  &&
+            q->FirstChildElement("failure") == nullptr) {
+          std::string className = std::string(q->Attribute("classname"));
+          std::string caseName = std::string(q->Attribute("name"));
+          mPassedTC.push_back(className.append(".").append(caseName));
+        }
+      }
+    }
+  }
+  if (!mPassedTC.empty()) {
+    std::sort(mPassedTC.begin(), mPassedTC.end());
+  }
 }
 
-bool Result::equals(const Result& other) {
-  (void) other;
-  return false;
-}
-
-void Result::load() {
-}
-
-void Result::save() {
+bool Result::kill(const Result& original, const Result& mutated) {
+  bool kill = false;
+  for (const std::string &tc : original.mPassedTC) {
+    if (std::lower_bound(mutated.mPassedTC.begin(),
+        mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
+      kill = true;
+      break;
+    }
+  }
+  return kill;
 }
 
 }  // namespace sentinel

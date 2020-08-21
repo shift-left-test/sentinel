@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Sangmo Kang
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,40 +22,31 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_RESULT_HPP_
-#define INCLUDE_SENTINEL_RESULT_HPP_
+#ifndef INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_
+#define INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_
 
-#include <vector>
+#include <tinyxml2/tinyxml2.h>
+#include <stdexcept>
 #include <string>
 
 
 namespace sentinel {
 
 /**
- * @brief Result class
+ * @brief XMLException class
  */
-class Result {
+class XMLException : public std::runtime_error {
  public:
   /**
    * @brief Default constructor
    *
-   * @param path to a test result
+   * @param error code
    */
-  explicit Result(const std::string& path);
-
-  /**
-   * @brief Check if mutation is killed
-   *
-   * @param original result
-   * @param mutated result
-   * @return true if the mutation is killed
-   */
-  static bool kill(const Result& original, const Result& mutated);
-
- private:
-  std::vector<std::string> mPassedTC;
+  explicit XMLException(tinyxml2::XMLError error) : std::runtime_error(
+      tinyxml2::XMLDocument::ErrorIDToName(error)){
+  }
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_RESULT_HPP_
+#endif  // INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_

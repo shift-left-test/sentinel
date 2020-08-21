@@ -23,8 +23,10 @@
 */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include "sentinel/util/filesystem.hpp"
 
@@ -36,13 +38,16 @@ class FilesystemTest : public ::testing::Test {
   void SetUp() override {
     using util::filesystem::join;
     using util::filesystem::tempFilename;
+    using util::filesystem::tempFilenameWithSuffix;
     using util::filesystem::tempPath;
     using util::filesystem::tempDirectory;
 
     BASE = tempDirectory("fixture");
     FILE = tempFilename(join(BASE, "file"));
+    FILE_XML = tempFilenameWithSuffix(join(BASE, "file"), ".xml");
     DIRECTORY = tempDirectory(join(BASE, "dir"));
     NESTED_FILE = tempFilename(join(DIRECTORY, "file"));
+    NESTED_FILE_TXT = tempFilenameWithSuffix(join(DIRECTORY, "file"), ".TXT");
     NESTED_DIRECTORY = tempDirectory(join(DIRECTORY, "dir"));
     UNKNOWN_PATH = "unknown/unknown";
     UNKNOWN_NESTED_PATH = tempPath(join(DIRECTORY, "unknown"));
@@ -54,7 +59,9 @@ class FilesystemTest : public ::testing::Test {
 
   std::string BASE;
   std::string FILE;
+  std::string FILE_XML;
   std::string NESTED_FILE;
+  std::string NESTED_FILE_TXT;
   std::string DIRECTORY;
   std::string NESTED_DIRECTORY;
   std::string UNKNOWN_PATH;
@@ -143,6 +150,8 @@ TEST_F(FilesystemTest, testCreateAndRemoveDirectoryWhenValidDirsGiven) {
 
   util::filesystem::removeDirectories(temp2);
   EXPECT_FALSE(util::filesystem::exists(temp2));
+
+  util::filesystem::removeDirectories(temp1);
 }
 
 TEST_F(FilesystemTest, testCreateAndRemoveDirectoryWhenInvalidDirsGiven) {
@@ -223,6 +232,64 @@ TEST_F(FilesystemTest, testReplaceFileFailsWhenInvalidPathsGiven) {
                IOException);
 
   util::filesystem::removeFile(src_filename);
+}
+
+TEST_F(FilesystemTest, testFindFilesInDirUsingRgx) {
+  EXPECT_TRUE(util::filesystem::findFilesInDirUsingRgx(
+      NESTED_DIRECTORY, std::regex(".+")).empty());
+
+  auto filesInDir = util::filesystem::findFilesInDirUsingRgx(DIRECTORY,
+      std::regex(".*\\.TXT"));
+  EXPECT_EQ(filesInDir.size(), 1);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+
+  filesInDir = util::filesystem::findFilesInDirUsingRgx(DIRECTORY,
+      std::regex(".+"));
+  EXPECT_EQ(filesInDir.size(), 2);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE), filesInDir.end());
+}
+
+TEST_F(FilesystemTest, testFindFilesInDir) {
+  EXPECT_TRUE(util::filesystem::findFilesInDir(
+      NESTED_DIRECTORY).empty());
+
+  auto filesInDir = util::filesystem::findFilesInDir(DIRECTORY);
+  EXPECT_EQ(filesInDir.size(), 2);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE), filesInDir.end());
+}
+
+TEST_F(FilesystemTest, testFindFilesInDirUsingExtention) {
+  auto filesInDir = util::filesystem::findFilesInDirUsingExt(
+     DIRECTORY, {});
+  EXPECT_EQ(filesInDir.size(), 2);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE), filesInDir.end());
+
+  filesInDir = util::filesystem::findFilesInDirUsingExt(
+     DIRECTORY, {"txt"});
+  EXPECT_EQ(filesInDir.size(), 1);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+
+  EXPECT_TRUE(util::filesystem::findFilesInDirUsingExt(
+     DIRECTORY, {"xml"}).empty());
+
+  filesInDir = util::filesystem::findFilesInDirUsingExt(
+     BASE, {"txt", "xml"});
+  EXPECT_EQ(filesInDir.size(), 2);
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
+  EXPECT_NE(std::find(filesInDir.begin(),
+      filesInDir.end(), FILE_XML), filesInDir.end());
 }
 
 }  // namespace sentinel

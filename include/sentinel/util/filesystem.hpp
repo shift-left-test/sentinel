@@ -31,7 +31,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <memory>
+#include <regex>
 #include <string>
+#include <vector>
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -48,6 +51,11 @@ static constexpr const char SEPARATOR = '/';
  * @brief The dot for the filesystem paths
  */
 static constexpr const char DOT = '.';
+
+/**
+ * @brief The doulbe dots for the filesystem paths
+ */
+static const char* DOUBLEDOTS = "..";
 
 /**
  * @brief Check if the given file exists
@@ -241,6 +249,23 @@ inline std::string tempFilename(const std::string& prefix = "") {
 }
 
 /**
+ * @brief Create a temporary file with the given template and given suffix.
+ *
+ * @param prefix of the filename
+ * @param suffix of the filename
+ * @return temporary filename
+ * @throw IOException if not able to create a file
+ */
+inline std::string tempFilenameWithSuffix(const std::string& prefix = "",
+    const std::string& suffix = "") {
+  auto path = prefix + "XXXXXX" + suffix;
+  if (mkstemps(&path[0], suffix.length()) == -1) {
+    throw IOException(errno);
+  }
+  return path;
+}
+
+/**
  * @brief Create a temporary file name with given template.
  *
  * @param prefix front part of file name template, before XXXXXX
@@ -283,6 +308,67 @@ inline void rename(const std::string& src, const std::string& dest) {
   if (std::rename(src.c_str(), dest.c_str()) != 0) {
     throw IOException(errno);
   }
+}
+
+/**
+ * @brief find files that match regex
+ *
+ * @param dir search target directory
+ * @return path of files that match regex
+ */
+inline std::vector<std::string> findFilesInDirUsingRgx(
+    const std::string& dir, const std::regex& exp) {
+  std::shared_ptr<DIR> dir_ptr(opendir(dir.c_str()),
+      [](DIR* dir){ if(dir != nullptr){ closedir(dir); } });
+  if (dir_ptr == nullptr) {
+    throw sentinel::IOException(errno, "Error opening: "+ dir);
+  }
+
+  std::vector<std::string> files;
+  struct dirent *dirent_ptr;
+  while ((dirent_ptr = readdir(dir_ptr.get())) != nullptr) {
+    const std::string f_name(static_cast<char*>(dirent_ptr->d_name));
+    if (dirent_ptr->d_type == DT_DIR) {
+      if (f_name != DOUBLEDOTS && f_name != std::string(1, DOT)) {
+        std::vector<std::string> child_dir_files = findFilesInDirUsingRgx(
+            join(dir, f_name), exp);
+        files.insert(end(files),
+            begin(child_dir_files), end(child_dir_files));
+      }
+    } else if (dirent_ptr->d_type == DT_REG) {
+      if (std::regex_match(f_name, exp)) {
+          files.push_back(join(dir, f_name));
+      }
+    }
+  }
+  return files;
+}
+
+/**
+ * @brief Get files that have specific extension
+ *
+ * @param dir search target directory
+ * @return path of files that have specific extension
+ */
+inline std::vector<std::string> findFilesInDirUsingExt(
+    const std::string& dir, const std::vector<std::string>& exts) {
+  std::string exp(".+");
+  if (!exts.empty()) {
+    exp = exp + "\\.(" + string::join("|", exts) + ")$";
+  }
+  return findFilesInDirUsingRgx(dir, std::regex(
+    exp, std::regex_constants::icase));
+}
+
+/**
+ * @brief Get files in directory
+ *
+ * @param dir search target directory
+ * @return path of files
+ */
+inline std::vector<std::string> findFilesInDir(
+    const std::string& dir) {
+  return findFilesInDirUsingExt(dir, {});
 }
 
 }  // namespace filesystem
