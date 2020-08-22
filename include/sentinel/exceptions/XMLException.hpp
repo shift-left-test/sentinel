@@ -42,8 +42,32 @@ class XMLException : public std::runtime_error {
    *
    * @param error code
    */
-  explicit XMLException(tinyxml2::XMLError error) : std::runtime_error(
-      tinyxml2::XMLDocument::ErrorIDToName(error)){
+  explicit XMLException(tinyxml2::XMLError error) :
+      std::runtime_error(tinyxml2::XMLDocument::ErrorIDToName(error)) {
+  }
+
+  /**
+   * @brief Default constructor
+   *
+   * @param xmlPath
+   * @param error code
+   */
+  explicit XMLException(const std::string& xmlPath, tinyxml2::XMLError error) :
+      std::runtime_error(
+      std::string().append(xmlPath).append(" : ").append(
+      tinyxml2::XMLDocument::ErrorIDToName(error))
+      ) {
+  }
+
+  /**
+   * @brief Default constructor
+   *
+   * @param xmlPath
+   * @param errorMessage
+   */
+  explicit XMLException(const std::string& xmlPath,
+      const std::string& errorMessage) : std::runtime_error(
+      std::string().append(xmlPath).append(" : ").append(errorMessage)) {
   }
 };
 

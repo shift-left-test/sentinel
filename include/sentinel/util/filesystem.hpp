@@ -319,7 +319,7 @@ inline void rename(const std::string& src, const std::string& dest) {
 inline std::vector<std::string> findFilesInDirUsingRgx(
     const std::string& dir, const std::regex& exp) {
   std::shared_ptr<DIR> dir_ptr(opendir(dir.c_str()),
-      [](DIR* dir){ if(dir != nullptr){ closedir(dir); } });
+      [](DIR* dir){ if (dir != nullptr) { closedir(dir); } });
   if (dir_ptr == nullptr) {
     throw sentinel::IOException(errno, "Error opening: "+ dir);
   }

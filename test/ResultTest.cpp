@@ -28,6 +28,7 @@
 #include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -96,14 +97,6 @@ class ResultTest : public ::testing::Test {
     " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
     "\t</testsuite>\n"
     "</testsuites>\n";
-  std::string TC3_WRONG_FMT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C1\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC3\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
-    "</testsuites>\n";
 };
 
 TEST_F(ResultTest, testResultWithAliveMutation) {
@@ -111,9 +104,9 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
       util::filesystem::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_FALSE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_FALSE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithKillMutation) {
@@ -121,9 +114,9 @@ TEST_F(ResultTest, testResultWithKillMutation) {
       util::filesystem::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_TRUE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_TRUE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
@@ -132,9 +125,9 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
   MAKE_RESULT_XML(MUT_DIR, TC3);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_FALSE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_FALSE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
@@ -143,18 +136,18 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   MAKE_RESULT_XML(MUT_DIR, TC3);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_TRUE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_TRUE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
   std::string MUT_DIR = util::filesystem::tempDirectory(
       util::filesystem::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_TRUE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_TRUE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
@@ -162,18 +155,40 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
       util::filesystem::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC3);
-  sentinel::Result ori(ORI_DIR);
-  sentinel::Result mut(MUT_DIR);
-  EXPECT_TRUE(sentinel::Result::kill(ori, mut));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_TRUE(Result::kill(ori, mut));
 }
 
 TEST_F(ResultTest, testResultWithWrongXMLFmt) {
-  EXPECT_THROW({
-      std::string MUT_DIR = util::filesystem::tempDirectory(
+  std::string MUT_DIR = util::filesystem::tempDirectory(
       util::filesystem::join(BASE, "mut_dir"));
-      MAKE_RESULT_XML(MUT_DIR, TC3_WRONG_FMT);
-      sentinel::Result mut(MUT_DIR);
-      }, sentinel::XMLException);
+  MAKE_RESULT_XML(MUT_DIR, util::string::replaceAll(TC3, "</testsuites>", ""));
+  EXPECT_THROW({
+      try {
+        Result mut(MUT_DIR);
+      }
+      catch (const XMLException& e){
+        EXPECT_TRUE(util::string::contains(e.what(), "XML_ERROR_PARSING"));
+        throw;
+      }
+  }, XMLException);
+}
+
+TEST_F(ResultTest, testResultWithWrongResultFmt) {
+  std::string MUT_DIR = util::filesystem::tempDirectory(
+      util::filesystem::join(BASE, "mut_dir"));
+  MAKE_RESULT_XML(MUT_DIR, util::string::replaceAll(TC3, "testsuites", "tag"));
+  EXPECT_THROW({
+      try {
+        Result mut(MUT_DIR);
+      }
+      catch (const XMLException& e){
+        EXPECT_TRUE(util::string::contains(e.what(),
+            "This file doesn't follow googletest result format"));
+        throw;
+      }
+  }, XMLException);
 }
 
 }  // namespace sentinel

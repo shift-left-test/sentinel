@@ -34,23 +34,45 @@
 namespace sentinel {
 
 Result::Result(const std::string& path) {
-  mPassedTC.clear();
+  const char* errMsg = "This file doesn't follow googletest result format";
   auto xmlFiles = util::filesystem::findFilesInDirUsingExt(path, {"xml"});
   for (const std::string& xmlPath : xmlFiles) {
     tinyxml2::XMLDocument doc;
     auto errcode = doc.LoadFile(xmlPath.c_str());
     if (errcode != 0) {
-      throw sentinel::XMLException(errcode);
+      throw sentinel::XMLException(xmlPath, errcode);
     }
+
     tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
-    for (tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite") ;
-        p != nullptr ; p = p->NextSiblingElement("testsuite")) {
-      for (tinyxml2::XMLElement *q = p->FirstChildElement("testcase") ;
-          q != nullptr ; q = q->NextSiblingElement("testcase")) {
-        if (std::string(q->Attribute("status")) == std::string("run")  &&
+    if (pRoot == nullptr) {
+      throw sentinel::XMLException(xmlPath, errMsg);
+    }
+    tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
+    if (p == nullptr) {
+      throw sentinel::XMLException(xmlPath, errMsg);
+    }
+
+    for ( ; p != nullptr ; p = p->NextSiblingElement("testsuite")) {
+      tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+      if (q == nullptr) {
+        throw sentinel::XMLException(xmlPath, errMsg);
+      }
+      for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
+        const char* pStatus = q->Attribute("status");
+        if (pStatus == nullptr) {
+          throw sentinel::XMLException(xmlPath, errMsg);
+        }
+
+        if (std::string(pStatus) == std::string("run")  &&
             q->FirstChildElement("failure") == nullptr) {
-          std::string className = std::string(q->Attribute("classname"));
-          std::string caseName = std::string(q->Attribute("name"));
+          const char* pClassName = q->Attribute("classname");
+          const char* pName = q->Attribute("name");
+          if (pClassName == nullptr || pName == nullptr) {
+            throw sentinel::XMLException(xmlPath, errMsg);
+          }
+
+          std::string className = std::string(pClassName);
+          std::string caseName = std::string(pName);
           mPassedTC.push_back(className.append(".").append(caseName));
         }
       }
