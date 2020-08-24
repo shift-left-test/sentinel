@@ -22,24 +22,77 @@
   SOFTWARE.
 */
 
+#include <tinyxml2/tinyxml2.h>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {
 
-Result::Result(const std::string& path) :
-    mPath(path) {
+Result::Result(const std::string& path) {
+  const char* errMsg = "This file doesn't follow googletest result format";
+  auto xmlFiles = util::filesystem::findFilesInDirUsingExt(path, {"xml"});
+  for (const std::string& xmlPath : xmlFiles) {
+    tinyxml2::XMLDocument doc;
+    auto errcode = doc.LoadFile(xmlPath.c_str());
+    if (errcode != 0) {
+      throw sentinel::XMLException(xmlPath, errcode);
+    }
+
+    tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
+    if (pRoot == nullptr) {
+      throw sentinel::XMLException(xmlPath, errMsg);
+    }
+    tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
+    if (p == nullptr) {
+      throw sentinel::XMLException(xmlPath, errMsg);
+    }
+
+    for ( ; p != nullptr ; p = p->NextSiblingElement("testsuite")) {
+      tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+      if (q == nullptr) {
+        throw sentinel::XMLException(xmlPath, errMsg);
+      }
+      for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
+        const char* pStatus = q->Attribute("status");
+        if (pStatus == nullptr) {
+          throw sentinel::XMLException(xmlPath, errMsg);
+        }
+
+        if (std::string(pStatus) == std::string("run")  &&
+            q->FirstChildElement("failure") == nullptr) {
+          const char* pClassName = q->Attribute("classname");
+          const char* pName = q->Attribute("name");
+          if (pClassName == nullptr || pName == nullptr) {
+            throw sentinel::XMLException(xmlPath, errMsg);
+          }
+
+          std::string className = std::string(pClassName);
+          std::string caseName = std::string(pName);
+          mPassedTC.push_back(className.append(".").append(caseName));
+        }
+      }
+    }
+  }
+  if (!mPassedTC.empty()) {
+    std::sort(mPassedTC.begin(), mPassedTC.end());
+  }
 }
 
-bool Result::equals(const Result& other) {
-  (void) other;
-  return false;
-}
-
-void Result::load() {
-}
-
-void Result::save() {
+bool Result::kill(const Result& original, const Result& mutated) {
+  bool kill = false;
+  for (const std::string &tc : original.mPassedTC) {
+    if (std::lower_bound(mutated.mPassedTC.begin(),
+        mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
+      kill = true;
+      break;
+    }
+  }
+  return kill;
 }
 
 }  // namespace sentinel

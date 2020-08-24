@@ -222,6 +222,25 @@ inline std::string join(char delim,
   return join(std::string(1, delim), { tokens ... });
 }
 
+/**
+ * @brief replace all 'oldSubString' in 'target' with 'newSubString'
+ *
+ * @param target string
+ * @param oldSubString
+ * @param newSubString
+ * @return joined string
+ */
+inline std::string replaceAll(std::string target,
+    const std::string& oldSubString, const std::string& newSubString) {
+  std::size_t pos = 0;
+  if (oldSubString.empty() || target.empty()) { return target; }
+  while ((pos = target.find(oldSubString, pos)) != std::string::npos) {
+    target.replace(pos, oldSubString.length(), newSubString);
+    pos += newSubString.length();
+  }
+  return target;
+}
+
 }  // namespace string
 }  // namespace util
 }  // namespace sentinel

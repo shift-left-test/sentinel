@@ -23,13 +23,20 @@
 */
 
 #include <string>
+#include <sstream>
 #include "sentinel/SourceLine.hpp"
 
 
 namespace sentinel {
+SourceLine::SourceLine(const char * path, int lineNumber)
+: path_(path), lineNumber_(lineNumber) {
+}
 
 std::string SourceLine::toString() {
-  return "";
+  std::stringstream result;
+  result << this->path_ << ":" << std::to_string(this->lineNumber_);
+
+  return result.str();
 }
 
 }  // namespace sentinel

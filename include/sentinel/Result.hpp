@@ -25,8 +25,8 @@
 #ifndef INCLUDE_SENTINEL_RESULT_HPP_
 #define INCLUDE_SENTINEL_RESULT_HPP_
 
+#include <vector>
 #include <string>
-#include "sentinel/Persistence.hpp"
 
 
 namespace sentinel {
@@ -34,27 +34,27 @@ namespace sentinel {
 /**
  * @brief Result class
  */
-class Result : public Persistence {
+class Result {
  public:
   /**
    * @brief Default constructor
    *
    * @param path to a test result
+   * @throw XMLException when loading result xml file fails
    */
   explicit Result(const std::string& path);
 
   /**
-   * @brief Compare the current result with the given one
+   * @brief Check if mutation is killed
    *
-   * @param other result
-   * @return true if the both results are identical, false otherwise
+   * @param original result
+   * @param mutated result
+   * @return true if the mutation is killed
    */
-  bool equals(const Result& other);
-  void load() override;
-  void save() override;
+  static bool kill(const Result& original, const Result& mutated);
 
  private:
-  std::string mPath;
+  std::vector<std::string> mPassedTC;
 };
 
 }  // namespace sentinel

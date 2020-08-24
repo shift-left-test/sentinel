@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Sangmo Kang
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,64 +22,55 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_GITREPOSITORY_HPP_
-#define INCLUDE_SENTINEL_GITREPOSITORY_HPP_
+#ifndef INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_
+#define INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_
 
-#include <memory>
+#include <tinyxml2/tinyxml2.h>
+#include <stdexcept>
 #include <string>
-#include "sentinel/Repository.hpp"
-#include "sentinel/SourceLines.hpp"
-#include "sentinel/Logger.hpp"
 
 
 namespace sentinel {
-/**
- * @brief RepositoryExcpetion class
- */
-class RepositoryException : public ::std::exception {
-  std::string msg;
 
+/**
+ * @brief XMLException class
+ */
+class XMLException : public std::runtime_error {
  public:
   /**
    * @brief Default constructor
    *
-   * @param msg excption description
+   * @param error code
    */
-  explicit RepositoryException(const std::string & msg);
-
-  ///@ private
-  const char * what() const noexcept override {
-    return this->msg.c_str();
+  explicit XMLException(tinyxml2::XMLError error) :
+      std::runtime_error(tinyxml2::XMLDocument::ErrorIDToName(error)) {
   }
-};
 
-/**
- * @brief GitRepository class
- */
-class GitRepository : public Repository {
- public:
   /**
    * @brief Default constructor
    *
-   * @param path to the git repository
+   * @param xmlPath
+   * @param error code
    */
-  explicit GitRepository(const std::string& path);
-  ~GitRepository();
+  explicit XMLException(const std::string& xmlPath, tinyxml2::XMLError error) :
+      std::runtime_error(
+      std::string().append(xmlPath).append(" : ").append(
+      tinyxml2::XMLDocument::ErrorIDToName(error))
+      ) {
+  }
 
   /**
-   * @brief Return the source lines
+   * @brief Default constructor
    *
-   * @return SourceLines object
+   * @param xmlPath
+   * @param errorMessage
    */
-  SourceLines getSourceLines();
-  std::shared_ptr<SourceTree> getSourceTree() override;
-
- private:
-  std::string path_;
-
-  std::shared_ptr<Logger> logger_;
+  explicit XMLException(const std::string& xmlPath,
+      const std::string& errorMessage) : std::runtime_error(
+      std::string().append(xmlPath).append(" : ").append(errorMessage)) {
+  }
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_GITREPOSITORY_HPP_
+#endif  // INCLUDE_SENTINEL_EXCEPTIONS_XMLEXCEPTION_HPP_

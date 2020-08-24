@@ -27,5 +27,5 @@ build_static_library(
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
        MutationResults.cpp XMLReport.cpp HTMLReport.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
-  LIBS tinyxml2 fmt
+  LIBS tinyxml2 fmt git2
 )

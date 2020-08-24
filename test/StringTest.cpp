@@ -34,11 +34,13 @@ class StringTest : public ::testing::Test {
 
 static constexpr const char* SPACE_HELLO_WORLD_SPACE = " HELLO WORLD ";
 static constexpr const char* SPACE_HELLO_WORLD = " HELLO WORLD";
+static constexpr const char* HELLO_HELLO = "HELLO HELLO";
 static constexpr const char* HELLO_WORLD_SPACE = "HELLO WORLD ";
 static constexpr const char* HELLO_WORLD = "HELLO WORLD";
 static constexpr const char* hello_world = "hello world";
 static constexpr const char* HELLO = "HELLO";
 static constexpr const char* WORLD = "WORLD";
+static constexpr const char* WORLD_WORLD = "WORLD WORLD";
 static constexpr const char* SPACE = " ";
 static constexpr const char* BLANK = "";
 
@@ -131,6 +133,16 @@ TEST_F(StringTest, testJoinReturnJoinedCharactersWhenVariadicArgsGiven) {
   EXPECT_STREQ("a", util::string::join("", "a").c_str());
   EXPECT_STREQ("ab", util::string::join("", "a", "b").c_str());
   EXPECT_STREQ("abc", util::string::join("", "a", "b", "c").c_str());
+}
+
+TEST_F(StringTest, testReplaceAll) {
+  EXPECT_STREQ(BLANK, util::string::replaceAll(BLANK, BLANK, "b").c_str());
+  EXPECT_STREQ(BLANK, util::string::replaceAll(WORLD, WORLD, BLANK).c_str());
+  EXPECT_STREQ(WORLD, util::string::replaceAll(WORLD, "A", "B").c_str());
+  EXPECT_STREQ(HELLO_HELLO, util::string::replaceAll(
+      HELLO_WORLD, WORLD, HELLO).c_str());
+  EXPECT_STREQ(HELLO_HELLO, util::string::replaceAll(
+      WORLD_WORLD, WORLD, HELLO).c_str());
 }
 
 }  // namespace sentinel
