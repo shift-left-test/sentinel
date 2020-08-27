@@ -60,11 +60,11 @@ class Logging {
    * @brief Return the logger instance
    *
    * @param name of the logger
-   * @param formatter string
+   * @param format string
    * @return logger instance
    */
   static std::shared_ptr<Logging> getLogger(const std::string& name,
-                                            const std::string& formatter);
+                                            const std::string& format);
 
   /**
    * @brief Set the logging level
@@ -106,9 +106,9 @@ class Logging {
    * @brief Default constructor
    *
    * @param name of the logger
-   * @param formatter string
+   * @param format string
    */
-  Logging(const std::string& name, const std::string& formatter);
+  Logging(const std::string& name, const std::string& format);
 
   /**
    * @brief Return formatted string
@@ -129,7 +129,7 @@ class Logging {
 
  private:
   std::string mName;
-  std::string mFormatter;
+  std::string mFormat;
   Logging::Level mLevel;
 };
 

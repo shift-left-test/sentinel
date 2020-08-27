@@ -112,21 +112,21 @@ TEST_F(LoggingTest, testLogsWithOffLevelSet) {
   EXPECT_STREQ("", capturedStderr().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithDifferentFormatter) {
+TEST_F(LoggingTest, testLogWithDifferentFormat) {
   logger = Logging::getLogger("logger", "{name} [{level}] {message}");
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("logger [INFO] hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithEmptyFormatter) {
+TEST_F(LoggingTest, testLogWithEmptyFormat) {
   logger = Logging::getLogger("logger", "");
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithWrongFormatter) {
+TEST_F(LoggingTest, testLogWithWrongFormat) {
   EXPECT_THROW(Logging::getLogger("logger", "{wrong}"),
                InvalidArgumentException);
 }

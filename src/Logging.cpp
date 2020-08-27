@@ -38,14 +38,14 @@ std::shared_ptr<Logging> Logging::getLogger(const std::string& name) {
 }
 
 std::shared_ptr<Logging> Logging::getLogger(const std::string& name,
-                                            const std::string& formatter) {
-  return std::shared_ptr<Logging>(new Logging(name, formatter));
+                                            const std::string& format) {
+  return std::shared_ptr<Logging>(new Logging(name, format));
 }
 
-Logging::Logging(const std::string& name, const std::string& formatter) :
-    mName(name), mFormatter(formatter), mLevel(Level::INFO) {
+Logging::Logging(const std::string& name, const std::string& format) :
+    mName(name), mFormat(format), mLevel(Level::INFO) {
   try {
-    format(mLevel, mName);
+    this->format(mLevel, mName);
   }
   catch (const fmt::format_error& e) {
     throw InvalidArgumentException(e.what());
@@ -70,7 +70,7 @@ std::string Logging::format(Logging::Level level,
   } else {
     levelText = "UNKNOWN";
   }
-  return fmt::format(mFormatter,
+  return fmt::format(mFormat,
                      fmt::arg("name", mName),
                      fmt::arg("level", levelText),
                      fmt::arg("message", message));
