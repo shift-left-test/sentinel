@@ -26,6 +26,7 @@ build_static_library(
        UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
        MutationResults.cpp XMLReport.cpp HTMLReport.cpp
+       Logging.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   LIBS tinyxml2 fmt git2
 )

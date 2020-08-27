@@ -26,7 +26,8 @@ endif()
 
 build_test_program(
   NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
+  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
+       DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
+       LoggingTest.cpp
   LIBS sentinel-core git-harness
 )
-
