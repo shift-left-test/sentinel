@@ -30,3 +30,11 @@ build_static_library(
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   LIBS tinyxml2 fmt git2
 )
+
+add_executable(sentinel
+  main.cpp
+)
+
+target_include_directories(sentinel PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/../external/args-6.2.3
+)
