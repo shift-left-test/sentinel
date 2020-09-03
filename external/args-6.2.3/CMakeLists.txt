@@ -20,19 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-build_static_library(
-  NAME sentinel-core
-  SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
-       UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
-       MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
-       MutationResults.cpp XMLReport.cpp HTMLReport.cpp
-       Logging.cpp
-  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
-  LIBS tinyxml2 fmt git2
-  )
-
-build_program(
-  NAME sentinel
-  SRCS main.cpp
-  LIBS sentinel-core args
+build_external_interface_library(
+  NAME args
+  PUBLIC_HEADERS .
 )

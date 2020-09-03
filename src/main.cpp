@@ -23,7 +23,7 @@
 */
 
 #include <iostream>
-#include <args.hxx>
+#include <args/args.hxx>
 
 
 args::Group arguments("arguments");
