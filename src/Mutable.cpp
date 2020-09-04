@@ -29,26 +29,34 @@
 
 namespace sentinel {
 
-Mutable::Mutable(const std::string& path,
+Mutable::Mutable(const std::string& mutationOperator,
+                 const std::string& path,
                  const Location& first,
                  const Location& last,
                  const std::string& token)
-    : mPath(path), mFirst(first), mLast(last), mToken(token) {}
+    : mOperator(mutationOperator), mPath(path), mFirst(first),
+      mLast(last), mToken(token) {}
 
-Mutable::Mutable(const std::string& path,
+Mutable::Mutable(const std::string& mutationOperator,
+                 const std::string& path,
                  int firstLine, int firstColumn,
                  int lastLine, int lastColumn,
                  const std::string& token)
-    : mPath(path), mFirst{firstLine, firstColumn},
+    : mOperator(mutationOperator), mPath(path), mFirst{firstLine, firstColumn},
       mLast{lastLine, lastColumn}, mToken(token) {}
 
 bool Mutable::compare(const Mutable& other) const {
-  return mPath == other.getPath() &&
+  return mOperator == other.getOperator() &&
+         mPath == other.getPath() &&
          mFirst.line == other.getFirst().line &&
          mFirst.column == other.getFirst().column &&
          mLast.line == other.getLast().line &&
          mLast.column == other.getLast().column &&
          mToken == other.getToken();
+}
+
+std::string Mutable::getOperator() const {
+  return mOperator;
 }
 
 std::string Mutable::getPath() const {

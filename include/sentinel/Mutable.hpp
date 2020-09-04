@@ -65,12 +65,14 @@ class Mutable {
   /**
    * @brief Default constructor
    *
+   * @param mutationOperator created this mutable
    * @param path to file from the source tree
    * @param first location to apply mutation
    * @param last location to apply mutation
    * @param token to replace with
    */
-  Mutable(const std::string& path,
+  Mutable(const std::string& mutationOperator,
+          const std::string& path,
           const Location& first,
           const Location& last,
           const std::string& token);
@@ -78,6 +80,7 @@ class Mutable {
   /**
    * @brief Default constructor
    *
+   * @param mutationOperator created this mutable
    * @param path to file from the source tree
    * @param firstLine line number of first location
    * @param firstColumn column number of first location
@@ -85,7 +88,8 @@ class Mutable {
    * @param lastColumn column number of last location
    * @param token to replace with
    */
-  Mutable(const std::string& path,
+  Mutable(const std::string& mutationOperator,
+          const std::string& path,
           int firstLine,
 	  int firstColumn,
           int lastLine,
@@ -99,6 +103,13 @@ class Mutable {
    * @return True if Mutables are same. False otherwise
    */
   bool compare(const Mutable& other) const;
+
+  /**
+   * @brief Return the mutation operator creating this mutable.
+   *
+   * @return mutation operator
+   */
+  std::string getOperator() const;
 
   /**
    * @brief Return the path of mutated file.
@@ -129,6 +140,7 @@ class Mutable {
   std::string getToken() const;
 
  private:
+  std::string mOperator;
   std::string mPath;
   Location mFirst;
   Location mLast;

@@ -20,14 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+find_package(Clang REQUIRED)
+
 build_static_library(
   NAME sentinel-core
   SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
        UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
-       MutationResults.cpp XMLReport.cpp HTMLReport.cpp
-       Logging.cpp
-  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
+       MutationResults.cpp XMLReport.cpp HTMLReport.cpp Logging.cpp
+       aor.cpp bor.cpp lcr.cpp ror.cpp sdl.cpp sor.cpp uoi.cpp
+  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt git2
   )
 

@@ -25,9 +25,24 @@
 #ifndef INCLUDE_SENTINEL_UNIFORMMUTABLEGENERATOR_HPP_
 #define INCLUDE_SENTINEL_UNIFORMMUTABLEGENERATOR_HPP_
 
+#include <memory>
+#include "clang/AST/ASTConsumer.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Tooling/Tooling.h"
+#include "llvm/ADT/StringRef.h"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/MutableGenerator.hpp"
-#include "sentinel/SourceLine.hpp"
+#include "sentinel/operators/MutationOperator.hpp"
+#include "sentinel/operators/aor.hpp"
+#include "sentinel/operators/bor.hpp"
+#include "sentinel/operators/lcr.hpp"
+#include "sentinel/operators/ror.hpp"
+#include "sentinel/operators/sor.hpp"
+#include "sentinel/operators/sdl.hpp"
+#include "sentinel/operators/uoi.hpp"
+#include "sentinel/SourceLines.hpp"
 
 
 namespace sentinel {
@@ -39,10 +54,122 @@ class UniformMutableGenerator : public MutableGenerator {
  public:
   /**
    * @brief Default constructor
+   *
+   * @param path to compilation database file
    */
-  UniformMutableGenerator() = default;
+  UniformMutableGenerator(const std::string& path) : mDbPath(path) {
+  }
 
-  Mutables populate(const SourceLine& sourceLine) override;
+  Mutables populate(const SourceLines& sourceLines) override;
+
+ private:
+  std::string mDbPath;
+
+  /**
+   * @brief SentinelASTVistor class
+   *        defines what to do at each type of AST node.
+   */
+  class SentinelASTVisitor
+      : public clang::RecursiveASTVisitor<SentinelASTVisitor>
+  {
+   public:
+    /**
+     * @brief Default constructor
+     *
+     * @param CI Clang compiler management object
+     * @param mutables list of generated mutables
+     * @param targetLines list of target line numbers
+     */
+    SentinelASTVisitor(clang::CompilerInstance &CI,
+                       Mutables* mutables,
+                       const std::vector<int>& targetLines);
+
+    bool VisitStmt(clang::Stmt *s);
+
+   private:
+    clang::CompilerInstance &mCI;
+    clang::SourceManager &mSrcMgr;
+    std::vector<MutationOperator*> mMutationOperators;
+    Mutables* mMutables;
+    const std::vector<int>& mTargetLines;
+  };
+
+  /**
+   * @brief SentinelASTConsumer class
+   */
+  class SentinelASTConsumer : public clang::ASTConsumer
+  {
+   public:
+    /**
+     * @brief Default constructor
+     *
+     * @param CI Clang compiler management object
+     */
+    SentinelASTConsumer(clang::CompilerInstance &CI,
+                        Mutables* mutables,
+                        const std::vector<int>& targetLines)
+        : mVisitor(CI, mutables, targetLines) {
+    }
+
+    /**
+     * @brief A callback function triggered when ASTs for translation unit
+     *        has been parsed and ready for traversal.
+     *
+     * @param Context Clang object holding long-lived AST nodes.
+     */
+    void HandleTranslationUnit(clang::ASTContext &Context) override {
+      mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+    }
+
+   private:
+    SentinelASTVisitor mVisitor;
+  };
+
+  /**
+   * @brief GenerateMutantAction class
+   */
+  class GenerateMutantAction : public clang::ASTFrontendAction {
+   public:
+    /**
+     * @brief Default constructor
+     *
+     * @param mutables list of generated mutables (output)
+     * @param mTargetLines list of target line numbers
+     */
+    GenerateMutantAction(Mutables* mutables,
+                         const std::vector<int>& targetLines)
+        : mMutables(mutables), mTargetLines(targetLines) {
+    }
+
+    /**
+     * @brief Create an ASTConsumer object to identify mutation locations
+     *        in the AST of target file.
+     *
+     * @param CI Clang compiler management object
+     * @param InFile target file
+     */
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
+      clang::CompilerInstance &CI, llvm::StringRef InFile) override {
+      return std::unique_ptr<clang::ASTConsumer>(
+          new SentinelASTConsumer(CI, mMutables, mTargetLines));
+    }
+
+   protected:
+    void ExecuteAction() override;
+
+   private:
+    Mutables* mMutables;
+    const std::vector<int>& mTargetLines;
+  };
+
+  /**
+   * @brief Returns a new FrontendActionFactory for GenerateMutantAction
+   *
+   * @param mutables list of generated mutables
+   */
+  std::unique_ptr<clang::tooling::FrontendActionFactory>
+  myNewFrontendActionFactory(Mutables* mutables,
+                             const std::vector<int>& targetLines);
 };
 
 }  // namespace sentinel

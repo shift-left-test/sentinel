@@ -24,10 +24,12 @@ if(NOT ENABLE_TEST)
   return()
 endif()
 
+find_package(Clang REQUIRED)
+
 build_test_program(
   NAME unittest
   SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
        DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
-       LoggingTest.cpp
-  LIBS sentinel-core git-harness
+       LoggingTest.cpp UniformMutableGeneratorTest.cpp
+  LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}
 )

@@ -22,59 +22,44 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_SOURCELINE_HPP_
-#define INCLUDE_SENTINEL_SOURCELINE_HPP_
+// #include <iostream>
 
-#include <string>
-#include "sentinel/Source.hpp"
+// Macro test: with and without semicolon (;)
+#define IS_NEGATIVE(a) a < 0
+#define INVALID_RECT_SIDE_ERR -1;
 
+inline bool lessThanOrEqual(int a, int b) {
+  return a <= b;
+}
 
-namespace sentinel {
+// Return surface area of a rectangular
+int rectangularSurfaceArea(const int h, const float l, double w) {
+  // LCR ROR UOI test
+  // SBR test: if, return
+  if (IS_NEGATIVE(h) || IS_NEGATIVE(l) || w < 0)
+    return INVALID_RECT_SIDE_ERR
 
-/**
- * @brief SourceLine class
- */
-class SourceLine : public Source {
- public:
-  /**
-   * @brief Default constructor
-   *
-   * @param path source file path
-   *
-   * @param lineNumber soure line number
-   */
-  SourceLine(const char * path, int lineNumber);
+  // Comment test: middle of code
+  // AOR test: basic mutation + modulo mutation test
+  // UOI test: no const variable mutation
+  return 2 * (l * h + w * h/*+ l * l*/+ w * l);
+}
 
-  /**
-   * @brief == operator overloading for std::find algorithm
-   *
-   * @param other other SourceLine instance
-   */
-  bool operator ==(const SourceLine & other) const {
-    return this->path_ == other.path_ && this->lineNumber_ == other.lineNumber_;
-  }
-  std::string toString() override;
+// Pointer operation test
+int charArraySizie(const char *ptr_start, const char *ptr_end) {
+  return (ptr_end - ptr_start) / sizeof(char);
+}
 
-  /**
-   * @brief Return path to file
-   */
-  std::string getPath() const {
-    return path_;
+int sumOfEvenPositiveNumber(int from, int to) {
+  int ret = 0;
+  int i = from;
+
+  for (; lessThanOrEqual(i, to); ++i) {
+    if ((i & 1) == (1 << 0) && i > 0) {
+      ret = ret + i;
+    }
   }
 
-  /**
-   * @brief Return line number
-   */
-  int getLineNumber() const {
-    return lineNumber_;
-  }
+  return ret;
+}
 
- private:
-  std::string path_;
-  int lineNumber_;
-
-};
-
-}  // namespace sentinel
-
-#endif  // INCLUDE_SENTINEL_SOURCELINE_HPP_

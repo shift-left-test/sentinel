@@ -22,59 +22,49 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_SOURCELINE_HPP_
-#define INCLUDE_SENTINEL_SOURCELINE_HPP_
+#ifndef INCLUDE_SENTINEL_OPERATOR_BOR_H_
+#define INCLUDE_SENTINEL_OPERATOR_BOR_H_
 
+#include <set>
 #include <string>
-#include "sentinel/Source.hpp"
-
+#include "MutationOperator.hpp"
 
 namespace sentinel {
 
 /**
- * @brief SourceLine class
+ * @brief Bitwise Operator Replacement class
  */
-class SourceLine : public Source {
- public:
+class BOR : public MutationOperator {
+public:
   /**
    * @brief Default constructor
    *
-   * @param path source file path
+   * @param CI Clang compiler management object
+   */
+  BOR(clang::CompilerInstance& CI) : MutationOperator("BOR", CI) {}
+
+  /**
+   * @brief Return True if this mutation operator can be applied to give AST
+   *        node. Consider the domain of the mutation operator as well as
+   *        the AST node's surrounding context to avoid generating stillborn
+   *        mutants.
    *
-   * @param lineNumber soure line number
+   * @param s target AST node
    */
-  SourceLine(const char * path, int lineNumber);
+  bool canMutate(clang::Stmt* s) override;
 
   /**
-   * @brief == operator overloading for std::find algorithm
+   * @brief Create Mutable from given statement.
    *
-   * @param other other SourceLine instance
+   * @param s target AST node
+   * @param mutables to store newly created mutable
    */
-  bool operator ==(const SourceLine & other) const {
-    return this->path_ == other.path_ && this->lineNumber_ == other.lineNumber_;
-  }
-  std::string toString() override;
+  void populate(clang::Stmt* s, Mutables* mutables) override;
 
-  /**
-   * @brief Return path to file
-   */
-  std::string getPath() const {
-    return path_;
-  }
-
-  /**
-   * @brief Return line number
-   */
-  int getLineNumber() const {
-    return lineNumber_;
-  }
-
- private:
-  std::string path_;
-  int lineNumber_;
-
+private:
+  std::set<std::string> mBitwiseOperators = {"|", "&", "^"};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_SOURCELINE_HPP_
+#endif  // INCLUDE_SENTINEL_OPERATOR_BOR_H_

@@ -49,11 +49,21 @@ class MutablesTest : public ::testing::Test {
       util::filesystem::removeFile(OUTPUT_FILENAME);
     }
   }
+
+  void printMutable(const Mutable& m) {
+    std::cout << m.getOperator() << ", "
+              << m.getPath() << ", "
+              << m.getFirst().line << ", "
+              << m.getFirst().column << ", "
+              << m.getLast().line << ", "
+              << m.getLast().column << ", "
+              << m.getToken() << std::endl;
+  }
 };
 
 TEST_F(MutablesTest, testAdd) {
   Mutables m{OUTPUT_FILENAME};
-  Mutable newMutable(NORMAL_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN);
+  Mutable newMutable("AOR", NORMAL_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN);
 
   EXPECT_EQ(m.size(), 0);
   m.add(newMutable);
@@ -68,8 +78,8 @@ TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
 
 TEST_F(MutablesTest, testSave) {
   Mutables m{OUTPUT_FILENAME};
-  Mutable mutable1(NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2(ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
@@ -79,29 +89,39 @@ TEST_F(MutablesTest, testSave) {
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
 
   std::string path = Mutables::readStringFromFile(inFile);
+  std::string mutationOperator = Mutables::readStringFromFile(inFile);
   std::string token = Mutables::readStringFromFile(inFile);
   int firstLine = Mutables::readIntFromFile(inFile);
   int firstColumn = Mutables::readIntFromFile(inFile);
   int lastLine = Mutables::readIntFromFile(inFile);
   int lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(mutable1.compare(Mutable(path, firstLine, firstColumn,
-                                       lastLine, lastColumn, token)));
+  printMutable(mutable1);
+  printMutable(Mutable("AOR", path, firstLine, firstColumn,
+                       lastLine, lastColumn, token));
+  EXPECT_TRUE(mutable1.compare(Mutable(mutationOperator, path, firstLine,
+                                       firstColumn, lastLine, lastColumn,
+                                       token)));
 
   path = Mutables::readStringFromFile(inFile);
+  mutationOperator = Mutables::readStringFromFile(inFile);
   token = Mutables::readStringFromFile(inFile);
   firstLine = Mutables::readIntFromFile(inFile);
   firstColumn = Mutables::readIntFromFile(inFile);
   lastLine = Mutables::readIntFromFile(inFile);
   lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(mutable2.compare(Mutable(path, firstLine, firstColumn,
+  printMutable(mutable2);
+  printMutable(Mutable("AOR", path, firstLine, firstColumn,
+                       lastLine, lastColumn, token));
+  EXPECT_TRUE(mutable2.compare(Mutable(mutationOperator, path, firstLine,
+                                       firstColumn,
                                        lastLine, lastColumn, token)));
   inFile.close();
 }
 
 TEST_F(MutablesTest, testLoad) {
   Mutables m{OUTPUT_FILENAME};
-  Mutable mutable1(NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2(ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();

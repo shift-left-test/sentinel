@@ -26,7 +26,7 @@
 #define INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
 
 #include "sentinel/Mutables.hpp"
-#include "sentinel/SourceLine.hpp"
+#include "sentinel/SourceLines.hpp"
 
 
 namespace sentinel {
@@ -39,10 +39,10 @@ class MutableGenerator {
   /**
    * @brief Populate mutables from the given source line
    *
-   * @param sourceLine source line
+   * @param sourceLines list of target source lines
    * @return mutables
    */
-  virtual Mutables populate(const SourceLine& sourceLine) = 0;
+  virtual Mutables populate(const SourceLines& sourceLines) = 0;
 };
 
 }  // namespace sentinel

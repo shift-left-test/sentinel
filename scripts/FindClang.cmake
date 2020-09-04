@@ -113,7 +113,12 @@ endif()
 set(LLVM_CLANG_LIBS ${CLANG_LIBS} ${LLVM_LIBS} pthread z)
 set(CLANG_INCLUDE_DIRS ${LLVM_INCLUDE_DIRS})
 
-message(STATUS "Found ${LLVM_CONFIG_EXECUTABLE}")
-message(STATUS "  Include dirs  : ${LLVM_INCLUDE_DIRS}")
-message(STATUS "  Library dirs  : ${LLVM_LIBRARY_DIRS}")
-message(STATUS "  LLVM libraries: ${LLVM_LIBS}")
+mark_as_advanced(LLVM_CLANG_LIBS)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(llvmclang LLVM_CLANG_LIBS CLANG_INCLUDE_DIRS)
+
+# message(STATUS "Found ${LLVM_CONFIG_EXECUTABLE}")
+# message(STATUS "  Include dirs  : ${LLVM_INCLUDE_DIRS}")
+# message(STATUS "  Library dirs  : ${LLVM_LIBRARY_DIRS}")
+# message(STATUS "  LLVM libraries: ${LLVM_LIBS}")
