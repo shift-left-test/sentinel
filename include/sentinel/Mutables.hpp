@@ -58,14 +58,14 @@ class Mutables : public Persistence {
    * @param index for the object
    * @return Mutable object
    */
-  Mutable get(std::size_t index);
+  Mutable get(std::size_t index) const;
 
   /**
    * @brief Return number of stored Mutable
    *
    * @return number of stored Mutable
    */
-  int size();
+  int size() const;
 
   /**
    * @brief Return the iterator to the first Mutable in Mutables.

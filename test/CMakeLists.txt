@@ -31,5 +31,6 @@ build_test_program(
   SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
        DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
        LoggingTest.cpp UniformMutableGeneratorTest.cpp
+       UniformMutableSelectorTest.cpp
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}
 )

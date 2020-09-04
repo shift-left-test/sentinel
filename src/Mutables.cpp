@@ -42,7 +42,7 @@ void Mutables::add(const Mutable& m) {
   mData.push_back(m);
 }
 
-Mutable Mutables::get(std::size_t index) {
+Mutable Mutables::get(std::size_t index) const {
   if (index >= size()) {
     throw std::out_of_range("Mutables: index out of range");
   }
@@ -50,7 +50,7 @@ Mutable Mutables::get(std::size_t index) {
   return mData[index];
 }
 
-int Mutables::size() { return mData.size(); }
+int Mutables::size() const { return mData.size(); }
 
 void Mutables::load() {
   if (!util::filesystem::exists(mPath) ||

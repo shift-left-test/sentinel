@@ -26,6 +26,7 @@
 #define INCLUDE_SENTINEL_MUTABLESELECTOR_HPP_
 
 #include "sentinel/Mutables.hpp"
+#include "sentinel/SourceLines.hpp"
 
 
 namespace sentinel {
@@ -39,9 +40,13 @@ class MutableSelector {
    * @brief Returns selected mutables under certain conditions
    *
    * @param mutables candidates
+   * @param sourceLines list of target lines
+   * @param max_mutant limit number of generated mutants
    * @return selected mutables
    */
-  virtual Mutables select(const Mutables& mutables) = 0;
+  virtual Mutables select(const Mutables& mutables,
+                          const SourceLines& sourceLines,
+                          int max_mutant) = 0;
 };
 
 }  // namespace sentinel
