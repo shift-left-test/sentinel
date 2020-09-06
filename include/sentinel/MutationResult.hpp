@@ -25,6 +25,11 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 
+#include <fstream>
+#include <iostream>
+#include <string>
+#include "sentinel/Mutable.hpp"
+
 
 namespace sentinel {
 
@@ -32,6 +37,139 @@ namespace sentinel {
  * @brief MutationResult class
  */
 class MutationResult {
+ public:
+  /**
+   * @brief Default constructor
+   *
+   * @param mut Mutable class' instance
+   * @param killingTest that killed mutant
+   * @param detected or not (True: detected, False: not)
+   * @param indexOfMutableDB
+   */
+  explicit MutationResult(const sentinel::Mutable& mut,
+      const std::string& killingTest, bool detected, int indexOfMutableDB);
+
+  /**
+   * @brief Default constructor
+   *
+   * @param mutationResultFilePath
+   */
+  explicit MutationResult(const std::string& mutationResultFilePath);
+
+  /**
+   * @brief Return description of mutator.
+   *
+   * @return description of mutator
+   */
+  std::string getDescription() const;
+
+  /**
+   * @brief Return description of method which mutator is applied
+   *
+   * @return description of method which mutator is applied
+   */
+  std::string getMethodDescription() const;
+
+  /**
+   * @brief Return mutator name
+   *
+   * @return mutator name
+   */
+  std::string getMutator() const;
+
+  /**
+   * @brief Return name of class which mutator is applied
+   *
+   * @return name of class which mutator is applied
+   */
+  std::string getMutatedClass() const;
+
+  /**
+   * @brief Return name of method which mutator is applied
+   *
+   * @return name of method which mutator is applied
+   */
+  std::string getMutatedMethod() const;
+
+  /**
+   * @brief Return path of file which mutator is applied
+   *
+   * @return path of file which mutator is applied
+   */
+  std::string getPath() const;
+
+  /**
+   * @brief Return killingTest that killed mutant
+   *
+   * @return killingTest that killed mutant
+   */
+  std::string getKillingTest() const;
+
+  /**
+   * @brief Return bool value to check if mutant is dead
+   *
+   * @return bool value to check if mutant is dead
+   */
+  bool getDetected() const;
+
+  /**
+   * @brief Return number of line which mutator is applied
+   *
+   * @return number of line which mutator is applied
+   */
+  int getLineNum() const;
+
+  /**
+   * @brief Return index of mutable db
+   *
+   * @return index of mutable db
+   */
+  int getIndexOfMutableDB() const;
+
+  /**
+   * @brief write instance's contents to file
+   *
+   * @param filePath
+   *
+   * @throw IOException if filePath is directory
+   */
+  void saveToFile(const std::string& filePath) const;
+
+  /**
+   * @brief compare this with other
+   *
+   * @param other 
+   *
+   * @return bool value whether two MutationReults are same
+   */
+  bool compare(const MutationResult& other) const;
+
+ private:
+  /**
+   * @brief read String from file
+   *
+   * @param inFile input file stream
+   */
+  std::string readStringFromFile(std::ifstream& inFile);
+
+  /**
+   * @brief wrinte String to file
+   *
+   * @param outFile output file stream
+   * @param outString target string to be written
+   */
+  void writeStringToFile(std::ofstream& outFile,
+      const std::string& outString) const;
+
+  std::string mMethodDescription;
+  std::string mMutator;
+  std::string mMutatedClass;
+  std::string mMutatedMethod;
+  std::string mPath;
+  std::string mKillingTest;
+  bool mDetected;
+  int mLineNum;
+  int mIndexOfMutableDB;
 };
 
 }  // namespace sentinel

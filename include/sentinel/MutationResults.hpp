@@ -25,8 +25,12 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 
+#include <vector>
 #include <string>
+#include <queue>
+#include "sentinel/MutationResult.hpp"
 #include "sentinel/Persistence.hpp"
+
 
 namespace sentinel {
 
@@ -38,15 +42,65 @@ class MutationResults : public Persistence {
   /**
    * @brief Default constructor
    *
-   * @param path to the result data
+   * @param path to the MutationResults
+   * 
+   * @throw IOException when path is not directory
    */
   explicit MutationResults(const std::string& path);
+
+  /**
+   * @brief Add the given MutationResult to the object
+   *
+   * @param m MutationResult object
+   */
+  void add(const MutationResult& m);
+
+  /**
+   * @brief Return a MutationResult object at the given index
+   *
+   * @param index for the object
+   * @return MutationResult object
+   */
+  MutationResult get(std::size_t index);
+
+  /**
+   * @brief Return number of stored MutationResult
+   *
+   * @return number of stored MutationResult
+   */
+  int size();
+
+  /**
+   * @brief sort By Index of Mutable DB 
+   *
+   */
+  void sortByIndexOfMutableDB();
+
+
+  /**
+   * @brief Return the iterator to the first MutationResult in MutationResults.
+   *
+   * @return iterator to the first MutationResult.
+   */
+  inline std::vector<MutationResult>::const_iterator begin() const {
+    return mData.cbegin();
+  }
+
+  /**
+   * @brief Return the iterator to the last MutationResult in MutationResults.
+   *
+   * @return iterator to the last MutationResult.
+   */
+  inline std::vector<MutationResult>::const_iterator end() const {
+    return mData.cend();
+  }
 
   void load() override;
   void save() override;
 
  private:
   std::string mPath;
+  std::vector<MutationResult> mData;
 };
 
 }  // namespace sentinel

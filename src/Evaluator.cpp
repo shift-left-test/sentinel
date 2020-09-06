@@ -42,7 +42,7 @@ MutationResult Evaluator::compare(const Result& expected,
                                   const Result& actual) {
   (void) expected;
   (void) actual;
-  return MutationResult{};
+  return MutationResult("TMPDIR");
 }
 
 }  // namespace sentinel

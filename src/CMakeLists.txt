@@ -27,8 +27,8 @@ build_static_library(
   SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
        UniformMutableGenerator.cpp UniformMutableSelector.cpp DefaultLogger.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
-       MutationResults.cpp XMLReport.cpp HTMLReport.cpp Logging.cpp
-       aor.cpp bor.cpp lcr.cpp ror.cpp sdl.cpp sor.cpp uoi.cpp
+       MutationResult.cpp MutationResults.cpp XMLReport.cpp HTMLReport.cpp
+       Logging.cpp aor.cpp bor.cpp lcr.cpp ror.cpp sdl.cpp sor.cpp uoi.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt git2
   )

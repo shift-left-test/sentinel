@@ -22,19 +22,64 @@
   SOFTWARE.
 */
 
+#include <algorithm>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
+#include "sentinel/util/filesystem.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 
 namespace sentinel {
 
-MutationResults::MutationResults(const std::string& path) :
-    mPath(path) {
+MutationResults::MutationResults(const std::string& path) : mPath(path) {
+  if (util::filesystem::exists(mPath)) {
+    if (!util::filesystem::isDirectory(mPath)) {
+      throw IOException(EINVAL);
+    }
+  } else {
+    util::filesystem::createDirectory(mPath);
+  }
 }
 
+void MutationResults::add(const MutationResult& m) {
+  mData.push_back(m);
+}
+
+MutationResult MutationResults::get(std::size_t index) {
+  if (index >= size()) {
+    throw std::out_of_range("MutationResults: index out of range");
+  }
+
+  return mData[index];
+}
+
+int MutationResults::size() { return mData.size(); }
+
 void MutationResults::load() {
+  auto mutationResultFiles = util::filesystem::findFilesInDirUsingExt(mPath,
+      {"MutationResult"});
+  std::transform(mutationResultFiles.begin(), mutationResultFiles.end(),
+      std::back_inserter(mData), [] (const std::string& path)
+      -> MutationResult { return MutationResult(path); } );
+  sortByIndexOfMutableDB();
+}
+
+void MutationResults::sortByIndexOfMutableDB() {
+  std::sort(mData.begin(), mData.end(), [](const auto& lhs, const auto& rhs)
+      { return rhs.getIndexOfMutableDB() > lhs.getIndexOfMutableDB(); } );
 }
 
 void MutationResults::save() {
+  for (const auto& e : mData) {
+    e.saveToFile(util::filesystem::join(mPath,
+        std::to_string(e.getIndexOfMutableDB()).append(".MutationResult")));
+  }
 }
 
 }  // namespace sentinel
+
