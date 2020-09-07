@@ -34,7 +34,7 @@ namespace sentinel {
 
 Mutables UniformMutableSelector::select(const Mutables& mutables,
                                         const SourceLines& sourceLines,
-                                        int max_mutant) {
+                                        int maxMutables) {
   Mutables ret{"temp.db"};
   std::vector<Mutable> temp_storage;
   std::random_device rd;
@@ -62,14 +62,14 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
     // temp_storage.push_back(temp[idx(mt)]);
   }
 
-  if (max_mutant >= temp_storage.size()) {
+  if (maxMutables >= temp_storage.size()) {
     // std::cout << "Not exceeded" << std::endl;
     for (const auto& e : temp_storage) {
       ret.add(e);
     }
   } else {
     std::shuffle(temp_storage.begin(), temp_storage.end(), mt);
-    for (int i = 0; i < max_mutant; ++i) {
+    for (int i = 0; i < maxMutables; ++i) {
       ret.add(temp_storage[i]);
     }
   }

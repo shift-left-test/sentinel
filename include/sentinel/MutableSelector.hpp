@@ -41,12 +41,12 @@ class MutableSelector {
    *
    * @param mutables candidates
    * @param sourceLines list of target lines
-   * @param max_mutant limit number of generated mutants
+   * @param maxMutables limit number of generated mutables
    * @return selected mutables
    */
   virtual Mutables select(const Mutables& mutables,
                           const SourceLines& sourceLines,
-                          int max_mutant) = 0;
+                          int maxMutables) = 0;
 };
 
 }  // namespace sentinel

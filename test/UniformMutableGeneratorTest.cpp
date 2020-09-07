@@ -34,8 +34,8 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   sourceLines.push_back(SourceLine("input/sample1/sample1.cpp", 58));
   sourceLines.push_back(SourceLine("input/sample1/sample1.cpp", 59));
 
-  UniformMutableGenerator generator{"//home/jenkins/workspace/sentinel"};
-  Mutables mutables = generator.populate(sourceLines);
+  UniformMutableGenerator generator{"/home/jenkins/workspace/sentinel"};
+  Mutables mutables = generator.populate("mutables.db", sourceLines);
 
   /* for (const auto& m : mutables) {
     std::cout << m.getOperator() << ", "

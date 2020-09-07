@@ -51,10 +51,14 @@ class MutationFactory {
   /**
    * @brief Populate mutables from the given source lines
    *
+   * @param outPath path to mutables database file to be generated
    * @param sourceLines lines of the source
+   * @param maxMutables maximum number of mutables generated
    * @return list of mutables
    */
-  Mutables populate(const SourceLines& sourceLines);
+  Mutables populate(const std::string& outPath,
+                    const SourceLines& sourceLines,
+                    int maxMutables);
 
  private:
   std::shared_ptr<MutableGenerator> mGenerator;

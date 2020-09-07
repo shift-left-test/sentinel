@@ -38,9 +38,13 @@ MutationFactory::MutationFactory(
     mGenerator(generator), mSelector(selector) {
 }
 
-Mutables MutationFactory::populate(const SourceLines& sourceLines) {
-  (void) sourceLines;
-  return Mutables("");
+Mutables MutationFactory::populate(const std::string& outPath,
+                                   const SourceLines& sourceLines,
+                                   int maxMutables) {
+  Mutables generatedMutables = mGenerator->populate(outPath, sourceLines);
+  Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
+                                                maxMutables);
+  return selectedMutables;
 }
 
 }  // namespace sentinel

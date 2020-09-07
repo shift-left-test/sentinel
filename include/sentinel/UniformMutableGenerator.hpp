@@ -60,7 +60,8 @@ class UniformMutableGenerator : public MutableGenerator {
   UniformMutableGenerator(const std::string& path) : mDbPath(path) {
   }
 
-  Mutables populate(const SourceLines& sourceLines) override;
+  Mutables populate(const std::string& outPath,
+                    const SourceLines& sourceLines) override;
 
  private:
   std::string mDbPath;

@@ -38,7 +38,7 @@ class UniformMutableSelector : public MutableSelector {
  public:
   Mutables select(const Mutables& mutables,
 		  const SourceLines& sourceLines,
-                  int max_mutant) override;
+                  int maxMutables) override;
 };
 
 }  // namespace sentinel

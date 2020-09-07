@@ -39,10 +39,12 @@ class MutableGenerator {
   /**
    * @brief Populate mutables from the given source line
    *
+   * @param outPath path to mutables database to be generated
    * @param sourceLines list of target source lines
    * @return mutables
    */
-  virtual Mutables populate(const SourceLines& sourceLines) = 0;
+  virtual Mutables populate(const std::string& outPath,
+                            const SourceLines& sourceLines) = 0;
 };
 
 }  // namespace sentinel
