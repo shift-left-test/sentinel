@@ -129,11 +129,11 @@ class MutationResult {
   /**
    * @brief write instance's contents to file
    *
-   * @param filePath
+   * @param dirPath
    *
-   * @throw IOException if filePath is directory
+   * @throw IOException if dirPath is not directory
    */
-  void saveToFile(const std::string& filePath) const;
+  void saveToFile(const std::string& dirPath) const;
 
   /**
    * @brief compare this with other

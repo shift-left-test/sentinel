@@ -27,10 +27,10 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "sentinel/util/filesystem.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {

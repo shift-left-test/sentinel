@@ -76,8 +76,7 @@ void MutationResults::sortByIndexOfMutableDB() {
 
 void MutationResults::save() {
   for (const auto& e : mData) {
-    e.saveToFile(util::filesystem::join(mPath,
-        std::to_string(e.getIndexOfMutableDB()).append(".MutationResult")));
+    e.saveToFile(mPath);
   }
 }
 

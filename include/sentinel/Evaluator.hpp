@@ -26,8 +26,9 @@
 #define INCLUDE_SENTINEL_EVALUATOR_HPP_
 
 #include <memory>
-#include "sentinel/Logger.hpp"
-#include "sentinel/Mutable.hpp"
+#include <string>
+#include "sentinel/Logging.hpp"
+#include "sentinel/Mutables.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 
@@ -42,23 +43,33 @@ class Evaluator {
   /**
    * @brief Default constructor
    *
-   * @param logger object
-   * @param info mutable information
+   * @param mutableDBDir Directory Path of Mutable Database
+   * @param expectedResultDir Directory Path of Expected Result
+   * @param outDir Directory Path of MutationResult
+   * @param logging object
+   *
    */
-  Evaluator(const std::shared_ptr<Logger>& logger, const Mutable& info);
+  Evaluator(const std::string& mutableDBDir,
+      const std::string& expectedResultDir,
+      const std::string& outDir,
+      const std::shared_ptr<Logging>& logging);
 
   /**
-   * @brief Compare an actual result with the expected one and return the result
+   * @brief Compare an actual with the expected and save&return summary
    *
-   * @param expected result
-   * @param actual result
-   * @return summary for the mutation report
+   * @param ActualResultDir Directory Path of Actural Result
+   * @param mutableDBIdx Index of Mutable Database
+   *
+   * @return MutationResult summary of compare
    */
-  MutationResult compare(const Result& expected, const Result& actual);
+  MutationResult compareAndSaveMutationResult(
+      const std::string& ActualResultDir, int mutableDBIdx);
 
  private:
-  std::shared_ptr<Logger> mLogger;
-  Mutable mMutable;
+  std::shared_ptr<Logging> mLogging;
+  std::string mOutDir;
+  Mutables mMutables;
+  Result mExpectedResult;
 };
 
 }  // namespace sentinel

@@ -110,7 +110,18 @@ int MutationResult::getIndexOfMutableDB() const {
   return mIndexOfMutableDB;
 }
 
-void MutationResult::saveToFile(const std::string& filePath) const {
+void MutationResult::saveToFile(const std::string& dirPath) const {
+  if (util::filesystem::exists(dirPath)) {
+    if (!util::filesystem::isDirectory(dirPath)) {
+      throw IOException(EINVAL);
+    }
+  } else {
+    util::filesystem::createDirectory(dirPath);
+  }
+
+  std::string filePath = util::filesystem::join(dirPath,
+        std::to_string(getIndexOfMutableDB()).append(".MutationResult"));
+
   std::ofstream outFile(filePath.c_str(),
       std::ios::out | std::ios::binary);
 

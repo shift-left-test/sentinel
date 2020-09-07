@@ -106,7 +106,7 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
   MAKE_RESULT_XML(MUT_DIR, TC2);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_FALSE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "");
 }
 
 TEST_F(ResultTest, testResultWithKillMutation) {
@@ -116,7 +116,7 @@ TEST_F(ResultTest, testResultWithKillMutation) {
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_TRUE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
@@ -127,7 +127,7 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_FALSE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "");
 }
 
 TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
@@ -138,7 +138,7 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_TRUE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
@@ -147,7 +147,7 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
   MAKE_RESULT_XML(MUT_DIR, TC1);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_TRUE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
@@ -157,7 +157,15 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_TRUE(Result::kill(ori, mut));
+  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+}
+
+TEST_F(ResultTest, testResultWithEmptyMutationDir) {
+  std::string MUT_DIR = util::filesystem::tempDirectory(
+      util::filesystem::join(BASE, "mut_dir"));
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+  EXPECT_EQ(Result::kill(ori, mut), "C1.TC1, C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithWrongXMLFmt) {

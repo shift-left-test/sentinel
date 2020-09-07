@@ -83,16 +83,18 @@ Result::Result(const std::string& path) {
   }
 }
 
-bool Result::kill(const Result& original, const Result& mutated) {
-  bool kill = false;
+std::string Result::kill(const Result& original, const Result& mutated) {
+  std::string ret;
   for (const std::string &tc : original.mPassedTC) {
     if (std::lower_bound(mutated.mPassedTC.begin(),
         mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
-      kill = true;
-      break;
+      if (ret.length() != 0) {
+        ret.append(", ");
+      }
+      ret.append(tc);
     }
   }
-  return kill;
+  return ret;
 }
 
 }  // namespace sentinel

@@ -49,9 +49,9 @@ class Result {
    *
    * @param original result
    * @param mutated result
-   * @return true if the mutation is killed
+   * @return killing test case if the mutation is killed (if not, empty string)
    */
-  static bool kill(const Result& original, const Result& mutated);
+  static std::string kill(const Result& original, const Result& mutated);
 
  private:
   std::vector<std::string> mPassedTC;
