@@ -20,7 +20,8 @@
 # Warrior: 8.0 (8.0.1)
 # Zeus: 9.0 (9.0.1)
 # Dunfell: 10.0 (10.0.1)
-set(llvm_config_names llvm-config-10.0 llvm-config100 llvm-config-10
+set(llvm_config_names llvm-config
+                      llvm-config-10.0 llvm-config100 llvm-config-10
                       llvm-config-9.0 llvm-config90 llvm-config-9
                       llvm-config-8.0 llvm-config80 llvm-config-8
                       llvm-config-7.0 llvm-config70 llvm-config-7
@@ -28,8 +29,7 @@ set(llvm_config_names llvm-config-10.0 llvm-config100 llvm-config-10
                       llvm-config-5.0 llvm-config50 llvm-config-5
                       llvm-config-4.0 llvm-config40 llvm-config-4
                       llvm-config-3.9 llvm-config-39
-                      llvm-config-3.8 llvm-config-38
-                      llvm-config)
+                      llvm-config-3.8 llvm-config-38)
 
 # Search for llvm-config executable among the listed llvm_config_names.
 # If user specifies LLVM_ROOT_DIR, find llvm-config in there first.
@@ -43,7 +43,7 @@ mark_as_advanced(LLVM_CONFIG_EXECUTABLE)
 
 if (NOT LLVM_CONFIG_EXECUTABLE)
   message(FATAL_ERROR "Could NOT find 'llvm-config' executable")
-endif() 
+endif()
 
 execute_process(
   COMMAND ${LLVM_CONFIG_EXECUTABLE} --includedir
