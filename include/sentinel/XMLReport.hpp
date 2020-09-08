@@ -25,11 +25,10 @@
 #ifndef INCLUDE_SENTINEL_XMLREPORT_HPP_
 #define INCLUDE_SENTINEL_XMLREPORT_HPP_
 
+#include <tinyxml2/tinyxml2.h>
 #include <string>
-#include "sentinel/Mutables.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Report.hpp"
-#include "sentinel/SourceTree.hpp"
 
 
 namespace sentinel {
@@ -42,19 +41,28 @@ class XMLReport : public Report {
   /**
    * @brief Default constructor
    *
-   * @param sourceTree source tree object
-   * @param mutables list of mutables
-   * @param results list of mutation results
+   * @param resultsPath directory path of mutation results
    */
-  XMLReport(const SourceTree& sourceTree,
-            const Mutables& mutables,
-            const MutationResults& results);
+  explicit XMLReport(const std::string& resultsPath);
 
+  /**
+   * @brief save xml format result to path 
+   *
+   * @param path path of output directory 
+   */
   void save(const std::string& path) override;
 
  private:
-  SourceTree mSourceTree;
-  Mutables mMutables;
+  /**
+   * @brief add Child Element To Parent Element 
+   *
+   * @param d XMLDocument that has XMLElement p
+   * @param p XMLElemnet that has a new child
+   * @param childName child XMLElement's name
+   * @param childText child XMLElement's text
+   */
+  void addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p,
+      const std::string& childName, const std::string& childText);
   MutationResults mResults;
 };
 
