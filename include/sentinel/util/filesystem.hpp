@@ -28,6 +28,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -393,6 +394,19 @@ inline void copyFile(const std::string& srcPath, const std::string& destPath) {
   dest << src.rdbuf();
   src.close();
   dest.close();
+}
+
+/**
+ * @brief Return True if 2 paths point to the same dir/file
+ *
+ * @param path1 first path
+ * @param path2 second path
+ * @return True if 2 paths point to the same dir/file
+ */
+inline bool comparePath(const std::string& path1, const std::string& path2) {
+  std::string absolutePath1{realpath(path1.c_str(), nullptr)};
+  std::string absolutePath2{realpath(path2.c_str(), nullptr)};
+  return absolutePath1 == absolutePath2;
 }
 
 }  // namespace filesystem

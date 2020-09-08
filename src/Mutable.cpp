@@ -25,6 +25,7 @@
 #include <string>
 #include <utility>
 #include "sentinel/Mutable.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {
@@ -47,7 +48,7 @@ Mutable::Mutable(const std::string& mutationOperator,
 
 bool Mutable::compare(const Mutable& other) const {
   return mOperator == other.getOperator() &&
-         mPath == other.getPath() &&
+         util::filesystem::comparePath(mPath, other.getPath()) &&
          mFirst.line == other.getFirst().line &&
          mFirst.column == other.getFirst().column &&
          mLast.line == other.getLast().line &&

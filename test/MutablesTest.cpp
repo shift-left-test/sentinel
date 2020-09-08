@@ -50,14 +50,14 @@ class MutablesTest : public ::testing::Test {
     }
   }
 
-  void printMutable(const Mutable& m) {
-    std::cout << m.getOperator() << ", "
-              << m.getPath() << ", "
-              << m.getFirst().line << ", "
-              << m.getFirst().column << ", "
-              << m.getLast().line << ", "
-              << m.getLast().column << ", "
-              << m.getToken() << std::endl;
+  bool equal(const Mutable& m1, const Mutable& m2) {
+    return m1.getOperator() == m2.getOperator() &&
+           m1.getPath() == m2.getPath() &&
+           m1.getFirst().line == m2.getFirst().line &&
+           m1.getFirst().column == m2.getFirst().column &&
+           m1.getLast().line == m2.getLast().line &&
+           m1.getLast().column == m2.getLast().column &&
+           m1.getToken() == m2.getToken();
   }
 };
 
@@ -68,7 +68,7 @@ TEST_F(MutablesTest, testAdd) {
   EXPECT_EQ(m.size(), 0);
   m.add(newMutable);
   EXPECT_EQ(m.size(), 1);
-  EXPECT_TRUE(newMutable.compare(m.get(0)));
+  EXPECT_TRUE(equal(newMutable, m.get(0)));
 }
 
 TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
@@ -95,12 +95,9 @@ TEST_F(MutablesTest, testSave) {
   int firstColumn = Mutables::readIntFromFile(inFile);
   int lastLine = Mutables::readIntFromFile(inFile);
   int lastColumn = Mutables::readIntFromFile(inFile);
-  printMutable(mutable1);
-  printMutable(Mutable("AOR", path, firstLine, firstColumn,
-                       lastLine, lastColumn, token));
-  EXPECT_TRUE(mutable1.compare(Mutable(mutationOperator, path, firstLine,
-                                       firstColumn, lastLine, lastColumn,
-                                       token)));
+  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, firstLine,
+                                      firstColumn, lastLine, lastColumn,
+                                      token)));
 
   path = Mutables::readStringFromFile(inFile);
   mutationOperator = Mutables::readStringFromFile(inFile);
@@ -109,12 +106,9 @@ TEST_F(MutablesTest, testSave) {
   firstColumn = Mutables::readIntFromFile(inFile);
   lastLine = Mutables::readIntFromFile(inFile);
   lastColumn = Mutables::readIntFromFile(inFile);
-  printMutable(mutable2);
-  printMutable(Mutable("AOR", path, firstLine, firstColumn,
-                       lastLine, lastColumn, token));
-  EXPECT_TRUE(mutable2.compare(Mutable(mutationOperator, path, firstLine,
-                                       firstColumn,
-                                       lastLine, lastColumn, token)));
+  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, firstLine,
+                                      firstColumn,
+                                      lastLine, lastColumn, token)));
   inFile.close();
 }
 
@@ -134,7 +128,7 @@ TEST_F(MutablesTest, testLoad) {
   // This is to test ranged-based for loop implementation is working.
   int counter = 0;
   for (const auto& e : m2) {
-    EXPECT_TRUE(e.compare(m.get(counter)));
+    EXPECT_TRUE(equal(e, m.get(counter)));
     counter += 1;
   }
 }

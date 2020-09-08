@@ -323,4 +323,8 @@ TEST_F(FilesystemTest, testCopyFile) {
                IOException);
 }
 
+TEST_F(FilesystemTest, testComparePath) {
+  EXPECT_TRUE(util::filesystem::comparePath(".", "../test"));
+}
+
 }  // namespace sentinel

@@ -31,10 +31,11 @@ namespace sentinel {
 
 TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine("input/sample1/sample1.cpp", 58));
-  sourceLines.push_back(SourceLine("input/sample1/sample1.cpp", 59));
+  std::string targetFile = "input/sample1/sample1.cpp";
+  sourceLines.push_back(SourceLine(targetFile.c_str(), 58));
+  sourceLines.push_back(SourceLine(targetFile.c_str(), 59));
 
-  UniformMutableGenerator generator{"/home/jenkins/workspace/sentinel"};
+  UniformMutableGenerator generator{".."};
   Mutables mutables = generator.populate("mutables.db", sourceLines);
 
   /* for (const auto& m : mutables) {
@@ -48,135 +49,49 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   } */
 
   Mutables truth("truth mutables");
-  truth.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 29, 58, 31, "||"));
-  truth.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 37, "1"));
-  truth.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 37, "0"));
-  truth.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 37, "(i & 1) == (1 << 0)"));
-  truth.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 37, "i > 0"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 17, 58, 19, "!="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 17, 58, 19, "<"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 17, 58, 19, "<="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 17, 58, 19, ">"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 17, 58, 19, ">="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 28, "1"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 28, "0"));
-  truth.add(Mutable(
-      "BOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 12, 58, 13, "^"));
-  truth.add(Mutable(
-      "BOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 12, 58, 13, "|"));
-  truth.add(Mutable(
-      "BOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 10, 58, 15, "i"));
-  truth.add(Mutable(
-      "BOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 10, 58, 15, "1"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 10, 58, 11, "((i)++)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 10, 58, 11, "((i)--)"));
-  truth.add(Mutable(
-      "SOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 23, 58, 25, ">>"));
-  truth.add(Mutable(
-      "SOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 21, 58, 27, "1"));
-  truth.add(Mutable(
-      "SOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 21, 58, 27, "0"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 34, 58, 35, "!="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 34, 58, 35, "<"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 34, 58, 35, "<="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 34, 58, 35, "=="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 34, 58, 35, ">="));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 32, 58, 37, "1"));
-  truth.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 32, 58, 37, "0"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 32, 58, 33, "((i)++)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 32, 58, 33, "((i)--)"));
-  truth.add(Mutable(
-      "SDL", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 7, 59, 20, ""));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 7, 59, 10, "((ret)++)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 7, 59, 10, "((ret)--)"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "%"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "*"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "-"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "/"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 20, "ret"));
-  truth.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 20, "i"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 16, "((ret)++)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 16, "((ret)--)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 19, 59, 20, "((i)++)"));
-  truth.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 19, 59, 20, "((i)--)"));
+  truth.add(Mutable("LCR", targetFile, 58, 29, 58, 31, "||"));
+  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "1"));
+  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "0"));
+  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "(i & 1) == (1 << 0)"));
+  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "i > 0"));
+  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "!="));
+  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "<"));
+  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "<="));
+  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, ">"));
+  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, ">="));
+  truth.add(Mutable("ROR", targetFile, 58, 9, 58, 28, "1"));
+  truth.add(Mutable("ROR", targetFile, 58, 9, 58, 28, "0"));
+  truth.add(Mutable("BOR", targetFile, 58, 12, 58, 13, "^"));
+  truth.add(Mutable("BOR", targetFile, 58, 12, 58, 13, "|"));
+  truth.add(Mutable("BOR", targetFile, 58, 10, 58, 15, "i"));
+  truth.add(Mutable("BOR", targetFile, 58, 10, 58, 15, "1"));
+  truth.add(Mutable("UOI", targetFile, 58, 10, 58, 11, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, 58, 10, 58, 11, "((i)--)"));
+  truth.add(Mutable("SOR", targetFile, 58, 23, 58, 25, ">>"));
+  truth.add(Mutable("SOR", targetFile, 58, 21, 58, 27, "1"));
+  truth.add(Mutable("SOR", targetFile, 58, 21, 58, 27, "0"));
+  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "!="));
+  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "<"));
+  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "<="));
+  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "=="));
+  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, ">="));
+  truth.add(Mutable("ROR", targetFile, 58, 32, 58, 37, "1"));
+  truth.add(Mutable("ROR", targetFile, 58, 32, 58, 37, "0"));
+  truth.add(Mutable("UOI", targetFile, 58, 32, 58, 33, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, 58, 32, 58, 33, "((i)--)"));
+  truth.add(Mutable("SDL", targetFile, 59, 7, 59, 20, ""));
+  truth.add(Mutable("UOI", targetFile, 59, 7, 59, 10, "((ret)++)"));
+  truth.add(Mutable("UOI", targetFile, 59, 7, 59, 10, "((ret)--)"));
+  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "%"));
+  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "*"));
+  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "-"));
+  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "/"));
+  truth.add(Mutable("AOR", targetFile, 59, 13, 59, 20, "ret"));
+  truth.add(Mutable("AOR", targetFile, 59, 13, 59, 20, "i"));
+  truth.add(Mutable("UOI", targetFile, 59, 13, 59, 16, "((ret)++)"));
+  truth.add(Mutable("UOI", targetFile, 59, 13, 59, 16, "((ret)--)"));
+  truth.add(Mutable("UOI", targetFile, 59, 19, 59, 20, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, 59, 19, 59, 20, "((i)--)"));
 
   ASSERT_EQ(mutables.size(), truth.size());
 

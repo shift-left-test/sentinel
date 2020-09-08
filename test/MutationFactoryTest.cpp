@@ -33,11 +33,11 @@ namespace sentinel {
 TEST(MutationFactoryTest, testPopulateWorks) {
   SourceLines sourceLines;
   sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 58));
+      "input/sample1/sample1.cpp", 58));
   sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 59));
+      "input/sample1/sample1.cpp", 59));
 
-  UniformMutableGenerator generator{"/home/jenkins/workspace/sentinel"};
+  UniformMutableGenerator generator{".."};
   Mutables generated = generator.populate("mutables.db", sourceLines);
 
   UniformMutableSelector selector;
