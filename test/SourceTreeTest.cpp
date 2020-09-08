@@ -31,8 +31,7 @@
 namespace sentinel {
 
 TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
-  std::string targetFilename = \
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp";
+  std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
   std::string filename = util::filesystem::tempFilename();
@@ -68,8 +67,7 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
 }
 
 TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
-  std::string targetFilename = \
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp";
+  std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
   std::string filename = util::filesystem::tempFilename();

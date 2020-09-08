@@ -30,29 +30,17 @@
 namespace sentinel {
 
 TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumNotExceeded) {
+  std::string targetFilename = "input/sample1/sample1.cpp";
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 58));
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 59));
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 62));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 58));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
   Mutables mutables{"somename.db"};
-  mutables.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 29, 58, 31, "||"));
-  mutables.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 28, "1"));
-  mutables.add(Mutable(
-      "SOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 21, 58, 27, "1"));
-  mutables.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "-"));
-  mutables.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 16, "((ret)--)"));
+  mutables.add(Mutable("LCR", targetFilename, 58, 29, 58, 31, "||"));
+  mutables.add(Mutable("ROR", targetFilename, 58, 9, 58, 28, "1"));
+  mutables.add(Mutable("SOR", targetFilename, 58, 21, 58, 27, "1"));
+  mutables.add(Mutable("AOR", targetFilename, 59, 17, 59, 18, "-"));
+  mutables.add(Mutable("UOI", targetFilename, 59, 13, 59, 16, "((ret)--)"));
 
   UniformMutableSelector selector;
   Mutables selected = selector.select(mutables, sourceLines, 3);
@@ -64,29 +52,17 @@ TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumNotExceeded) {
 }
 
 TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumExceeded) {
+  std::string targetFilename = "input/sample1/sample1.cpp";
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 58));
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 59));
-  sourceLines.push_back(SourceLine(
-      "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp", 62));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 58));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
+  sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
   Mutables mutables{"somename.db"};
-  mutables.add(Mutable(
-      "LCR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 29, 58, 31, "||"));
-  mutables.add(Mutable(
-      "ROR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 9, 58, 28, "1"));
-  mutables.add(Mutable(
-      "SOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      58, 21, 58, 27, "1"));
-  mutables.add(Mutable(
-      "AOR", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 17, 59, 18, "-"));
-  mutables.add(Mutable(
-      "UOI", "/home/jenkins/workspace/sentinel/test/input/sample1/sample1.cpp",
-      59, 13, 59, 16, "((ret)--)"));
+  mutables.add(Mutable("LCR", targetFilename, 58, 29, 58, 31, "||"));
+  mutables.add(Mutable("ROR", targetFilename, 58, 9, 58, 28, "1"));
+  mutables.add(Mutable("SOR", targetFilename, 58, 21, 58, 27, "1"));
+  mutables.add(Mutable("AOR", targetFilename, 59, 17, 59, 18, "-"));
+  mutables.add(Mutable("UOI", targetFilename, 59, 13, 59, 16, "((ret)--)"));
 
   UniformMutableSelector selector;
   Mutables selected = selector.select(mutables, sourceLines, 1);

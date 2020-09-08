@@ -33,6 +33,7 @@
 #include <cstring>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <regex>
 #include <string>
@@ -380,6 +381,7 @@ inline std::vector<std::string> findFilesInDir(
  * @param destPath path to copy directory
  */
 inline void copyFile(const std::string& srcPath, const std::string& destPath) {
+  
   if (!isRegularFile(srcPath)) {
     throw IOException(EINVAL);
   }
