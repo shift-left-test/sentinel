@@ -22,15 +22,55 @@
   SOFTWARE.
 */
 
+#include <fstream>
+#include <iostream>
 #include <string>
+#include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/SourceTree.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 namespace sentinel {
 
-void SourceTree::modify(const Mutable& info) {
-  (void) info;
+void SourceTree::modify(const Mutable& info, const std::string& backupPath) {
+  // backup
+  std::string targetFilename = info.getPath();
+  util::filesystem::copyFile(targetFilename, backupPath);
+
+  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
+  std::ifstream originalFile(targetFilename);
+  std::ofstream mutatedFile(tempFilename, std::ios::trunc);
+
+  // If code line is out of target range, just write to mutant file.
+  // If code line is in target range (start_line < code_line < end_line), skip.
+  // If code line is on start_line, write the code appearing before start_col,
+  // and write mutated token.
+  // If code line is on end_line, write the code appearing after end_col.
+  std::string line;
+  int lineIdx = 0;
+
+  while (std::getline(originalFile, line)) {
+    lineIdx += 1;
+
+    if (lineIdx < info.getFirst().line || lineIdx > info.getLast().line) {
+      mutatedFile << line << std::endl;
+    }
+
+    if (lineIdx == info.getFirst().line) {
+      mutatedFile << line.substr(0, info.getFirst().column-1);
+      mutatedFile << info.getToken();
+    }
+
+    if (lineIdx == info.getLast().line) {
+      mutatedFile << line.substr(info.getLast().column-1) << std::endl;
+    }
+  }
+
+  originalFile.close();
+  mutatedFile.close();
+
+  util::filesystem::rename(tempFilename, targetFilename);
 }
 
 std::string SourceTree::toString() {

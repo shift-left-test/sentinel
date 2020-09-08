@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <fstream>
 #include <memory>
 #include <regex>
 #include <string>
@@ -369,6 +370,29 @@ inline std::vector<std::string> findFilesInDirUsingExt(
 inline std::vector<std::string> findFilesInDir(
     const std::string& dir) {
   return findFilesInDirUsingExt(dir, {});
+}
+
+/**
+ * @brief Make a copy of target file
+ *
+ * @param srcPath target file path
+ * @param destPath path to copy directory
+ */
+inline void copyFile(const std::string& srcPath, const std::string& destPath) {
+  if (!isRegularFile(srcPath)) {
+    throw IOException(EINVAL);
+  }
+
+  std::string newFilename = destPath;
+  if (isDirectory(destPath)) {
+    newFilename = destPath + "/" + filename(srcPath);
+  }
+	
+  std::ifstream src(srcPath, std::ios::binary);
+  std::ofstream dest(newFilename, std::ios::binary | std::ios::trunc);
+  dest << src.rdbuf();
+  src.close();
+  dest.close();
 }
 
 }  // namespace filesystem

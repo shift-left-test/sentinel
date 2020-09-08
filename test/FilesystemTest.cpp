@@ -46,6 +46,7 @@ class FilesystemTest : public ::testing::Test {
     FILE = tempFilename(join(BASE, "file"));
     FILE_XML = tempFilenameWithSuffix(join(BASE, "file"), ".xml");
     DIRECTORY = tempDirectory(join(BASE, "dir"));
+    COPY_DIRECTORY = tempDirectory(join(BASE, "dir"));
     NESTED_FILE = tempFilename(join(DIRECTORY, "file"));
     NESTED_FILE_TXT = tempFilenameWithSuffix(join(DIRECTORY, "file"), ".TXT");
     NESTED_DIRECTORY = tempDirectory(join(DIRECTORY, "dir"));
@@ -63,6 +64,7 @@ class FilesystemTest : public ::testing::Test {
   std::string NESTED_FILE;
   std::string NESTED_FILE_TXT;
   std::string DIRECTORY;
+  std::string COPY_DIRECTORY;
   std::string NESTED_DIRECTORY;
   std::string UNKNOWN_PATH;
   std::string UNKNOWN_NESTED_PATH;
@@ -290,6 +292,35 @@ TEST_F(FilesystemTest, testFindFilesInDirUsingExtention) {
       filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
   EXPECT_NE(std::find(filesInDir.begin(),
       filesInDir.end(), FILE_XML), filesInDir.end());
+}
+
+TEST_F(FilesystemTest, testCopyFile) {
+  // Add content to file
+  std::ofstream f(FILE);
+  f << "some content\nother content\n";
+  f.close();
+
+  util::filesystem::copyFile(FILE, COPY_DIRECTORY);
+  std::string copiedFilename = COPY_DIRECTORY + "/" + \
+                               util::filesystem::filename(FILE);
+  EXPECT_TRUE(util::filesystem::exists(copiedFilename));
+  std::ifstream origFile(FILE);
+  std::ifstream copiedFile(copiedFilename);
+  std::string copiedFileLine, origFileLine;
+  int lineCounter = 0;
+  while (std::getline(copiedFile, copiedFileLine) &&
+         std::getline(origFile, origFileLine)) {
+    lineCounter += 1;
+    EXPECT_EQ(copiedFileLine, origFileLine);
+  }
+  EXPECT_EQ(lineCounter, 2);
+  origFile.close();
+  copiedFile.close();
+
+  EXPECT_THROW(util::filesystem::copyFile(COPY_DIRECTORY, COPY_DIRECTORY),
+               IOException);
+  EXPECT_THROW(util::filesystem::copyFile(UNKNOWN_PATH, COPY_DIRECTORY),
+               IOException);
 }
 
 }  // namespace sentinel
