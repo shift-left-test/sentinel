@@ -26,7 +26,9 @@
 #include <args/args.hxx>
 #include "sentinel/util/filesystem.hpp"
 #include "sentinel/GitRepository.hpp"
+#include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
+#include "sentinel/UniformMutableSelector.hpp"
 
 void populateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> input(parser, "compile_db",
@@ -47,10 +49,17 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::GitRepository gitRepo(git.Get());
   sentinel::SourceLines sourceLines = gitRepo.getSourceLines();
 
-  sentinel::UniformMutableGenerator generator(input.Get());
-  sentinel::Mutables generated = generator.populate(
-    sentinel::util::filesystem::join(output.Get(), "mutables.db"),
-    sourceLines);
+  std::shared_ptr<sentinel::MutableGenerator> generator =
+    std::make_shared<sentinel::UniformMutableGenerator>(input.Get());
+  std::shared_ptr<sentinel::MutableSelector> selector =
+    std::make_shared<sentinel::UniformMutableSelector>();
 
-  std::cout << "MutableCount: " << generated.size() << std::endl;
+  sentinel::MutationFactory mutationFactory(generator, selector);
+
+  sentinel::Mutables mutables = mutationFactory.populate(
+    sentinel::util::filesystem::join(output.Get(), "mutables.db"),
+    sourceLines,
+    count.Get());
+
+  std::cout << "MutableCount: " << mutables.size() << std::endl;
 }
