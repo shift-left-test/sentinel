@@ -61,5 +61,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
     sourceLines,
     count.Get());
 
+  mutables.save();
+
   std::cout << "MutableCount: " << mutables.size() << std::endl;
 }
