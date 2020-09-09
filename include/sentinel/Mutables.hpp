@@ -61,6 +61,13 @@ class Mutables : public Persistence {
   Mutable get(std::size_t index) const;
 
   /**
+   * @brief Return the path to the to-be-generated mutables database
+   *
+   * @return path to the to-be-generated mutables database
+   */
+  std::string getPath() const;
+
+  /**
    * @brief Return number of stored Mutable
    *
    * @return number of stored Mutable

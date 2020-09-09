@@ -50,6 +50,10 @@ Mutable Mutables::get(std::size_t index) const {
   return mData[index];
 }
 
+std::string Mutables::getPath() const {
+  return mPath;
+}
+
 int Mutables::size() const { return mData.size(); }
 
 void Mutables::load() {

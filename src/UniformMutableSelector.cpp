@@ -36,7 +36,7 @@ namespace sentinel {
 Mutables UniformMutableSelector::select(const Mutables& mutables,
                                         const SourceLines& sourceLines,
                                         int maxMutables) {
-  Mutables ret{"temp.db"};
+  Mutables ret{mutables.getPath()};
   std::vector<Mutable> temp_storage;
   std::random_device rd;
   std::mt19937 mt(rd());
