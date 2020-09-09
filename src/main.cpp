@@ -32,97 +32,10 @@ args::HelpFlag h(arguments, "help",
   "Use 'sentinal COMMAND --help' to see help for each command.",
   {'h', "help"});
 
-static void populateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "compile_db",
-    "Compilation command db path",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "mutable_db",
-    "Mutable database output dir",
-    {'o', "output"}, ".");
-  args::Positional<int> count(parser, "COUNT",
-    "Max mutable count",
-    args::Options::Required);
-
-  parser.Parse();
-
-  std::cout << "Populate"
-    << " " << input.Get()
-    << " " << git.Get()
-    << " " << output.Get()
-    << " " << count.Get()
-    << std::endl;
-}
-
-static void mutateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable_db",
-    "Mutable database dir",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> backup(parser, "backup_dir",
-    "Mutated souce backup dir",
-    {'b', "backup"}, args::Options::Required);
-  args::Positional<int> index(parser, "INDEX",
-    "Index of 'Mutable database' to be mutated",
-    args::Options::Required);
-
-  parser.Parse();
-
-  std::cout << "Mutate"
-    << " " << input.Get()
-    << " " << backup.Get()
-    << " " << index.Get()
-    << std::endl;
-}
-
-static void evaluateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable_db",
-    "Mutable database dir",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> expected(parser, "test_dir",
-    "Expected result directory",
-    {'e', "expected"}, args::Options::Required);
-  args::ValueFlag<std::string> actual(parser, "test_dir",
-    "Actual result directory",
-    {'a', "actual"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "eval_dir",
-    "Mutation applied test result",
-    {'o', "output"}, ".");
-  args::Positional<int> index(parser, "INDEX",
-    "Index of 'mutable database' to be evaluated",
-    args::Options::Required);
-
-  parser.Parse();
-
-  std::cout << "Evaluate"
-    << " " << input.Get()
-    << " " << expected.Get()
-    << " " << actual.Get()
-    << " " << output.Get()
-    << " " << index.Get()
-    << std::endl;
-}
-
-static void reportCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "eval_dir",
-    "Mutation test result directory",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "report_dir",
-    "Mutation test report directory",
-    {'o', "output"}, ".");
-
-  parser.Parse();
-
-  std::cout << "Report"
-    << " " << input.Get()
-    << " " << git.Get()
-    << " " << output.Get()
-    << std::endl;
-}
+void populateCommand(args::Subparser &parser);  // NOLINT
+void mutateCommand(args::Subparser &parser);  // NOLINT
+void evaluateCommand(args::Subparser &parser);  // NOLINT
+void reportCommand(args::Subparser &parser);  // NOLINT
 
 int main(int argc, char ** argv) {
   args::ArgumentParser parser("Mutation Test");
