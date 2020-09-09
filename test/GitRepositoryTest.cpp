@@ -117,6 +117,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles { "temp.cpp" };
+  std::string stageFilename = repo_name + "/" + "temp.cpp";
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);
@@ -131,7 +132,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 
     EXPECT_EQ(sourceLines.size(), 1);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFiles[0].c_str(), 2)), 1);
+      SourceLine(stageFilename.c_str(), 2)), 1);
   }
   // only workdir
   {
@@ -140,7 +141,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFiles[0].c_str(), 3)), 1);
+      SourceLine(stageFilename.c_str(), 3)), 1);
   }
   // only index
   {
@@ -149,7 +150,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFiles[0].c_str(), 3)), 1);
+      SourceLine(stageFilename.c_str(), 3)), 1);
   }
 }
 

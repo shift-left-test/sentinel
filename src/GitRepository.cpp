@@ -26,6 +26,7 @@
 #include <sstream>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/DefaultLogger.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -182,7 +183,19 @@ SourceLines GitRepository::getSourceLines() {
     throw RepositoryException("Fail to diff iterate");
   }
 
-  return d.sourceLines;
+  SourceLines targetLines;
+  for (const auto& line : d.sourceLines) {
+    if (!util::string::endsWith(line.getPath(), ".c") &&
+        !util::string::endsWith(line.getPath(), ".cpp") &&
+        !util::string::endsWith(line.getPath(), ".cxx")) {
+      continue;
+    }
+
+    std::string path = path_ + "/" + line.getPath();
+    targetLines.push_back(SourceLine(path.c_str(), line.getLineNumber()));
+  }
+
+  return targetLines;
 }
 
 std::shared_ptr<SourceTree> GitRepository::getSourceTree() {
