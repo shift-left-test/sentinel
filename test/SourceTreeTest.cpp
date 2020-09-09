@@ -34,8 +34,8 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string filename = util::filesystem::tempFilename();
-  std::string tempFilename = "/tmp/" + filename;
+  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
+  std::string filename = util::filesystem::filename(tempFilename);
   util::filesystem::copyFile(targetFilename, tempFilename);
 
   Mutable m{"LCR", tempFilename, 58, 29, 58, 31, "||"};
@@ -70,8 +70,8 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string filename = util::filesystem::tempFilename();
-  std::string tempFilename = "/tmp/" + filename;
+  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
+  std::string filename = util::filesystem::filename(tempFilename);
   util::filesystem::copyFile(targetFilename, tempFilename);
 
   // If position does not exist, no changes should be made.
