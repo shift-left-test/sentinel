@@ -33,6 +33,9 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> input(parser, "mutable_db",
     "Mutable database dir",
     {'i', "input"}, args::Options::Required);
+  args::ValueFlag<std::string> git(parser, "git_dir",
+    "Git repository dir",
+    {'g', "git"}, args::Options::Required);
   args::ValueFlag<std::string> backup(parser, "backup_dir",
     "Mutated souce backup dir",
     {'b', "backup"}, args::Options::Required);
@@ -48,5 +51,5 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::Mutable m = mutables.get(index.Get());
   sentinel::SourceTree tree;
 
-  tree.modify(m, backup.Get());
+  tree.modify(m, git.Get(), backup.Get());
 }

@@ -43,9 +43,12 @@ class SourceTree : public Source {
    * @brief Modify the source with respect to the given mutable information
    *
    * @param info Mutable information
+   * @param gitRootPath target git project root directory
    * @param backupPath backup directory
    */
-  void modify(const Mutable& info, const std::string& backupPath);
+  void modify(const Mutable& info,
+              const std::string& gitRootPath,
+              const std::string& backupPath);
   std::string toString() override;
 };
 

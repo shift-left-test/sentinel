@@ -164,6 +164,10 @@ inline void createDirectories(const std::string& path) {
   for (auto iter = path.begin(); iter != path.end(); ) {
     auto nextSlash = std::find(iter, path.end(), SEPARATOR);
     std::string currentPath = std::string(path.begin(), nextSlash);
+    if (currentPath == "" && iter != path.end()) {
+      ++iter;
+      continue;
+    }
 
     if (!exists(currentPath)) {
       existed = false;
@@ -177,7 +181,7 @@ inline void createDirectories(const std::string& path) {
   }
 
   if (existed) {
-    throw IOException(EEXIST);
+    throw IOException(EEXIST, path + " already exists");
   }
 }
 
@@ -406,9 +410,28 @@ inline void copyFile(const std::string& srcPath, const std::string& destPath) {
  * @return True if 2 paths point to the same dir/file
  */
 inline bool comparePath(const std::string& path1, const std::string& path2) {
+  if (!exists(path1) || !exists(path2)) {
+    throw IOException(EINVAL);
+  }
+
   std::string absolutePath1{realpath(path1.c_str(), nullptr)};
   std::string absolutePath2{realpath(path2.c_str(), nullptr)};
   return absolutePath1 == absolutePath2;
+}
+
+/**
+ * @brief Return the absolute path of given path
+ *
+ * @param path target path
+ * @return absolute path of target path
+ */
+inline std::string getAbsolutePath(const std::string& path) {
+  if (!exists(path)) {
+    throw IOException(EINVAL);
+  }
+
+  std::string absolutePath{realpath(path.c_str(), nullptr)};
+  return absolutePath;
 }
 
 }  // namespace filesystem

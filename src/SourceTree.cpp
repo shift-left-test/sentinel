@@ -33,10 +33,31 @@
 
 namespace sentinel {
 
-void SourceTree::modify(const Mutable& info, const std::string& backupPath) {
+void SourceTree::modify(const Mutable& info,
+                        const std::string& gitRootPath,
+                        const std::string& backupPath) {
+  if (!util::filesystem::exists(gitRootPath) ||
+      !util::filesystem::exists(backupPath)) {
+    throw IOException(EINVAL);
+  }
+
   // backup
-  std::string targetFilename = info.getPath();
-  util::filesystem::copyFile(targetFilename, backupPath);
+  std::string targetFilename = \
+      util::filesystem::getAbsolutePath(info.getPath());
+  std::string gitRootAbsolutePath = \
+      util::filesystem::getAbsolutePath(gitRootPath);
+  if (!util::string::startsWith(util::filesystem::dirname(targetFilename),
+                                gitRootAbsolutePath)) {
+    throw IOException(EINVAL, "Git root does not contain " + targetFilename);
+  }
+  std::string targetRelativePath = \
+      util::filesystem::dirname(targetFilename).substr(
+          gitRootAbsolutePath.length());
+  std::string newBackupPath = backupPath + "/" + targetRelativePath;
+  if (!util::filesystem::exists(newBackupPath)) {
+    util::filesystem::createDirectories(newBackupPath);
+  }
+  util::filesystem::copyFile(targetFilename, newBackupPath);
 
   std::string tempFilename = util::filesystem::tempFilename("/tmp/");
   std::ifstream originalFile(targetFilename);
