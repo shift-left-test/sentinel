@@ -24,6 +24,9 @@
 
 #include <iostream>
 #include <args/args.hxx>
+#include "sentinel/MutationResult.hpp"
+#include "sentinel/util/filesystem.hpp"
+#include "sentinel/XMLReport.hpp"
 
 
 void reportCommand(args::Subparser &parser) {  // NOLINT
@@ -39,9 +42,6 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  std::cout << "Report"
-    << " " << input.Get()
-    << " " << git.Get()
-    << " " << output.Get()
-    << std::endl;
+  sentinel::XMLReport xmlReport(input.Get());
+  xmlReport.save(output.Get());
 }
