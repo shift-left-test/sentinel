@@ -24,6 +24,9 @@
 
 #include <iostream>
 #include <args/args.hxx>
+#include "sentinel/Evaluator.hpp"
+#include "sentinel/Logging.hpp"
+#include "sentinel/util/filesystem.hpp"
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
@@ -45,11 +48,14 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  std::cout << "Evaluate"
-    << " " << input.Get()
-    << " " << expected.Get()
-    << " " << actual.Get()
-    << " " << output.Get()
-    << " " << index.Get()
-    << std::endl;
+  auto logger = sentinel::Logging::getLogger("Evaluator");
+
+  sentinel::Evaluator evaluator(
+    sentinel::util::filesystem::join(input.Get(), "mutables.db"),
+    expected.Get(),
+    output.Get(),
+    logger);
+
+  auto result = evaluator.compareAndSaveMutationResult(
+    actual.Get(), index.Get());
 }
