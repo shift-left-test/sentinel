@@ -24,6 +24,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutable.hpp"
@@ -59,9 +60,16 @@ void SourceTree::modify(const Mutable& info,
   }
   util::filesystem::copyFile(targetFilename, newBackupPath);
 
-  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
+  // mutation
   std::ifstream originalFile(targetFilename);
-  std::ofstream mutatedFile(tempFilename, std::ios::trunc);
+  std::stringstream buffer;
+  if (originalFile) {
+    buffer << originalFile.rdbuf();
+    originalFile.close();
+  } else {
+    throw IOException(EINVAL, "Fail to open " + targetFilename);
+  }
+  std::ofstream mutatedFile(targetFilename, std::ios::trunc);
 
   // If code line is out of target range, just write to mutant file.
   // If code line is in target range (start_line < code_line < end_line), skip.
@@ -71,7 +79,7 @@ void SourceTree::modify(const Mutable& info,
   std::string line;
   int lineIdx = 0;
 
-  while (std::getline(originalFile, line)) {
+  while (std::getline(buffer, line)) {
     lineIdx += 1;
 
     if (lineIdx < info.getFirst().line || lineIdx > info.getLast().line) {
@@ -88,10 +96,7 @@ void SourceTree::modify(const Mutable& info,
     }
   }
 
-  originalFile.close();
   mutatedFile.close();
-
-  util::filesystem::rename(tempFilename, targetFilename);
 }
 
 std::string SourceTree::toString() {
