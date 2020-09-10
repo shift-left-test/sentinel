@@ -33,7 +33,9 @@
 
 namespace sentinel {
 
-static constexpr const char* OUTPUT_FILENAME = "mutables.db";
+static constexpr const char* NONEXISTED_DIR = "nonexist";
+static constexpr const char* OUTPUT_PATH = "./mutables.db";
+static constexpr const char* NONEXISTED_PATH = "nonexist/mutables.db";
 static constexpr const char* NORMAL_FILENAME = "temp.cpp";
 static constexpr const char* ABNORMAL_FILENAME = "some,weird\"~ name";
 static constexpr const char* ONELINE_TOKEN = "+";
@@ -45,8 +47,12 @@ class MutablesTest : public ::testing::Test {
   void SetUp() override {}
 
   void TearDown() override {
-    if (util::filesystem::exists(OUTPUT_FILENAME)) {
-      util::filesystem::removeFile(OUTPUT_FILENAME);
+    if (util::filesystem::exists(OUTPUT_PATH)) {
+      util::filesystem::removeFile(OUTPUT_PATH);
+    }
+
+    if (util::filesystem::exists(NONEXISTED_DIR)) {
+      util::filesystem::removeDirectories(NONEXISTED_DIR);
     }
   }
 
@@ -62,7 +68,7 @@ class MutablesTest : public ::testing::Test {
 };
 
 TEST_F(MutablesTest, testAdd) {
-  Mutables m{OUTPUT_FILENAME};
+  Mutables m{OUTPUT_PATH};
   Mutable newMutable("AOR", NORMAL_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN);
 
   EXPECT_EQ(m.size(), 0);
@@ -72,20 +78,58 @@ TEST_F(MutablesTest, testAdd) {
 }
 
 TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
-  Mutables m{OUTPUT_FILENAME};
+  Mutables m{OUTPUT_PATH};
   EXPECT_THROW(m.get(0), std::out_of_range);
 }
 
-TEST_F(MutablesTest, testSave) {
-  Mutables m{OUTPUT_FILENAME};
+TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
+  Mutables m{OUTPUT_PATH};
   Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
   Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
-  EXPECT_TRUE(util::filesystem::exists(OUTPUT_FILENAME));
 
-  std::ifstream inFile(OUTPUT_FILENAME);
+  EXPECT_TRUE(util::filesystem::exists(OUTPUT_PATH));
+
+  std::ifstream inFile(OUTPUT_PATH);
+  EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
+
+  std::string path = Mutables::readStringFromFile(inFile);
+  std::string mutationOperator = Mutables::readStringFromFile(inFile);
+  std::string token = Mutables::readStringFromFile(inFile);
+  int firstLine = Mutables::readIntFromFile(inFile);
+  int firstColumn = Mutables::readIntFromFile(inFile);
+  int lastLine = Mutables::readIntFromFile(inFile);
+  int lastColumn = Mutables::readIntFromFile(inFile);
+  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, firstLine,
+                                      firstColumn, lastLine, lastColumn,
+                                      token)));
+
+  path = Mutables::readStringFromFile(inFile);
+  mutationOperator = Mutables::readStringFromFile(inFile);
+  token = Mutables::readStringFromFile(inFile);
+  firstLine = Mutables::readIntFromFile(inFile);
+  firstColumn = Mutables::readIntFromFile(inFile);
+  lastLine = Mutables::readIntFromFile(inFile);
+  lastColumn = Mutables::readIntFromFile(inFile);
+  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, firstLine,
+                                      firstColumn,
+                                      lastLine, lastColumn, token)));
+  inFile.close();
+}
+
+TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
+  Mutables m{NONEXISTED_PATH};
+  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  m.add(mutable1);
+  m.add(mutable2);
+  m.save();
+
+  EXPECT_TRUE(util::filesystem::exists(NONEXISTED_PATH));
+
+  std::ifstream inFile(NONEXISTED_PATH);
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
 
   std::string path = Mutables::readStringFromFile(inFile);
@@ -113,14 +157,14 @@ TEST_F(MutablesTest, testSave) {
 }
 
 TEST_F(MutablesTest, testLoad) {
-  Mutables m{OUTPUT_FILENAME};
+  Mutables m{OUTPUT_PATH};
   Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
   Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
 
-  Mutables m2{OUTPUT_FILENAME};
+  Mutables m2{OUTPUT_PATH};
   m2.load();
   EXPECT_EQ(m2.size(), 2);
 

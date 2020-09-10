@@ -81,7 +81,16 @@ void Mutables::load() {
 }
 
 void Mutables::save() {
+  std::string dbDir = util::filesystem::dirname(mPath);
+  if (!util::filesystem::exists(dbDir)) {
+    util::filesystem::createDirectories(dbDir);
+  }
+
   std::ofstream outFile(mPath.c_str(), std::ios::out | std::ios::binary);
+  if (!outFile) {
+    throw IOException(EBADF, "Fail to open mutable_db");
+  }
+
   int num_mutants = mData.size();
   outFile.write(
         reinterpret_cast<char *>(&num_mutants), sizeof(int));      //NOLINT
