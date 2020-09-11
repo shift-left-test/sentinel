@@ -41,6 +41,7 @@ class MutationResultsTest : public ::testing::Test {
     BASE = util::filesystem::tempDirectory("fixture");
     OUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
         "ORI_DIR"));
+    TARGET_FILE = "input/sample1/sample1.cpp";
   }
 
   void TearDown() override {
@@ -49,11 +50,12 @@ class MutationResultsTest : public ::testing::Test {
 
   std::string BASE;
   std::string OUT_DIR;
+  std::string TARGET_FILE;
 };
 
 TEST_F(MutationResultsTest, testAdd) {
   MutationResults MRs(OUT_DIR);
-  Mutable M1("AOR", "Test.cpp", 0, 0, 0, 0, "+");
+  Mutable M1("AOR", TARGET_FILE, 0, 0, 0, 0, "+");
   MutationResult MR1(M1, "testAdd", true, 0);
   EXPECT_EQ(0, MRs.size());
 
@@ -62,7 +64,7 @@ TEST_F(MutationResultsTest, testAdd) {
 
   EXPECT_TRUE(MRs.get(0).compare(MR1));
   EXPECT_EQ(MRs.get(0).getMutator(), "AOR");
-  EXPECT_EQ(MR1.getPath(), "Test.cpp");
+  EXPECT_TRUE(util::filesystem::comparePath(MR1.getPath(), TARGET_FILE));
   EXPECT_EQ(MR1.getLineNum(), 0);
 }
 
@@ -74,11 +76,11 @@ TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
 TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResults MRs(OUT_DIR);
 
-  Mutable M1("AOR", "Test.cpp", 4, 5, 6, 7, "+");
+  Mutable M1("AOR", TARGET_FILE, 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "testAdd", false, 0);
   MRs.add(MR1);
 
-  Mutable M2("BOR", "Test2.cpp", 1, 2, 3, 4, "|");
+  Mutable M2("BOR", TARGET_FILE, 1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true, 1);
   MRs.add(MR2);
 

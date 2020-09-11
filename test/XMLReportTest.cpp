@@ -52,12 +52,14 @@ class XMLReportTest : public ::testing::Test {
   std::string BASE;
   std::string OUT_DIR;
   std::string MUT_RESULT_DIR;
+  std::string TARGET_FULL_PATH = util::filesystem::getAbsolutePath(
+      "input/sample1/sample1.cpp");
   std::string EXPECT_MUT_XML_CONTENT = ""
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<mutations>\n"
     "    <mutation detected=\"false\">\n"
-    "        <sourceFile>Test.cpp</sourceFile>\n"
-    "        <sourceFilePath>a/b/Test.cpp</sourceFilePath>\n"
+    "        <sourceFile>sample1.cpp</sourceFile>\n"
+    "        <sourceFilePath>"+TARGET_FULL_PATH+"</sourceFilePath>\n"
     "        <mutatedClass></mutatedClass>\n"
     "        <mutatedMethod></mutatedMethod>\n"
     "        <methodDescription></methodDescription>\n"
@@ -66,8 +68,8 @@ class XMLReportTest : public ::testing::Test {
     "        <killingTest>testAdd</killingTest>\n"
     "    </mutation>\n"
     "    <mutation detected=\"true\">\n"
-    "        <sourceFile>Test2.cpp</sourceFile>\n"
-    "        <sourceFilePath>c/d/Test2.cpp</sourceFilePath>\n"
+    "        <sourceFile>sample1.cpp</sourceFile>\n"
+    "        <sourceFilePath>"+TARGET_FULL_PATH+"</sourceFilePath>\n"
     "        <mutatedClass></mutatedClass>\n"
     "        <mutatedMethod></mutatedMethod>\n"
     "        <methodDescription></methodDescription>\n"
@@ -78,11 +80,11 @@ class XMLReportTest : public ::testing::Test {
 };
 
 TEST_F(XMLReportTest, testMakeXMLReport) {
-  Mutable M1("AOR", "a/b/Test.cpp", 4, 5, 6, 7, "+");
+  Mutable M1("AOR", "input/sample1/sample1.cpp", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "testAdd", false, 0);
   MR1.saveToFile(MUT_RESULT_DIR);
 
-  Mutable M2("BOR", "c/d/Test2.cpp", 1, 2, 3, 4, "|");
+  Mutable M2("BOR", "input/sample1/sample1.cpp", 1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true, 1);
   MR2.saveToFile(MUT_RESULT_DIR);
 

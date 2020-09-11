@@ -36,7 +36,8 @@ namespace sentinel {
 static constexpr const char* NONEXISTED_DIR = "nonexist";
 static constexpr const char* OUTPUT_PATH = "./mutables.db";
 static constexpr const char* NONEXISTED_PATH = "nonexist/mutables.db";
-static constexpr const char* NORMAL_FILENAME = "temp.cpp";
+static constexpr const char* NORMAL_FILENAME = "input/sample1/sample1.cpp";
+static constexpr const char* NONEXISTED_FILENAME = "nonexist/nonexist.cpp";
 static constexpr const char* ABNORMAL_FILENAME = "some,weird\"~ name";
 static constexpr const char* ONELINE_TOKEN = "+";
 static constexpr const char* MULTILINE_TOKEN = "a + \\\n\tb";
@@ -67,6 +68,11 @@ class MutablesTest : public ::testing::Test {
   }
 };
 
+TEST_F(MutablesTest, testConstructorFailWhenInvalidDirGiven) {
+  EXPECT_THROW(Mutable("AOR", NONEXISTED_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN),
+               IOException);
+}
+
 TEST_F(MutablesTest, testAdd) {
   Mutables m{OUTPUT_PATH};
   Mutable newMutable("AOR", NORMAL_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN);
@@ -85,7 +91,7 @@ TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
 TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
   Mutables m{OUTPUT_PATH};
   Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
@@ -122,7 +128,7 @@ TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
 TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
   Mutables m{NONEXISTED_PATH};
   Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
@@ -159,7 +165,7 @@ TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
 TEST_F(MutablesTest, testLoad) {
   Mutables m{OUTPUT_PATH};
   Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", ABNORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();

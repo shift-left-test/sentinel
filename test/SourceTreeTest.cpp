@@ -83,18 +83,13 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   std::ifstream mutatedFile(tempFilename);
   std::ifstream origFile(targetFilename);
   std::string mutatedFileLine, origFileLine;
-  int lineIdx = 0;
   while (std::getline(mutatedFile, mutatedFileLine) &&
          std::getline(origFile, origFileLine)) {
-    lineIdx += 1;
     EXPECT_EQ(mutatedFileLine, origFileLine);
   }
   origFile.close();
   mutatedFile.close();
   util::filesystem::removeDirectories("/tmp/sentineltest_backup");
-
-  Mutable nonexistFile{"LCR", "noexist", 100, 200, 300, 400, "||"};
-  EXPECT_THROW(tree.modify(nonexistFile, "/tmp", "/tmp"), IOException);
 }
 
 TEST(SourceTreeTest, testBackupWorks) {

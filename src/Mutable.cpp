@@ -35,15 +35,17 @@ Mutable::Mutable(const std::string& mutationOperator,
                  const Location& first,
                  const Location& last,
                  const std::string& token)
-    : mOperator(mutationOperator), mPath(path), mFirst(first),
-      mLast(last), mToken(token) {}
+    : mOperator(mutationOperator), mFirst(first),
+      mLast(last), mToken(token),
+      mPath(util::filesystem::getAbsolutePath(path)) {}
 
 Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
                  int firstLine, int firstColumn,
                  int lastLine, int lastColumn,
                  const std::string& token)
-    : mOperator(mutationOperator), mPath(path), mFirst{firstLine, firstColumn},
+    : mPath(util::filesystem::getAbsolutePath(path)),
+      mOperator(mutationOperator), mFirst{firstLine, firstColumn},
       mLast{lastLine, lastColumn}, mToken(token) {}
 
 bool Mutable::compare(const Mutable& other) const {
