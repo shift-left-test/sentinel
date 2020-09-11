@@ -37,8 +37,7 @@ namespace sentinel {
 void SourceTree::modify(const Mutable& info,
                         const std::string& gitRootPath,
                         const std::string& backupPath) {
-  if (!util::filesystem::exists(gitRootPath) ||
-      !util::filesystem::exists(backupPath)) {
+  if (!util::filesystem::exists(gitRootPath)) {
     throw IOException(EINVAL);
   }
 
