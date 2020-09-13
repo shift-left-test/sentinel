@@ -53,6 +53,8 @@ class MutationResult {
    * @brief Default constructor
    *
    * @param mutationResultFilePath
+   *
+   * @throw InvalidArgumentExcpetion when mutationReulstFilePath doesn't have MutationResult
    */
   explicit MutationResult(const std::string& mutationResultFilePath);
 
@@ -131,7 +133,7 @@ class MutationResult {
    *
    * @param dirPath
    *
-   * @throw IOException if dirPath is not directory
+   * @throw InvalidArgumentException if dirPath is not directory
    */
   void saveToFile(const std::string& dirPath) const;
 

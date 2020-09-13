@@ -32,6 +32,6 @@ build_test_program(
        DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
        LoggingTest.cpp UniformMutableGeneratorTest.cpp MutationResultsTest.cpp
        UniformMutableSelectorTest.cpp MutationFactoryTest.cpp EvaluatorTest.cpp
-       SourceTreeTest.cpp XMLReportTest.cpp
+       SourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}
 )

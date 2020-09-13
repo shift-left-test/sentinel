@@ -22,11 +22,12 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/util/filesystem.hpp"
@@ -48,7 +49,9 @@ MutationResult::MutationResult(const sentinel::Mutable& mut,
 MutationResult::MutationResult(const std::string& mutationResultFilePath) {
   if (!util::filesystem::exists(mutationResultFilePath) ||
       util::filesystem::isDirectory(mutationResultFilePath)) {
-    throw IOException(EINVAL);
+    throw InvalidArgumentException(fmt::format(
+        "mutationResultFilePath doesn't have MutationResult({0})",
+        mutationResultFilePath));
   }
 
   std::ifstream inFile(mutationResultFilePath.c_str());
@@ -113,7 +116,8 @@ int MutationResult::getIndexOfMutableDB() const {
 void MutationResult::saveToFile(const std::string& dirPath) const {
   if (util::filesystem::exists(dirPath)) {
     if (!util::filesystem::isDirectory(dirPath)) {
-      throw IOException(EINVAL);
+    throw InvalidArgumentException(fmt::format(
+        "dirPath isn't directory({0})", dirPath));
     }
   } else {
     util::filesystem::createDirectory(dirPath);

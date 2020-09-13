@@ -163,6 +163,29 @@ inline std::vector<std::string> split(const std::string& s, char delim = ' ') {
 }
 
 /**
+ * @brief Return vector of string that is split by string delimiter
+ *
+ * @param s target string
+ * @param delimiter
+ * @return vecotr of string that is split by delimiter
+ */
+inline std::vector<std::string> splitByStringDelimiter(
+    const std::string& s, const std::string& delimiter) {
+  std::size_t pos_start = 0;
+  std::size_t pos_end;
+  std::size_t delim_len = delimiter.length();
+  std::string token;
+  std::vector<std::string> res;
+  while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+    token = s.substr(pos_start, pos_end - pos_start);
+    pos_start = pos_end + delim_len;
+    res.push_back(token);
+  }
+  res.push_back(s.substr(pos_start));
+  return res;
+}
+
+/**
  * @brief Join the given characters into a string
  *
  * @param delim delimiter

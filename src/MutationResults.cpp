@@ -22,12 +22,14 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/util/filesystem.hpp"
@@ -39,7 +41,8 @@ namespace sentinel {
 MutationResults::MutationResults(const std::string& path) : mPath(path) {
   if (util::filesystem::exists(mPath)) {
     if (!util::filesystem::isDirectory(mPath)) {
-      throw IOException(EINVAL);
+      throw InvalidArgumentException(fmt::format("path isn't directory({0})",
+          path));
     }
   } else {
     util::filesystem::createDirectory(mPath);
@@ -63,6 +66,10 @@ int MutationResults::size() { return mData.size(); }
 void MutationResults::load() {
   auto mutationResultFiles = util::filesystem::findFilesInDirUsingExt(mPath,
       {"MutationResult"});
+  if (mutationResultFiles.empty()) {
+    throw InvalidArgumentException(fmt::format("path is empty({0})",
+        mPath));
+  }
   std::transform(mutationResultFiles.begin(), mutationResultFiles.end(),
       std::back_inserter(mData), [] (const std::string& path)
       -> MutationResult { return MutationResult(path); } );

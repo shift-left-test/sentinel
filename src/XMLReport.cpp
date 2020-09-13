@@ -22,14 +22,15 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <cstdio>
 #include <ctime>
 #include <string>
-#include "sentinel/XMLReport.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/util/filesystem.hpp"
+#include "sentinel/XMLReport.hpp"
 
 
 namespace sentinel {
@@ -39,8 +40,13 @@ XMLReport::XMLReport(const std::string& resultsPath) : mResults(resultsPath) {
 }
 
 void XMLReport::save(const std::string& path) {
-  if (util::filesystem::exists(path) && !util::filesystem::isDirectory(path)) {
-      throw IOException(EINVAL);
+  if (util::filesystem::exists(path)) {
+    if (!util::filesystem::isDirectory(path)) {
+      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
+        path));
+    }
+  } else {
+    util::filesystem::createDirectory(path);
   }
 
   std::time_t rawtime;
@@ -52,7 +58,14 @@ void XMLReport::save(const std::string& path) {
   std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
 
   auto dirPath = util::filesystem::join(path, buffer);
-  util::filesystem::createDirectory(dirPath);
+  if (util::filesystem::exists(dirPath)) {
+    if (!util::filesystem::isDirectory(dirPath)) {
+      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
+        dirPath));
+    }
+  } else {
+    util::filesystem::createDirectory(dirPath);
+  }
 
   auto xmlPath = util::filesystem::join(dirPath, "mutations.xml");
 

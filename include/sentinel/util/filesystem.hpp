@@ -385,7 +385,6 @@ inline std::vector<std::string> findFilesInDir(
  * @param destPath path to copy directory
  */
 inline void copyFile(const std::string& srcPath, const std::string& destPath) {
-  
   if (!isRegularFile(srcPath)) {
     throw IOException(EINVAL);
   }
@@ -394,7 +393,7 @@ inline void copyFile(const std::string& srcPath, const std::string& destPath) {
   if (isDirectory(destPath)) {
     newFilename = destPath + "/" + filename(srcPath);
   }
-	
+
   std::ifstream src(srcPath, std::ios::binary);
   std::ofstream dest(newFilename, std::ios::binary | std::ios::trunc);
   dest << src.rdbuf();

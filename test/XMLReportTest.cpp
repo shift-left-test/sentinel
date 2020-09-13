@@ -22,6 +22,7 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <fstream>
 #include <regex>
@@ -43,48 +44,63 @@ class XMLReportTest : public ::testing::Test {
 
     MUT_RESULT_DIR = util::filesystem::tempDirectory(
         util::filesystem::join(BASE, "MUT_RESLUT_DIR"));
+
+    std::string SOURCE_DIR = util::filesystem::tempDirectory(
+        util::filesystem::join(BASE, "SOURCE_DIR"));
+
+    std::string NESTED_SOURCE_DIR = util::filesystem::tempDirectory(
+        util::filesystem::join(SOURCE_DIR, "NESTED_DIR"));
+
+    TARGET_FULL_PATH = util::filesystem::tempFilenameWithSuffix(
+        SOURCE_DIR + "/", ".cpp");
+    std::string TARGET_NAME = util::filesystem::filename(TARGET_FULL_PATH);
+    TARGET_FULL_PATH2 = util::filesystem::tempFilenameWithSuffix(
+        NESTED_SOURCE_DIR + "/", ".cpp");
+    std::string TARGET_NAME2 = util::filesystem::filename(TARGET_FULL_PATH2);
+    EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
+        TARGET_NAME, util::filesystem::getAbsolutePath(TARGET_FULL_PATH),
+        TARGET_NAME2, util::filesystem::getAbsolutePath(TARGET_FULL_PATH2));
   }
 
   void TearDown() override {
     util::filesystem::removeDirectories(BASE);
   }
-
   std::string BASE;
   std::string OUT_DIR;
   std::string MUT_RESULT_DIR;
-  std::string TARGET_FULL_PATH = util::filesystem::getAbsolutePath(
-      "input/sample1/sample1.cpp");
+  std::string TARGET_FULL_PATH;
+  std::string TARGET_FULL_PATH2;
   std::string EXPECT_MUT_XML_CONTENT = ""
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<mutations>\n"
-    "    <mutation detected=\"false\">\n"
-    "        <sourceFile>sample1.cpp</sourceFile>\n"
-    "        <sourceFilePath>"+TARGET_FULL_PATH+"</sourceFilePath>\n"
-    "        <mutatedClass></mutatedClass>\n"
-    "        <mutatedMethod></mutatedMethod>\n"
-    "        <methodDescription></methodDescription>\n"
-    "        <lineNumber>4</lineNumber>\n"
-    "        <mutator>AOR</mutator>\n"
-    "        <killingTest>testAdd</killingTest>\n"
-    "    </mutation>\n"
-    "    <mutation detected=\"true\">\n"
-    "        <sourceFile>sample1.cpp</sourceFile>\n"
-    "        <sourceFilePath>"+TARGET_FULL_PATH+"</sourceFilePath>\n"
-    "        <mutatedClass></mutatedClass>\n"
-    "        <mutatedMethod></mutatedMethod>\n"
-    "        <methodDescription></methodDescription>\n"
-    "        <lineNumber>1</lineNumber>\n"
-    "        <mutator>BOR</mutator>\n"
-    "        <killingTest>testAddBit</killingTest>\n"
-    "    </mutation>\n</mutations>\n";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<mutations>\n"
+      "    <mutation detected=\"false\">\n"
+      "        <sourceFile>{0}</sourceFile>\n"
+      "        <sourceFilePath>{1}</sourceFilePath>\n"
+      "        <mutatedClass></mutatedClass>\n"
+      "        <mutatedMethod></mutatedMethod>\n"
+      "        <methodDescription></methodDescription>\n"
+      "        <lineNumber>4</lineNumber>\n"
+      "        <mutator>AOR</mutator>\n"
+      "        <killingTest></killingTest>\n"
+      "    </mutation>\n"
+      "    <mutation detected=\"true\">\n"
+      "        <sourceFile>{2}</sourceFile>\n"
+      "        <sourceFilePath>{3}</sourceFilePath>\n"
+      "        <mutatedClass></mutatedClass>\n"
+      "        <mutatedMethod></mutatedMethod>\n"
+      "        <methodDescription></methodDescription>\n"
+      "        <lineNumber>1</lineNumber>\n"
+      "        <mutator>BOR</mutator>\n"
+      "        <killingTest>testAddBit</killingTest>\n"
+      "    </mutation>\n</mutations>\n";
 };
 
 TEST_F(XMLReportTest, testMakeXMLReport) {
-  Mutable M1("AOR", "input/sample1/sample1.cpp", 4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "testAdd", false, 0);
+  Mutable M1("AOR", TARGET_FULL_PATH, 4, 5, 6, 7, "+");
+  MutationResult MR1(M1, "", false, 0);
   MR1.saveToFile(MUT_RESULT_DIR);
 
-  Mutable M2("BOR", "input/sample1/sample1.cpp", 1, 2, 3, 4, "|");
+  Mutable M2("BOR", TARGET_FULL_PATH2, 1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true, 1);
   MR2.saveToFile(MUT_RESULT_DIR);
 
@@ -99,6 +115,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   std::stringstream buffer;
   buffer << t.rdbuf();
   std::string mutationXMLContent = buffer.str();
+  t.close();
   EXPECT_EQ(mutationXMLContent, EXPECT_MUT_XML_CONTENT);
 }
 

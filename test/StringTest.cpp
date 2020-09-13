@@ -124,6 +124,11 @@ TEST_F(StringTest, testSplitReturnSplittedTokens) {
   EXPECT_EQ(expected, util::string::split(HELLO_WORLD));
 }
 
+TEST_F(StringTest, testSplitByStringDeliReturnSplittedTokens) {
+  std::vector<std::string> expected = { HELLO, "ORLD" };
+  EXPECT_EQ(expected, util::string::splitByStringDelimiter(HELLO_WORLD, " W"));
+}
+
 TEST_F(StringTest, testJoinReturnJoinedCharactersWhenVectorStrGiven) {
   std::vector<std::string> input = { HELLO, WORLD };
   EXPECT_STREQ(HELLO_WORLD, util::string::join(SPACE, input).c_str());

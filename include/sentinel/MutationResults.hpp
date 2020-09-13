@@ -44,7 +44,7 @@ class MutationResults : public Persistence {
    *
    * @param path to the MutationResults
    * 
-   * @throw IOException when path is not directory
+   * @throw InvalidArgumentException when path is not directory
    */
   explicit MutationResults(const std::string& path);
 
@@ -95,7 +95,16 @@ class MutationResults : public Persistence {
     return mData.cend();
   }
 
+  /**
+   * @brief load from path
+   *
+   * @throw InvalidArgumentException when path is empty
+   */
   void load() override;
+
+  /**
+   * @brief save to path
+   */
   void save() override;
 
  private:
