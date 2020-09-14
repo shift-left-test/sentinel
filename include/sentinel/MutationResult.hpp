@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -129,6 +130,13 @@ class MutationResult {
   int getIndexOfMutableDB() const;
 
   /**
+   * @brief get last modifed time
+   *
+   * @return last modified time if instance is loaded from file (if not -1)
+   */
+  std::time_t getLastModifiedTime() const;
+
+  /**
    * @brief write instance's contents to file
    *
    * @param dirPath
@@ -172,6 +180,7 @@ class MutationResult {
   bool mDetected;
   int mLineNum;
   int mIndexOfMutableDB;
+  std::time_t mLastModified = -1;
 };
 
 }  // namespace sentinel

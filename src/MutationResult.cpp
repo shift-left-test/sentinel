@@ -23,6 +23,8 @@
 */
 
 #include <fmt/core.h>
+#include <sys/stat.h>
+#include <ctime>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -75,6 +77,10 @@ MutationResult::MutationResult(const std::string& mutationResultFilePath) {
   inFile.read(reinterpret_cast<char *>(&mIndexOfMutableDB),    //NOLINT
       sizeof(mIndexOfMutableDB));
   inFile.close();
+
+  struct stat sb = {};
+  lstat(mutationResultFilePath.c_str(), &sb);
+  mLastModified = sb.st_mtime;
 }
 
 std::string MutationResult::getMethodDescription() const {
@@ -111,6 +117,10 @@ int MutationResult::getLineNum() const {
 
 int MutationResult::getIndexOfMutableDB() const {
   return mIndexOfMutableDB;
+}
+
+std::time_t MutationResult::getLastModifiedTime() const {
+  return mLastModified;
 }
 
 void MutationResult::saveToFile(const std::string& dirPath) const {

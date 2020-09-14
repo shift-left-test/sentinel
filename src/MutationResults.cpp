@@ -24,6 +24,7 @@
 
 #include <fmt/core.h>
 #include <algorithm>
+#include <ctime>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -81,6 +82,17 @@ void MutationResults::sortByIndexOfMutableDB() {
       { return rhs.getIndexOfMutableDB() > lhs.getIndexOfMutableDB(); } );
 }
 
+std::time_t MutationResults::getLastModified() const {
+  std::time_t t = -1;
+  for (auto const& mr : mData) {
+    auto c = mr.getLastModifiedTime();
+    if (c > t) {
+      t = c;
+    }
+  }
+  return t;
+}
+
 void MutationResults::save() {
   for (const auto& e : mData) {
     e.saveToFile(mPath);
@@ -88,4 +100,3 @@ void MutationResults::save() {
 }
 
 }  // namespace sentinel
-

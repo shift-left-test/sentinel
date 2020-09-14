@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 
+#include <ctime>
 #include <vector>
 #include <string>
 #include <queue>
@@ -76,6 +77,12 @@ class MutationResults : public Persistence {
    */
   void sortByIndexOfMutableDB();
 
+  /**
+   * @brief get last modifed time
+   *
+   * @return last modified time if instance is loaded from file (if not -1)
+   */
+  std::time_t getLastModified() const;
 
   /**
    * @brief Return the iterator to the first MutationResult in MutationResults.

@@ -53,7 +53,11 @@ void XMLReport::save(const std::string& path) {
   std::tm* timeinfo;
   char buffer[80];
 
-  std::time(&rawtime);
+  rawtime = mResults.getLastModified();
+  if (rawtime == -1) {
+    std::time(&rawtime);
+  }
+
   timeinfo = std::localtime(&rawtime);
   std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
 
