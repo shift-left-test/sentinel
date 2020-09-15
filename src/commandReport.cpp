@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <args/args.hxx>
+#include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/filesystem.hpp"
 #include "sentinel/XMLReport.hpp"
@@ -44,4 +45,6 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
 
   sentinel::XMLReport xmlReport(input.Get());
   xmlReport.save(output.Get());
+  sentinel::HTMLReport htmlReport(input.Get(), git.Get());
+  htmlReport.save(output.Get());
 }
