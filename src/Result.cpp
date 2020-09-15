@@ -86,7 +86,7 @@ Result::Result(const std::string& path) {
 std::string Result::kill(const Result& original, const Result& mutated) {
   std::string ret;
   for (const std::string &tc : original.mPassedTC) {
-    if (std::lower_bound(mutated.mPassedTC.begin(),
+    if (std::find(mutated.mPassedTC.begin(),
         mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
       if (ret.length() != 0) {
         ret.append(", ");
