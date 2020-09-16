@@ -54,14 +54,14 @@ class SafeGit2ObjPtr {
   /**
    * @brief cast to T pointer
    */
-  operator T*() { return obj; }
+  explicit operator T*() { return obj; }
 
   /**
    * @brief cast to C
    */
   template<typename C>
   C cast() {
-    return reinterpret_cast<C>(obj);
+    return reinterpret_cast<C>(obj); // NOLINT
   }
 
   /**
@@ -108,19 +108,21 @@ SourceLines GitRepository::getSourceLines() {
   }
 
   SafeGit2ObjPtr<git_reference, git_reference_free> ref;
-  if (git_reference_lookup(ref.getPtr(), repo, "refs/tags/devtool-base") == 0) {
+  if (git_reference_lookup(ref.getPtr(), static_cast<git_repository*>(repo),
+        "refs/tags/devtool-base") == 0) {
     std::stringstream msg;
     msg << "found devtool tag" << std::endl;
     this->logger_->info(msg.str());
 
     int error_code = git_reference_peel(obj.getPtr(),
-    ref, GIT_OBJ_COMMIT);
+         static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
     if (error_code != 0) {
       throw RepositoryException("Fail to peel tag: error_code"
       + std::to_string(error_code));
     }
   } else {
-    git_revparse_single(obj.getPtr(), repo, "HEAD^{commit}");
+    git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo),
+        "HEAD^{commit}");
   }
 
   if (!obj.isNull()) {
@@ -132,7 +134,8 @@ SourceLines GitRepository::getSourceLines() {
         throw RepositoryException("Fail to find parent commit");
       }
 
-      if (git_commit_tree(tree.getPtr(), parent_commit) != 0) {
+      if (git_commit_tree(tree.getPtr(),
+          static_cast<git_commit*>(parent_commit)) != 0) {
         throw RepositoryException("Failt to find parent tree");
       }
     }
@@ -143,11 +146,12 @@ SourceLines GitRepository::getSourceLines() {
   }
 
   if (git_diff_tree_to_workdir_with_index(diff.getPtr(),
-    repo, tree, nullptr) != 0) {
+      static_cast<git_repository*>(repo), static_cast<git_tree*>(tree),
+      nullptr) != 0) {
     throw RepositoryException("Fail to find diff");
   }
 
-  if (git_diff_foreach(diff,
+  if (git_diff_foreach(static_cast<git_diff*>(diff),
     [](const git_diff_delta*, float, void*) {
       // each_file_cb
       return 0;
@@ -165,7 +169,7 @@ SourceLines GitRepository::getSourceLines() {
     const git_diff_line* line,
     void *payload) {
       // each_line_cb
-      auto d = reinterpret_cast<DiffData*>(payload);
+      auto d = reinterpret_cast<DiffData*>(payload); // NOLINT
       if (d->logger) {
         std::ostringstream msg;
         msg << line->origin << ":" << delta->new_file.path

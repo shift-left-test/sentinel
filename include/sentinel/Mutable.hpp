@@ -60,7 +60,7 @@ class SourceTree;
 /**
  * @brief Mutable class
  */
-class Mutable {	
+class Mutable {
  public:
   /**
    * @brief Default constructor
@@ -91,9 +91,9 @@ class Mutable {
    */
   Mutable(const std::string& mutationOperator,
           const std::string& path,
-	  const std::string& qualifiedFuncName,
+          const std::string& qualifiedFuncName,
           int firstLine,
-	  int firstColumn,
+          int firstColumn,
           int lastLine,
           int lastColumn,
           const std::string& token);

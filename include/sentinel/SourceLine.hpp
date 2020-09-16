@@ -72,7 +72,6 @@ class SourceLine : public Source {
  private:
   std::string path_;
   int lineNumber_;
-
 };
 
 }  // namespace sentinel

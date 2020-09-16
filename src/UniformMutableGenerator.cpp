@@ -76,7 +76,7 @@ Mutables UniformMutableGenerator::populate(const std::string& outPath,
 }
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    clang::CompilerInstance &CI, Mutables* mutables,
+    const clang::CompilerInstance& CI, Mutables* mutables,
     const std::vector<int>& targetLines)
     : mCI(CI), mSrcMgr(CI.getSourceManager()),
       mMutables(mutables), mTargetLines(targetLines) {

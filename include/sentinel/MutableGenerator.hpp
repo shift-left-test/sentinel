@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
 #define INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
 
+#include <string>
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceLines.hpp"
 

@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_LCR_H_
-#define INCLUDE_SENTINEL_OPERATOR_LCR_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_LCR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_LCR_HPP_
 
 #include <set>
 #include <string>
@@ -35,13 +35,14 @@ namespace sentinel {
  * @brief Logical Connector Replacement class
  */
 class LCR : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  LCR(clang::CompilerInstance& CI) : MutationOperator("LCR", CI) {}
+  explicit LCR(const clang::CompilerInstance& CI) :
+      MutationOperator("LCR", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -61,10 +62,10 @@ public:
    */
   void populate(clang::Stmt* s, Mutables* mutables) override;
 
-private:
+ private:
   std::set<std::string> mLogicalOperators = {"||", "&&"};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_LCR_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_LCR_HPP_

@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_SOR_H_
-#define INCLUDE_SENTINEL_OPERATOR_SOR_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_SOR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_SOR_HPP_
 
 #include <set>
 #include <string>
@@ -35,13 +35,14 @@ namespace sentinel {
  * @brief Shift Operator Replacement class
  */
 class SOR : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  SOR(clang::CompilerInstance& CI) : MutationOperator("SOR", CI) {}
+  explicit SOR(const clang::CompilerInstance& CI) :
+      MutationOperator("SOR", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -61,10 +62,10 @@ public:
    */
   void populate(clang::Stmt* s, Mutables* mutables) override;
 
-private:
+ private:
   std::set<std::string> mShiftOperators = {">>", "<<"};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_SOR_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_SOR_HPP_

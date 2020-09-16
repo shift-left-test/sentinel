@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_ROR_H_
-#define INCLUDE_SENTINEL_OPERATOR_ROR_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_ROR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_ROR_HPP_
 
 #include <set>
 #include <string>
@@ -35,13 +35,14 @@ namespace sentinel {
  * @brief Relational Operator Replacement class
  */
 class ROR : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  ROR(clang::CompilerInstance& CI) : MutationOperator("ROR", CI) {}
+  explicit ROR(const clang::CompilerInstance& CI) :
+      MutationOperator("ROR", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -61,10 +62,11 @@ public:
    */
   void populate(clang::Stmt* s, Mutables* mutables) override;
 
-private:
-  std::set<std::string> mRelationalOperators = {">", ">=", "<", "<=", "==", "!="};
+ private:
+  std::set<std::string> mRelationalOperators
+      = {">", ">=", "<", "<=", "==", "!="};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_ROR_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_ROR_HPP_

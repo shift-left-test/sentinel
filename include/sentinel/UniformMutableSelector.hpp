@@ -36,9 +36,8 @@ namespace sentinel {
  */
 class UniformMutableSelector : public MutableSelector {
  public:
-  Mutables select(const Mutables& mutables,
-		  const SourceLines& sourceLines,
-                  int maxMutables) override;
+  Mutables select(const Mutables& mutables, const SourceLines& sourceLines,
+      int maxMutables) override;
 };
 
 }  // namespace sentinel

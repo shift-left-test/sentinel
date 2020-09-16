@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_UOI_H_
-#define INCLUDE_SENTINEL_OPERATOR_UOI_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_UOI_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_UOI_HPP_
 
 #include "MutationOperator.hpp"
 
@@ -33,13 +33,14 @@ namespace sentinel {
  * @brief Unary Operator Insertion class
  */
 class UOI : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  UOI(clang::CompilerInstance& CI) : MutationOperator("UOI", CI) {}
+  explicit UOI(const clang::CompilerInstance& CI) :
+      MutationOperator("UOI", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -62,4 +63,4 @@ public:
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_UOI_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_UOI_HPP_

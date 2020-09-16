@@ -26,6 +26,8 @@
 #define INCLUDE_SENTINEL_UNIFORMMUTABLEGENERATOR_HPP_
 
 #include <memory>
+#include <string>
+#include <vector>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -57,7 +59,7 @@ class UniformMutableGenerator : public MutableGenerator {
    *
    * @param path to compilation database file
    */
-  UniformMutableGenerator(const std::string& path) : mDbPath(path) {
+  explicit UniformMutableGenerator(const std::string& path) : mDbPath(path) {
   }
 
   Mutables populate(const std::string& outPath,
@@ -71,8 +73,7 @@ class UniformMutableGenerator : public MutableGenerator {
    *        defines what to do at each type of AST node.
    */
   class SentinelASTVisitor
-      : public clang::RecursiveASTVisitor<SentinelASTVisitor>
-  {
+      : public clang::RecursiveASTVisitor<SentinelASTVisitor> {
    public:
     /**
      * @brief Default constructor
@@ -81,14 +82,14 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      */
-    SentinelASTVisitor(clang::CompilerInstance &CI,
+    SentinelASTVisitor(const clang::CompilerInstance& CI,
                        Mutables* mutables,
                        const std::vector<int>& targetLines);
 
     bool VisitStmt(clang::Stmt *s);
 
    private:
-    clang::CompilerInstance &mCI;
+    const clang::CompilerInstance& mCI;
     clang::SourceManager &mSrcMgr;
     std::vector<MutationOperator*> mMutationOperators;
     Mutables* mMutables;
@@ -98,15 +99,14 @@ class UniformMutableGenerator : public MutableGenerator {
   /**
    * @brief SentinelASTConsumer class
    */
-  class SentinelASTConsumer : public clang::ASTConsumer
-  {
+  class SentinelASTConsumer : public clang::ASTConsumer {
    public:
     /**
      * @brief Default constructor
      *
      * @param CI Clang compiler management object
      */
-    SentinelASTConsumer(clang::CompilerInstance &CI,
+    SentinelASTConsumer(const clang::CompilerInstance& CI,
                         Mutables* mutables,
                         const std::vector<int>& targetLines)
         : mVisitor(CI, mutables, targetLines) {
@@ -150,7 +150,7 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param InFile target file
      */
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance &CI, llvm::StringRef InFile) override {
+      clang::CompilerInstance& CI, llvm::StringRef InFile) override {
       return std::unique_ptr<clang::ASTConsumer>(
           new SentinelASTConsumer(CI, mMutables, mTargetLines));
     }

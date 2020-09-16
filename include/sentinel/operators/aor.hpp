@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_AOR_H_
-#define INCLUDE_SENTINEL_OPERATOR_AOR_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_AOR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_AOR_HPP_
 
 #include <set>
 #include <string>
@@ -35,13 +35,14 @@ namespace sentinel {
  * @brief Arithmetic Operator Replacement class
  */
 class AOR : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  AOR(clang::CompilerInstance& CI) : MutationOperator("AOR", CI) {}
+  explicit AOR(const clang::CompilerInstance& CI) :
+      MutationOperator("AOR", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -61,10 +62,10 @@ public:
    */
   void populate(clang::Stmt* s, Mutables* mutables) override;
 
-private:
+ private:
   std::set<std::string> mArithmeticOperators = {"+", "-", "*", "/", "%"};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_AOR_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_AOR_HPP_

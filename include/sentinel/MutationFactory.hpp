@@ -26,6 +26,7 @@
 #define INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_
 
 #include <memory>
+#include <string>
 #include "sentinel/MutableGenerator.hpp"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/MutableSelector.hpp"

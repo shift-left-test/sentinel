@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_SDL_H_
-#define INCLUDE_SENTINEL_OPERATOR_SDL_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_SDL_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_SDL_HPP_
 
 #include "MutationOperator.hpp"
 
@@ -33,13 +33,14 @@ namespace sentinel {
  * @brief Statement Deletion class
  */
 class SDL : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  SDL(clang::CompilerInstance& CI) : MutationOperator("SDL", CI) {}
+  explicit SDL(const clang::CompilerInstance& CI) :
+      MutationOperator("SDL", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -62,4 +63,4 @@ public:
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_SDL_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_SDL_HPP_

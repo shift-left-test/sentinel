@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_MUTATIONOPERATOR_HPP_
-#define INCLUDE_SENTINEL_OPERATOR_MUTATIONOPERATOR_HPP_
+#ifndef INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
 
 #include <string>
 #include "clang/AST/Stmt.h"
@@ -44,7 +44,7 @@ class MutationOperator {
    * @param name of mutation operator
    * @param CI Clang compiler management object
    */
-  MutationOperator(std::string name, clang::CompilerInstance& CI)
+  MutationOperator(std::string name, const clang::CompilerInstance& CI)
       : name(name), mCI(CI), mSrcMgr(CI.getSourceManager()) {
   }
 
@@ -71,11 +71,11 @@ class MutationOperator {
    * @brief name of mutation operator
    */
   std::string name;
-  
+
   /**
    * @brief Clang compiler management object
    */
-  clang::CompilerInstance& mCI;
+  const clang::CompilerInstance& mCI;
 
   /**
    * @brief Object handles loading and caching of source files into memory
@@ -85,4 +85,4 @@ class MutationOperator {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_MUTATIONOPERATOR_HPP__
+#endif  // INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP__

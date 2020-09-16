@@ -49,7 +49,7 @@ namespace astnode {
  * @return starting Expansion SourceLocation
  */
 inline clang::SourceLocation getStartExpansionLocation(
-    clang::SourceLocation loc, clang::CompilerInstance& CI) {
+    clang::SourceLocation loc, const clang::CompilerInstance& CI) {
   clang::CharSourceRange range = \
       CI.getSourceManager().getImmediateExpansionRange(loc);
   return range.getBegin();
@@ -67,7 +67,7 @@ inline clang::SourceLocation getStartExpansionLocation(
  * @return ending Expansion SourceLocation
  */
 inline clang::SourceLocation getEndExpansionLocation(
-    clang::SourceLocation loc, clang::CompilerInstance& CI) {
+    clang::SourceLocation loc, const clang::CompilerInstance& CI) {
   clang::CharSourceRange range = \
       CI.getSourceManager().getImmediateExpansionRange(loc);
   return clang::Lexer::getLocForEndOfToken(
@@ -82,7 +82,7 @@ inline clang::SourceLocation getEndExpansionLocation(
  * @return code string representing s
  */
 inline std::string convertStmtToString(
-    clang::Stmt *s, clang::CompilerInstance &CI) {
+    clang::Stmt *s, const clang::CompilerInstance &CI) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, CI.getSourceManager(), CI.getLangOpts());
@@ -105,7 +105,7 @@ inline std::string convertStmtToString(
  * @return parent ast node of s
  */
 inline const clang::Stmt* getParentStmt(const clang::Stmt* s,
-                                        clang::CompilerInstance& CI) {
+                                        const clang::CompilerInstance& CI) {
   const auto parent = CI.getASTContext().getParents(*s);
   if (parent.empty())
     return nullptr;
@@ -157,7 +157,7 @@ inline bool isPointerDereferenceExpr(clang::Stmt *s) {
 }
 
 inline std::string getContainingFunctionQualifiedName(
-    clang::Stmt* s, clang::CompilerInstance& CI) {
+    clang::Stmt* s, const clang::CompilerInstance& CI) {
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
   auto parents = CI.getASTContext().getParents(*s);

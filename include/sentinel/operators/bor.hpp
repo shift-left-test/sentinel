@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_OPERATOR_BOR_H_
-#define INCLUDE_SENTINEL_OPERATOR_BOR_H_
+#ifndef INCLUDE_SENTINEL_OPERATORS_BOR_HPP_
+#define INCLUDE_SENTINEL_OPERATORS_BOR_HPP_
 
 #include <set>
 #include <string>
@@ -35,13 +35,14 @@ namespace sentinel {
  * @brief Bitwise Operator Replacement class
  */
 class BOR : public MutationOperator {
-public:
+ public:
   /**
    * @brief Default constructor
    *
    * @param CI Clang compiler management object
    */
-  BOR(clang::CompilerInstance& CI) : MutationOperator("BOR", CI) {}
+  explicit BOR(const clang::CompilerInstance& CI) :
+      MutationOperator("BOR", CI) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -61,10 +62,10 @@ public:
    */
   void populate(clang::Stmt* s, Mutables* mutables) override;
 
-private:
+ private:
   std::set<std::string> mBitwiseOperators = {"|", "&", "^"};
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATOR_BOR_H_
+#endif  // INCLUDE_SENTINEL_OPERATORS_BOR_HPP_

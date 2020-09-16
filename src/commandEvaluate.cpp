@@ -56,6 +56,6 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
     output.Get(),
     logger);
 
-  auto result = evaluator.compareAndSaveMutationResult(
+  evaluator.compareAndSaveMutationResult(
     actual.Get(), index.Get());
 }
