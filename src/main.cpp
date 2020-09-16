@@ -40,7 +40,7 @@ void reportCommand(args::Subparser &parser);  // NOLINT
 int main(int argc, char ** argv) {
   args::ArgumentParser parser("Mutation Test");
 
-  args::Group commands(parser, "commands");
+  args::Group commands(static_cast<args::Group&>(parser), "commands");
   args::Command populate(commands, "populate",
     "Identify mutable test targets and application methods in'git' "
     "and print a list",

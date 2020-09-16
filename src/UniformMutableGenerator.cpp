@@ -107,13 +107,10 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   int startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   int endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
-  bool containTargetLine = false;
-  for (const auto& lineNum : mTargetLines) {
-    if (lineNum >= startLineNum && lineNum <= endLineNum) {
-      containTargetLine = true;
-      break;
-    }
-  }
+
+  bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
+      [startLineNum, endLineNum](int lineNum)
+      { return lineNum >= startLineNum && lineNum <= endLineNum; } );
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {

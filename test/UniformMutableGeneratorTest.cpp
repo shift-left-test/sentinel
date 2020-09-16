@@ -23,6 +23,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <iostream>
 #include "sentinel/UniformMutableGenerator.hpp"
 
@@ -113,14 +114,8 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   ASSERT_EQ(mutables.size(), truth.size());
 
   for (const auto& e1 : mutables) {
-    bool truthContainE1 = false;
-    for (const auto& e2 : truth) {
-      if (e2.compare(e1)) {
-        truthContainE1 = true;
-        break;
-      }
-    }
-
+    bool truthContainE1 = std::any_of(truth.begin(), truth.end(),
+        [e1](const auto& e2) { return e2.compare(e1); } );
     EXPECT_TRUE(truthContainE1);
   }
 }

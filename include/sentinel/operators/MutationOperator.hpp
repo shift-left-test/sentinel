@@ -44,7 +44,7 @@ class MutationOperator {
    * @param name of mutation operator
    * @param CI Clang compiler management object
    */
-  MutationOperator(std::string name, const clang::CompilerInstance& CI)
+  MutationOperator(const std::string& name, const clang::CompilerInstance& CI)
       : name(name), mCI(CI), mSrcMgr(CI.getSourceManager()) {
   }
 
@@ -70,7 +70,7 @@ class MutationOperator {
   /**
    * @brief name of mutation operator
    */
-  std::string name;
+  const std::string& name;
 
   /**
    * @brief Clang compiler management object
