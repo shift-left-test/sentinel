@@ -29,13 +29,14 @@ build_static_library(
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
        MutationResult.cpp MutationResults.cpp XMLReport.cpp HTMLReport.cpp
        Logging.cpp aor.cpp bor.cpp lcr.cpp ror.cpp sdl.cpp sor.cpp uoi.cpp
-  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include ${CLANG_INCLUDE_DIRS}
+  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
+  PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt git2
-  )
+)
 
 build_program(
   NAME sentinel
-  SRCS main.cpp 
+  SRCS main.cpp
        commandPopulate.cpp
        commandMutate.cpp
        commandEvaluate.cpp
