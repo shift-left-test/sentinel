@@ -34,31 +34,31 @@ namespace sentinel {
 
 Evaluator::Evaluator(const std::string& mutableDBDir,
     const std::string& expectedResultDir, const std::string& outDir,
-    const std::shared_ptr<Logging>& logging)
+    const std::shared_ptr<Logger>& logger)
     : mMutables(mutableDBDir), mExpectedResult(expectedResultDir),
-    mLogging(logging), mOutDir(outDir) {
-  mLogging->debug(
+    mLogger(logger), mOutDir(outDir) {
+  mLogger->debug(
       std::string("Load Expected Result: ").append(expectedResultDir));
       mMutables.load();
-  mLogging->debug(std::string("Load mutable DB: ").append(mutableDBDir));
+  mLogger->debug(std::string("Load mutable DB: ").append(mutableDBDir));
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(
     const std::string& ActualResultDir, int mutableDBIdx) {
   auto mMutable = mMutables.get(mutableDBIdx);
-  mLogging->debug(std::string("Load mutable idx: ").append(
+  mLogger->debug(std::string("Load mutable idx: ").append(
       std::to_string(mutableDBIdx)));
 
   Result mActualResult(ActualResultDir);
-  mLogging->debug(std::string("Load Actual Result: ").append(ActualResultDir));
+  mLogger->debug(std::string("Load Actual Result: ").append(ActualResultDir));
 
   std::string killingTC = Result::kill(mExpectedResult, mActualResult);
-  mLogging->debug(std::string("killing TC: ").append(killingTC));
+  mLogger->debug(std::string("killing TC: ").append(killingTC));
 
   MutationResult ret(mMutable, killingTC,
       killingTC.length() != 0, mutableDBIdx);
   ret.saveToFile(mOutDir);
-  mLogging->debug(std::string("Save MutationResult: ").append(mOutDir));
+  mLogger->debug(std::string("Save MutationResult: ").append(mOutDir));
 
   return ret;
 }

@@ -25,7 +25,7 @@
 #include <git2.h>
 #include <sstream>
 #include "sentinel/GitRepository.hpp"
-#include "sentinel/DefaultLogger.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
@@ -87,7 +87,7 @@ RepositoryException::RepositoryException(const std::string &msg) {
 }
 
 GitRepository::GitRepository(const std::string& path)
-: path_(path), logger_(std::make_shared<DefaultLogger>("GitRepository")) {
+: path_(path), logger_(Logger::getLogger("GitRepository")) {
   git_libgit2_init();
 }
 

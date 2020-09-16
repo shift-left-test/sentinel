@@ -27,7 +27,7 @@
 
 #include <memory>
 #include <string>
-#include "sentinel/Logging.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
@@ -46,13 +46,13 @@ class Evaluator {
    * @param mutableDBDir Directory Path of Mutable Database
    * @param expectedResultDir Directory Path of Expected Result
    * @param outDir Directory Path of MutationResult
-   * @param logging object
+   * @param logger object
    *
    */
   Evaluator(const std::string& mutableDBDir,
       const std::string& expectedResultDir,
       const std::string& outDir,
-      const std::shared_ptr<Logging>& logging);
+      const std::shared_ptr<Logger>& logger);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
@@ -66,7 +66,7 @@ class Evaluator {
       const std::string& ActualResultDir, int mutableDBIdx);
 
  private:
-  std::shared_ptr<Logging> mLogging;
+  std::shared_ptr<Logger> mLogger;
   std::string mOutDir;
   Mutables mMutables;
   Result mExpectedResult;

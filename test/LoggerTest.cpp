@@ -24,16 +24,16 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "sentinel/Logging.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 
 namespace sentinel {
 
-class LoggingTest : public ::testing::Test {
+class LoggerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    logger = Logging::getLogger("logger");
+    logger = Logger::getLogger("logger");
   }
 
   void captureStdout() {
@@ -52,44 +52,44 @@ class LoggingTest : public ::testing::Test {
     return testing::internal::GetCapturedStderr();
   }
 
-  std::shared_ptr<Logging> logger;
+  std::shared_ptr<Logger> logger;
 };
 
-TEST_F(LoggingTest, testDebugWithDefaultState) {
+TEST_F(LoggerTest, testDebugWithDefaultState) {
   captureStdout();
   logger->debug("hello world");
   EXPECT_STREQ("", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testInfoWithDefaultState) {
+TEST_F(LoggerTest, testInfoWithDefaultState) {
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("logger:INFO: hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testWarnWithDefaultState) {
+TEST_F(LoggerTest, testWarnWithDefaultState) {
   captureStderr();
   logger->warn("hello world");
   EXPECT_STREQ("logger:WARN: hello world\n", capturedStderr().c_str());
 }
 
-TEST_F(LoggingTest, testErrorWithDefaultState) {
+TEST_F(LoggerTest, testErrorWithDefaultState) {
   captureStderr();
   logger->error("hello world");
   EXPECT_STREQ("logger:ERROR: hello world\n", capturedStderr().c_str());
 }
 
-TEST_F(LoggingTest, testDebugWhenDebugLevelSet) {
+TEST_F(LoggerTest, testDebugWhenDebugLevelSet) {
   captureStdout();
-  logger->setLevel(Logging::Level::DEBUG);
+  logger->setLevel(Logger::Level::DEBUG);
   logger->debug("hello world");
   EXPECT_STREQ("logger:DEBUG: hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testLogsWithOnLevelSet) {
+TEST_F(LoggerTest, testLogsWithOnLevelSet) {
   captureStdout();
   captureStderr();
-  logger->setLevel(Logging::Level::ALL);
+  logger->setLevel(Logger::Level::ALL);
   logger->debug("D");
   logger->info("I");
   logger->warn("W");
@@ -100,10 +100,10 @@ TEST_F(LoggingTest, testLogsWithOnLevelSet) {
                capturedStderr().c_str());
 }
 
-TEST_F(LoggingTest, testLogsWithOffLevelSet) {
+TEST_F(LoggerTest, testLogsWithOffLevelSet) {
   captureStdout();
   captureStderr();
-  logger->setLevel(Logging::Level::OFF);
+  logger->setLevel(Logger::Level::OFF);
   logger->debug("D");
   logger->info("I");
   logger->warn("W");
@@ -112,22 +112,22 @@ TEST_F(LoggingTest, testLogsWithOffLevelSet) {
   EXPECT_STREQ("", capturedStderr().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithDifferentFormat) {
-  logger = Logging::getLogger("logger", "{name} [{level}] {message}");
+TEST_F(LoggerTest, testLogWithDifferentFormat) {
+  logger = Logger::getLogger("logger", "{name} [{level}] {message}");
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("logger [INFO] hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithEmptyFormat) {
-  logger = Logging::getLogger("logger", "");
+TEST_F(LoggerTest, testLogWithEmptyFormat) {
+  logger = Logger::getLogger("logger", "");
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggingTest, testLogWithWrongFormat) {
-  EXPECT_THROW(Logging::getLogger("logger", "{wrong}"),
+TEST_F(LoggerTest, testLogWithWrongFormat) {
+  EXPECT_THROW(Logger::getLogger("logger", "{wrong}"),
                InvalidArgumentException);
 }
 

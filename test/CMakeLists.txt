@@ -29,8 +29,8 @@ find_package(Clang REQUIRED)
 build_test_program(
   NAME unittest
   SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
-       DefaultLoggerTest.cpp GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
-       LoggingTest.cpp UniformMutableGeneratorTest.cpp MutationResultsTest.cpp
+       GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
+       LoggerTest.cpp UniformMutableGeneratorTest.cpp MutationResultsTest.cpp
        UniformMutableSelectorTest.cpp MutationFactoryTest.cpp EvaluatorTest.cpp
        SourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}

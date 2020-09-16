@@ -27,22 +27,22 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include "sentinel/Logging.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 
 namespace sentinel {
 
-std::shared_ptr<Logging> Logging::getLogger(const std::string& name) {
+std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
   return getLogger(name, "{name}:{level}: {message}");
 }
 
-std::shared_ptr<Logging> Logging::getLogger(const std::string& name,
+std::shared_ptr<Logger> Logger::getLogger(const std::string& name,
                                             const std::string& format) {
-  return std::shared_ptr<Logging>(new Logging(name, format));
+  return std::shared_ptr<Logger>(new Logger(name, format));
 }
 
-Logging::Logging(const std::string& name, const std::string& format) :
+Logger::Logger(const std::string& name, const std::string& format) :
     mName(name), mFormat(format), mLevel(Level::INFO) {
   try {
     this->format(mLevel, mName);
@@ -52,11 +52,11 @@ Logging::Logging(const std::string& name, const std::string& format) :
   }
 }
 
-void Logging::setLevel(Logging::Level level) {
+void Logger::setLevel(Logger::Level level) {
   mLevel = level;
 }
 
-std::string Logging::format(Logging::Level level,
+std::string Logger::format(Logger::Level level,
                             const std::string& message) {
   std::string levelText;
   if (level == Level::DEBUG) {
@@ -76,32 +76,32 @@ std::string Logging::format(Logging::Level level,
                      fmt::arg("message", message));
 }
 
-bool Logging::isAllowed(Logging::Level level) {
+bool Logger::isAllowed(Logger::Level level) {
   return static_cast<int>(mLevel) <= static_cast<int>(level);
 }
 
-void Logging::debug(const std::string& message) {
+void Logger::debug(const std::string& message) {
   auto level = Level::DEBUG;
   if (isAllowed(level)) {
     std::cout << format(level, message) << std::endl;
   }
 }
 
-void Logging::info(const std::string& message) {
+void Logger::info(const std::string& message) {
   auto level = Level::INFO;
   if (isAllowed(level)) {
     std::cout << format(level, message) << std::endl;
   }
 }
 
-void Logging::warn(const std::string& message) {
+void Logger::warn(const std::string& message) {
   auto level = Level::WARN;
   if (isAllowed(level)) {
     std::cerr << format(level, message) << std::endl;
   }
 }
 
-void Logging::error(const std::string& message) {
+void Logger::error(const std::string& message) {
   auto level = Level::ERROR;
   if (isAllowed(level)) {
     std::cerr << format(level, message) << std::endl;

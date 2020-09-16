@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include <string>
 #include "sentinel/Evaluator.hpp"
-#include "sentinel/Logging.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/util/filesystem.hpp"
@@ -126,8 +126,8 @@ class EvaluatorTest : public ::testing::Test {
 };
 
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
-  auto mLogger = Logging::getLogger("EvaluatorTest");
-  mLogger->setLevel(Logging::Level::DEBUG);
+  auto mLogger = Logger::getLogger("EvaluatorTest");
+  mLogger->setLevel(Logger::Level::DEBUG);
   testing::internal::CaptureStdout();
   Evaluator mEvaluator(MUTABLEDB, ORI_DIR, OUT_DIR, mLogger);
   std::string out1 = testing::internal::GetCapturedStdout();
@@ -148,8 +148,8 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
-  auto mLogger = Logging::getLogger("EvaluatorTest");
-  mLogger->setLevel(Logging::Level::DEBUG);
+  auto mLogger = Logger::getLogger("EvaluatorTest");
+  mLogger->setLevel(Logger::Level::DEBUG);
   testing::internal::CaptureStdout();
   Evaluator mEvaluator(MUTABLEDB, ORI_DIR, OUT_DIR, mLogger);
   std::string out1 = testing::internal::GetCapturedStdout();
