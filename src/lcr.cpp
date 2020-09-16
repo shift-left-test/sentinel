@@ -51,11 +51,12 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   std::string path = mSrcMgr.getFilename(opStartLoc);
+  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     for (const auto& mutatedToken : mLogicalOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable("LCR", path,
+        mutables->add(Mutable("LCR", path, func,
                               mSrcMgr.getExpansionLineNumber(opStartLoc),
                               mSrcMgr.getExpansionColumnNumber(opStartLoc),
                               mSrcMgr.getExpansionLineNumber(opEndLoc),
@@ -73,39 +74,18 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
     return;
   }
 
-  mutables->add(Mutable("LCR", path,
+  mutables->add(Mutable("LCR", path, func,
                         mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
                         "1"));
-  mutables->add(Mutable("LCR", path,
+  mutables->add(Mutable("LCR", path, func,
                         mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
                         "0"));
-
-  // create mutables from the whole expression to lhs and rhs
-  clang::Expr* lhs = bo->getLHS();
-  if (!lhs->getBeginLoc().isMacroID() && !lhs->getEndLoc().isMacroID()) {
-    mutables->add(Mutable("LCR", path,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          util::astnode::convertStmtToString(lhs, mCI)));
-  }
-
-  clang::Expr* rhs = bo->getRHS();
-  if (!rhs->getBeginLoc().isMacroID() && !rhs->getEndLoc().isMacroID()) {
-    mutables->add(Mutable("LCR", path,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          util::astnode::convertStmtToString(rhs, mCI)));
-  }
 }
 
 }  // namespace sentinel

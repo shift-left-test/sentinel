@@ -60,6 +60,7 @@ class MutablesTest : public ::testing::Test {
   bool equal(const Mutable& m1, const Mutable& m2) {
     return m1.getOperator() == m2.getOperator() &&
            m1.getPath() == m2.getPath() &&
+           m1.getQualifiedFunction() == m2.getQualifiedFunction() &&
            m1.getFirst().line == m2.getFirst().line &&
            m1.getFirst().column == m2.getFirst().column &&
            m1.getLast().line == m2.getLast().line &&
@@ -69,13 +70,14 @@ class MutablesTest : public ::testing::Test {
 };
 
 TEST_F(MutablesTest, testConstructorFailWhenInvalidDirGiven) {
-  EXPECT_THROW(Mutable("AOR", NONEXISTED_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN),
+  EXPECT_THROW(Mutable("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0,
+                       ONELINE_TOKEN),
                IOException);
 }
 
 TEST_F(MutablesTest, testAdd) {
   Mutables m{OUTPUT_PATH};
-  Mutable newMutable("AOR", NORMAL_FILENAME, 0, 0, 0, 0, ONELINE_TOKEN);
+  Mutable newMutable("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
 
   EXPECT_EQ(m.size(), 0);
   m.add(newMutable);
@@ -90,8 +92,8 @@ TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
 
 TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
   Mutables m{OUTPUT_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
@@ -102,24 +104,26 @@ TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
 
   std::string path = Mutables::readStringFromFile(inFile);
+  std::string func = Mutables::readStringFromFile(inFile);
   std::string mutationOperator = Mutables::readStringFromFile(inFile);
   std::string token = Mutables::readStringFromFile(inFile);
   int firstLine = Mutables::readIntFromFile(inFile);
   int firstColumn = Mutables::readIntFromFile(inFile);
   int lastLine = Mutables::readIntFromFile(inFile);
   int lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, firstLine,
+  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, func, firstLine,
                                       firstColumn, lastLine, lastColumn,
                                       token)));
 
   path = Mutables::readStringFromFile(inFile);
+  func = Mutables::readStringFromFile(inFile);
   mutationOperator = Mutables::readStringFromFile(inFile);
   token = Mutables::readStringFromFile(inFile);
   firstLine = Mutables::readIntFromFile(inFile);
   firstColumn = Mutables::readIntFromFile(inFile);
   lastLine = Mutables::readIntFromFile(inFile);
   lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, firstLine,
+  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, func, firstLine,
                                       firstColumn,
                                       lastLine, lastColumn, token)));
   inFile.close();
@@ -127,8 +131,8 @@ TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
 
 TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
   Mutables m{NONEXISTED_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();
@@ -139,24 +143,26 @@ TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
 
   std::string path = Mutables::readStringFromFile(inFile);
+  std::string func = Mutables::readStringFromFile(inFile);
   std::string mutationOperator = Mutables::readStringFromFile(inFile);
   std::string token = Mutables::readStringFromFile(inFile);
   int firstLine = Mutables::readIntFromFile(inFile);
   int firstColumn = Mutables::readIntFromFile(inFile);
   int lastLine = Mutables::readIntFromFile(inFile);
   int lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, firstLine,
+  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, func, firstLine,
                                       firstColumn, lastLine, lastColumn,
                                       token)));
 
   path = Mutables::readStringFromFile(inFile);
+  func = Mutables::readStringFromFile(inFile);
   mutationOperator = Mutables::readStringFromFile(inFile);
   token = Mutables::readStringFromFile(inFile);
   firstLine = Mutables::readIntFromFile(inFile);
   firstColumn = Mutables::readIntFromFile(inFile);
   lastLine = Mutables::readIntFromFile(inFile);
   lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, firstLine,
+  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, func, firstLine,
                                       firstColumn,
                                       lastLine, lastColumn, token)));
   inFile.close();
@@ -164,8 +170,8 @@ TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
 
 TEST_F(MutablesTest, testLoad) {
   Mutables m{OUTPUT_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, 0, 0, 0, 0, MULTILINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, 1, 1, 1, 1, EMPTY_TOKEN);
+  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.add(mutable1);
   m.add(mutable2);
   m.save();

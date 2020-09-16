@@ -103,9 +103,10 @@ void SDL::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!stmtStartLoc.isMacroID() && !stmtEndLoc.isMacroID()) {
-    mutables->add(Mutable("SDL", path,
+    mutables->add(Mutable("SDL", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                           mSrcMgr.getExpansionLineNumber(stmtEndLoc),

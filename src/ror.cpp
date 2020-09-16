@@ -26,6 +26,7 @@
 #include "clang/AST/Expr.h"
 #include "clang/Lex/Lexer.h"
 #include "sentinel/operators/ror.hpp"
+#include "sentinel/util/astnode.hpp"
 
 namespace sentinel {
 
@@ -50,11 +51,12 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   std::string path = mSrcMgr.getFilename(opStartLoc);
+  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     for (const auto& mutatedToken : mRelationalOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable("ROR", path,
+        mutables->add(Mutable("ROR", path, func,
                               mSrcMgr.getExpansionLineNumber(opStartLoc),
                               mSrcMgr.getExpansionColumnNumber(opStartLoc),
                               mSrcMgr.getExpansionLineNumber(opEndLoc),
@@ -72,13 +74,13 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
     return;
   }
 
-  mutables->add(Mutable("ROR", path,
+  mutables->add(Mutable("ROR", path, func,
                         mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
                         "1"));
-  mutables->add(Mutable("ROR", path,
+  mutables->add(Mutable("ROR", path, func,
                         mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                         mSrcMgr.getExpansionLineNumber(stmtEndLoc),

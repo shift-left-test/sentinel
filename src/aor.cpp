@@ -22,7 +22,9 @@
   SOFTWARE.
 */
 
+#include <iostream>
 #include <string>
+#include "clang/AST/ASTTypeTraits.h"
 #include "clang/AST/Expr.h"
 #include "clang/Lex/Lexer.h"
 #include "sentinel/operators/aor.hpp"
@@ -51,6 +53,7 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   std::string path = mSrcMgr.getFilename(opStartLoc);
+  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     for (const auto& mutatedToken : mArithmeticOperators) {
@@ -78,41 +81,13 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
         continue;
       }
 
-      mutables->add(Mutable("AOR", path,
+      mutables->add(Mutable("AOR", path, func,
                             mSrcMgr.getExpansionLineNumber(opStartLoc),
                             mSrcMgr.getExpansionColumnNumber(opStartLoc),
                             mSrcMgr.getExpansionLineNumber(opEndLoc),
                             mSrcMgr.getExpansionColumnNumber(opEndLoc),
                             mutatedToken));
     }
-  }
-
-  // create mutables from the whole expression to lhs and rhs
-  clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
-  clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      bo->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
-  if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
-    return;
-  }
-
-  clang::Expr* lhs = bo->getLHS();
-  if (!lhs->getBeginLoc().isMacroID() && !lhs->getEndLoc().isMacroID()) {
-    mutables->add(Mutable("AOR", path,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          util::astnode::convertStmtToString(lhs, mCI)));
-  }
-
-  clang::Expr* rhs = bo->getRHS();
-  if (!rhs->getBeginLoc().isMacroID() && !rhs->getEndLoc().isMacroID()) {
-    mutables->add(Mutable("AOR", path,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          util::astnode::convertStmtToString(rhs, mCI)));
   }
 }
 

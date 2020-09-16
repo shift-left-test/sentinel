@@ -720,19 +720,23 @@ class HTMLReportTest : public ::testing::Test {
 };
 
 TEST_F(HTMLReportTest, testMakeHTMLReport) {
-  Mutable M1("AOR", TARGET_FULL_PATH, 2, 12, 2, 13, "+");
+  Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             2, 12, 2, 13, "+");
   MutationResult MR1(M1, "", false, 0);
   MR1.saveToFile(MUT_RESULT_DIR);
 
-  Mutable M2("BOR", TARGET_FULL_PATH2, 2, 12, 2, 13, "|");
+  Mutable M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+             2, 12, 2, 13, "|");
   MutationResult MR2(M2, "testBitwiseOR", true, 1);
   MR2.saveToFile(MUT_RESULT_DIR);
 
-  Mutable M3("BOR", TARGET_FULL_PATH3, 3, 12, 3, 13, "&");
+  Mutable M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             3, 12, 3, 13, "&");
   MutationResult MR3(M3, "testBitwiseAND, testBitwiseOP", true, 2);
   MR3.saveToFile(MUT_RESULT_DIR);
 
-  Mutable M4("AOR", TARGET_FULL_PATH3, 8, 12, 8, 13, "-");
+  Mutable M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
   MutationResult MR4(M4, "", false, 4);
   MR4.saveToFile(MUT_RESULT_DIR);
 

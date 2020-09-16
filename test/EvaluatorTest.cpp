@@ -63,8 +63,10 @@ class EvaluatorTest : public ::testing::Test {
     MUTABLEDB = util::filesystem::join(BASE, "mutables.db");
 
     m = new Mutables(MUTABLEDB);
-    Mutable mutable2("AOR", "input/sample1/sample1.cpp", 0, 0, 0, 0, "+");
-    Mutable mutable1("BOR", "input/sample1/sample1.cpp", 1, 1, 1, 1, "|");
+    Mutable mutable2("AOR", "input/sample1/sample1.cpp",
+                     "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
+    Mutable mutable1("BOR", "input/sample1/sample1.cpp",
+                     "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
     m->add(mutable1);
     m->add(mutable2);
     m->save();

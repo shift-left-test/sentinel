@@ -67,14 +67,15 @@ void Mutables::load() {
 
   for (int i = 0; i < num_mutants; ++i) {
     std::string path = readStringFromFile(inFile);
+    std::string func = readStringFromFile(inFile);
     std::string mutationOperator = readStringFromFile(inFile);
     std::string token = readStringFromFile(inFile);
     int firstLine = readIntFromFile(inFile);
     int firstColumn = readIntFromFile(inFile);
     int lastLine = readIntFromFile(inFile);
     int lastColumn = readIntFromFile(inFile);
-    mData.emplace_back(Mutable(mutationOperator, path, firstLine, firstColumn,
-                               lastLine, lastColumn, token));
+    mData.emplace_back(Mutable(mutationOperator, path, func, firstLine,
+                               firstColumn, lastLine, lastColumn, token));
   }
 
   inFile.close();
@@ -100,14 +101,19 @@ void Mutables::save() {
     Location last = e.getLast();
     std::string mutationOperator = e.getOperator();
     std::string path = e.getPath();
+    std::string func = e.getQualifiedFunction();
     std::string token = e.getToken();
     size_t operatorLength = mutationOperator.size();
     size_t pathLength = path.size();
+    size_t funcLength = func.size();
     size_t tokenLength = token.size();
 
     outFile.write(
         reinterpret_cast<char *>(&pathLength), sizeof(size_t));   //NOLINT
     outFile.write(path.c_str(), pathLength);
+    outFile.write(
+        reinterpret_cast<char *>(&funcLength), sizeof(size_t));   //NOLINT
+    outFile.write(func.c_str(), funcLength);
     outFile.write(
         reinterpret_cast<char *>(&operatorLength), sizeof(size_t));   //NOLINT
     outFile.write(mutationOperator.c_str(), operatorLength);

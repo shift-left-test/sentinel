@@ -82,6 +82,7 @@ class Mutable {
    *
    * @param mutationOperator created this mutable
    * @param path to file from the source tree
+   * @param qualifiedFuncName name of function containing mutation location
    * @param firstLine line number of first location
    * @param firstColumn column number of first location
    * @param lastLine line number of last location
@@ -90,6 +91,7 @@ class Mutable {
    */
   Mutable(const std::string& mutationOperator,
           const std::string& path,
+	  const std::string& qualifiedFuncName,
           int firstLine,
 	  int firstColumn,
           int lastLine,
@@ -119,6 +121,30 @@ class Mutable {
   std::string getPath() const;
 
   /**
+   * @brief Return the namespace, class containing mutation location.
+   *        Return empty string if those do not exist.
+   *
+   * @return namespace, class containing mutation location
+   */
+  std::string getClass() const;
+
+  /**
+   * @brief Return the name of function containing mutation location.
+   *        Return empty string if such function does not exist.
+   *
+   * @return function containing mutation location
+   */
+  std::string getFunction() const;
+
+   /**
+   * @brief Return the namespace, class, function containing mutation location.
+   *        Return empty string if such function does not exist.
+   *
+   * @return namespace, class, function containing mutation location
+   */
+  std::string getQualifiedFunction() const;
+
+  /**
    * @brief Return the first location to apply mutation.
    *
    * @return line and column number of first location.
@@ -142,6 +168,9 @@ class Mutable {
  private:
   std::string mOperator;
   std::string mPath;
+  std::string mClass;
+  std::string mFunction;
+  std::string mQualifiedFunction;
   Location mFirst;
   Location mLast;
   std::string mToken;

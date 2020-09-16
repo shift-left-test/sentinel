@@ -156,6 +156,43 @@ inline bool isPointerDereferenceExpr(clang::Stmt *s) {
   return false;
 }
 
+inline std::string getContainingFunctionQualifiedName(
+    clang::Stmt* s, clang::CompilerInstance& CI) {
+  const clang::Stmt* stmt = s;
+  const clang::Decl* decl = nullptr;
+  auto parents = CI.getASTContext().getParents(*s);
+  while (true) {
+    if (stmt != nullptr) {
+      parents = CI.getASTContext().getParents(*stmt);
+    }
+
+    if (decl != nullptr) {
+      parents = CI.getASTContext().getParents(*decl);
+    }
+
+    if (parents.empty()) {
+      return "";
+    }
+
+    const auto stmtParent = parents[0].get<clang::Stmt>();
+    const auto declParent = parents[0].get<clang::Decl>();
+    if (stmtParent == nullptr) {
+      if (declParent == nullptr) {
+        break;
+      }
+
+      stmt = nullptr;
+      decl = declParent;
+      if (const auto fd = clang::dyn_cast<clang::FunctionDecl>(decl)) {
+        return fd->getQualifiedNameAsString();
+      }
+    } else {
+      stmt = stmtParent;
+      decl = nullptr;
+    }
+  }
+}
+
 }  // namespace astnode
 }  // namespace util
 }  // namespace sentinel

@@ -55,7 +55,7 @@ class MutationResultsTest : public ::testing::Test {
 
 TEST_F(MutationResultsTest, testAdd) {
   MutationResults MRs(OUT_DIR);
-  Mutable M1("AOR", TARGET_FILE, 0, 0, 0, 0, "+");
+  Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
   MutationResult MR1(M1, "testAdd", true, 0);
   EXPECT_EQ(0, MRs.size());
 
@@ -76,11 +76,11 @@ TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
 TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResults MRs(OUT_DIR);
 
-  Mutable M1("AOR", TARGET_FILE, 4, 5, 6, 7, "+");
+  Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "testAdd", false, 0);
   MRs.add(MR1);
 
-  Mutable M2("BOR", TARGET_FILE, 1, 2, 3, 4, "|");
+  Mutable M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true, 1);
   MRs.add(MR2);
 

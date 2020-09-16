@@ -38,60 +38,77 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   UniformMutableGenerator generator{".."};
   Mutables mutables = generator.populate("mutables.db", sourceLines);
 
-  /* for (const auto& m : mutables) {
-    std::cout << m.getOperator() << ", "
-              << m.getPath() << ", "
-              << m.getFirst().line << ", "
-              << m.getFirst().column << ", "
-              << m.getLast().line << ", "
-              << m.getLast().column << ", "
-              << m.getToken() << std::endl;
-  } */
-
   Mutables truth("truth mutables");
-  truth.add(Mutable("LCR", targetFile, 58, 29, 58, 31, "||"));
-  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "1"));
-  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "0"));
-  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "(i & 1) == (1 << 0)"));
-  truth.add(Mutable("LCR", targetFile, 58, 9, 58, 37, "i > 0"));
-  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "!="));
-  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "<"));
-  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, "<="));
-  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, ">"));
-  truth.add(Mutable("ROR", targetFile, 58, 17, 58, 19, ">="));
-  truth.add(Mutable("ROR", targetFile, 58, 9, 58, 28, "1"));
-  truth.add(Mutable("ROR", targetFile, 58, 9, 58, 28, "0"));
-  truth.add(Mutable("BOR", targetFile, 58, 12, 58, 13, "^"));
-  truth.add(Mutable("BOR", targetFile, 58, 12, 58, 13, "|"));
-  truth.add(Mutable("BOR", targetFile, 58, 10, 58, 15, "i"));
-  truth.add(Mutable("BOR", targetFile, 58, 10, 58, 15, "1"));
-  truth.add(Mutable("UOI", targetFile, 58, 10, 58, 11, "((i)++)"));
-  truth.add(Mutable("UOI", targetFile, 58, 10, 58, 11, "((i)--)"));
-  truth.add(Mutable("SOR", targetFile, 58, 23, 58, 25, ">>"));
-  truth.add(Mutable("SOR", targetFile, 58, 21, 58, 27, "1"));
-  truth.add(Mutable("SOR", targetFile, 58, 21, 58, 27, "0"));
-  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "!="));
-  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "<"));
-  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "<="));
-  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, "=="));
-  truth.add(Mutable("ROR", targetFile, 58, 34, 58, 35, ">="));
-  truth.add(Mutable("ROR", targetFile, 58, 32, 58, 37, "1"));
-  truth.add(Mutable("ROR", targetFile, 58, 32, 58, 37, "0"));
-  truth.add(Mutable("UOI", targetFile, 58, 32, 58, 33, "((i)++)"));
-  truth.add(Mutable("UOI", targetFile, 58, 32, 58, 33, "((i)--)"));
-  truth.add(Mutable("SDL", targetFile, 59, 7, 59, 20, ""));
-  truth.add(Mutable("UOI", targetFile, 59, 7, 59, 10, "((ret)++)"));
-  truth.add(Mutable("UOI", targetFile, 59, 7, 59, 10, "((ret)--)"));
-  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "%"));
-  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "*"));
-  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "-"));
-  truth.add(Mutable("AOR", targetFile, 59, 17, 59, 18, "/"));
-  truth.add(Mutable("AOR", targetFile, 59, 13, 59, 20, "ret"));
-  truth.add(Mutable("AOR", targetFile, 59, 13, 59, 20, "i"));
-  truth.add(Mutable("UOI", targetFile, 59, 13, 59, 16, "((ret)++)"));
-  truth.add(Mutable("UOI", targetFile, 59, 13, 59, 16, "((ret)--)"));
-  truth.add(Mutable("UOI", targetFile, 59, 19, 59, 20, "((i)++)"));
-  truth.add(Mutable("UOI", targetFile, 59, 19, 59, 20, "((i)--)"));
+  truth.add(Mutable("LCR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 29, 58, 31, "||"));
+  truth.add(Mutable("LCR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 9, 58, 37, "1"));
+  truth.add(Mutable("LCR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 9, 58, 37, "0"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 17, 58, 19, "!="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 17, 58, 19, "<"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 17, 58, 19, "<="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 17, 58, 19, ">"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 17, 58, 19, ">="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 9, 58, 28, "1"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 9, 58, 28, "0"));
+  truth.add(Mutable("BOR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 12, 58, 13, "^"));
+  truth.add(Mutable("BOR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 12, 58, 13, "|"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    58, 10, 58, 11, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    58, 10, 58, 11, "((i)--)"));
+  truth.add(Mutable("SOR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 23, 58, 25, ">>"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 34, 58, 35, "!="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 34, 58, 35, "<"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 34, 58, 35, "<="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 34, 58, 35, "=="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 34, 58, 35, ">="));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 32, 58, 37, "1"));
+  truth.add(Mutable("ROR", targetFile, "sumOfEvenPositiveNumber",
+                    58, 32, 58, 37, "0"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    58, 32, 58, 33, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    58, 32, 58, 33, "((i)--)"));
+  truth.add(Mutable("SDL", targetFile, "sumOfEvenPositiveNumber",
+                    59, 7, 59, 20, ""));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 7, 59, 10, "((ret)++)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 7, 59, 10, "((ret)--)"));
+  truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
+                    59, 17, 59, 18, "%"));
+  truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
+                    59, 17, 59, 18, "*"));
+  truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
+                    59, 17, 59, 18, "-"));
+  truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
+                    59, 17, 59, 18, "/"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 13, 59, 16, "((ret)++)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 13, 59, 16, "((ret)--)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 19, 59, 20, "((i)++)"));
+  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
+                    59, 19, 59, 20, "((i)--)"));
 
   ASSERT_EQ(mutables.size(), truth.size());
 

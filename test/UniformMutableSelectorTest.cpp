@@ -36,11 +36,16 @@ TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumNotExceeded) {
   sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
   sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
   Mutables mutables{"somename.db"};
-  mutables.add(Mutable("LCR", targetFilename, 58, 29, 58, 31, "||"));
-  mutables.add(Mutable("ROR", targetFilename, 58, 9, 58, 28, "1"));
-  mutables.add(Mutable("SOR", targetFilename, 58, 21, 58, 27, "1"));
-  mutables.add(Mutable("AOR", targetFilename, 59, 17, 59, 18, "-"));
-  mutables.add(Mutable("UOI", targetFilename, 59, 13, 59, 16, "((ret)--)"));
+  mutables.add(Mutable("LCR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 29, 58, 31, "||"));
+  mutables.add(Mutable("ROR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 9, 58, 28, "1"));
+  mutables.add(Mutable("SOR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 21, 58, 27, "1"));
+  mutables.add(Mutable("AOR", targetFilename, "sumOfEvenPositiveNumber",
+                       59, 17, 59, 18, "-"));
+  mutables.add(Mutable("UOI", targetFilename, "sumOfEvenPositiveNumber",
+                       59, 13, 59, 16, "((ret)--)"));
 
   UniformMutableSelector selector;
   Mutables selected = selector.select(mutables, sourceLines, 3);
@@ -58,11 +63,16 @@ TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumExceeded) {
   sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
   sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
   Mutables mutables{"somename.db"};
-  mutables.add(Mutable("LCR", targetFilename, 58, 29, 58, 31, "||"));
-  mutables.add(Mutable("ROR", targetFilename, 58, 9, 58, 28, "1"));
-  mutables.add(Mutable("SOR", targetFilename, 58, 21, 58, 27, "1"));
-  mutables.add(Mutable("AOR", targetFilename, 59, 17, 59, 18, "-"));
-  mutables.add(Mutable("UOI", targetFilename, 59, 13, 59, 16, "((ret)--)"));
+  mutables.add(Mutable("LCR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 29, 58, 31, "||"));
+  mutables.add(Mutable("ROR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 9, 58, 28, "1"));
+  mutables.add(Mutable("SOR", targetFilename, "sumOfEvenPositiveNumber",
+                       58, 21, 58, 27, "1"));
+  mutables.add(Mutable("AOR", targetFilename, "sumOfEvenPositiveNumber",
+                       59, 17, 59, 18, "-"));
+  mutables.add(Mutable("UOI", targetFilename, "sumOfEvenPositiveNumber",
+                       59, 13, 59, 16, "((ret)--)"));
 
   UniformMutableSelector selector;
   Mutables selected = selector.select(mutables, sourceLines, 1);

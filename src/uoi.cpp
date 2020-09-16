@@ -60,6 +60,7 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       e->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
   std::string stmtStr = util::astnode::convertStmtToString(e, mCI);
 
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
@@ -68,14 +69,14 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
 
   if (util::astnode::getExprType(e)->isScalarType() &&
       !util::astnode::getExprType(e)->isPointerType()) {
-    mutables->add(Mutable("UOI", path,
+    mutables->add(Mutable("UOI", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                           mSrcMgr.getExpansionLineNumber(stmtEndLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
                           "((" + stmtStr + ")++)"));
 
-    mutables->add(Mutable("UOI", path,
+    mutables->add(Mutable("UOI", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                           mSrcMgr.getExpansionLineNumber(stmtEndLoc),
@@ -84,7 +85,7 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   }
 
   if (util::astnode::getExprType(e)->isBooleanType()) {
-    mutables->add(Mutable("UOI", path,
+    mutables->add(Mutable("UOI", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
                           mSrcMgr.getExpansionLineNumber(stmtEndLoc),

@@ -41,12 +41,22 @@ Mutable::Mutable(const std::string& mutationOperator,
 
 Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
+                 const std::string& qualifiedFuncName,
                  int firstLine, int firstColumn,
                  int lastLine, int lastColumn,
                  const std::string& token)
-    : mPath(util::filesystem::getAbsolutePath(path)),
-      mOperator(mutationOperator), mFirst{firstLine, firstColumn},
-      mLast{lastLine, lastColumn}, mToken(token) {}
+    : mPath(util::filesystem::getAbsolutePath(path)), mToken(token),
+      mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
+      mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
+  size_t pos = qualifiedFuncName.find_last_of("::");
+  if (pos == std::string::npos) {
+    mClass = "";
+    mFunction = qualifiedFuncName;
+  } else {
+    mClass = qualifiedFuncName.substr(0, pos);
+    mFunction = qualifiedFuncName.substr(pos+2);
+  }
+}
 
 bool Mutable::compare(const Mutable& other) const {
   return mOperator == other.getOperator() &&
@@ -64,6 +74,18 @@ std::string Mutable::getOperator() const {
 
 std::string Mutable::getPath() const {
   return mPath;
+}
+
+std::string Mutable::getClass() const {
+  return mClass;
+}
+
+std::string Mutable::getFunction() const {
+  return mFunction;
+}
+
+std::string Mutable::getQualifiedFunction() const {
+  return mFunction;
 }
 
 Location Mutable::getFirst() const {

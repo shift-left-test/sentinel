@@ -38,7 +38,8 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::string filename = util::filesystem::filename(tempFilename);
   util::filesystem::copyFile(targetFilename, tempFilename);
 
-  Mutable m{"LCR", tempFilename, 58, 29, 58, 31, "||"};
+  Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+            58, 29, 58, 31, "||"};
   SourceTree tree;
   util::filesystem::createDirectory("/tmp/sentineltest_backup");
   tree.modify(m, "/tmp", "/tmp/sentineltest_backup");
@@ -75,7 +76,8 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   util::filesystem::copyFile(targetFilename, tempFilename);
 
   // If position does not exist, no changes should be made.
-  Mutable nonexistLinePosition{"LCR", tempFilename, 100, 200, 300, 400, "||"};
+  Mutable nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+                               100, 200, 300, 400, "||"};
   SourceTree tree;
   util::filesystem::createDirectory("/tmp/sentineltest_backup");
   tree.modify(nonexistLinePosition, "/tmp", "/tmp/sentineltest_backup");
@@ -104,7 +106,8 @@ TEST(SourceTreeTest, testBackupWorks) {
   std::string filename = util::filesystem::filename(tempFilename);
   util::filesystem::copyFile(targetFilename, tempFilename);
 
-  Mutable m{"LCR", tempFilename, 58, 29, 58, 31, "||"};
+  Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+            58, 29, 58, 31, "||"};
   SourceTree tree;
   std::string backupPath = util::filesystem::tempDirectory("/tmp/");
 
