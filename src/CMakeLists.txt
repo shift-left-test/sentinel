@@ -28,7 +28,8 @@ build_static_library(
        UniformMutableGenerator.cpp UniformMutableSelector.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
        MutationResult.cpp MutationResults.cpp XMLReport.cpp HTMLReport.cpp
-       Logger.cpp aor.cpp bor.cpp lcr.cpp ror.cpp sdl.cpp sor.cpp uoi.cpp
+       Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
+       operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt git2
