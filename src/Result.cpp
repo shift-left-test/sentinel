@@ -28,14 +28,14 @@
 #include <string>
 #include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
 Result::Result(const std::string& path) {
   const char* errMsg = "This file doesn't follow googletest result format";
-  auto xmlFiles = util::filesystem::findFilesInDirUsingExt(path, {"xml"});
+  auto xmlFiles = os::findFilesInDirUsingExt(path, {"xml"});
   for (const std::string& xmlPath : xmlFiles) {
     tinyxml2::XMLDocument doc;
     auto errcode = doc.LoadFile(xmlPath.c_str());

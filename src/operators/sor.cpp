@@ -51,7 +51,7 @@ void SOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   std::string path = mSrcMgr.getFilename(opStartLoc);
-  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
+  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     for (const auto& mutatedToken : mShiftOperators) {

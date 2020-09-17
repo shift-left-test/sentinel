@@ -29,7 +29,7 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
 
 
@@ -40,13 +40,13 @@ XMLReport::XMLReport(const std::string& resultsPath) : mResults(resultsPath) {
 }
 
 void XMLReport::save(const std::string& path) {
-  if (util::filesystem::exists(path)) {
-    if (!util::filesystem::isDirectory(path)) {
+  if (os::path::exists(path)) {
+    if (!os::path::isDirectory(path)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
         path));
     }
   } else {
-    util::filesystem::createDirectory(path);
+    os::createDirectory(path);
   }
 
   std::time_t rawtime;
@@ -61,17 +61,17 @@ void XMLReport::save(const std::string& path) {
   timeinfo = std::localtime(&rawtime);
   std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
 
-  auto dirPath = util::filesystem::join(path, buffer);
-  if (util::filesystem::exists(dirPath)) {
-    if (!util::filesystem::isDirectory(dirPath)) {
+  auto dirPath = os::path::join(path, buffer);
+  if (os::path::exists(dirPath)) {
+    if (!os::path::isDirectory(dirPath)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
         dirPath));
     }
   } else {
-    util::filesystem::createDirectory(dirPath);
+    os::createDirectory(dirPath);
   }
 
-  auto xmlPath = util::filesystem::join(dirPath, "mutations.xml");
+  auto xmlPath = os::path::join(dirPath, "mutations.xml");
 
   auto doc = new tinyxml2::XMLDocument();
   tinyxml2::XMLDeclaration* pDecl = doc->NewDeclaration();
@@ -84,7 +84,7 @@ void XMLReport::save(const std::string& path) {
     pMutation->SetAttribute("detected", r.getDetected());
 
     addChildToParent(doc, pMutation, "sourceFile",
-        util::filesystem::filename(r.getPath()));
+        os::path::filename(r.getPath()));
     addChildToParent(doc, pMutation, "sourceFilePath", r.getPath());
     addChildToParent(doc, pMutation, "mutatedClass", r.getMutatedClass());
     addChildToParent(doc, pMutation, "mutatedMethod", r.getMutatedMethod());

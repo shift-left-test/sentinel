@@ -32,7 +32,7 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -49,8 +49,8 @@ MutationResult::MutationResult(const sentinel::Mutable& mut,
 }
 
 MutationResult::MutationResult(const std::string& mutationResultFilePath) {
-  if (!util::filesystem::exists(mutationResultFilePath) ||
-      util::filesystem::isDirectory(mutationResultFilePath)) {
+  if (!os::path::exists(mutationResultFilePath) ||
+      os::path::isDirectory(mutationResultFilePath)) {
     throw InvalidArgumentException(fmt::format(
         "mutationResultFilePath doesn't have MutationResult({0})",
         mutationResultFilePath));
@@ -124,16 +124,16 @@ std::time_t MutationResult::getLastModifiedTime() const {
 }
 
 void MutationResult::saveToFile(const std::string& dirPath) const {
-  if (util::filesystem::exists(dirPath)) {
-    if (!util::filesystem::isDirectory(dirPath)) {
+  if (os::path::exists(dirPath)) {
+    if (!os::path::isDirectory(dirPath)) {
     throw InvalidArgumentException(fmt::format(
         "dirPath isn't directory({0})", dirPath));
     }
   } else {
-    util::filesystem::createDirectory(dirPath);
+    os::createDirectory(dirPath);
   }
 
-  std::string filePath = util::filesystem::join(dirPath,
+  std::string filePath = os::path::join(dirPath,
         std::to_string(getIndexOfMutableDB()).append(".MutationResult"));
 
   std::ofstream outFile(filePath.c_str(),

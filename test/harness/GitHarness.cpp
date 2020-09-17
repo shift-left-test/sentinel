@@ -31,7 +31,7 @@
 #include <iostream>
 #include <stdexcept>
 #include "git-harness/GitHarness.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
@@ -42,11 +42,11 @@ GitHarness::GitHarness(const std::string& dir_name) :
 
   // Create the directory.
   // Exit with error message if it already existed or fail to generate
-  if (util::filesystem::isDirectory(dir_name)) {
+  if (os::path::isDirectory(dir_name)) {
     throw IOException(EEXIST);
   }
 
-  util::filesystem::createDirectory(dir_name);
+  os::createDirectory(dir_name);
 
   // git init
   if (git_repository_init(&repo, dir_name.c_str(), 0) != 0) {
@@ -65,11 +65,11 @@ GitHarness::~GitHarness() {
 // Create a folder within git directory.
 // The folder path should be relative w.r.t. repo path
 GitHarness& GitHarness::addFolder(const std::string& folder_name) {
-  if (util::filesystem::isDirectory(repo_path+"/"+folder_name)) {
+  if (os::path::isDirectory(repo_path+"/"+folder_name)) {
     throw IOException(EEXIST);
   }
 
-  util::filesystem::createDirectory(repo_path + "/" + folder_name);
+  os::createDirectory(repo_path + "/" + folder_name);
 
   return *this;
 }
@@ -77,7 +77,7 @@ GitHarness& GitHarness::addFolder(const std::string& folder_name) {
 // Create a file at specified location (relative path w.r.t repo path)
 GitHarness& GitHarness::addFile(const std::string& filename,
                                 const std::string& content) {
-  if (util::filesystem::isRegularFile(repo_path+"/"+filename)) {
+  if (os::path::isRegularFile(repo_path+"/"+filename)) {
     throw IOException(EEXIST);
   }
 
@@ -104,7 +104,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
                                 const std::string& content,
                                 int line, int col) {
   std::string filename_full = repo_path + "/" + filename;
-  if (!util::filesystem::isRegularFile(filename_full)) {
+  if (!os::path::isRegularFile(filename_full)) {
     throw IOException(EINVAL);
   }
 
@@ -146,7 +146,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  util::filesystem::rename(filename_full+".temp", filename_full);
+  os::rename(filename_full+".temp", filename_full);
   return *this;
 }
 
@@ -154,7 +154,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
 GitHarness& GitHarness::deleteCode(const std::string& filename,
                                    const std::vector<int>& lines) {
   std::string filename_full = repo_path + "/" + filename;
-  if (!util::filesystem::isRegularFile(filename_full)) {
+  if (!os::path::isRegularFile(filename_full)) {
     throw IOException(EINVAL);
   }
 
@@ -181,15 +181,15 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  util::filesystem::rename(filename_full+".temp", filename_full);
+  os::rename(filename_full+".temp", filename_full);
   return *this;
 }
 
 // git add <filenames>
 GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
   auto noRegularFile = [&](const auto& s) {
-    auto path = util::filesystem::join(repo_path, s);
-    return !util::filesystem::isRegularFile(path);
+    auto path = os::path::join(repo_path, s);
+    return !os::path::isRegularFile(path);
   };
   if (std::any_of(filenames.begin(), filenames.end(), noRegularFile)) {
     throw IOException(EINVAL);

@@ -34,7 +34,6 @@
 
 
 namespace sentinel {
-namespace util {
 namespace astnode {
 
 /**
@@ -194,7 +193,6 @@ inline std::string getContainingFunctionQualifiedName(
 }
 
 }  // namespace astnode
-}  // namespace util
 }  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_UTIL_ASTNODE_HPP_

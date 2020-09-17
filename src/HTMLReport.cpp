@@ -35,7 +35,7 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -45,21 +45,21 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
     const std::string& sourcePath) :
     mSourcePath(sourcePath), mResults(resultsPath) {
   mResults.load();
-  if (!util::filesystem::exists(sourcePath) ||
-      !util::filesystem::isDirectory(sourcePath)) {
+  if (!os::path::exists(sourcePath) ||
+      !os::path::isDirectory(sourcePath)) {
     throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
         sourcePath));
   }
 }
 
 void HTMLReport::save(const std::string& path) {
-  if (util::filesystem::exists(path)) {
-    if (!util::filesystem::isDirectory(path)) {
+  if (os::path::exists(path)) {
+    if (!os::path::isDirectory(path)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
         path));
     }
   } else {
-    util::filesystem::createDirectory(path);
+    os::createDirectory(path);
   }
 
   std::time_t rawtime;
@@ -73,14 +73,14 @@ void HTMLReport::save(const std::string& path) {
   timeinfo = std::localtime(&rawtime);
   std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
 
-  auto dirPath = util::filesystem::join(path, buffer);
-  if (util::filesystem::exists(dirPath)) {
-    if (!util::filesystem::isDirectory(dirPath)) {
+  auto dirPath = os::path::join(path, buffer);
+  if (os::path::exists(dirPath)) {
+    if (!os::path::isDirectory(dirPath)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
         dirPath));
     }
   } else {
-    util::filesystem::createDirectory(dirPath);
+    os::createDirectory(dirPath);
   }
 
   // tuple: MutationResult, # of mutation, # of detected mutation
@@ -95,8 +95,8 @@ void HTMLReport::save(const std::string& path) {
 
   for ( const MutationResult& mr : mResults ) {
     auto mrPath = mr.getPath();
-    std::string curDirname = util::filesystem::dirname(mrPath);
-    curDirname = util::string::replaceAll(curDirname, "/", ".");
+    std::string curDirname = os::path::dirname(mrPath);
+    curDirname = string::replaceAll(curDirname, "/", ".");
 
     if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
       groupByDirPath.emplace(curDirname,
@@ -130,9 +130,9 @@ void HTMLReport::save(const std::string& path) {
     std::get<3>(*p.second) = tmpSet.size();
   }
 
-  auto outputPath = util::filesystem::join(path, buffer);
+  auto outputPath = os::path::join(path, buffer);
 
-  std::ofstream ofs(util::filesystem::join(outputPath, "style.css"),
+  std::ofstream ofs(os::path::join(outputPath, "style.css"),
       std::ofstream::out);
   ofs << styleCssContent;
   ofs.close();
@@ -294,8 +294,8 @@ void HTMLReport::makeIndexHtml(
   } else {
     for ( auto const& p : *pGroupByPath ) {
       {
-        std::string curDirname = util::filesystem::dirname(p.first);
-        curDirname = util::string::replaceAll(curDirname, "/", ".");
+        std::string curDirname = os::path::dirname(p.first);
+        curDirname = string::replaceAll(curDirname, "/", ".");
 
         if (currentDirPath != curDirname) {
           continue;
@@ -306,7 +306,7 @@ void HTMLReport::makeIndexHtml(
         int numerator3 = std::get<2>(*p.second);
         int denominator3 = std::get<1>(*p.second);
 
-        std::string curfilename = util::filesystem::filename(p.first);
+        std::string curfilename = os::path::filename(p.first);
 
         auto pTd0 = insertNewNode(doc, pTr5, "td");
 
@@ -345,18 +345,18 @@ void HTMLReport::makeIndexHtml(
 
   std::string fileName = "index.html";
   if (!root) {
-    fileName = util::filesystem::join(currentDirPath, "index.html");
-    std::string newDir = util::filesystem::join(outputDir, currentDirPath);
-    if (util::filesystem::exists(newDir)) {
-      if (!util::filesystem::isDirectory(newDir)) {
+    fileName = os::path::join(currentDirPath, "index.html");
+    std::string newDir = os::path::join(outputDir, currentDirPath);
+    if (os::path::exists(newDir)) {
+      if (!os::path::isDirectory(newDir)) {
         throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
           newDir));
       }
     } else {
-      util::filesystem::createDirectory(newDir);
+      os::createDirectory(newDir);
     }
   }
-  doc->SaveFile(util::filesystem::join(outputDir, fileName).c_str());
+  doc->SaveFile(os::path::join(outputDir, fileName).c_str());
   delete doc;
 }
 
@@ -365,12 +365,12 @@ void HTMLReport::makeSourceHtml(
     std::vector<const MutationResult*>* MRs, const std::string& srcPath,
     const std::string& outputDir) {
 
-  if (!util::filesystem::exists(srcPath)) {
+  if (!os::path::exists(srcPath)) {
     throw InvalidArgumentException(
         fmt::format("Source doesn't exists: {0}", srcPath));
   }
 
-  std::string srcName = util::filesystem::filename(srcPath);
+  std::string srcName = os::path::filename(srcPath);
 
   std::map <int, std::vector<const MutationResult*>*> groupByLine;
   std::set <std::string> uniqueKillingTest;
@@ -378,7 +378,7 @@ void HTMLReport::makeSourceHtml(
 
   int maxLineNum = 0;
   for ( const MutationResult* mr : *MRs ) {
-    auto tmpvector = util::string::splitByStringDelimiter(
+    auto tmpvector = string::splitByStringDelimiter(
         mr->getKillingTest(), ", ");
     for (auto const& ts : tmpvector) {
       if (!ts.empty()) {
@@ -408,7 +408,7 @@ void HTMLReport::makeSourceHtml(
   std::string srcContents = buffer.str();
   tf.close();
 
-  auto srcLineByLine = util::string::split(srcContents, '\n');
+  auto srcLineByLine = string::split(srcContents, '\n');
 
   if (srcLineByLine.empty() || srcLineByLine.size() < maxLineNum) {
       throw InvalidArgumentException(
@@ -568,8 +568,8 @@ void HTMLReport::makeSourceHtml(
   auto pA = insertNewNode(doc, ph5, "a", "Sentinel");
   pA->SetAttribute("href", "http://mod.lge.com/hub/yocto/addons/sentinel");
 
-  std::string fileName = util::filesystem::join(outputDir,
-      util::string::replaceAll(util::filesystem::dirname(srcPath), "/", "."),
+  std::string fileName = os::path::join(outputDir,
+      string::replaceAll(os::path::dirname(srcPath), "/", "."),
       fmt::format("{0}.html", srcName));
   doc->SaveFile(fileName.c_str());
 

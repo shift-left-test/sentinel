@@ -26,7 +26,7 @@
 #include <fstream>
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 namespace sentinel {
 
@@ -34,18 +34,18 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
-  std::string filename = util::filesystem::filename(tempFilename);
-  util::filesystem::copyFile(targetFilename, tempFilename);
+  std::string tempFilename = os::tempFilename("/tmp/");
+  std::string filename = os::path::filename(tempFilename);
+  os::copyFile(targetFilename, tempFilename);
 
   Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   SourceTree tree;
-  util::filesystem::createDirectory("/tmp/sentineltest_backup");
+  os::createDirectory("/tmp/sentineltest_backup");
   tree.modify(m, "/tmp", "/tmp/sentineltest_backup");
 
   // backup exists
-  EXPECT_TRUE(util::filesystem::exists("/tmp/sentineltest_backup/" + filename));
+  EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
 
   // mutation is applied correctly
   std::ifstream mutatedFile(tempFilename);
@@ -64,24 +64,24 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
 
   origFile.close();
   mutatedFile.close();
-  util::filesystem::removeDirectories("/tmp/sentineltest_backup");
+  os::removeDirectories("/tmp/sentineltest_backup");
 }
 
 TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string tempFilename = util::filesystem::tempFilename("/tmp/");
-  std::string filename = util::filesystem::filename(tempFilename);
-  util::filesystem::copyFile(targetFilename, tempFilename);
+  std::string tempFilename = os::tempFilename("/tmp/");
+  std::string filename = os::path::filename(tempFilename);
+  os::copyFile(targetFilename, tempFilename);
 
   // If position does not exist, no changes should be made.
   Mutable nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
                                100, 200, 300, 400, "||"};
   SourceTree tree;
-  util::filesystem::createDirectory("/tmp/sentineltest_backup");
+  os::createDirectory("/tmp/sentineltest_backup");
   tree.modify(nonexistLinePosition, "/tmp", "/tmp/sentineltest_backup");
-  EXPECT_TRUE(util::filesystem::exists("/tmp/sentineltest_backup/" + filename));
+  EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
   std::ifstream mutatedFile(tempFilename);
   std::ifstream origFile(targetFilename);
   std::string mutatedFileLine, origFileLine;
@@ -91,30 +91,30 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   }
   origFile.close();
   mutatedFile.close();
-  util::filesystem::removeDirectories("/tmp/sentineltest_backup");
+  os::removeDirectories("/tmp/sentineltest_backup");
 }
 
 TEST(SourceTreeTest, testBackupWorks) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string tempSubDirName = util::filesystem::tempPath();
+  std::string tempSubDirName = os::tempPath();
   std::string tempSubDirPath = "/tmp/" + tempSubDirName + "/";
-  util::filesystem::createDirectory(tempSubDirPath);
+  os::createDirectory(tempSubDirPath);
 
-  std::string tempFilename = util::filesystem::tempFilename(tempSubDirPath);
-  std::string filename = util::filesystem::filename(tempFilename);
-  util::filesystem::copyFile(targetFilename, tempFilename);
+  std::string tempFilename = os::tempFilename(tempSubDirPath);
+  std::string filename = os::path::filename(tempFilename);
+  os::copyFile(targetFilename, tempFilename);
 
   Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   SourceTree tree;
-  std::string backupPath = util::filesystem::tempDirectory("/tmp/");
+  std::string backupPath = os::tempDirectory("/tmp/");
 
   tree.modify(m, "/tmp", backupPath);
 
   // backup exists
-  EXPECT_TRUE(util::filesystem::exists(util::filesystem::join(backupPath,
+  EXPECT_TRUE(os::path::exists(os::path::join(backupPath,
                                                               tempSubDirName,
                                                               filename)));
 
@@ -135,8 +135,8 @@ TEST(SourceTreeTest, testBackupWorks) {
 
   origFile.close();
   mutatedFile.close();
-  util::filesystem::removeDirectories(backupPath);
-  util::filesystem::removeDirectories(tempSubDirPath);
+  os::removeDirectories(backupPath);
+  os::removeDirectories(tempSubDirPath);
 }
 
 }  // namespace sentinel

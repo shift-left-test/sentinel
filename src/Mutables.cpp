@@ -30,7 +30,7 @@
 #include <string>
 #include "sentinel/Mutable.hpp"
 #include "sentinel/Mutables.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 
@@ -57,8 +57,8 @@ std::string Mutables::getPath() const {
 int Mutables::size() const { return mData.size(); }
 
 void Mutables::load() {
-  if (!util::filesystem::exists(mPath) ||
-      util::filesystem::isDirectory(mPath)) {
+  if (!os::path::exists(mPath) ||
+      os::path::isDirectory(mPath)) {
     throw IOException(EINVAL);
   }
 
@@ -82,9 +82,9 @@ void Mutables::load() {
 }
 
 void Mutables::save() {
-  std::string dbDir = util::filesystem::dirname(mPath);
-  if (!util::filesystem::exists(dbDir)) {
-    util::filesystem::createDirectories(dbDir);
+  std::string dbDir = os::path::dirname(mPath);
+  if (!os::path::exists(dbDir)) {
+    os::createDirectories(dbDir);
   }
 
   std::ofstream outFile(mPath.c_str(), std::ios::out | std::ios::binary);

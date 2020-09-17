@@ -26,7 +26,7 @@
 #include <args/args.hxx>
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
 
 

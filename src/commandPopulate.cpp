@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <args/args.hxx>
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
@@ -57,7 +57,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::MutationFactory mutationFactory(generator, selector);
 
   sentinel::Mutables mutables = mutationFactory.populate(
-    sentinel::util::filesystem::join(output.Get(), "mutables.db"),
+    sentinel::os::path::join(output.Get(), "mutables.db"),
     sourceLines,
     count.Get());
 

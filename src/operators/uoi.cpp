@@ -40,8 +40,8 @@ bool UOI::canMutate(clang::Stmt* s) {
   // UOI targets variable reference expression, which includes
   // a variable reference, member reference (class.member, class->member),
   // array subscript expression (arr[idx]), pointer dereference (*ptr)
-  if (!(util::astnode::isDeclRefExpr(e) ||
-        util::astnode::isPointerDereferenceExpr(e) ||
+  if (!(astnode::isDeclRefExpr(e) ||
+        astnode::isPointerDereferenceExpr(e) ||
         clang::isa<clang::ArraySubscriptExpr>(e) ||
         clang::isa<clang::MemberExpr>(e))) {
     return false;
@@ -49,9 +49,9 @@ bool UOI::canMutate(clang::Stmt* s) {
 
   // UOI targets non-constant, arithmetic/boolean expression only.
   return !e->getType().isConstant(mCI.getASTContext()) &&
-         ((util::astnode::getExprType(e)->isScalarType() &&
-           !util::astnode::getExprType(e)->isPointerType()) ||
-          (util::astnode::getExprType(e)->isBooleanType()));
+         ((astnode::getExprType(e)->isScalarType() &&
+           !astnode::getExprType(e)->isPointerType()) ||
+          (astnode::getExprType(e)->isBooleanType()));
 }
 
 void UOI::populate(clang::Stmt* s, Mutables* mutables) {
@@ -60,15 +60,15 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       e->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
-  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
-  std::string stmtStr = util::astnode::convertStmtToString(e, mCI);
+  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
+  std::string stmtStr = astnode::convertStmtToString(e, mCI);
 
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
     return;
   }
 
-  if (util::astnode::getExprType(e)->isScalarType() &&
-      !util::astnode::getExprType(e)->isPointerType()) {
+  if (astnode::getExprType(e)->isScalarType() &&
+      !astnode::getExprType(e)->isPointerType()) {
     mutables->add(Mutable("UOI", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
@@ -84,7 +84,7 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
                           "((" + stmtStr + ")--)"));
   }
 
-  if (util::astnode::getExprType(e)->isBooleanType()) {
+  if (astnode::getExprType(e)->isBooleanType()) {
     mutables->add(Mutable("UOI", path, func,
                           mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc),

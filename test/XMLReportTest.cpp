@@ -29,7 +29,7 @@
 #include <string>
 #include <sstream>
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
 
 
@@ -38,32 +38,32 @@ namespace sentinel {
 class XMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = util::filesystem::tempDirectory("fixture");
-    OUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    BASE = os::tempDirectory("fixture");
+    OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "OUT_DIR"));
 
-    MUT_RESULT_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(BASE, "MUT_RESLUT_DIR"));
+    MUT_RESULT_DIR = os::tempDirectory(
+        os::path::join(BASE, "MUT_RESLUT_DIR"));
 
-    std::string SOURCE_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(BASE, "SOURCE_DIR"));
+    std::string SOURCE_DIR = os::tempDirectory(
+        os::path::join(BASE, "SOURCE_DIR"));
 
-    std::string NESTED_SOURCE_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(SOURCE_DIR, "NESTED_DIR"));
+    std::string NESTED_SOURCE_DIR = os::tempDirectory(
+        os::path::join(SOURCE_DIR, "NESTED_DIR"));
 
-    TARGET_FULL_PATH = util::filesystem::tempFilenameWithSuffix(
+    TARGET_FULL_PATH = os::tempFilenameWithSuffix(
         SOURCE_DIR + "/", ".cpp");
-    std::string TARGET_NAME = util::filesystem::filename(TARGET_FULL_PATH);
-    TARGET_FULL_PATH2 = util::filesystem::tempFilenameWithSuffix(
+    std::string TARGET_NAME = os::path::filename(TARGET_FULL_PATH);
+    TARGET_FULL_PATH2 = os::tempFilenameWithSuffix(
         NESTED_SOURCE_DIR + "/", ".cpp");
-    std::string TARGET_NAME2 = util::filesystem::filename(TARGET_FULL_PATH2);
+    std::string TARGET_NAME2 = os::path::filename(TARGET_FULL_PATH2);
     EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
-        TARGET_NAME, util::filesystem::getAbsolutePath(TARGET_FULL_PATH),
-        TARGET_NAME2, util::filesystem::getAbsolutePath(TARGET_FULL_PATH2));
+        TARGET_NAME, os::path::getAbsolutePath(TARGET_FULL_PATH),
+        TARGET_NAME2, os::path::getAbsolutePath(TARGET_FULL_PATH2));
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(BASE);
+    os::removeDirectories(BASE);
   }
   std::string BASE;
   std::string OUT_DIR;
@@ -109,7 +109,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   XMLReport xmlreport(MUT_RESULT_DIR);
 
   xmlreport.save(OUT_DIR);
-  auto mutationXMLPath = util::filesystem::findFilesInDirUsingRgx(OUT_DIR,
+  auto mutationXMLPath = os::findFilesInDirUsingRgx(OUT_DIR,
       std::regex(".*mutations.xml"));
   EXPECT_EQ(1, mutationXMLPath.size());
 

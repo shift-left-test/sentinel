@@ -189,9 +189,9 @@ SourceLines GitRepository::getSourceLines() {
 
   SourceLines targetLines;
   for (const auto& line : d.sourceLines) {
-    if (!util::string::endsWith(line.getPath(), ".c") &&
-        !util::string::endsWith(line.getPath(), ".cpp") &&
-        !util::string::endsWith(line.getPath(), ".cxx")) {
+    if (!string::endsWith(line.getPath(), ".c") &&
+        !string::endsWith(line.getPath(), ".cpp") &&
+        !string::endsWith(line.getPath(), ".cxx")) {
       continue;
     }
 

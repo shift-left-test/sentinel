@@ -30,7 +30,7 @@
 #include <sstream>
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -39,58 +39,58 @@ namespace sentinel {
 class HTMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = util::filesystem::tempDirectory("fixture");
-    OUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    BASE = os::tempDirectory("fixture");
+    OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "OUT_DIR"));
 
-    MUT_RESULT_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(BASE, "MUT_RESLUT_DIR"));
+    MUT_RESULT_DIR = os::tempDirectory(
+        os::path::join(BASE, "MUT_RESLUT_DIR"));
 
-    std::string SOURCE_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(BASE, "SOURCE_DIR"));
+    std::string SOURCE_DIR = os::tempDirectory(
+        os::path::join(BASE, "SOURCE_DIR"));
 
-    std::string NESTED_SOURCE_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(SOURCE_DIR, "NESTED_DIR1"));
+    std::string NESTED_SOURCE_DIR = os::tempDirectory(
+        os::path::join(SOURCE_DIR, "NESTED_DIR1"));
 
-    std::string NESTED_SOURCE_DIR2 = util::filesystem::tempDirectory(
-        util::filesystem::join(SOURCE_DIR, "NESTED_DIR2"));
+    std::string NESTED_SOURCE_DIR2 = os::tempDirectory(
+        os::path::join(SOURCE_DIR, "NESTED_DIR2"));
 
-    TARGET_FULL_PATH = util::filesystem::tempFilenameWithSuffix(
+    TARGET_FULL_PATH = os::tempFilenameWithSuffix(
         NESTED_SOURCE_DIR + "/target1", ".cpp");
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
-    TARGET_FULL_PATH2 = util::filesystem::tempFilenameWithSuffix(
+    TARGET_FULL_PATH2 = os::tempFilenameWithSuffix(
         NESTED_SOURCE_DIR2 + "/target2", ".cpp");
     writeFile(TARGET_FULL_PATH2, TARGET_CONTENT2);
-    TARGET_FULL_PATH3 = util::filesystem::tempFilenameWithSuffix(
+    TARGET_FULL_PATH3 = os::tempFilenameWithSuffix(
         NESTED_SOURCE_DIR2 + "/target3", ".cpp");
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
 
-    std::string NESTED_DIR1_DOT = util::string::replaceAll(
-        util::filesystem::getAbsolutePath(NESTED_SOURCE_DIR), "/", ".");
-    std::string NESTED_DIR2_DOT = util::string::replaceAll(
-        util::filesystem::getAbsolutePath(NESTED_SOURCE_DIR2), "/", ".");
+    std::string NESTED_DIR1_DOT = string::replaceAll(
+        os::path::getAbsolutePath(NESTED_SOURCE_DIR), "/", ".");
+    std::string NESTED_DIR2_DOT = string::replaceAll(
+        os::path::getAbsolutePath(NESTED_SOURCE_DIR2), "/", ".");
 
 
     ROOT_INDEX_HTML_CONTENTS = fmt::format(
         ROOT_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT, NESTED_DIR2_DOT);
     NESTED1_INDEX_HTML_CONTENTS = fmt::format(
         NESTED1_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT,
-        util::filesystem::filename(TARGET_FULL_PATH));
+        os::path::filename(TARGET_FULL_PATH));
     NESTED2_INDEX_HTML_CONTENTS = fmt::format(
         NESTED2_INDEX_HTML_CONTENTS, NESTED_DIR2_DOT,
-        util::filesystem::filename(TARGET_FULL_PATH2),
-        util::filesystem::filename(TARGET_FULL_PATH3));
+        os::path::filename(TARGET_FULL_PATH2),
+        os::path::filename(TARGET_FULL_PATH3));
 
-    TARGET1_HTML_CONTENTS = util::string::replaceAll(TARGET1_HTML_CONTENTS,
-        "{0}", util::filesystem::filename(TARGET_FULL_PATH));
-    TARGET2_HTML_CONTENTS = util::string::replaceAll(TARGET2_HTML_CONTENTS,
-        "{0}", util::filesystem::filename(TARGET_FULL_PATH2));
-    TARGET3_HTML_CONTENTS = util::string::replaceAll(TARGET3_HTML_CONTENTS,
-        "{0}", util::filesystem::filename(TARGET_FULL_PATH3));
+    TARGET1_HTML_CONTENTS = string::replaceAll(TARGET1_HTML_CONTENTS,
+        "{0}", os::path::filename(TARGET_FULL_PATH));
+    TARGET2_HTML_CONTENTS = string::replaceAll(TARGET2_HTML_CONTENTS,
+        "{0}", os::path::filename(TARGET_FULL_PATH2));
+    TARGET3_HTML_CONTENTS = string::replaceAll(TARGET3_HTML_CONTENTS,
+        "{0}", os::path::filename(TARGET_FULL_PATH3));
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(BASE);
+    os::removeDirectories(BASE);
   }
 
   void readFileAndCompareExpected(const std::string& path,
@@ -743,33 +743,33 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   HTMLReport htmlreport(MUT_RESULT_DIR, MUT_RESULT_DIR);
 
   htmlreport.save(OUT_DIR);
-  auto mutationHtmlPath = util::filesystem::findFilesInDirUsingRgx(OUT_DIR,
+  auto mutationHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
       std::regex(".*index\\.html"));
   EXPECT_EQ(3, mutationHtmlPath.size());
 
   for ( auto const& mp : mutationHtmlPath ) {
-    if (util::string::contains(mp, "NESTED_DIR1")) {
+    if (string::contains(mp, "NESTED_DIR1")) {
       readFileAndCompareExpected(mp, NESTED1_INDEX_HTML_CONTENTS);
-    } else if (util::string::contains(mp, "NESTED_DIR2")) {
+    } else if (string::contains(mp, "NESTED_DIR2")) {
       readFileAndCompareExpected(mp, NESTED2_INDEX_HTML_CONTENTS);
-    } else if (!util::string::contains(mp, "NESTED_DIR") &&
-        util::string::contains(mp, "OUT_DIR")) {
+    } else if (!string::contains(mp, "NESTED_DIR") &&
+        string::contains(mp, "OUT_DIR")) {
       readFileAndCompareExpected(mp, ROOT_INDEX_HTML_CONTENTS);
     } else {
       FAIL() << "Unexpected index.html file detected : " + mp;
     }
   }
 
-  auto srcHtmlPath = util::filesystem::findFilesInDirUsingRgx(OUT_DIR,
+  auto srcHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
       std::regex(".*target.*\\.cpp\\.html"));
   EXPECT_EQ(3, srcHtmlPath.size());
 
   for ( auto const& ms : srcHtmlPath ) {
-    if (util::string::contains(ms, "target1")) {
+    if (string::contains(ms, "target1")) {
       readFileAndCompareExpected(ms, TARGET1_HTML_CONTENTS);
-    } else if (util::string::contains(ms, "target2")) {
+    } else if (string::contains(ms, "target2")) {
       readFileAndCompareExpected(ms, TARGET2_HTML_CONTENTS);
-    } else if (util::string::contains(ms, "target3")) {
+    } else if (string::contains(ms, "target3")) {
       readFileAndCompareExpected(ms, TARGET3_HTML_CONTENTS);
     } else {
       FAIL() << "Unexpected target*.cpp.html file detected : " + ms;

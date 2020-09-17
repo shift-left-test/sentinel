@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_UTIL_FILESYSTEM_HPP_
-#define INCLUDE_SENTINEL_UTIL_FILESYSTEM_HPP_
+#ifndef INCLUDE_SENTINEL_UTIL_OS_HPP_
+#define INCLUDE_SENTINEL_UTIL_OS_HPP_
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -42,8 +42,8 @@
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
-namespace util {
-namespace filesystem {
+namespace os {
+namespace path {
 
 /**
  * @brief The separator for the filesystem paths
@@ -139,6 +139,40 @@ inline std::string join(const std::string& path1,
 }
 
 /**
+ * @brief Return True if 2 paths point to the same dir/file
+ *
+ * @param path1 first path
+ * @param path2 second path
+ * @return True if 2 paths point to the same dir/file
+ */
+inline bool comparePath(const std::string& path1, const std::string& path2) {
+  if (!exists(path1) || !exists(path2)) {
+    throw IOException(EINVAL);
+  }
+
+  std::string absolutePath1{realpath(path1.c_str(), nullptr)};
+  std::string absolutePath2{realpath(path2.c_str(), nullptr)};
+  return absolutePath1 == absolutePath2;
+}
+
+/**
+ * @brief Return the absolute path of given path
+ *
+ * @param path target path
+ * @return absolute path of target path
+ */
+inline std::string getAbsolutePath(const std::string& path) {
+  if (!exists(path)) {
+    throw IOException(EINVAL);
+  }
+
+  std::string absolutePath{realpath(path.c_str(), nullptr)};
+  return absolutePath;
+}
+
+}  // namespace path
+
+/**
  * @brief Create a new directory at given path.
  *
  * @param path to new folder (name included).
@@ -162,14 +196,14 @@ inline void createDirectory(const std::string& path) {
 inline void createDirectories(const std::string& path) {
   bool existed = true;
   for (auto iter = path.begin(); iter != path.end(); ) {
-    auto nextSlash = std::find(iter, path.end(), SEPARATOR);
+    auto nextSlash = std::find(iter, path.end(), path::SEPARATOR);
     std::string currentPath = std::string(path.begin(), nextSlash);
     if (currentPath == "" && iter != path.end()) {
       ++iter;
       continue;
     }
 
-    if (!exists(currentPath)) {
+    if (!path::exists(currentPath)) {
       existed = false;
       createDirectory(currentPath);
     }
@@ -228,8 +262,8 @@ inline void removeDirectories(const std::string& path) {
           std::strcmp(static_cast<const char *>(entry->d_name), "..") == 0) {
         continue;
       }
-      auto subpath = join(path, entry->d_name);
-      if (isDirectory(subpath)) {
+      auto subpath = path::join(path, entry->d_name);
+      if (path::isDirectory(subpath)) {
         removeDirectories(subpath);
       } else {
         removeFile(subpath);
@@ -309,7 +343,7 @@ inline std::string tempDirectory(const std::string& prefix = "") {
  *                    dest is an existing directory.
  */
 inline void rename(const std::string& src, const std::string& dest) {
-  if (!isRegularFile(src)) {
+  if (!path::isRegularFile(src)) {
     throw IOException(EINVAL);
   }
   if (std::rename(src.c_str(), dest.c_str()) != 0) {
@@ -336,15 +370,15 @@ inline std::vector<std::string> findFilesInDirUsingRgx(
   while ((dirent_ptr = readdir(dir_ptr.get())) != nullptr) {
     const std::string f_name(static_cast<char*>(dirent_ptr->d_name));
     if (dirent_ptr->d_type == DT_DIR) {
-      if (f_name != DOUBLEDOTS && f_name != std::string(1, DOT)) {
+      if (f_name != path::DOUBLEDOTS && f_name != std::string(1, path::DOT)) {
         std::vector<std::string> child_dir_files = findFilesInDirUsingRgx(
-            join(dir, f_name), exp);
+            path::join(dir, f_name), exp);
         files.insert(end(files),
             begin(child_dir_files), end(child_dir_files));
       }
     } else if (dirent_ptr->d_type == DT_REG) {
       if (std::regex_match(f_name, exp)) {
-          files.push_back(join(dir, f_name));
+          files.push_back(path::join(dir, f_name));
       }
     }
   }
@@ -385,13 +419,13 @@ inline std::vector<std::string> findFilesInDir(
  * @param destPath path to copy directory
  */
 inline void copyFile(const std::string& srcPath, const std::string& destPath) {
-  if (!isRegularFile(srcPath)) {
+  if (!path::isRegularFile(srcPath)) {
     throw IOException(EINVAL);
   }
 
   std::string newFilename = destPath;
-  if (isDirectory(destPath)) {
-    newFilename = destPath + "/" + filename(srcPath);
+  if (path::isDirectory(destPath)) {
+    newFilename = destPath + "/" + path::filename(srcPath);
   }
 
   std::ifstream src(srcPath, std::ios::binary);
@@ -401,40 +435,7 @@ inline void copyFile(const std::string& srcPath, const std::string& destPath) {
   dest.close();
 }
 
-/**
- * @brief Return True if 2 paths point to the same dir/file
- *
- * @param path1 first path
- * @param path2 second path
- * @return True if 2 paths point to the same dir/file
- */
-inline bool comparePath(const std::string& path1, const std::string& path2) {
-  if (!exists(path1) || !exists(path2)) {
-    throw IOException(EINVAL);
-  }
-
-  std::string absolutePath1{realpath(path1.c_str(), nullptr)};
-  std::string absolutePath2{realpath(path2.c_str(), nullptr)};
-  return absolutePath1 == absolutePath2;
-}
-
-/**
- * @brief Return the absolute path of given path
- *
- * @param path target path
- * @return absolute path of target path
- */
-inline std::string getAbsolutePath(const std::string& path) {
-  if (!exists(path)) {
-    throw IOException(EINVAL);
-  }
-
-  std::string absolutePath{realpath(path.c_str(), nullptr)};
-  return absolutePath;
-}
-
-}  // namespace filesystem
-}  // namespace util
+}  // namespace os
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_UTIL_FILESYSTEM_HPP_
+#endif  // INCLUDE_SENTINEL_UTIL_OS_HPP_

@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -37,12 +37,12 @@ namespace sentinel {
 class GitHarnessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name = util::filesystem::tempPath("GitHarnessTest-");
+    repo_name = os::tempPath("GitHarnessTest-");
     repo = std::make_shared<GitHarness>(repo_name);
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(repo_name);
+    os::removeDirectories(repo_name);
   }
 
   static void getStagedAndUnstagedFiles(
@@ -100,10 +100,10 @@ class GitHarnessTest : public ::testing::Test {
 // Action: create a new directory and git init
 // Expected Output: new directory created, containing .git folder
 TEST_F(GitHarnessTest, init_Normal) {
-  EXPECT_TRUE(util::filesystem::isDirectory(repo_name));
+  EXPECT_TRUE(os::path::isDirectory(repo_name));
 
   std::string git_dir = repo_name + "/.git";
-  EXPECT_TRUE(util::filesystem::isDirectory(git_dir));
+  EXPECT_TRUE(os::path::isDirectory(git_dir));
 }
 
 // Action: initiate a git repo twice
@@ -119,8 +119,8 @@ TEST_F(GitHarnessTest, init_DirAlreadyExist) {
 // Expected Output: folder created at within repo at correct location
 TEST_F(GitHarnessTest, addFolder_Normal) {
   repo->addFolder("temp");
-  EXPECT_TRUE(util::filesystem::isDirectory(
-    util::filesystem::join(repo_name, "temp")));
+  EXPECT_TRUE(os::path::isDirectory(
+    os::path::join(repo_name, "temp")));
 }
 
 // Action: call addFolder with a folder that already exist
@@ -146,7 +146,7 @@ TEST_F(GitHarnessTest, addFile_Normal) {
   repo->addFile(filename, content);
 
   filename = repo_name + "/" + filename;
-  EXPECT_TRUE(util::filesystem::isRegularFile(filename));
+  EXPECT_TRUE(os::path::isRegularFile(filename));
 
   std::ifstream created_file(filename.c_str());
   std::string inserted_content((std::istreambuf_iterator<char>(created_file)),
@@ -463,10 +463,10 @@ TEST_F(GitHarnessTest, checkoutBranch_Normal) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp.cpp")));
-  EXPECT_FALSE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp.cpp")));
+  EXPECT_FALSE(os::path::exists(
+    os::path::join(repo_name, "temp2.cpp")));
 
   git_reference_free(master_branch);
 }
@@ -513,14 +513,14 @@ TEST_F(GitHarnessTest, merge_Normal) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp1.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp2.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp3.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp1.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp3.cpp")));
 }
 
 TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
@@ -564,14 +564,14 @@ TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp1.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp2.cpp")));
-  EXPECT_TRUE(util::filesystem::exists(
-    util::filesystem::join(repo_name, "temp3.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp1.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(os::path::exists(
+    os::path::join(repo_name, "temp3.cpp")));
 }
 
 }  // namespace sentinel

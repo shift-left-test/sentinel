@@ -28,7 +28,7 @@
 #include <vector>
 #include "sentinel/Mutables.hpp"
 #include "sentinel/UniformMutableSelector.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -45,7 +45,7 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
     std::vector<Mutable> temp;
     for (int i = 0; i < mutables.size(); ++i) {
       Mutable m = mutables.get(i);
-      if (util::filesystem::comparePath(m.getPath(), line.getPath()) &&
+      if (os::path::comparePath(m.getPath(), line.getPath()) &&
           m.getFirst().line <= line.getLineNumber() &&
           m.getLast().line >= line.getLineNumber()) {
         temp.push_back(m);

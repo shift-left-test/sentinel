@@ -27,20 +27,20 @@
 #include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 namespace sentinel {
 
 class GitRepositoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name = util::filesystem::tempPath("GitRepositoryTest-");
+    repo_name = os::tempPath("GitRepositoryTest-");
     repo = std::make_shared<GitHarness>(repo_name);
   }
 
   void TearDown() override {
     if (!HasFailure()) {
-      util::filesystem::removeDirectories(repo_name);
+      os::removeDirectories(repo_name);
     }
   }
 

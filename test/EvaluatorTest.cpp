@@ -32,7 +32,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -41,26 +41,26 @@ namespace sentinel {
 class EvaluatorTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = util::filesystem::tempDirectory("fixture");
-    OUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    BASE = os::tempDirectory("fixture");
+    OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "OUT_DIR"));
 
-    ORI_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    ORI_DIR = os::tempDirectory(os::path::join(BASE,
         "ORI_DIR"));
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
 
-    MUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    MUT_DIR = os::tempDirectory(os::path::join(BASE,
         "MUT_DIR"));
     MAKE_RESULT_XML(MUT_DIR, TC1);
     MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
 
-    MUT_DIR_ALIVE = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    MUT_DIR_ALIVE = os::tempDirectory(os::path::join(BASE,
         "MUT_DIR_ALIVE"));
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
 
-    MUTABLEDB = util::filesystem::join(BASE, "mutables.db");
+    MUTABLEDB = os::path::join(BASE, "mutables.db");
 
     m = new Mutables(MUTABLEDB);
     Mutable mutable2("AOR", "input/sample1/sample1.cpp",
@@ -73,14 +73,14 @@ class EvaluatorTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(BASE);
+    os::removeDirectories(BASE);
     delete m;
   }
 
   void MAKE_RESULT_XML(const std::string& dirPath,
       const std::string& fileContent) {
-    std::string tmp = util::filesystem::tempFilenameWithSuffix(
-        util::filesystem::join(dirPath, "pre"), ".xml");
+    std::string tmp = os::tempFilenameWithSuffix(
+        os::path::join(dirPath, "pre"), ".xml");
     std::ofstream tmpfile;
     tmpfile.open(tmp.c_str());
     tmpfile << fileContent.c_str();
@@ -131,19 +131,19 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   testing::internal::CaptureStdout();
   Evaluator mEvaluator(MUTABLEDB, ORI_DIR, OUT_DIR, mLogger);
   std::string out1 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(util::string::contains(out1, "Load mutable DB: "));
-  EXPECT_TRUE(util::string::contains(out1, "Load Expected Result: "));
+  EXPECT_TRUE(string::contains(out1, "Load mutable DB: "));
+  EXPECT_TRUE(string::contains(out1, "Load Expected Result: "));
 
   testing::internal::CaptureStdout();
   auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR, 1);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(util::string::contains(out2, "Load mutable idx: 1"));
-  EXPECT_TRUE(util::string::contains(out2, "Load Actual Result: "));
-  EXPECT_TRUE(util::string::contains(out2, "killing TC: C2.TC2"));
-  EXPECT_TRUE(util::string::contains(out2, "Save MutationResult:"));
+  EXPECT_TRUE(string::contains(out2, "Load mutable idx: 1"));
+  EXPECT_TRUE(string::contains(out2, "Load Actual Result: "));
+  EXPECT_TRUE(string::contains(out2, "killing TC: C2.TC2"));
+  EXPECT_TRUE(string::contains(out2, "Save MutationResult:"));
   EXPECT_TRUE(result.getDetected());
 
-  MutationResult mr(util::filesystem::join(OUT_DIR, "1.MutationResult"));
+  MutationResult mr(os::path::join(OUT_DIR, "1.MutationResult"));
   EXPECT_TRUE(mr.compare(result));
 }
 
@@ -153,18 +153,18 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   testing::internal::CaptureStdout();
   Evaluator mEvaluator(MUTABLEDB, ORI_DIR, OUT_DIR, mLogger);
   std::string out1 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(util::string::contains(out1, "Load mutable DB: "));
-  EXPECT_TRUE(util::string::contains(out1, "Load Expected Result: "));
+  EXPECT_TRUE(string::contains(out1, "Load mutable DB: "));
+  EXPECT_TRUE(string::contains(out1, "Load Expected Result: "));
 
   testing::internal::CaptureStdout();
   auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR_ALIVE, 0);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(util::string::contains(out2, "Load mutable idx: 0"));
-  EXPECT_TRUE(util::string::contains(out2, "Load Actual Result: "));
-  EXPECT_TRUE(util::string::contains(out2, "Save MutationResult:"));
+  EXPECT_TRUE(string::contains(out2, "Load mutable idx: 0"));
+  EXPECT_TRUE(string::contains(out2, "Load Actual Result: "));
+  EXPECT_TRUE(string::contains(out2, "Save MutationResult:"));
   EXPECT_FALSE(result.getDetected());
 
-  MutationResult mr(util::filesystem::join(OUT_DIR, "0.MutationResult"));
+  MutationResult mr(os::path::join(OUT_DIR, "0.MutationResult"));
   EXPECT_TRUE(mr.compare(result));
 }
 

@@ -26,7 +26,7 @@
 #include <args/args.hxx>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
@@ -51,7 +51,7 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
   auto logger = sentinel::Logger::getLogger("Evaluator");
 
   sentinel::Evaluator evaluator(
-    sentinel::util::filesystem::join(input.Get(), "mutables.db"),
+    sentinel::os::path::join(input.Get(), "mutables.db"),
     expected.Get(),
     output.Get(),
     logger);

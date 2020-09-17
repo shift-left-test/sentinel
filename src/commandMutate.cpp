@@ -26,7 +26,7 @@
 #include <args/args.hxx>
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceTree.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 void mutateCommand(args::Subparser &parser) {  // NOLINT
@@ -46,7 +46,7 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
   parser.Parse();
 
   sentinel::Mutables mutables(
-    sentinel::util::filesystem::join(input.Get(), "mutables.db"));
+    sentinel::os::path::join(input.Get(), "mutables.db"));
   mutables.load();
   sentinel::Mutable m = mutables.get(index.Get());
   sentinel::SourceTree tree;

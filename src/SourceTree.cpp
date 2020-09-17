@@ -29,7 +29,7 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/SourceTree.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -37,27 +37,27 @@ namespace sentinel {
 void SourceTree::modify(const Mutable& info,
                         const std::string& gitRootPath,
                         const std::string& backupPath) {
-  if (!util::filesystem::exists(gitRootPath)) {
+  if (!os::path::exists(gitRootPath)) {
     throw IOException(EINVAL);
   }
 
   // backup
   std::string targetFilename = \
-      util::filesystem::getAbsolutePath(info.getPath());
+      os::path::getAbsolutePath(info.getPath());
   std::string gitRootAbsolutePath = \
-      util::filesystem::getAbsolutePath(gitRootPath);
-  if (!util::string::startsWith(util::filesystem::dirname(targetFilename),
+      os::path::getAbsolutePath(gitRootPath);
+  if (!string::startsWith(os::path::dirname(targetFilename),
                                 gitRootAbsolutePath)) {
     throw IOException(EINVAL, "Git root does not contain " + targetFilename);
   }
   std::string targetRelativePath = \
-      util::filesystem::dirname(targetFilename).substr(
+      os::path::dirname(targetFilename).substr(
           gitRootAbsolutePath.length());
   std::string newBackupPath = backupPath + "/" + targetRelativePath;
-  if (!util::filesystem::exists(newBackupPath)) {
-    util::filesystem::createDirectories(newBackupPath);
+  if (!os::path::exists(newBackupPath)) {
+    os::createDirectories(newBackupPath);
   }
-  util::filesystem::copyFile(targetFilename, newBackupPath);
+  os::copyFile(targetFilename, newBackupPath);
 
   // mutation
   std::ifstream originalFile(targetFilename);

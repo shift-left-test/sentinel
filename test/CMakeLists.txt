@@ -28,7 +28,7 @@ find_package(Clang REQUIRED)
 
 build_test_program(
   NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp FilesystemTest.cpp ExceptionTest.cpp
+  SRCS GitHarnessTest.cpp StringTest.cpp OsTest.cpp ExceptionTest.cpp
        GitRepositoryTest.cpp ResultTest.cpp MutablesTest.cpp
        LoggerTest.cpp UniformMutableGeneratorTest.cpp MutationResultsTest.cpp
        UniformMutableSelectorTest.cpp MutationFactoryTest.cpp EvaluatorTest.cpp

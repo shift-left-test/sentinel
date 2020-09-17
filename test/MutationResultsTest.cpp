@@ -30,7 +30,7 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -38,14 +38,14 @@ namespace sentinel {
 class MutationResultsTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = util::filesystem::tempDirectory("fixture");
-    OUT_DIR = util::filesystem::tempDirectory(util::filesystem::join(BASE,
+    BASE = os::tempDirectory("fixture");
+    OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "ORI_DIR"));
     TARGET_FILE = "input/sample1/sample1.cpp";
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(BASE);
+    os::removeDirectories(BASE);
   }
 
   std::string BASE;
@@ -64,7 +64,7 @@ TEST_F(MutationResultsTest, testAdd) {
 
   EXPECT_TRUE(MRs.get(0).compare(MR1));
   EXPECT_EQ(MRs.get(0).getMutator(), "AOR");
-  EXPECT_TRUE(util::filesystem::comparePath(MR1.getPath(), TARGET_FILE));
+  EXPECT_TRUE(os::path::comparePath(MR1.getPath(), TARGET_FILE));
   EXPECT_EQ(MR1.getLineNum(), 0);
 }
 
@@ -85,9 +85,9 @@ TEST_F(MutationResultsTest, testSaveAndLoad) {
   MRs.add(MR2);
 
   MRs.save();
-  EXPECT_TRUE(util::filesystem::exists(util::filesystem::join(
+  EXPECT_TRUE(os::path::exists(os::path::join(
       OUT_DIR, "0.MutationResult")));
-  EXPECT_TRUE(util::filesystem::exists(util::filesystem::join(
+  EXPECT_TRUE(os::path::exists(os::path::join(
       OUT_DIR, "1.MutationResult")));
 
   MutationResults MRs2(OUT_DIR);

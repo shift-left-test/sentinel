@@ -27,7 +27,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/Mutables.hpp"
 
 
@@ -48,12 +48,12 @@ class MutablesTest : public ::testing::Test {
   void SetUp() override {}
 
   void TearDown() override {
-    if (util::filesystem::exists(OUTPUT_PATH)) {
-      util::filesystem::removeFile(OUTPUT_PATH);
+    if (os::path::exists(OUTPUT_PATH)) {
+      os::removeFile(OUTPUT_PATH);
     }
 
-    if (util::filesystem::exists(NONEXISTED_DIR)) {
-      util::filesystem::removeDirectories(NONEXISTED_DIR);
+    if (os::path::exists(NONEXISTED_DIR)) {
+      os::removeDirectories(NONEXISTED_DIR);
     }
   }
 
@@ -98,7 +98,7 @@ TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
   m.add(mutable2);
   m.save();
 
-  EXPECT_TRUE(util::filesystem::exists(OUTPUT_PATH));
+  EXPECT_TRUE(os::path::exists(OUTPUT_PATH));
 
   std::ifstream inFile(OUTPUT_PATH);
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
@@ -137,7 +137,7 @@ TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
   m.add(mutable2);
   m.save();
 
-  EXPECT_TRUE(util::filesystem::exists(NONEXISTED_PATH));
+  EXPECT_TRUE(os::path::exists(NONEXISTED_PATH));
 
   std::ifstream inFile(NONEXISTED_PATH);
   EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);

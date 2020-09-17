@@ -53,7 +53,7 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   std::string path = mSrcMgr.getFilename(opStartLoc);
-  std::string func = util::astnode::getContainingFunctionQualifiedName(s, mCI);
+  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     for (const auto& mutatedToken : mArithmeticOperators) {
@@ -66,18 +66,18 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
 
       // modulo operator only takes integral operands.
       if (mutatedToken == "%" &&
-          (!util::astnode::getExprType(lhs)->isIntegralType(
+          (!astnode::getExprType(lhs)->isIntegralType(
                 mCI.getASTContext()) ||
-           !util::astnode::getExprType(rhs)->isIntegralType(
+           !astnode::getExprType(rhs)->isIntegralType(
                 mCI.getASTContext()))) {
         continue;
       }
 
       if ((mutatedToken == "*" || mutatedToken == "/") &&
-          (util::astnode::getExprType(lhs)->isPointerType() ||
-           util::astnode::getExprType(rhs)->isPointerType() ||
-           util::astnode::getExprType(lhs)->isArrayType() ||
-           util::astnode::getExprType(rhs)->isArrayType())) {
+          (astnode::getExprType(lhs)->isPointerType() ||
+           astnode::getExprType(rhs)->isPointerType() ||
+           astnode::getExprType(lhs)->isArrayType() ||
+           astnode::getExprType(rhs)->isArrayType())) {
         continue;
       }
 

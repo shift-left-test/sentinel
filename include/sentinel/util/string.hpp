@@ -35,7 +35,6 @@
 
 
 namespace sentinel {
-namespace util {
 namespace string {
 
 /**
@@ -265,7 +264,6 @@ inline std::string replaceAll(std::string target,
 }
 
 }  // namespace string
-}  // namespace util
 }  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

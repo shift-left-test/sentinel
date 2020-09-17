@@ -27,7 +27,7 @@
 #include <string>
 #include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -36,21 +36,21 @@ namespace sentinel {
 class ResultTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = util::filesystem::tempDirectory("fixture");
-    ORI_DIR = util::filesystem::tempDirectory(
-        util::filesystem::join(BASE, "ori_dir"));
+    BASE = os::tempDirectory("fixture");
+    ORI_DIR = os::tempDirectory(
+        os::path::join(BASE, "ori_dir"));
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
   }
 
   void TearDown() override {
-    util::filesystem::removeDirectories(BASE);
+    os::removeDirectories(BASE);
   }
 
   void MAKE_RESULT_XML(const std::string& dirPath,
       const std::string& fileContent) {
-    std::string tmp = util::filesystem::tempFilenameWithSuffix(
-        util::filesystem::join(dirPath, "pre"), ".xml");
+    std::string tmp = os::tempFilenameWithSuffix(
+        os::path::join(dirPath, "pre"), ".xml");
     std::ofstream tmpfile;
     tmpfile.open(tmp.c_str());
     tmpfile << fileContent.c_str();
@@ -100,8 +100,8 @@ class ResultTest : public ::testing::Test {
 };
 
 TEST_F(ResultTest, testResultWithAliveMutation) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
   Result ori(ORI_DIR);
@@ -110,8 +110,8 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
 }
 
 TEST_F(ResultTest, testResultWithKillMutation) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   Result ori(ORI_DIR);
@@ -120,8 +120,8 @@ TEST_F(ResultTest, testResultWithKillMutation) {
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
   MAKE_RESULT_XML(MUT_DIR, TC3);
@@ -131,8 +131,8 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
 }
 
 TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   MAKE_RESULT_XML(MUT_DIR, TC3);
@@ -142,8 +142,8 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
@@ -151,8 +151,8 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
@@ -161,38 +161,38 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
 }
 
 TEST_F(ResultTest, testResultWithEmptyMutationDir) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
   EXPECT_EQ(Result::kill(ori, mut), "C1.TC1, C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithWrongXMLFmt) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
-  MAKE_RESULT_XML(MUT_DIR, util::string::replaceAll(TC3, "</testsuites>", ""));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
+  MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
   EXPECT_THROW({
       try {
         Result mut(MUT_DIR);
       }
       catch (const XMLException& e){
-        EXPECT_TRUE(util::string::contains(e.what(), "XML_ERROR_PARSING"));
+        EXPECT_TRUE(string::contains(e.what(), "XML_ERROR_PARSING"));
         throw;
       }
   }, XMLException);
 }
 
 TEST_F(ResultTest, testResultWithWrongResultFmt) {
-  std::string MUT_DIR = util::filesystem::tempDirectory(
-      util::filesystem::join(BASE, "mut_dir"));
-  MAKE_RESULT_XML(MUT_DIR, util::string::replaceAll(TC3, "testsuites", "tag"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
+  MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "testsuites", "tag"));
   EXPECT_THROW({
       try {
         Result mut(MUT_DIR);
       }
       catch (const XMLException& e){
-        EXPECT_TRUE(util::string::contains(e.what(),
+        EXPECT_TRUE(string::contains(e.what(),
             "This file doesn't follow googletest result format"));
         throw;
       }

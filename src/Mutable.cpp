@@ -25,7 +25,7 @@
 #include <string>
 #include <utility>
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/filesystem.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -37,7 +37,7 @@ Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& token)
     : mOperator(mutationOperator), mFirst(first),
       mLast(last), mToken(token),
-      mPath(util::filesystem::getAbsolutePath(path)) {}
+      mPath(os::path::getAbsolutePath(path)) {}
 
 Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
@@ -45,7 +45,7 @@ Mutable::Mutable(const std::string& mutationOperator,
                  int firstLine, int firstColumn,
                  int lastLine, int lastColumn,
                  const std::string& token)
-    : mPath(util::filesystem::getAbsolutePath(path)), mToken(token),
+    : mPath(os::path::getAbsolutePath(path)), mToken(token),
       mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
       mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
   size_t pos = qualifiedFuncName.find_last_of("::");
@@ -60,7 +60,7 @@ Mutable::Mutable(const std::string& mutationOperator,
 
 bool Mutable::compare(const Mutable& other) const {
   return mOperator == other.getOperator() &&
-         util::filesystem::comparePath(mPath, other.getPath()) &&
+         os::path::comparePath(mPath, other.getPath()) &&
          mFirst.line == other.getFirst().line &&
          mFirst.column == other.getFirst().column &&
          mLast.line == other.getLast().line &&
