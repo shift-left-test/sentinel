@@ -110,7 +110,6 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
                     59, 19, 59, 20, "((i)++)"));
   truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
                     59, 19, 59, 20, "((i)--)"));
-
   ASSERT_EQ(mutables.size(), truth.size());
 
   for (const auto& e1 : mutables) {

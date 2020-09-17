@@ -54,7 +54,25 @@ std::string Mutables::getPath() const {
   return mPath;
 }
 
-int Mutables::size() const { return mData.size(); }
+int Mutables::size() const {
+  return mData.size();
+}
+
+std::vector<Mutable>::const_iterator Mutables::begin() const {
+  return mData.begin();
+}
+
+std::vector<Mutable>::const_iterator Mutables::end() const {
+  return mData.end();
+}
+
+std::vector<Mutable>::const_iterator Mutables::cbegin() const {
+  return mData.cbegin();
+}
+
+std::vector<Mutable>::const_iterator Mutables::cend() const {
+  return mData.cend();
+}
 
 void Mutables::load() {
   if (!os::path::exists(mPath) ||

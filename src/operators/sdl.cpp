@@ -46,7 +46,7 @@ bool SDL::canMutate(clang::Stmt* s) {
 
   // Apply SDL to body of if, for, do, while if it is a single statement
   // (instead of compound statement)
-  const clang::Stmt* parent = astnode::getParentStmt(s, mCI);
+  const clang::Stmt* parent = astnode::getParentStmt(s, mContext);
   if (parent == nullptr) {
     return false;
   }
@@ -83,7 +83,7 @@ bool SDL::canMutate(clang::Stmt* s) {
   // The last statement of a Statement Expression should not be deleted.
   // Because it is the value of the expression.
   auto cs = clang::dyn_cast<clang::CompoundStmt>(parent);
-  const clang::Stmt *parentOfParent = astnode::getParentStmt(parent, mCI);
+  const clang::Stmt *parentOfParent = astnode::getParentStmt(parent, mContext);
   if (parentOfParent == nullptr || !clang::isa<clang::StmtExpr>(parent)) {
     return true;
   }
@@ -101,17 +101,19 @@ bool SDL::canMutate(clang::Stmt* s) {
 void SDL::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtStartLoc = s->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
-  std::string path = mSrcMgr.getFilename(stmtStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
+      s->getEndLoc(), 0, mSrcMgr, mContext.getLangOpts());
 
   if (!stmtStartLoc.isMacroID() && !stmtEndLoc.isMacroID()) {
-    mutables->add(Mutable("SDL", path, func,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          ""));
+    std::string path = mSrcMgr.getFilename(stmtStartLoc);
+    std::string func = astnode::getContainingFunctionQualifiedName(s,
+      mContext);
+
+    mutables->add(Mutable(mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      ""));
   }
 }
 

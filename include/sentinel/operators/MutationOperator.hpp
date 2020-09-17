@@ -26,6 +26,7 @@
 #define INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
 
 #include <string>
+#include "clang/AST/ASTContext.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -42,11 +43,16 @@ class MutationOperator {
    * @brief Default constructor
    *
    * @param name of mutation operator
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  MutationOperator(const std::string& name, const clang::CompilerInstance& CI)
-      : name(name), mCI(CI), mSrcMgr(CI.getSourceManager()) {
+  MutationOperator(const std::string& name, clang::ASTContext& Context)
+      : mName(name), mContext(Context), mSrcMgr(Context.getSourceManager()) {
   }
+
+  /**
+   * @brief Default destructor 
+   */
+  virtual ~MutationOperator() {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -70,12 +76,12 @@ class MutationOperator {
   /**
    * @brief name of mutation operator
    */
-  const std::string& name;
+  std::string mName;
 
   /**
    * @brief Clang compiler management object
    */
-  const clang::CompilerInstance& mCI;
+  clang::ASTContext& mContext;
 
   /**
    * @brief Object handles loading and caching of source files into memory

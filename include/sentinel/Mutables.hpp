@@ -79,18 +79,28 @@ class Mutables : public Persistence {
    *
    * @return iterator to the first Mutable.
    */
-  inline std::vector<Mutable>::const_iterator begin() const {
-    return mData.cbegin();
-  }
+  std::vector<Mutable>::const_iterator begin() const;
 
   /**
-   * @brief Return the iterator to the last Mutable in Mutables.
+   * @brief Return the iterator to the end of Mutables.
    *
    * @return iterator to the last Mutable.
    */
-  inline std::vector<Mutable>::const_iterator end() const {
-    return mData.cend();
-  }
+  std::vector<Mutable>::const_iterator end() const;
+
+  /**
+   * @brief Return the const iterator to the first Mutable in Mutables.
+   *
+   * @return iterator to the first Mutable.
+   */
+  std::vector<Mutable>::const_iterator cbegin() const;
+
+  /**
+   * @brief Return the const iterator to the end of Mutables.
+   *
+   * @return iterator to the last Mutable.
+   */
+  std::vector<Mutable>::const_iterator cend() const;
 
   /**
    * @brief Read a string literal from binary file.

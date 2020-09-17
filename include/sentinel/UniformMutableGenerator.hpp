@@ -82,15 +82,20 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      */
-    SentinelASTVisitor(const clang::CompilerInstance& CI,
+    SentinelASTVisitor(clang::ASTContext &Context,
                        Mutables* mutables,
                        const std::vector<int>& targetLines);
+
+    /**
+     * @brief Default destructor
+     */
+    ~SentinelASTVisitor();
 
     bool VisitStmt(clang::Stmt *s);
 
    private:
-    const clang::CompilerInstance& mCI;
-    clang::SourceManager &mSrcMgr;
+    clang::ASTContext& mContext;
+    clang::SourceManager& mSrcMgr;
     std::vector<MutationOperator*> mMutationOperators;
     Mutables* mMutables;
     const std::vector<int>& mTargetLines;
@@ -109,7 +114,7 @@ class UniformMutableGenerator : public MutableGenerator {
     SentinelASTConsumer(const clang::CompilerInstance& CI,
                         Mutables* mutables,
                         const std::vector<int>& targetLines)
-        : mVisitor(CI, mutables, targetLines) {
+        : mMutables(mutables), mTargetLines(targetLines) {
     }
 
     /**
@@ -119,11 +124,14 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param Context Clang object holding long-lived AST nodes.
      */
     void HandleTranslationUnit(clang::ASTContext &Context) override {
+      SentinelASTVisitor mVisitor(Context, mMutables, mTargetLines);
       mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
     }
 
    private:
-    SentinelASTVisitor mVisitor;
+    // SentinelASTVisitor mVisitor;
+    Mutables* mMutables;
+    const std::vector<int>& mTargetLines;
   };
 
   /**

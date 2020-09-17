@@ -50,18 +50,20 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getMainFileID(),
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
-  std::string path = mSrcMgr.getFilename(opStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
+    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string func = astnode::getContainingFunctionQualifiedName(s,
+      mContext);
+
     for (const auto& mutatedToken : mRelationalOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable("ROR", path, func,
-                              mSrcMgr.getExpansionLineNumber(opStartLoc),
-                              mSrcMgr.getExpansionColumnNumber(opStartLoc),
-                              mSrcMgr.getExpansionLineNumber(opEndLoc),
-                              mSrcMgr.getExpansionColumnNumber(opEndLoc),
-                              mutatedToken));
+        mutables->add(Mutable(mName, path, func,
+          mSrcMgr.getExpansionLineNumber(opStartLoc),
+          mSrcMgr.getExpansionColumnNumber(opStartLoc),
+          mSrcMgr.getExpansionLineNumber(opEndLoc),
+          mSrcMgr.getExpansionColumnNumber(opEndLoc),
+          mutatedToken));
       }
     }
   }
@@ -69,23 +71,27 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
   // create mutables from the whole expression to true(1) and false(0)
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      bo->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
+      bo->getEndLoc(), 0, mSrcMgr, mContext.getLangOpts());
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
     return;
   }
 
-  mutables->add(Mutable("ROR", path, func,
-                        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                        "1"));
-  mutables->add(Mutable("ROR", path, func,
-                        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                        "0"));
+  std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string func = astnode::getContainingFunctionQualifiedName(s,
+    mContext);
+
+  mutables->add(Mutable(mName, path, func,
+    mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+    mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+    mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+    mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+    "1"));
+  mutables->add(Mutable(mName, path, func,
+    mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+    mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+    mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+    mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+    "0"));
 }
 
 }  // namespace sentinel

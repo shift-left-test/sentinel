@@ -39,10 +39,9 @@ class AOR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  explicit AOR(const clang::CompilerInstance& CI) :
-      MutationOperator("AOR", CI) {}
+  explicit AOR(clang::ASTContext& Context) : MutationOperator("AOR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

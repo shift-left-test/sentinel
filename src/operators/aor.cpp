@@ -22,7 +22,6 @@
   SOFTWARE.
 */
 
-#include <iostream>
 #include <string>
 #include "clang/AST/ASTTypeTraits.h"
 #include "clang/AST/Expr.h"
@@ -52,10 +51,12 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getMainFileID(),
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
-  std::string path = mSrcMgr.getFilename(opStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
+    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string func = astnode::getContainingFunctionQualifiedName(s,
+      mContext);
+
     for (const auto& mutatedToken : mArithmeticOperators) {
       if (mutatedToken == token) {
         continue;
@@ -66,10 +67,8 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
 
       // modulo operator only takes integral operands.
       if (mutatedToken == "%" &&
-          (!astnode::getExprType(lhs)->isIntegralType(
-                mCI.getASTContext()) ||
-           !astnode::getExprType(rhs)->isIntegralType(
-                mCI.getASTContext()))) {
+          (!astnode::getExprType(lhs)->isIntegralType(mContext) ||
+           !astnode::getExprType(rhs)->isIntegralType(mContext))) {
         continue;
       }
 
@@ -81,12 +80,12 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
         continue;
       }
 
-      mutables->add(Mutable("AOR", path, func,
-                            mSrcMgr.getExpansionLineNumber(opStartLoc),
-                            mSrcMgr.getExpansionColumnNumber(opStartLoc),
-                            mSrcMgr.getExpansionLineNumber(opEndLoc),
-                            mSrcMgr.getExpansionColumnNumber(opEndLoc),
-                            mutatedToken));
+      mutables->add(Mutable(mName, path, func,
+        mSrcMgr.getExpansionLineNumber(opStartLoc),
+        mSrcMgr.getExpansionColumnNumber(opStartLoc),
+        mSrcMgr.getExpansionLineNumber(opEndLoc),
+        mSrcMgr.getExpansionColumnNumber(opEndLoc),
+        mutatedToken));
     }
   }
 }

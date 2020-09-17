@@ -81,15 +81,15 @@ inline clang::SourceLocation getEndExpansionLocation(
  * @return code string representing s
  */
 inline std::string convertStmtToString(
-    clang::Stmt *s, const clang::CompilerInstance &CI) {
+    clang::Stmt *s, clang::ASTContext &Context) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, CI.getSourceManager(), CI.getLangOpts());
+      s->getEndLoc(), 0, Context.getSourceManager(), Context.getLangOpts());
   // clang::SourceLocation endLoc = s->getEndLoc();
   std::string ret = "";
 
   while (walkLoc != endLoc) {
-    ret += *CI.getSourceManager().getCharacterData(walkLoc);
+    ret += *Context.getSourceManager().getCharacterData(walkLoc);
     walkLoc = walkLoc.getLocWithOffset(1);
   }
 
@@ -104,8 +104,8 @@ inline std::string convertStmtToString(
  * @return parent ast node of s
  */
 inline const clang::Stmt* getParentStmt(const clang::Stmt* s,
-                                        const clang::CompilerInstance& CI) {
-  const auto parent = CI.getASTContext().getParents(*s);
+                                        clang::ASTContext& Context) {
+  const auto parent = Context.getParents(*s);
   if (parent.empty())
     return nullptr;
 
@@ -156,17 +156,17 @@ inline bool isPointerDereferenceExpr(clang::Stmt *s) {
 }
 
 inline std::string getContainingFunctionQualifiedName(
-    clang::Stmt* s, const clang::CompilerInstance& CI) {
+    clang::Stmt* s, clang::ASTContext& Context) {
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
-  auto parents = CI.getASTContext().getParents(*s);
+  auto parents = Context.getParents(*s);
   while (true) {
     if (stmt != nullptr) {
-      parents = CI.getASTContext().getParents(*stmt);
+      parents = Context.getParents(*stmt);
     }
 
     if (decl != nullptr) {
-      parents = CI.getASTContext().getParents(*decl);
+      parents = Context.getParents(*decl);
     }
 
     if (parents.empty()) {

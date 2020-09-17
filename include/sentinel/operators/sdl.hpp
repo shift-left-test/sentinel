@@ -37,10 +37,9 @@ class SDL : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  explicit SDL(const clang::CompilerInstance& CI) :
-      MutationOperator("SDL", CI) {}
+  explicit SDL(clang::ASTContext& Context) : MutationOperator("SDL", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

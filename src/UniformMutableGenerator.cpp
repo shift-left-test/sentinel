@@ -23,7 +23,6 @@
 */
 
 #include <algorithm>
-#include <iostream>
 #include <map>
 #include "clang/Lex/Lexer.h"
 #include "clang/Tooling/CompilationDatabase.h"
@@ -76,17 +75,25 @@ Mutables UniformMutableGenerator::populate(const std::string& outPath,
 }
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    const clang::CompilerInstance& CI, Mutables* mutables,
+    clang::ASTContext &Context, Mutables* mutables,
     const std::vector<int>& targetLines)
-    : mCI(CI), mSrcMgr(CI.getSourceManager()),
+    : mContext(Context), mSrcMgr(Context.getSourceManager()),
       mMutables(mutables), mTargetLines(targetLines) {
-  mMutationOperators.push_back(new AOR(mCI));
-  mMutationOperators.push_back(new BOR(mCI));
-  mMutationOperators.push_back(new ROR(mCI));
-  mMutationOperators.push_back(new SOR(mCI));
-  mMutationOperators.push_back(new LCR(mCI));
-  mMutationOperators.push_back(new SDL(mCI));
-  mMutationOperators.push_back(new UOI(mCI));
+  mMutationOperators.push_back(new AOR(Context));
+  mMutationOperators.push_back(new BOR(Context));
+  mMutationOperators.push_back(new ROR(Context));
+  mMutationOperators.push_back(new SOR(Context));
+  mMutationOperators.push_back(new LCR(Context));
+  mMutationOperators.push_back(new SDL(Context));
+  mMutationOperators.push_back(new UOI(Context));
+}
+
+UniformMutableGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
+  for (auto op : mMutationOperators) {
+    delete op;
+  }
+
+  mMutationOperators.clear();
 }
 
 bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
@@ -95,19 +102,21 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   // Check if this Stmt node represents code on target lines.
   if (startLoc.isMacroID()) {
-    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(startLoc);
+    clang::CharSourceRange range = mContext.getSourceManager()
+      .getImmediateExpansionRange(startLoc);
     startLoc = range.getBegin();
   }
 
   if (endLoc.isMacroID()) {
-    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(endLoc);
+    clang::CharSourceRange range = mContext.getSourceManager()
+      .getImmediateExpansionRange(endLoc);
     endLoc = clang::Lexer::getLocForEndOfToken(
-        range.getEnd(), 0, mSrcMgr, mCI.getLangOpts());
+        range.getEnd(), 0, mContext.getSourceManager(),
+        mContext.getLangOpts());
   }
 
   int startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   int endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
-
   bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
       [startLineNum, endLineNum](int lineNum)
       { return lineNum >= startLineNum && lineNum <= endLineNum; } );
@@ -124,12 +133,8 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 }
 
 void UniformMutableGenerator::GenerateMutantAction::ExecuteAction() {
-  // Insert code for pre-traversal preparation.
-
   // AST Traversal.
   clang::ASTFrontendAction::ExecuteAction();
-
-  // Insert code for post-traversal wrapup.
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory>

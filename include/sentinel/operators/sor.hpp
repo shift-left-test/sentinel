@@ -39,10 +39,9 @@ class SOR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  explicit SOR(const clang::CompilerInstance& CI) :
-      MutationOperator("SOR", CI) {}
+  explicit SOR(clang::ASTContext& Context) : MutationOperator("SOR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

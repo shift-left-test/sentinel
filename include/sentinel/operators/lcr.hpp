@@ -39,10 +39,9 @@ class LCR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  explicit LCR(const clang::CompilerInstance& CI) :
-      MutationOperator("LCR", CI) {}
+  explicit LCR(clang::ASTContext& Context) : MutationOperator("LCR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

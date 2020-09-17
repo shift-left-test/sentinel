@@ -37,10 +37,9 @@ class UOI : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param CI Clang compiler management object
+   * @param Context Clang ASTContext object
    */
-  explicit UOI(const clang::CompilerInstance& CI) :
-      MutationOperator("UOI", CI) {}
+  explicit UOI(clang::ASTContext& Context) : MutationOperator("UOI", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

@@ -48,7 +48,7 @@ bool UOI::canMutate(clang::Stmt* s) {
   }
 
   // UOI targets non-constant, arithmetic/boolean expression only.
-  return !e->getType().isConstant(mCI.getASTContext()) &&
+  return !e->getType().isConstant(mContext) &&
          ((astnode::getExprType(e)->isScalarType() &&
            !astnode::getExprType(e)->isPointerType()) ||
           (astnode::getExprType(e)->isBooleanType()));
@@ -58,39 +58,40 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   auto e = clang::dyn_cast<clang::Expr>(s);
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      e->getEndLoc(), 0, mSrcMgr, mCI.getLangOpts());
-  std::string path = mSrcMgr.getFilename(stmtStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
-  std::string stmtStr = astnode::convertStmtToString(e, mCI);
-
+      e->getEndLoc(), 0, mSrcMgr, mContext.getLangOpts());
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
     return;
   }
 
+  std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string func = astnode::getContainingFunctionQualifiedName(s,
+    mContext);
+  std::string stmtStr = astnode::convertStmtToString(e, mContext);
+
   if (astnode::getExprType(e)->isScalarType() &&
       !astnode::getExprType(e)->isPointerType()) {
-    mutables->add(Mutable("UOI", path, func,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          "((" + stmtStr + ")++)"));
+    mutables->add(Mutable(mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      "((" + stmtStr + ")++)"));
 
-    mutables->add(Mutable("UOI", path, func,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          "((" + stmtStr + ")--)"));
+    mutables->add(Mutable(mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      "((" + stmtStr + ")--)"));
   }
 
   if (astnode::getExprType(e)->isBooleanType()) {
-    mutables->add(Mutable("UOI", path, func,
-                          mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-                          mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                          mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-                          "(!(" + stmtStr + "))"));
+    mutables->add(Mutable(mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      "(!(" + stmtStr + "))"));
   }
 }
 

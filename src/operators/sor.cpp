@@ -50,18 +50,20 @@ void SOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getMainFileID(),
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
-  std::string path = mSrcMgr.getFilename(opStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s, mCI);
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
+    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string func = astnode::getContainingFunctionQualifiedName(s,
+      mContext);
+
     for (const auto& mutatedToken : mShiftOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable("SOR", path, func,
-                              mSrcMgr.getExpansionLineNumber(opStartLoc),
-                              mSrcMgr.getExpansionColumnNumber(opStartLoc),
-                              mSrcMgr.getExpansionLineNumber(opEndLoc),
-                              mSrcMgr.getExpansionColumnNumber(opEndLoc),
-                              mutatedToken));
+        mutables->add(Mutable(mName, path, func,
+          mSrcMgr.getExpansionLineNumber(opStartLoc),
+          mSrcMgr.getExpansionColumnNumber(opStartLoc),
+          mSrcMgr.getExpansionLineNumber(opEndLoc),
+          mSrcMgr.getExpansionColumnNumber(opEndLoc),
+          mutatedToken));
       }
     }
   }
