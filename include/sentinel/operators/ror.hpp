@@ -41,7 +41,7 @@ class ROR : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit ROR(clang::ASTContext& Context) : MutationOperator("ROR", Context) {}
+  explicit ROR(clang::ASTContext* Context) : MutationOperator("ROR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

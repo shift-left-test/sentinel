@@ -56,15 +56,11 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
       continue;
     }
 
-    // std::cout << line.getLineNumber() << " has " << temp.size() << std::endl;
-
-    std::uniform_int_distribution<int> idx(0, temp.size());
-    temp_storage.push_back(temp[0]);
-    // temp_storage.push_back(temp[idx(mt)]);
+    std::uniform_int_distribution<int> idx(0, temp.size()-1);
+    temp_storage.push_back(temp[idx(mt)]);
   }
 
   if (maxMutables >= temp_storage.size()) {
-    // std::cout << "Not exceeded" << std::endl;
     for (const auto& e : temp_storage) {
       ret.add(e);
     }

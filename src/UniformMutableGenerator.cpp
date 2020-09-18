@@ -45,7 +45,6 @@ Mutables UniformMutableGenerator::populate(const std::string& outPath,
                                                              errorMsg);
 
   if (compileDb == nullptr) {
-    // TODO(Loc Phan): make a new exception class
     throw IOException(EINVAL, errorMsg);
   }
 
@@ -68,16 +67,13 @@ Mutables UniformMutableGenerator::populate(const std::string& outPath,
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
   }
 
-  // clang::tooling::ClangTool tool(*compileDb, file);
-  // tool.run(myNewFrontendActionFactory(&mutables).get());
-
   return mutables;
 }
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    clang::ASTContext &Context, Mutables* mutables,
+    clang::ASTContext* Context, Mutables* mutables,
     const std::vector<int>& targetLines) :
-    mContext(Context), mSrcMgr(Context.getSourceManager()),
+    mContext(Context), mSrcMgr(Context->getSourceManager()),
     mMutables(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
@@ -102,17 +98,17 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   // Check if this Stmt node represents code on target lines.
   if (startLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext.getSourceManager()
+    clang::CharSourceRange range = mContext->getSourceManager()
         .getImmediateExpansionRange(startLoc);
     startLoc = range.getBegin();
   }
 
   if (endLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext.getSourceManager()
+    clang::CharSourceRange range = mContext->getSourceManager()
         .getImmediateExpansionRange(endLoc);
     endLoc = clang::Lexer::getLocForEndOfToken(
-        range.getEnd(), 0, mContext.getSourceManager(),
-        mContext.getLangOpts());
+        range.getEnd(), 0, mContext->getSourceManager(),
+        mContext->getLangOpts());
   }
 
   int startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);

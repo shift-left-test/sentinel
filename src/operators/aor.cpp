@@ -22,10 +22,10 @@
   SOFTWARE.
 */
 
+#include <clang/AST/ASTTypeTraits.h>
+#include <clang/AST/Expr.h>
+#include <clang/Lex/Lexer.h>
 #include <string>
-#include "clang/AST/ASTTypeTraits.h"
-#include "clang/AST/Expr.h"
-#include "clang/Lex/Lexer.h"
 #include "sentinel/operators/aor.hpp"
 #include "sentinel/util/astnode.hpp"
 
@@ -44,7 +44,6 @@ bool AOR::canMutate(clang::Stmt* s) {
 void AOR::populate(clang::Stmt* s, Mutables* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
-  // create mutables from the operator
   std::string token{bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
   clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(
@@ -65,13 +64,22 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       clang::Expr *lhs = bo->getLHS()->IgnoreImpCasts();
       clang::Expr *rhs = bo->getRHS()->IgnoreImpCasts();
 
-      // modulo operator only takes integral operands.
-      if (mutatedToken == "%" &&
-          (!astnode::getExprType(lhs)->isIntegralType(mContext) ||
-           !astnode::getExprType(rhs)->isIntegralType(mContext))) {
+      // 2 pointers can only minus each other, so no mutables are generated.
+      if ((astnode::getExprType(lhs)->isPointerType() ||
+           astnode::getExprType(lhs)->isArrayType()) &&
+          (astnode::getExprType(rhs)->isPointerType() ||
+           astnode::getExprType(rhs)->isArrayType())) {
         continue;
       }
 
+      // modulo operator only takes integral operands.
+      if (mutatedToken == "%" &&
+          (!astnode::getExprType(lhs)->isIntegralType(*mContext) ||
+           !astnode::getExprType(rhs)->isIntegralType(*mContext))) {
+        continue;
+      }
+
+      // multiplicative operator only takes non-pointer operands.
       if ((mutatedToken == "*" || mutatedToken == "/") &&
           (astnode::getExprType(lhs)->isPointerType() ||
            astnode::getExprType(rhs)->isPointerType() ||

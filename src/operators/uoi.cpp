@@ -22,9 +22,9 @@
   SOFTWARE.
 */
 
+#include <clang/AST/Expr.h>
+#include <clang/Lex/Lexer.h>
 #include <string>
-#include "clang/AST/Expr.h"
-#include "clang/Lex/Lexer.h"
 #include "sentinel/operators/uoi.hpp"
 #include "sentinel/util/astnode.hpp"
 
@@ -48,17 +48,44 @@ bool UOI::canMutate(clang::Stmt* s) {
   }
 
   // UOI targets non-constant, arithmetic/boolean expression only.
-  return !e->getType().isConstant(mContext) &&
-         ((astnode::getExprType(e)->isScalarType() &&
-           !astnode::getExprType(e)->isPointerType()) ||
-          (astnode::getExprType(e)->isBooleanType()));
+  if (e->getType().isConstant(*mContext) ||
+      (!astnode::getExprType(e)->isArithmeticType() &&
+       !astnode::getExprType(e)->isBooleanType())) {
+    return false;
+  }
+
+  // UOI should not be applied to variable reference expression that is
+  // left hand side of assignment expression, or
+  // operand of address-of operator (&).
+  const clang::Stmt* parent = astnode::getParentStmt(s, mContext);
+  while (parent != nullptr) {
+    if (auto bo = clang::dyn_cast<clang::BinaryOperator>(parent)) {
+      if (bo->isAssignmentOp()) {
+        if (bo->getLHS()->IgnoreParens() == s) {
+          return false;
+        }
+      }
+    }
+
+    if (auto uo = clang::dyn_cast<clang::UnaryOperator>(parent)) {
+      if (uo->getOpcode() == clang::UO_AddrOf) {
+        if (uo->getSubExpr()->IgnoreParens() == s) {
+          return false;
+        }
+      }
+    }
+
+    parent = astnode::getParentStmt(parent, mContext);
+  }
+
+  return true;
 }
 
 void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   auto e = clang::dyn_cast<clang::Expr>(s);
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      e->getEndLoc(), 0, mSrcMgr, mContext.getLangOpts());
+      e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
     return;
   }
@@ -68,8 +95,8 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
     mContext);
   std::string stmtStr = astnode::convertStmtToString(e, mContext);
 
-  if (astnode::getExprType(e)->isScalarType() &&
-      !astnode::getExprType(e)->isPointerType()) {
+  if (astnode::getExprType(e)->isArithmeticType() &&
+      !astnode::getExprType(e)->isBooleanType()) {
     mutables->add(Mutable(mName, path, func,
       mSrcMgr.getExpansionLineNumber(stmtStartLoc),
       mSrcMgr.getExpansionColumnNumber(stmtStartLoc),

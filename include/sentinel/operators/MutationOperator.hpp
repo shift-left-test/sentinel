@@ -25,11 +25,11 @@
 #ifndef INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
 #define INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
 
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Stmt.h>
+#include <clang/Basic/SourceManager.h>
+#include <clang/Frontend/CompilerInstance.h>
 #include <string>
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Stmt.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/CompilerInstance.h"
 #include "sentinel/Mutables.hpp"
 
 namespace sentinel {
@@ -45,8 +45,8 @@ class MutationOperator {
    * @param name of mutation operator
    * @param Context Clang ASTContext object
    */
-  MutationOperator(const std::string& name, clang::ASTContext& Context)
-      : mName(name), mContext(Context), mSrcMgr(Context.getSourceManager()) {
+  MutationOperator(const std::string& name, clang::ASTContext* Context) :
+      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {
   }
 
   /**
@@ -81,7 +81,7 @@ class MutationOperator {
   /**
    * @brief Clang compiler management object
    */
-  clang::ASTContext& mContext;
+  clang::ASTContext* mContext;
 
   /**
    * @brief Object handles loading and caching of source files into memory

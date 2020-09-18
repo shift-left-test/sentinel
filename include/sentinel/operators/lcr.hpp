@@ -41,7 +41,7 @@ class LCR : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit LCR(clang::ASTContext& Context) : MutationOperator("LCR", Context) {}
+  explicit LCR(clang::ASTContext* Context) : MutationOperator("LCR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

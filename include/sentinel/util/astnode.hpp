@@ -25,12 +25,12 @@
 #ifndef INCLUDE_SENTINEL_UTIL_ASTNODE_HPP_
 #define INCLUDE_SENTINEL_UTIL_ASTNODE_HPP_
 
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Stmt.h>
+#include <clang/AST/Type.h>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Lex/Lexer.h>
 #include <string>
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/Type.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Lex/Lexer.h"
 
 
 namespace sentinel {
@@ -81,15 +81,14 @@ inline clang::SourceLocation getEndExpansionLocation(
  * @return code string representing s
  */
 inline std::string convertStmtToString(
-    clang::Stmt *s, clang::ASTContext &Context) {
+    clang::Stmt* s, clang::ASTContext* Context) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, Context.getSourceManager(), Context.getLangOpts());
-  // clang::SourceLocation endLoc = s->getEndLoc();
+      s->getEndLoc(), 0, Context->getSourceManager(), Context->getLangOpts());
   std::string ret = "";
 
   while (walkLoc != endLoc) {
-    ret += *Context.getSourceManager().getCharacterData(walkLoc);
+    ret += *Context->getSourceManager().getCharacterData(walkLoc);
     walkLoc = walkLoc.getLocWithOffset(1);
   }
 
@@ -104,8 +103,8 @@ inline std::string convertStmtToString(
  * @return parent ast node of s
  */
 inline const clang::Stmt* getParentStmt(const clang::Stmt* s,
-                                        clang::ASTContext& Context) {
-  const auto parent = Context.getParents(*s);
+                                        clang::ASTContext* Context) {
+  const auto parent = Context->getParents(*s);
   if (parent.empty())
     return nullptr;
 
@@ -132,7 +131,7 @@ inline const clang::Type* getExprType(clang::Expr* e) {
  * @param s target AST node
  * @return True/False
  */
-inline bool isDeclRefExpr(clang::Stmt *s) {
+inline bool isDeclRefExpr(clang::Stmt* s) {
   if (auto dre = clang::dyn_cast<clang::DeclRefExpr>(s)) {
     // An Enum value is not a declaration reference
     return !clang::isa<clang::EnumConstantDecl>(dre->getDecl());
@@ -156,17 +155,17 @@ inline bool isPointerDereferenceExpr(clang::Stmt *s) {
 }
 
 inline std::string getContainingFunctionQualifiedName(
-    clang::Stmt* s, clang::ASTContext& Context) {
+    clang::Stmt* s, clang::ASTContext* Context) {
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
-  auto parents = Context.getParents(*s);
+  auto parents = Context->getParents(*s);
   while (true) {
     if (stmt != nullptr) {
-      parents = Context.getParents(*stmt);
+      parents = Context->getParents(*stmt);
     }
 
     if (decl != nullptr) {
-      parents = Context.getParents(*decl);
+      parents = Context->getParents(*decl);
     }
 
     if (parents.empty()) {

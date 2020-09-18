@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Loc Duy Phan
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -63,3 +63,25 @@ int sumOfEvenPositiveNumber(int from, int to) {
   return ret;
 }
 
+int getIntArraySize(const int* start, const int* end) {
+  return (end - start) / sizeof(int);
+}
+
+#define VAR_I i
+int foo(int i, float f) {
+  int* ptr = &i;
+  bool b = i > 0;
+  if (b) {
+    return *(ptr + int(VAR_I + f));  // NOLINT
+  }
+
+  return 0;
+}
+
+int sdlBlockedCases() {
+  for (;;) break;  // NOLINT
+  do {} while (true);
+  while (true) {}
+
+  return ({3;});
+}

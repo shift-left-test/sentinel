@@ -30,14 +30,24 @@
 
 namespace sentinel {
 
-TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
+TEST(UniformMutableGeneratorTest, testAllMutationOperatorsSuccess) {
   SourceLines sourceLines;
   std::string targetFile = "input/sample1/sample1.cpp";
   sourceLines.push_back(SourceLine(targetFile, 58));
   sourceLines.push_back(SourceLine(targetFile, 59));
+  sourceLines.push_back(SourceLine(targetFile, 67));
+  sourceLines.push_back(SourceLine(targetFile, 72));
+  sourceLines.push_back(SourceLine(targetFile, 74));
+  sourceLines.push_back(SourceLine(targetFile, 75));
+  sourceLines.push_back(SourceLine(targetFile, 82));
+  sourceLines.push_back(SourceLine(targetFile, 83));
+  sourceLines.push_back(SourceLine(targetFile, 84));
+  sourceLines.push_back(SourceLine(targetFile, 86));
 
   UniformMutableGenerator generator{".."};
+  std::cout << "poppulating\n";
   Mutables mutables = generator.populate("mutables.db", sourceLines);
+  std::cout << "poppulated\n";
 
   Mutables truth("truth mutables");
   truth.add(Mutable("LCR", targetFile, "sumOfEvenPositiveNumber",
@@ -90,10 +100,6 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
                     58, 32, 58, 33, "((i)--)"));
   truth.add(Mutable("SDL", targetFile, "sumOfEvenPositiveNumber",
                     59, 7, 59, 20, ""));
-  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
-                    59, 7, 59, 10, "((ret)++)"));
-  truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
-                    59, 7, 59, 10, "((ret)--)"));
   truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
                     59, 17, 59, 18, "%"));
   truth.add(Mutable("AOR", targetFile, "sumOfEvenPositiveNumber",
@@ -110,6 +116,40 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
                     59, 19, 59, 20, "((i)++)"));
   truth.add(Mutable("UOI", targetFile, "sumOfEvenPositiveNumber",
                     59, 19, 59, 20, "((i)--)"));
+  truth.add(Mutable("SDL", targetFile, "getIntArraySize",
+                    67, 3, 67, 37, ""));
+  truth.add(Mutable("AOR", targetFile, "getIntArraySize",
+                    67, 24, 67, 25, "+"));
+  truth.add(Mutable("AOR", targetFile, "getIntArraySize",
+                    67, 24, 67, 25, "-"));
+  truth.add(Mutable("AOR", targetFile, "getIntArraySize",
+                    67, 24, 67, 25, "*"));
+  truth.add(Mutable("AOR", targetFile, "getIntArraySize",
+                    67, 24, 67, 25, "%"));
+  truth.add(Mutable("UOI", targetFile, "foo",
+                    74, 7, 74, 8, "(!(b))"));
+  truth.add(Mutable("SDL", targetFile, "foo",
+                    75, 5, 75, 35, ""));
+  truth.add(Mutable("UOI", targetFile, "foo",
+                    75, 12, 75, 35, "((*(ptr + int(VAR_I + f)))++)"));
+  truth.add(Mutable("UOI", targetFile, "foo",
+                    75, 12, 75, 35, "((*(ptr + int(VAR_I + f)))--)"));
+  truth.add(Mutable("AOR", targetFile, "foo",
+                    75, 18, 75, 19, "-"));
+  truth.add(Mutable("AOR", targetFile, "foo",
+                    75, 30, 75, 31, "*"));
+  truth.add(Mutable("AOR", targetFile, "foo",
+                    75, 30, 75, 31, "-"));
+  truth.add(Mutable("AOR", targetFile, "foo",
+                    75, 30, 75, 31, "/"));
+  truth.add(Mutable("UOI", targetFile, "foo",
+                    75, 32, 75, 33, "((f)++)"));
+  truth.add(Mutable("UOI", targetFile, "foo",
+                    75, 32, 75, 33, "((f)--)"));
+  truth.add(Mutable("SDL", targetFile, "sdlBlockedCases",
+                    82, 12, 82, 17, ""));
+  truth.add(Mutable("SDL", targetFile, "sdlBlockedCases",
+                    86, 3, 86, 16, ""));
   ASSERT_EQ(mutables.size(), truth.size());
 
   for (const auto& e1 : mutables) {

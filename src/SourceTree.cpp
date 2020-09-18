@@ -41,7 +41,7 @@ void SourceTree::modify(const Mutable& info,
     throw IOException(EINVAL);
   }
 
-  // backup
+  // Backup target file to be mutated
   std::string targetFilename = \
       os::path::getAbsolutePath(info.getPath());
   std::string gitRootAbsolutePath = \
@@ -59,7 +59,7 @@ void SourceTree::modify(const Mutable& info,
   }
   os::copyFile(targetFilename, newBackupPath);
 
-  // mutation
+  // Apply mutation
   std::ifstream originalFile(targetFilename);
   std::stringstream buffer;
   if (originalFile) {

@@ -41,7 +41,7 @@ class SOR : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit SOR(clang::ASTContext& Context) : MutationOperator("SOR", Context) {}
+  explicit SOR(clang::ASTContext* Context) : MutationOperator("SOR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

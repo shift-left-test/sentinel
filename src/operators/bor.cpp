@@ -22,9 +22,9 @@
   SOFTWARE.
 */
 
+#include <clang/AST/Expr.h>
+#include <clang/Lex/Lexer.h>
 #include <string>
-#include "clang/AST/Expr.h"
-#include "clang/Lex/Lexer.h"
 #include "sentinel/operators/bor.hpp"
 #include "sentinel/util/astnode.hpp"
 
@@ -43,7 +43,6 @@ bool BOR::canMutate(clang::Stmt* s) {
 void BOR::populate(clang::Stmt* s, Mutables* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
-  // create mutables from the operator
   std::string token{bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
   clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(

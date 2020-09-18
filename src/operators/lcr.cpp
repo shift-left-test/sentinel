@@ -22,9 +22,9 @@
   SOFTWARE.
 */
 
+#include <clang/AST/Expr.h>
+#include <clang/Lex/Lexer.h>
 #include <string>
-#include "clang/AST/Expr.h"
-#include "clang/Lex/Lexer.h"
 #include "sentinel/operators/lcr.hpp"
 #include "sentinel/util/astnode.hpp"
 
@@ -43,7 +43,7 @@ bool LCR::canMutate(clang::Stmt* s) {
 void LCR::populate(clang::Stmt* s, Mutables* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
-  // create mutables from the operator
+  // create mutables by changing the operator
   std::string token{bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
   clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(
@@ -67,10 +67,10 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
     }
   }
 
-  // create mutables from the whole expression to true(1) and false(0)
+  // create mutables by changing the whole expression to true(1) and false(0)
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      bo->getEndLoc(), 0, mSrcMgr, mContext.getLangOpts());
+      bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
   if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
     return;
   }
