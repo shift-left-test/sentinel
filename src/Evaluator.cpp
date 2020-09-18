@@ -22,6 +22,8 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
+#include <iostream>
 #include <memory>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
@@ -37,6 +39,9 @@ Evaluator::Evaluator(const std::string& mutableDBDir,
     const std::shared_ptr<Logger>& logger)
     : mMutables(mutableDBDir), mExpectedResult(expectedResultDir),
     mLogger(logger), mOutDir(outDir) {
+  if (mLogger == nullptr) {
+    mLogger = Logger::getLogger("Evaluator");
+  }
   mLogger->debug(
       std::string("Load Expected Result: ").append(expectedResultDir));
       mMutables.load();
@@ -54,6 +59,21 @@ MutationResult Evaluator::compareAndSaveMutationResult(
 
   std::string killingTC = Result::kill(mExpectedResult, mActualResult);
   mLogger->debug(std::string("killing TC: ").append(killingTC));
+
+  std::cout << fmt::format(
+      "{idx:>5}/{size:<5}: {mu}({path}, {sl}:{sc}-{el}:{ec}) {status}{kT}",
+      fmt::arg("idx", mutableDBIdx+1),
+      fmt::arg("size", mMutables.size()),
+      fmt::arg("mu", mMutable.getOperator()),
+      fmt::arg("path", mMutable.getPath()),
+      fmt::arg("sl", mMutable.getFirst().line),
+      fmt::arg("sc", mMutable.getFirst().column),
+      fmt::arg("el", mMutable.getLast().line),
+      fmt::arg("ec", mMutable.getLast().column),
+      fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"),
+      fmt::arg("kT", killingTC.length() != 0 ? " by " + killingTC  : "")
+      )
+      << std::endl;
 
   MutationResult ret(mMutable, killingTC,
       killingTC.length() != 0, mutableDBIdx);

@@ -48,13 +48,10 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  auto logger = sentinel::Logger::getLogger("Evaluator");
-
   sentinel::Evaluator evaluator(
     sentinel::os::path::join(input.Get(), "mutables.db"),
     expected.Get(),
-    output.Get(),
-    logger);
+    output.Get());
 
   evaluator.compareAndSaveMutationResult(
     actual.Get(), index.Get());

@@ -52,7 +52,7 @@ class Evaluator {
   Evaluator(const std::string& mutableDBDir,
       const std::string& expectedResultDir,
       const std::string& outDir,
-      const std::shared_ptr<Logger>& logger);
+      const std::shared_ptr<Logger>& logger = nullptr);
 
   /**
    * @brief Compare an actual with the expected and save&return summary

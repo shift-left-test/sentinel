@@ -140,6 +140,8 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   EXPECT_TRUE(string::contains(out2, "Load mutable idx: 1"));
   EXPECT_TRUE(string::contains(out2, "Load Actual Result: "));
   EXPECT_TRUE(string::contains(out2, "killing TC: C2.TC2"));
+  EXPECT_TRUE(string::contains(out2, "    2/2    : AOR("));
+  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 0:0-0:0) Killed by C2.TC2"));
   EXPECT_TRUE(string::contains(out2, "Save MutationResult:"));
   EXPECT_TRUE(result.getDetected());
 
@@ -161,6 +163,8 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "Load mutable idx: 0"));
   EXPECT_TRUE(string::contains(out2, "Load Actual Result: "));
+  EXPECT_TRUE(string::contains(out2, "    1/2    : BOR("));
+  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 1:1-1:1) Survived"));
   EXPECT_TRUE(string::contains(out2, "Save MutationResult:"));
   EXPECT_FALSE(result.getDetected());
 
