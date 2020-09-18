@@ -34,20 +34,21 @@ Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
                  const Location& first,
                  const Location& last,
-                 const std::string& token)
-    : mOperator(mutationOperator), mFirst(first),
-      mLast(last), mToken(token),
-      mPath(os::path::getAbsolutePath(path)) {}
+                 const std::string& token) :
+    mOperator(mutationOperator), mFirst(first),
+    mLast(last), mToken(token),
+    mPath(os::path::getAbsolutePath(path)) {
+}
 
 Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
                  const std::string& qualifiedFuncName,
                  int firstLine, int firstColumn,
                  int lastLine, int lastColumn,
-                 const std::string& token)
-    : mPath(os::path::getAbsolutePath(path)), mToken(token),
-      mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
-      mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
+                 const std::string& token) :
+    mPath(os::path::getAbsolutePath(path)), mToken(token),
+    mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
+    mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
   size_t pos = qualifiedFuncName.find_last_of("::");
   if (pos == std::string::npos) {
     mClass = "";
@@ -60,12 +61,12 @@ Mutable::Mutable(const std::string& mutationOperator,
 
 bool Mutable::compare(const Mutable& other) const {
   return mOperator == other.getOperator() &&
-         os::path::comparePath(mPath, other.getPath()) &&
-         mFirst.line == other.getFirst().line &&
-         mFirst.column == other.getFirst().column &&
-         mLast.line == other.getLast().line &&
-         mLast.column == other.getLast().column &&
-         mToken == other.getToken();
+      os::path::comparePath(mPath, other.getPath()) &&
+      mFirst.line == other.getFirst().line &&
+      mFirst.column == other.getFirst().column &&
+      mLast.line == other.getLast().line &&
+      mLast.column == other.getLast().column &&
+      mToken == other.getToken();
 }
 
 std::string Mutable::getOperator() const {

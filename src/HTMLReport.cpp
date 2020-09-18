@@ -42,13 +42,12 @@
 namespace sentinel {
 
 HTMLReport::HTMLReport(const std::string& resultsPath,
-    const std::string& sourcePath) :
+                       const std::string& sourcePath) :
     mSourcePath(sourcePath), mResults(resultsPath) {
   mResults.load();
-  if (!os::path::exists(sourcePath) ||
-      !os::path::isDirectory(sourcePath)) {
+  if (!os::path::exists(sourcePath) || !os::path::isDirectory(sourcePath)) {
     throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
-        sourcePath));
+                                               sourcePath));
   }
 }
 
@@ -56,7 +55,7 @@ void HTMLReport::save(const std::string& path) {
   if (os::path::exists(path)) {
     if (!os::path::isDirectory(path)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-        path));
+                                                 path));
     }
   } else {
     os::createDirectory(path);
@@ -77,7 +76,7 @@ void HTMLReport::save(const std::string& path) {
   if (os::path::exists(dirPath)) {
     if (!os::path::isDirectory(dirPath)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-        dirPath));
+                                                 dirPath));
     }
   } else {
     os::createDirectory(dirPath);
@@ -86,16 +85,16 @@ void HTMLReport::save(const std::string& path) {
   // tuple: MutationResult, # of mutation, # of detected mutation
   //        (# of files in Dir)
   std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int, int>* >
+           std::tuple<std::vector<const MutationResult*>*, int, int, int>* >
       groupByDirPath;
   std::map<std::string,
       std::tuple<std::vector<const MutationResult*>*, int, int>* > groupByPath;
   int totNumberOfMutation = mResults.size();
   int totNumberOfDetectedMutation = 0;
 
-  for ( const MutationResult& mr : mResults ) {
+  for (const auto& mr : mResults) {
     auto mrPath = mr.getPath();
-    std::string curDirname = os::path::dirname(mrPath);
+    auto curDirname = os::path::dirname(mrPath);
     curDirname = string::replaceAll(curDirname, "/", ".");
 
     if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
@@ -106,8 +105,7 @@ void HTMLReport::save(const std::string& path) {
     std::get<0>(*groupByDirPath[curDirname])->push_back(&mr);
     std::get<1>(*groupByDirPath[curDirname]) += 1;
 
-    if (groupByPath.empty() ||
-        groupByPath.count(mrPath) == 0) {
+    if (groupByPath.empty() || groupByPath.count(mrPath) == 0) {
       groupByPath.emplace(mrPath,
           new std::tuple<std::vector<const MutationResult*>*, int, int>(
           new std::vector<const MutationResult*>(), 0, 0));
@@ -122,7 +120,7 @@ void HTMLReport::save(const std::string& path) {
     }
   }
 
-  for ( auto const& p : groupByDirPath ) {
+  for (const auto& p : groupByDirPath) {
     std::set<std::string> tmpSet;
     for (const MutationResult* mr : *(std::get<0>(*p.second))) {
       tmpSet.insert(mr->getPath());
@@ -133,35 +131,37 @@ void HTMLReport::save(const std::string& path) {
   auto outputPath = os::path::join(path, buffer);
 
   std::ofstream ofs(os::path::join(outputPath, "style.css"),
-      std::ofstream::out);
+                    std::ofstream::out);
   ofs << styleCssContent;
   ofs.close();
 
   makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-      totNumberOfDetectedMutation, true, "", outputPath);
+                totNumberOfDetectedMutation, true, "", outputPath);
 
-  for ( auto const& p : groupByDirPath ) {
+  for (const auto& p : groupByDirPath) {
     makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-        totNumberOfDetectedMutation, false, p.first, outputPath);
+                  totNumberOfDetectedMutation, false, p.first, outputPath);
   }
 
-  for ( auto const& p : groupByPath ) {
+  for (const auto& p : groupByPath) {
     makeSourceHtml(std::get<0>(*p.second), p.first, outputPath);
   }
 
-  for ( auto const& p : groupByDirPath ) {
+  for (const auto& p : groupByDirPath) {
     delete std::get<0>(*p.second);
     delete p.second;
   }
 
-  for ( auto const& p : groupByPath ) {
+  for (const auto& p : groupByPath) {
     delete std::get<0>(*p.second);
     delete p.second;
   }
 }
 
-tinyxml2::XMLElement* HTMLReport::insertNewNode(tinyxml2::XMLDocument* doc,
-    tinyxml2::XMLNode* parent, const char* elementName,
+tinyxml2::XMLElement* HTMLReport::insertNewNode(
+    tinyxml2::XMLDocument* doc,
+    tinyxml2::XMLNode* parent,
+    const char* elementName,
     const char* elementText = nullptr) {
   auto child = doc -> NewElement(elementName);
   if (elementText != nullptr) {
@@ -172,15 +172,14 @@ tinyxml2::XMLElement* HTMLReport::insertNewNode(tinyxml2::XMLDocument* doc,
 }
 
 void HTMLReport::makeIndexHtml(
-      std::map<std::string,
-        std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
-        pGroupByDirPath,
-      std::map<std::string,
-        std::tuple<std::vector<const MutationResult*>*, int, int>* >*
-        pGroupByPath,
-      int totNumberOfMutation, int totNumberOfDetectedMutation, bool root,
-      const std::string& currentDirPath, const std::string& outputDir
-    ) {
+    std::map<std::string,
+    std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
+    pGroupByDirPath,
+    std::map<std::string,
+    std::tuple<std::vector<const MutationResult*>*, int, int>* >*
+    pGroupByPath,
+    int totNumberOfMutation, int totNumberOfDetectedMutation, bool root,
+    const std::string& currentDirPath, const std::string& outputDir) {
   auto doc = new tinyxml2::XMLDocument();
 
   auto pDOCTYPE = doc->NewUnknown("DOCTYPE html");
@@ -197,7 +196,7 @@ void HTMLReport::makeIndexHtml(
 
   auto pBody = insertNewNode(doc, pHtml, "body");
   insertNewNode(doc, pBody, "h1",
-      "Sentinel Mutation Coverage Report");
+                "Sentinel Mutation Coverage Report");
 
   if (root) {
     insertNewNode(doc, pBody, "h3", "Proejct Summary");
@@ -227,7 +226,7 @@ void HTMLReport::makeIndexHtml(
     denominator = std::get<1>(*(*pGroupByDirPath)[currentDirPath]);
   }
   auto cov = static_cast<int> (static_cast<double>(numerator) /
-      denominator * 100);
+                               denominator * 100);
 
   insertNewNode(doc, pTr2, "td", std::to_string(sizeOfTargetFiles).c_str());
   auto pTd = insertNewNode(
@@ -237,13 +236,15 @@ void HTMLReport::makeIndexHtml(
   pDiv1->SetAttribute("class", "coverage_bar");
   auto pDiv2 = insertNewNode(doc, pDiv1, "div");
   pDiv2->SetAttribute("class",
-      fmt::format("coverage_complete width-{0}", cov).c_str());
+                      fmt::format("coverage_complete width-{0}", cov).c_str());
   auto pDiv3 = insertNewNode(doc, pDiv2, "div",
-      fmt::format("{0}/{1}", numerator, denominator).c_str());
+                             fmt::format("{0}/{1}",
+                                         numerator, denominator).c_str());
   pDiv3->SetAttribute("class", "coverage_legend");
 
-  insertNewNode(doc, pBody, "h3", fmt::format("Breakdown by {0}",
-          root ? "Directory" : "File").c_str());
+  insertNewNode(doc, pBody, "h3",
+                fmt::format("Breakdown by {0}",
+                            root ? "Directory" : "File").c_str());
 
   auto pTable2 = insertNewNode(doc, pBody, "table");
 
@@ -258,7 +259,7 @@ void HTMLReport::makeIndexHtml(
   auto pTbody2 = insertNewNode(doc, pTable2, "tbody");
 
   if (root) {
-    for ( auto const& p : *pGroupByDirPath ) {
+    for (const auto& p : *pGroupByDirPath) {
       auto pTr4 = insertNewNode(doc, pTbody2, "tr");
       int numOfFiles = std::get<3>(*p.second);
       int numerator2 = std::get<2>(*p.second);
@@ -292,7 +293,7 @@ void HTMLReport::makeIndexHtml(
       pDiv7->SetAttribute("class", "coverage_legend");
     }
   } else {
-    for ( auto const& p : *pGroupByPath ) {
+    for (const auto& p : *pGroupByPath) {
       {
         std::string curDirname = os::path::dirname(p.first);
         curDirname = string::replaceAll(curDirname, "/", ".");
@@ -350,7 +351,7 @@ void HTMLReport::makeIndexHtml(
     if (os::path::exists(newDir)) {
       if (!os::path::isDirectory(newDir)) {
         throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-          newDir));
+                                                   newDir));
       }
     } else {
       os::createDirectory(newDir);
@@ -360,11 +361,10 @@ void HTMLReport::makeIndexHtml(
   delete doc;
 }
 
-
 void HTMLReport::makeSourceHtml(
-    std::vector<const MutationResult*>* MRs, const std::string& srcPath,
+    std::vector<const MutationResult*>* MRs,
+    const std::string& srcPath,
     const std::string& outputDir) {
-
   if (!os::path::exists(srcPath)) {
     throw InvalidArgumentException(
         fmt::format("Source doesn't exists: {0}", srcPath));
@@ -372,15 +372,15 @@ void HTMLReport::makeSourceHtml(
 
   std::string srcName = os::path::filename(srcPath);
 
-  std::map <int, std::vector<const MutationResult*>*> groupByLine;
-  std::set <std::string> uniqueKillingTest;
-  std::set <std::string> uniqueMutator;
+  std::map<int, std::vector<const MutationResult*>*> groupByLine;
+  std::set<std::string> uniqueKillingTest;
+  std::set<std::string> uniqueMutator;
 
   int maxLineNum = 0;
-  for ( const MutationResult* mr : *MRs ) {
+  for (const MutationResult* mr : *MRs) {
     auto tmpvector = string::splitByStringDelimiter(
         mr->getKillingTest(), ", ");
-    for (auto const& ts : tmpvector) {
+    for (const auto& ts : tmpvector) {
       if (!ts.empty()) {
         uniqueKillingTest.insert(ts);
       }
@@ -391,7 +391,7 @@ void HTMLReport::makeSourceHtml(
     if (curLineNum == 0) {
       throw InvalidArgumentException(
           fmt::format("Muation at line number 0(Mutable DB Index{0})",
-          mr->getIndexOfMutableDB()));
+                      mr->getIndexOfMutableDB()));
     }
     if (curLineNum > maxLineNum) {
       maxLineNum = curLineNum;
@@ -411,10 +411,10 @@ void HTMLReport::makeSourceHtml(
   auto srcLineByLine = string::split(srcContents, '\n');
 
   if (srcLineByLine.empty() || srcLineByLine.size() < maxLineNum) {
-      throw InvalidArgumentException(
-          fmt::format(
-          "Src file's line num({0}) is smaller than mutation' line num({1})",
-          srcLineByLine.size(), maxLineNum));
+    throw InvalidArgumentException(
+        fmt::format(
+            "Src file's line num({0}) is smaller than mutation' line num({1})",
+            srcLineByLine.size(), maxLineNum));
   }
 
   auto doc = new tinyxml2::XMLDocument();
@@ -439,10 +439,10 @@ void HTMLReport::makeSourceHtml(
   auto pTable = insertNewNode(doc, pBody, "table");
   pTable->SetAttribute("class", "src");
 
-  for ( auto it = srcLineByLine.begin() ; it != srcLineByLine.end() ; ++it ) {
+  for (auto it = srcLineByLine.begin() ; it != srcLineByLine.end() ; ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;
     std::vector<const MutationResult*>* curLineMrs = nullptr;
-    if ( groupByLine.count(curLineNum) != 0 ) {
+    if (groupByLine.count(curLineNum) != 0) {
       curLineMrs = groupByLine[curLineNum];
     }
 
@@ -450,7 +450,7 @@ void HTMLReport::makeSourceHtml(
     if (curLineMrs != nullptr) {
       bool killed = false;
       bool survived = false;
-      for (auto const& mr : *curLineMrs) {
+      for (const auto& mr : *curLineMrs) {
         if (mr->getDetected()) {
           killed = true;
         } else {
@@ -488,7 +488,7 @@ void HTMLReport::makeSourceHtml(
 
     if (curLineMrs != nullptr) {
       int count = 0;
-      for (auto const& mr : *curLineMrs) {
+      for (const auto& mr : *curLineMrs) {
         count += 1;
         insertNewNode(doc, pSpanMutator, "b",
             fmt::format("{0}. {1} -> {2}", count, mr->getMutator(),
@@ -511,9 +511,9 @@ void HTMLReport::makeSourceHtml(
   auto pTd2 = insertNewNode(doc, pTr2, "td");
   insertNewNode(doc, pTd2, "h2", "Mutations");
 
-  for ( auto const& t : groupByLine ) {
+  for (const auto& t : groupByLine) {
     int count = 0;
-    for ( auto const& mr : *t.second ) {
+    for (const auto& mr : *t.second) {
       count += 1;
       auto pTr3 = insertNewNode(doc, pTable, "tr");
       auto pTd3 = insertNewNode(doc, pTr3, "td");
@@ -551,7 +551,7 @@ void HTMLReport::makeSourceHtml(
   insertNewNode(doc, pBody, "h2", "Active mutators");
   auto pUl = insertNewNode(doc, pBody, "ul");
 
-  for (auto const& ts : uniqueMutator) {
+  for (const auto& ts : uniqueMutator) {
     auto pTmp = insertNewNode(doc, pUl, "li", ts.c_str());
     pTmp->SetAttribute("class", "mutator");
   }
@@ -559,7 +559,7 @@ void HTMLReport::makeSourceHtml(
   insertNewNode(doc, pBody, "h2", "Tests examined");
   auto pUl2 = insertNewNode(doc, pBody, "ul");
 
-  for (auto const& ts : uniqueKillingTest) {
+  for (const auto& ts : uniqueKillingTest) {
     insertNewNode(doc, pUl2, "li", ts.c_str());
   }
 
@@ -575,7 +575,7 @@ void HTMLReport::makeSourceHtml(
 
   delete doc;
 
-  for ( auto const& t : groupByLine ) {
+  for (const auto& t : groupByLine) {
     delete t.second;
   }
 }

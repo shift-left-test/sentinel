@@ -50,16 +50,16 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::SourceLines sourceLines = gitRepo.getSourceLines();
 
   std::shared_ptr<sentinel::MutableGenerator> generator =
-    std::make_shared<sentinel::UniformMutableGenerator>(input.Get());
+      std::make_shared<sentinel::UniformMutableGenerator>(input.Get());
   std::shared_ptr<sentinel::MutableSelector> selector =
-    std::make_shared<sentinel::UniformMutableSelector>();
+      std::make_shared<sentinel::UniformMutableSelector>();
 
   sentinel::MutationFactory mutationFactory(generator, selector);
 
   sentinel::Mutables mutables = mutationFactory.populate(
-    sentinel::os::path::join(output.Get(), "mutables.db"),
-    sourceLines,
-    count.Get());
+      sentinel::os::path::join(output.Get(), "mutables.db"),
+      sourceLines,
+      count.Get());
 
   mutables.save();
 

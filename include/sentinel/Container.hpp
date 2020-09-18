@@ -29,6 +29,7 @@
 #include <fstream>
 #include <iterator>
 #include <random>
+#include <string>
 #include <vector>
 
 
@@ -121,7 +122,8 @@ class Container {
    * @param position of an element
    * @return reference of the element
    */
-  typename std::vector<T>::const_reference operator[](std::size_t position) const;
+  typename std::vector<T>::const_reference
+  operator[](std::size_t position) const;
 
   /**
    * @brief Add the element at the end
@@ -216,7 +218,8 @@ typename std::vector<T>::reference Container<T>::at(std::size_t position) {
 }
 
 template <typename T>
-typename std::vector<T>::const_reference Container<T>::at(std::size_t position) const {
+typename std::vector<T>::const_reference
+Container<T>::at(std::size_t position) const {
   return mData.at(position);
 }
 
@@ -233,7 +236,8 @@ Container<T>::operator[](std::size_t position) const {
 }
 
 template <typename T>
-void Container<T>::push_back(const typename std::vector<T>::value_type& object) {
+void Container<T>::push_back(
+    const typename std::vector<T>::value_type& object) {
   mData.push_back(object);
 }
 
@@ -256,7 +260,7 @@ void Container<T>::sort() {
 template <typename T>
 void Container<T>::shuffle() {
   std::shuffle(mData.begin(), mData.end(),
-               std::mt19937 { std::random_device{}() });
+               std::mt19937 { std::random_device {}() });
 }
 
 template <typename T>

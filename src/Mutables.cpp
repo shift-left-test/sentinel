@@ -36,7 +36,8 @@
 
 namespace sentinel {
 
-Mutables::Mutables(const std::string& path) : mPath(path) {}
+Mutables::Mutables(const std::string& path) : mPath(path) {
+}
 
 void Mutables::add(const Mutable& m) {
   mData.push_back(m);
@@ -46,7 +47,6 @@ Mutable Mutables::get(std::size_t index) const {
   if (index >= size()) {
     throw std::out_of_range("Mutables: index out of range");
   }
-
   return mData[index];
 }
 
@@ -107,12 +107,12 @@ void Mutables::save() {
 
   std::ofstream outFile(mPath.c_str(), std::ios::out | std::ios::binary);
   if (!outFile) {
-    throw IOException(EBADF, "Fail to open mutable_db");
+    throw IOException(EBADF, "Failed to open mutable_db");
   }
 
   int num_mutants = mData.size();
   outFile.write(
-        reinterpret_cast<char *>(&num_mutants), sizeof(int));      //NOLINT
+      reinterpret_cast<char *>(&num_mutants), sizeof(int));      //NOLINT
 
   for (const auto& e : mData) {
     Location first = e.getFirst();
@@ -155,7 +155,7 @@ std::string Mutables::readStringFromFile(std::ifstream& inFile) {
   size_t length;
   inFile.read(reinterpret_cast<char *>(&length), sizeof(size_t));  //NOLINT
 
-  char data[length+1];  //NOLINT
+  char data[length + 1];  //NOLINT
   inFile.read(&data[0], length);
   data[length] = '\0';
   std::string res{&data[0]};

@@ -28,7 +28,6 @@
 #include <ctime>
 #include <vector>
 #include <string>
-#include <queue>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Persistence.hpp"
 
@@ -44,7 +43,7 @@ class MutationResults : public Persistence {
    * @brief Default constructor
    *
    * @param path to the MutationResults
-   * 
+   *
    * @throw InvalidArgumentException when path is not directory
    */
   explicit MutationResults(const std::string& path);
@@ -72,7 +71,7 @@ class MutationResults : public Persistence {
   int size();
 
   /**
-   * @brief sort By Index of Mutable DB 
+   * @brief sort By Index of Mutable DB
    *
    */
   void sortByIndexOfMutableDB();

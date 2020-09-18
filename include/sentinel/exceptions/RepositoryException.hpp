@@ -22,27 +22,30 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_SOURCE_HPP_
-#define INCLUDE_SENTINEL_SOURCE_HPP_
+#ifndef INCLUDE_SENTINEL_EXCEPTIONS_REPOSITORYEXCEPTION_HPP_
+#define INCLUDE_SENTINEL_EXCEPTIONS_REPOSITORYEXCEPTION_HPP_
 
+#include <stdexcept>
 #include <string>
 
 
 namespace sentinel {
 
 /**
- * @brief Source interface
+ * @brief RepositoryExcpetion class
  */
-class Source {
+class RepositoryException : public std::runtime_error {
  public:
   /**
-   * @brief Returns a string representation of the object
+   * @brief Default constructor
    *
-   * @return the string representation
+   * @param message of the error
    */
-  virtual std::string toString() = 0;
+  explicit RepositoryException(const std::string& message) :
+      std::runtime_error(message.c_str()) {
+  }
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_SOURCE_HPP_
+#endif  // INCLUDE_SENTINEL_EXCEPTIONS_REPOSITORYEXCEPTION_HPP_

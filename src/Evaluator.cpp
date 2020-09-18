@@ -35,30 +35,29 @@
 namespace sentinel {
 
 Evaluator::Evaluator(const std::string& mutableDBDir,
-    const std::string& expectedResultDir, const std::string& outDir,
-    const std::shared_ptr<Logger>& logger)
-    : mMutables(mutableDBDir), mExpectedResult(expectedResultDir),
+                     const std::string& expectedResultDir,
+                     const std::string& outDir,
+                     const std::shared_ptr<Logger>& logger) :
+    mMutables(mutableDBDir), mExpectedResult(expectedResultDir),
     mLogger(logger), mOutDir(outDir) {
   if (mLogger == nullptr) {
     mLogger = Logger::getLogger("Evaluator");
   }
-  mLogger->debug(
-      std::string("Load Expected Result: ").append(expectedResultDir));
-      mMutables.load();
-  mLogger->debug(std::string("Load mutable DB: ").append(mutableDBDir));
+  mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
+  mMutables.load();
+  mLogger->debug(fmt::format("Load mutable DB: {}", mutableDBDir));
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(
     const std::string& ActualResultDir, int mutableDBIdx) {
   auto mMutable = mMutables.get(mutableDBIdx);
-  mLogger->debug(std::string("Load mutable idx: ").append(
-      std::to_string(mutableDBIdx)));
+  mLogger->debug(fmt::format("Load mutable idx: {}", mutableDBIdx));
 
   Result mActualResult(ActualResultDir);
-  mLogger->debug(std::string("Load Actual Result: ").append(ActualResultDir));
+  mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
 
   std::string killingTC = Result::kill(mExpectedResult, mActualResult);
-  mLogger->debug(std::string("killing TC: ").append(killingTC));
+  mLogger->debug(fmt::format("killing TC: {}", killingTC));
 
   std::cout << fmt::format(
       "{idx:>5}/{size:<5}: {mu}({path}, {sl}:{sc}-{el}:{ec}) {status}{kT}",
@@ -71,14 +70,13 @@ MutationResult Evaluator::compareAndSaveMutationResult(
       fmt::arg("el", mMutable.getLast().line),
       fmt::arg("ec", mMutable.getLast().column),
       fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"),
-      fmt::arg("kT", killingTC.length() != 0 ? " by " + killingTC  : "")
-      )
-      << std::endl;
+      fmt::arg("kT", killingTC.length() != 0 ? " by " + killingTC  : ""))
+            << std::endl;
 
   MutationResult ret(mMutable, killingTC,
-      killingTC.length() != 0, mutableDBIdx);
+                     killingTC.length() != 0, mutableDBIdx);
   ret.saveToFile(mOutDir);
-  mLogger->debug(std::string("Save MutationResult: ").append(mOutDir));
+  mLogger->debug(fmt::format("Save MutationResult: {}", mOutDir));
 
   return ret;
 }

@@ -49,10 +49,10 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
   parser.Parse();
 
   sentinel::Evaluator evaluator(
-    sentinel::os::path::join(input.Get(), "mutables.db"),
-    expected.Get(),
-    output.Get());
+      sentinel::os::path::join(input.Get(), "mutables.db"),
+      expected.Get(),
+      output.Get());
 
   evaluator.compareAndSaveMutationResult(
-    actual.Get(), index.Get());
+      actual.Get(), index.Get());
 }

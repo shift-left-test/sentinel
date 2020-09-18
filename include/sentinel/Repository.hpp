@@ -35,13 +35,6 @@ namespace sentinel {
  * @brief Repository interface
  */
 class Repository {
- public:
-  /**
-   * @brief Return a source tree from the repository
-   *
-   * @return a source tree object
-   */
-  virtual std::shared_ptr<SourceTree> getSourceTree() = 0;
 };
 
 }  // namespace sentinel

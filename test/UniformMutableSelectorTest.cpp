@@ -14,10 +14,10 @@
   copies or substantial portions of the Software.
 
   THE SOFTWARE IS PROVIDED "AS IS",  WITHOUT WARRANTY OF ANY KIND,  EXPRESS OR
-  IMPLIED,  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+  IMPLIED,  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,  DAMAGES OR OTHER
-  LIABILITY,  WHETHER IN AN ACTION OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM, 
+  LIABILITY,  WHETHER IN AN ACTION OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
@@ -32,9 +32,9 @@ namespace sentinel {
 TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumNotExceeded) {
   std::string targetFilename = "input/sample1/sample1.cpp";
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 58));
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
+  sourceLines.push_back(SourceLine(targetFilename, 58));
+  sourceLines.push_back(SourceLine(targetFilename, 59));
+  sourceLines.push_back(SourceLine(targetFilename, 62));
   Mutables mutables{"somename.db"};
   mutables.add(Mutable("LCR", targetFilename, "sumOfEvenPositiveNumber",
                        58, 29, 58, 31, "||"));
@@ -59,9 +59,9 @@ TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumNotExceeded) {
 TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumExceeded) {
   std::string targetFilename = "input/sample1/sample1.cpp";
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 58));
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 59));
-  sourceLines.push_back(SourceLine(targetFilename.c_str(), 62));
+  sourceLines.push_back(SourceLine(targetFilename, 58));
+  sourceLines.push_back(SourceLine(targetFilename, 59));
+  sourceLines.push_back(SourceLine(targetFilename, 62));
   Mutables mutables{"somename.db"};
   mutables.add(Mutable("LCR", targetFilename, "sumOfEvenPositiveNumber",
                        58, 29, 58, 31, "||"));
@@ -84,4 +84,3 @@ TEST(UniformMutableSelectorTest, testSelectorWorksWhenMaxMutantNumExceeded) {
 }
 
 }  // namespace sentinel
-

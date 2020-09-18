@@ -46,7 +46,6 @@ class HTMLReport : public Report {
    *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
-   *
    * @throw InvalidArgumentException when resultsPath is empty or sourcePath doesn't exist
    */
   HTMLReport(const std::string& resultsPath, const std::string& sourcePath);
@@ -55,14 +54,13 @@ class HTMLReport : public Report {
    * @brief save html format result to path
    *
    * @param path path of output directory
-   *
    * @throw InvalidArgumentException when path is not directory
    */
   void save(const std::string& path) override;
 
  private:
   /**
-   * @brief makeIndexHtml 
+   * @brief makeIndexHtml
    *
    * @param groupByDirPath
    * @param groupByPath
@@ -70,15 +68,15 @@ class HTMLReport : public Report {
    * @param totNumberOfDetecedMutation
    * @param root index or not
    * @param currentDirPath current key of groupByDirPath (used in non root)
-   * @param outputDir 
+   * @param outputDir
    */
   void makeIndexHtml(
       std::map<std::string,
-        std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
-        pGroupByDirPath,
+      std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
+      pGroupByDirPath,
       std::map<std::string,
-        std::tuple<std::vector<const MutationResult*>*, int, int>* >*
-        pGroupByPath,
+      std::tuple<std::vector<const MutationResult*>*, int, int>* >*
+      pGroupByPath,
       int totNumberOfMutation, int totNumberOfDetectedMutation, bool root,
       const std::string& currentDirPath, const std::string& outputDir);
 
@@ -102,8 +100,9 @@ class HTMLReport : public Report {
    * @param elementText new element's text if exists
    */
   tinyxml2::XMLElement* insertNewNode(tinyxml2::XMLDocument* doc,
-      tinyxml2::XMLNode* parent, const char* elementName,
-      const char* elementText);
+                                      tinyxml2::XMLNode* parent,
+                                      const char* elementName,
+                                      const char* elementText);
 
   std::string mSourcePath;
   MutationResults mResults;

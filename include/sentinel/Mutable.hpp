@@ -42,7 +42,9 @@ struct Location {
    * @param lineNum number
    * @param colNum number
    */
-  Location(int lineNum, int colNum) : line(lineNum), column(colNum) {}
+  Location(int lineNum, int colNum) :
+      line(lineNum), column(colNum) {
+  }
 
   /**
    * @brief line number
@@ -99,9 +101,9 @@ class Mutable {
           const std::string& token);
 
   /**
-   * @brief compare this Mutable with another. 
+   * @brief compare this Mutable with another.
    *
-   * @param other Mutable 
+   * @param other Mutable
    * @return True if Mutables are same. False otherwise
    */
   bool compare(const Mutable& other) const;

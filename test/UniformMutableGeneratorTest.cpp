@@ -14,10 +14,10 @@
   copies or substantial portions of the Software.
 
   THE SOFTWARE IS PROVIDED "AS IS",  WITHOUT WARRANTY OF ANY KIND,  EXPRESS OR
-  IMPLIED,  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+  IMPLIED,  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,  DAMAGES OR OTHER
-  LIABILITY,  WHETHER IN AN ACTION OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM, 
+  LIABILITY,  WHETHER IN AN ACTION OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
@@ -33,8 +33,8 @@ namespace sentinel {
 TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
   SourceLines sourceLines;
   std::string targetFile = "input/sample1/sample1.cpp";
-  sourceLines.push_back(SourceLine(targetFile.c_str(), 58));
-  sourceLines.push_back(SourceLine(targetFile.c_str(), 59));
+  sourceLines.push_back(SourceLine(targetFile, 58));
+  sourceLines.push_back(SourceLine(targetFile, 59));
 
   UniformMutableGenerator generator{".."};
   Mutables mutables = generator.populate("mutables.db", sourceLines);
@@ -120,4 +120,3 @@ TEST(UniformMutableGeneratorTest,  testAllMutationOperatorsSuccess) {
 }
 
 }  // namespace sentinel
-

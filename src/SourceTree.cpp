@@ -47,7 +47,7 @@ void SourceTree::modify(const Mutable& info,
   std::string gitRootAbsolutePath = \
       os::path::getAbsolutePath(gitRootPath);
   if (!string::startsWith(os::path::dirname(targetFilename),
-                                gitRootAbsolutePath)) {
+                          gitRootAbsolutePath)) {
     throw IOException(EINVAL, "Git root does not contain " + targetFilename);
   }
   std::string targetRelativePath = \
@@ -96,10 +96,6 @@ void SourceTree::modify(const Mutable& info,
   }
 
   mutatedFile.close();
-}
-
-std::string SourceTree::toString() {
-  return "";
 }
 
 }  // namespace sentinel

@@ -47,14 +47,13 @@ class MutationResult {
    * @param detected or not (True: detected, False: not)
    * @param indexOfMutableDB
    */
-  explicit MutationResult(const sentinel::Mutable& mut,
-      const std::string& killingTest, bool detected, int indexOfMutableDB);
+  explicit MutationResult(const sentinel::Mutable& mut, const std::string& killingTest,
+                          bool detected, int indexOfMutableDB);
 
   /**
    * @brief Default constructor
    *
    * @param mutationResultFilePath
-   *
    * @throw InvalidArgumentExcpetion when mutationReulstFilePath doesn't have MutationResult
    */
   explicit MutationResult(const std::string& mutationResultFilePath);
@@ -148,7 +147,7 @@ class MutationResult {
   /**
    * @brief compare this with other
    *
-   * @param other 
+   * @param other
    *
    * @return bool value whether two MutationReults are same
    */
@@ -169,7 +168,7 @@ class MutationResult {
    * @param outString target string to be written
    */
   void writeStringToFile(std::ofstream& outFile,
-      const std::string& outString) const;
+                         const std::string& outString) const;
 
   std::string mMethodDescription;
   std::string mMutator;

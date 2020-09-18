@@ -27,7 +27,6 @@
 
 #include <string>
 #include "sentinel/Mutable.hpp"
-#include "sentinel/Source.hpp"
 
 
 namespace sentinel {
@@ -37,7 +36,7 @@ class Mutable;
 /**
  * @brief SourceTree class
  */
-class SourceTree : public Source {
+class SourceTree {
  public:
   /**
    * @brief Modify the source with respect to the given mutable information
@@ -49,7 +48,6 @@ class SourceTree : public Source {
   void modify(const Mutable& info,
               const std::string& gitRootPath,
               const std::string& backupPath);
-  std::string toString() override;
 };
 
 }  // namespace sentinel

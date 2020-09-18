@@ -22,10 +22,12 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <git2.h>
 #include <sstream>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
@@ -82,12 +84,8 @@ struct DiffData {
   std::shared_ptr<Logger> logger = nullptr;
 };
 
-RepositoryException::RepositoryException(const std::string &msg) {
-  this->msg = msg;
-}
-
-GitRepository::GitRepository(const std::string& path)
-: path_(path), logger_(Logger::getLogger("GitRepository")) {
+GitRepository::GitRepository(const std::string& path) :
+    mPath(path), mLogger(Logger::getLogger("GitRepository")) {
   git_libgit2_init();
 }
 
@@ -101,28 +99,27 @@ SourceLines GitRepository::getSourceLines() {
   SafeGit2ObjPtr<git_tree, git_tree_free> tree;
   SafeGit2ObjPtr<git_diff, git_diff_free> diff;
   DiffData d;
-  d.logger = this->logger_;
+  d.logger = this->mLogger;
 
-  if (git_repository_open(repo.getPtr(), path_.c_str()) != 0) {
-    throw RepositoryException("Fail to opne repository");
+  if (git_repository_open(repo.getPtr(), mPath.c_str()) != 0) {
+    throw RepositoryException("Fail to open repository");
   }
 
   SafeGit2ObjPtr<git_reference, git_reference_free> ref;
   if (git_reference_lookup(ref.getPtr(), static_cast<git_repository*>(repo),
-        "refs/tags/devtool-base") == 0) {
-    std::stringstream msg;
-    msg << "found devtool tag" << std::endl;
-    this->logger_->info(msg.str());
+                           "refs/tags/devtool-base") == 0) {
+    mLogger->info("found devtool tag");
 
-    int error_code = git_reference_peel(obj.getPtr(),
-         static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
+    int error_code = git_reference_peel(
+        obj.getPtr(),
+        static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
     if (error_code != 0) {
-      throw RepositoryException("Fail to peel tag: error_code"
-      + std::to_string(error_code));
+      auto e = fmt::format("Failed to peel tag: error code {}", error_code);
+      throw RepositoryException(e);
     }
   } else {
     git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo),
-        "HEAD^{commit}");
+                        "HEAD^{commit}");
   }
 
   if (!obj.isNull()) {
@@ -130,25 +127,24 @@ SourceLines GitRepository::getSourceLines() {
 
     if (git_commit_parentcount(obj.cast<const git_commit*>()) > 0) {
       if (git_commit_parent(parent_commit.getPtr(),
-        obj.cast<const git_commit*>(), 0) != 0) {
-        throw RepositoryException("Fail to find parent commit");
+                            obj.cast<const git_commit*>(), 0) != 0) {
+        throw RepositoryException("Failed to find parent commit");
       }
 
       if (git_commit_tree(tree.getPtr(),
-          static_cast<git_commit*>(parent_commit)) != 0) {
-        throw RepositoryException("Failt to find parent tree");
+                          static_cast<git_commit*>(parent_commit)) != 0) {
+        throw RepositoryException("Failed to find parent tree");
       }
     }
   } else {
-    std::stringstream msg;
-    msg << "NO HEAD commit or devtool tag found";
-    this->logger_->warn(msg.str());
+    mLogger->warn("No HEAD commit or devtool tag found");
   }
 
   if (git_diff_tree_to_workdir_with_index(diff.getPtr(),
-      static_cast<git_repository*>(repo), static_cast<git_tree*>(tree),
-      nullptr) != 0) {
-    throw RepositoryException("Fail to find diff");
+                                          static_cast<git_repository*>(repo),
+                                          static_cast<git_tree*>(tree),
+                                          nullptr) != 0) {
+    throw RepositoryException("Failed to find diff");
   }
 
   if (git_diff_foreach(static_cast<git_diff*>(diff),
@@ -171,20 +167,20 @@ SourceLines GitRepository::getSourceLines() {
       // each_line_cb
       auto d = reinterpret_cast<DiffData*>(payload); // NOLINT
       if (d->logger) {
-        std::ostringstream msg;
-        msg << line->origin << ":" << delta->new_file.path
-          << ":" << line->new_lineno;
-        d->logger->info(msg.str());
+        d->logger->info(fmt::format("{}:{}:{}",
+                                    line->origin,
+                                    delta->new_file.path,
+                                    line->new_lineno));
       }
 
       if (line->origin == '+') {
         d->sourceLines.push_back(
-          SourceLine(delta->new_file.path, line->new_lineno));
+            SourceLine(delta->new_file.path, line->new_lineno));
       }
       return 0;
     },
     &d) != 0) {
-    throw RepositoryException("Fail to diff iterate");
+    throw RepositoryException("Failed to diff iterate");
   }
 
   SourceLines targetLines;
@@ -195,15 +191,11 @@ SourceLines GitRepository::getSourceLines() {
       continue;
     }
 
-    std::string path = path_ + "/" + line.getPath();
-    targetLines.push_back(SourceLine(path.c_str(), line.getLineNumber()));
+    auto path = os::path::join(mPath, line.getPath());
+    targetLines.push_back(SourceLine(path, line.getLineNumber()));
   }
 
   return targetLines;
-}
-
-std::shared_ptr<SourceTree> GitRepository::getSourceTree() {
-  return nullptr;
 }
 
 }  // namespace sentinel

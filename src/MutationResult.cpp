@@ -38,7 +38,9 @@
 namespace sentinel {
 
 MutationResult::MutationResult(const sentinel::Mutable& mut,
-    const std::string& killingTest, bool detected, int indexOfMutableDB) :
+                               const std::string& killingTest,
+                               bool detected,
+                               int indexOfMutableDB) :
     mKillingTest(killingTest), mDetected(detected),
     mIndexOfMutableDB(indexOfMutableDB), mLineNum(mut.getFirst().line),
     // mMethodDescription(mut.getMethodDescription()),
@@ -71,11 +73,11 @@ MutationResult::MutationResult(const std::string& mutationResultFilePath) {
   mIndexOfMutableDB = 0;
 
   inFile.read(reinterpret_cast<char *>(&mDetected),    //NOLINT
-      sizeof(mDetected));
+              sizeof(mDetected));
   inFile.read(reinterpret_cast<char *>(&mLineNum),    //NOLINT
-      sizeof(mLineNum));
+              sizeof(mLineNum));
   inFile.read(reinterpret_cast<char *>(&mIndexOfMutableDB),    //NOLINT
-      sizeof(mIndexOfMutableDB));
+              sizeof(mIndexOfMutableDB));
   inFile.close();
 
   struct stat sb = {};
@@ -126,8 +128,8 @@ std::time_t MutationResult::getLastModifiedTime() const {
 void MutationResult::saveToFile(const std::string& dirPath) const {
   if (os::path::exists(dirPath)) {
     if (!os::path::isDirectory(dirPath)) {
-    throw InvalidArgumentException(fmt::format(
-        "dirPath isn't directory({0})", dirPath));
+      throw InvalidArgumentException(fmt::format(
+          "dirPath isn't directory({0})", dirPath));
     }
   } else {
     os::createDirectory(dirPath);
@@ -173,7 +175,7 @@ std::string MutationResult::readStringFromFile(std::ifstream& inFile) {
   std::size_t length;
   inFile.read(reinterpret_cast<char *>(&length), sizeof(size_t));    //NOLINT
 
-  char data[length+1];    //NOLINT
+  char data[length + 1];    //NOLINT
   inFile.read(&data[0], length);
   data[length] = '\0';
   std::string res{&data[0]};
@@ -185,7 +187,7 @@ void MutationResult::writeStringToFile(std::ofstream& outFile,
     const std::string& outString) const {
   std::size_t mOutStringSize = outString.size();
   outFile.write(reinterpret_cast<char *>(&mOutStringSize),    //NOLINT
-      sizeof(std::size_t));
+                sizeof(std::size_t));
   outFile.write(outString.c_str(), mOutStringSize);
 }
 

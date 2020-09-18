@@ -26,7 +26,6 @@
 #define INCLUDE_SENTINEL_SOURCELINE_HPP_
 
 #include <string>
-#include "sentinel/Source.hpp"
 
 
 namespace sentinel {
@@ -34,7 +33,7 @@ namespace sentinel {
 /**
  * @brief SourceLine class
  */
-class SourceLine : public Source {
+class SourceLine {
  public:
   /**
    * @brief Default constructor
@@ -43,35 +42,34 @@ class SourceLine : public Source {
    *
    * @param lineNumber soure line number
    */
-  SourceLine(const char * path, int lineNumber);
+  SourceLine(const std::string& path, int lineNumber);
 
   /**
    * @brief == operator overloading for std::find algorithm
    *
    * @param other other SourceLine instance
    */
-  bool operator ==(const SourceLine & other) const {
-    return this->path_ == other.path_ && this->lineNumber_ == other.lineNumber_;
+  bool operator ==(const SourceLine& other) const {
+    return this->mPath == other.mPath && this->mLineNumber == other.mLineNumber;
   }
-  std::string toString() override;
 
   /**
    * @brief Return path to file
    */
   std::string getPath() const {
-    return path_;
+    return mPath;
   }
 
   /**
    * @brief Return line number
    */
   int getLineNumber() const {
-    return lineNumber_;
+    return mLineNumber;
   }
 
  private:
-  std::string path_;
-  int lineNumber_;
+  std::string mPath;
+  int mLineNumber;
 };
 
 }  // namespace sentinel

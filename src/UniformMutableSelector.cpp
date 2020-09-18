@@ -41,7 +41,7 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
   std::random_device rd;
   std::mt19937 mt(rd());
 
-  for (auto const& line : sourceLines) {
+  for (const auto& line : sourceLines) {
     std::vector<Mutable> temp;
     for (int i = 0; i < mutables.size(); ++i) {
       Mutable m = mutables.get(i);

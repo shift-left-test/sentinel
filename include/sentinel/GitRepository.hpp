@@ -27,31 +27,13 @@
 
 #include <memory>
 #include <string>
+#include "sentinel/exceptions/RepositoryException.hpp"
 #include "sentinel/Repository.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/Logger.hpp"
 
 
 namespace sentinel {
-/**
- * @brief RepositoryExcpetion class
- */
-class RepositoryException : public ::std::exception {
-  std::string msg;
-
- public:
-  /**
-   * @brief Default constructor
-   *
-   * @param msg excption description
-   */
-  explicit RepositoryException(const std::string & msg);
-
-  ///@ private
-  const char * what() const noexcept override {
-    return this->msg.c_str();
-  }
-};
 
 /**
  * @brief GitRepository class
@@ -64,7 +46,11 @@ class GitRepository : public Repository {
    * @param path to the git repository
    */
   explicit GitRepository(const std::string& path);
-  ~GitRepository();
+
+  /**
+   * @brief Default destructor
+   */
+  virtual ~GitRepository();
 
   /**
    * @brief Return the source lines
@@ -72,12 +58,10 @@ class GitRepository : public Repository {
    * @return SourceLines object
    */
   SourceLines getSourceLines();
-  std::shared_ptr<SourceTree> getSourceTree() override;
 
  private:
-  std::string path_;
-
-  std::shared_ptr<Logger> logger_;
+  std::string mPath;
+  std::shared_ptr<Logger> mLogger;
 };
 
 }  // namespace sentinel

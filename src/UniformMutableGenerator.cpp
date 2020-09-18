@@ -76,9 +76,9 @@ Mutables UniformMutableGenerator::populate(const std::string& outPath,
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
     clang::ASTContext &Context, Mutables* mutables,
-    const std::vector<int>& targetLines)
-    : mContext(Context), mSrcMgr(Context.getSourceManager()),
-      mMutables(mutables), mTargetLines(targetLines) {
+    const std::vector<int>& targetLines) :
+    mContext(Context), mSrcMgr(Context.getSourceManager()),
+    mMutables(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -103,13 +103,13 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   // Check if this Stmt node represents code on target lines.
   if (startLoc.isMacroID()) {
     clang::CharSourceRange range = mContext.getSourceManager()
-      .getImmediateExpansionRange(startLoc);
+        .getImmediateExpansionRange(startLoc);
     startLoc = range.getBegin();
   }
 
   if (endLoc.isMacroID()) {
     clang::CharSourceRange range = mContext.getSourceManager()
-      .getImmediateExpansionRange(endLoc);
+        .getImmediateExpansionRange(endLoc);
     endLoc = clang::Lexer::getLocForEndOfToken(
         range.getEnd(), 0, mContext.getSourceManager(),
         mContext.getLangOpts());
@@ -141,11 +141,11 @@ std::unique_ptr<clang::tooling::FrontendActionFactory>
 UniformMutableGenerator::myNewFrontendActionFactory(
     Mutables* mutables, const std::vector<int>& targetLines) {
   class SimpleFrontendActionFactory :
-      public clang::tooling::FrontendActionFactory {
+          public clang::tooling::FrontendActionFactory {
    public:
     explicit SimpleFrontendActionFactory(Mutables* mutables,
-                                         const std::vector<int>& targetLines)
-        : mMutables(mutables), mTargetLines(targetLines) {
+                                         const std::vector<int>& targetLines) :
+        mMutables(mutables), mTargetLines(targetLines) {
     }
 
     std::unique_ptr<clang::FrontendAction> create() override {

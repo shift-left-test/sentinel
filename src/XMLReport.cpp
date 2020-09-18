@@ -43,7 +43,7 @@ void XMLReport::save(const std::string& path) {
   if (os::path::exists(path)) {
     if (!os::path::isDirectory(path)) {
       throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-        path));
+                                                 path));
     }
   } else {
     os::createDirectory(path);
@@ -110,6 +110,5 @@ void XMLReport::addChildToParent(tinyxml2::XMLDocument* d,
     pChild->SetText(childText.c_str());
     p->InsertEndChild(pChild);
 }
-
 
 }  // namespace sentinel

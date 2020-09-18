@@ -26,18 +26,18 @@
 #include <args/args.hxx>
 
 
-args::Group arguments("arguments");
-args::HelpFlag h(arguments, "help",
-  "Display this help menu. \n"
-  "Use 'sentinal COMMAND --help' to see help for each command.",
-  {'h', "help"});
-
 void populateCommand(args::Subparser &parser);  // NOLINT
 void mutateCommand(args::Subparser &parser);  // NOLINT
 void evaluateCommand(args::Subparser &parser);  // NOLINT
 void reportCommand(args::Subparser &parser);  // NOLINT
 
-int main(int argc, char ** argv) {
+int main(int argc, char** argv) {
+  args::Group arguments("arguments");
+  args::HelpFlag h(arguments, "help",
+  "Display this help menu. \n"
+  "Use 'sentinal COMMAND --help' to see help for each command.",
+  {'h', "help"});
+
   args::ArgumentParser parser("Mutation Test");
 
   args::Group commands(static_cast<args::Group&>(parser), "commands");
