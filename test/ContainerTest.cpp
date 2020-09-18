@@ -24,6 +24,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include "sentinel/util/os.hpp"
@@ -92,6 +93,14 @@ TEST_F(ContainerTest, testEmplaceback) {
   none.emplace_back(1);
   none.emplace_back(1);
   EXPECT_EQ(2, none.size());
+}
+
+TEST_F(ContainerTest, testSortInDescendingOrder) {
+  none.emplace_back(1);
+  none.emplace_back(2);
+  none.sort(std::greater<>());
+  EXPECT_EQ(2, none[0]);
+  EXPECT_EQ(1, none[1]);
 }
 
 TEST_F(ContainerTest, testSort) {

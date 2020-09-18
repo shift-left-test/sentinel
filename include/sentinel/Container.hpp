@@ -149,6 +149,15 @@ class Container {
   void emplace_back(Args&&... args);
 
   /**
+   * @brief Sort the elements using the comparator
+   *
+   * @tparam Comparator type
+   * @param comparator for sorting
+   */
+  template <typename Comparator>
+  void sort(Comparator comparator);
+
+  /**
    * @brief Sort the elements into ascending order
    */
   void sort();
@@ -250,6 +259,12 @@ template <typename T>
 template <class... Args>
 void Container<T>::emplace_back(Args&&... args) {
   mData.emplace_back(args...);
+}
+
+template <typename T>
+template <typename Comparator>
+void Container<T>::sort(Comparator comparator) {
+  std::sort(mData.begin(), mData.end(), comparator);
 }
 
 template <typename T>
