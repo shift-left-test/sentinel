@@ -29,6 +29,7 @@
 #include <regex>
 #include <string>
 #include "sentinel/util/os.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -325,6 +326,15 @@ TEST_F(OsTest, testCopyFile) {
 
 TEST_F(OsTest, testComparePath) {
   EXPECT_TRUE(os::path::comparePath(".", "../test"));
+}
+
+TEST_F(OsTest, testRelativePath) {
+  EXPECT_EQ(os::path::getRelativePath(BASE, BASE), ".");
+  EXPECT_EQ(os::path::getRelativePath(FILE, BASE), os::path::filename(FILE));
+  EXPECT_EQ(os::path::getRelativePath(FILE, "/"),
+            os::path::getAbsolutePath(FILE).substr(1));
+  EXPECT_EQ(os::path::getRelativePath(NESTED_FILE_TXT, COPY_DIRECTORY),
+            "../dir" + string::split(NESTED_FILE_TXT, "/dir").back());
 }
 
 }  // namespace sentinel

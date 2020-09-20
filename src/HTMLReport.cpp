@@ -43,12 +43,7 @@ namespace sentinel {
 
 HTMLReport::HTMLReport(const std::string& resultsPath,
                        const std::string& sourcePath) :
-    mSourcePath(sourcePath), mResults(resultsPath) {
-  mResults.load();
-  if (!os::path::exists(sourcePath) || !os::path::isDirectory(sourcePath)) {
-    throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
-                                               sourcePath));
-  }
+    Report(resultsPath, sourcePath) {
 }
 
 void HTMLReport::save(const std::string& path) {
@@ -82,52 +77,6 @@ void HTMLReport::save(const std::string& path) {
     os::createDirectory(dirPath);
   }
 
-  // tuple: MutationResult, # of mutation, # of detected mutation
-  //        (# of files in Dir)
-  std::map<std::string,
-           std::tuple<std::vector<const MutationResult*>*, int, int, int>* >
-      groupByDirPath;
-  std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int>* > groupByPath;
-  int totNumberOfMutation = mResults.size();
-  int totNumberOfDetectedMutation = 0;
-
-  for (const auto& mr : mResults) {
-    auto mrPath = mr.getPath();
-    auto curDirname = os::path::dirname(mrPath);
-    curDirname = string::replaceAll(curDirname, "/", ".");
-
-    if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
-      groupByDirPath.emplace(curDirname,
-          new std::tuple<std::vector<const MutationResult*>*, int, int, int>(
-          new std::vector<const MutationResult*>(), 0, 0, 0));
-    }
-    std::get<0>(*groupByDirPath[curDirname])->push_back(&mr);
-    std::get<1>(*groupByDirPath[curDirname]) += 1;
-
-    if (groupByPath.empty() || groupByPath.count(mrPath) == 0) {
-      groupByPath.emplace(mrPath,
-          new std::tuple<std::vector<const MutationResult*>*, int, int>(
-          new std::vector<const MutationResult*>(), 0, 0));
-    }
-    std::get<0>(*groupByPath[mrPath])->push_back(&mr);
-    std::get<1>(*groupByPath[mrPath]) += 1;
-
-    if (mr.getDetected()) {
-      std::get<2>(*groupByDirPath[curDirname]) += 1;
-      std::get<2>(*groupByPath[mrPath]) += 1;
-      totNumberOfDetectedMutation += 1;
-    }
-  }
-
-  for (const auto& p : groupByDirPath) {
-    std::set<std::string> tmpSet;
-    for (const MutationResult* mr : *(std::get<0>(*p.second))) {
-      tmpSet.insert(mr->getPath());
-    }
-    std::get<3>(*p.second) = tmpSet.size();
-  }
-
   auto outputPath = os::path::join(path, buffer);
 
   std::ofstream ofs(os::path::join(outputPath, "style.css"),
@@ -145,16 +94,6 @@ void HTMLReport::save(const std::string& path) {
 
   for (const auto& p : groupByPath) {
     makeSourceHtml(std::get<0>(*p.second), p.first, outputPath);
-  }
-
-  for (const auto& p : groupByDirPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
-  }
-
-  for (const auto& p : groupByPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
   }
 }
 
@@ -365,12 +304,13 @@ void HTMLReport::makeSourceHtml(
     std::vector<const MutationResult*>* MRs,
     const std::string& srcPath,
     const std::string& outputDir) {
-  if (!os::path::exists(srcPath)) {
+  auto absSrcPath = os::path::join(mSourcePath, srcPath);
+  if (!os::path::exists(absSrcPath)) {
     throw InvalidArgumentException(
-        fmt::format("Source doesn't exists: {0}", srcPath));
+        fmt::format("Source doesn't exists: {0}", absSrcPath));
   }
 
-  std::string srcName = os::path::filename(srcPath);
+  std::string srcName = os::path::filename(absSrcPath);
 
   std::map<int, std::vector<const MutationResult*>*> groupByLine;
   std::set<std::string> uniqueKillingTest;
@@ -378,7 +318,7 @@ void HTMLReport::makeSourceHtml(
 
   int maxLineNum = 0;
   for (const MutationResult* mr : *MRs) {
-    auto tmpvector = string::splitByStringDelimiter(
+    auto tmpvector = string::split(
         mr->getKillingTest(), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {
@@ -402,7 +342,7 @@ void HTMLReport::makeSourceHtml(
     groupByLine[curLineNum]->push_back(mr);
   }
 
-  std::ifstream tf(srcPath);
+  std::ifstream tf(absSrcPath);
   std::stringstream buffer;
   buffer << tf.rdbuf();
   std::string srcContents = buffer.str();

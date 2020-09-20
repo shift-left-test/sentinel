@@ -35,8 +35,9 @@
 
 namespace sentinel {
 
-XMLReport::XMLReport(const std::string& resultsPath) : mResults(resultsPath) {
-  mResults.load();
+XMLReport::XMLReport(const std::string& resultsPath,
+                       const std::string& sourcePath) :
+    Report(resultsPath, sourcePath) {
 }
 
 void XMLReport::save(const std::string& path) {
@@ -85,7 +86,8 @@ void XMLReport::save(const std::string& path) {
 
     addChildToParent(doc, pMutation, "sourceFile",
         os::path::filename(r.getPath()));
-    addChildToParent(doc, pMutation, "sourceFilePath", r.getPath());
+    addChildToParent(doc, pMutation, "sourceFilePath",
+                     os::path::getRelativePath(r.getPath(), mSourcePath));
     addChildToParent(doc, pMutation, "mutatedClass", r.getMutatedClass());
     addChildToParent(doc, pMutation, "mutatedMethod", r.getMutatedMethod());
     addChildToParent(doc, pMutation, "methodDescription",

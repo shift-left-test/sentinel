@@ -30,7 +30,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include "sentinel/MutationResults.hpp"
 #include "sentinel/Report.hpp"
 
 
@@ -46,7 +45,6 @@ class HTMLReport : public Report {
    *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
-   * @throw InvalidArgumentException when resultsPath is empty or sourcePath doesn't exist
    */
   HTMLReport(const std::string& resultsPath, const std::string& sourcePath);
 
@@ -104,8 +102,6 @@ class HTMLReport : public Report {
                                       const char* elementName,
                                       const char* elementText);
 
-  std::string mSourcePath;
-  MutationResults mResults;
   std::string styleCssContent = ""
       "html, body, div, span, p, blockquote, pre {\n"
       "    margin: 0;\n"

@@ -170,6 +170,55 @@ inline std::string getAbsolutePath(const std::string& path) {
   return absolutePath;
 }
 
+/**
+ * @brief Return the relative path from start dir
+ *
+ * @param path target path
+ * @param path start dir
+ * @return the relative path from start dir
+ */
+inline std::string getRelativePath(const std::string& path,
+                                   const std::string& start) {
+  auto mPath = getAbsolutePath(path);
+  auto mStart = getAbsolutePath(start);
+  if (!isDirectory(mStart)) {
+    throw IOException(EINVAL);
+  }
+  auto mSplitPath = string::split(mPath, "/");
+  auto mSplitStart = string::split(mStart, "/");
+  if (mSplitStart.back().empty()) {
+    mSplitStart.pop_back();
+  }
+  int diffIdx = -1;
+  std::string ret = "";
+  for (auto it = mSplitPath.begin() ; it != mSplitPath.end() ; ++it) {
+    auto idx = std::distance(mSplitPath.begin(), it);
+    if (diffIdx == -1) {
+      if ( idx >= mSplitStart.size() ) {
+        diffIdx = -2;
+      } else if (*it != mSplitStart.at(idx)) {
+        diffIdx = idx;
+      }
+    }
+    if (diffIdx != -1) {
+      if (!ret.empty()) {
+        ret += "/";
+      }
+      ret += *it;
+    }
+  }
+  if (diffIdx >= 0) {
+    int itnum = mSplitStart.size() - diffIdx;
+    for (int i = 0 ; i < itnum ; i++) {
+      ret = "../" + ret;
+    }
+  }
+  if (ret.empty()) {
+    ret = ".";
+  }
+  return ret;
+}
+
 }  // namespace path
 
 /**

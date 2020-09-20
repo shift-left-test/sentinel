@@ -30,6 +30,7 @@
 #include <sstream>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/os.hpp"
+#include "sentinel/util/string.hpp"
 #include "sentinel/XMLReport.hpp"
 
 
@@ -45,7 +46,7 @@ class XMLReportTest : public ::testing::Test {
     MUT_RESULT_DIR = os::tempDirectory(
         os::path::join(BASE, "MUT_RESLUT_DIR"));
 
-    std::string SOURCE_DIR = os::tempDirectory(
+    SOURCE_DIR = os::tempDirectory(
         os::path::join(BASE, "SOURCE_DIR"));
 
     std::string NESTED_SOURCE_DIR = os::tempDirectory(
@@ -58,8 +59,9 @@ class XMLReportTest : public ::testing::Test {
         NESTED_SOURCE_DIR + "/", ".cpp");
     std::string TARGET_NAME2 = os::path::filename(TARGET_FULL_PATH2);
     EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
-        TARGET_NAME, os::path::getAbsolutePath(TARGET_FULL_PATH),
-        TARGET_NAME2, os::path::getAbsolutePath(TARGET_FULL_PATH2));
+        TARGET_NAME, os::path::filename(TARGET_FULL_PATH),
+        TARGET_NAME2, os::path::filename(NESTED_SOURCE_DIR) + "/" +
+        os::path::filename(TARGET_FULL_PATH2));
   }
 
   void TearDown() override {
@@ -68,6 +70,7 @@ class XMLReportTest : public ::testing::Test {
   std::string BASE;
   std::string OUT_DIR;
   std::string MUT_RESULT_DIR;
+  std::string SOURCE_DIR;
   std::string TARGET_FULL_PATH;
   std::string TARGET_FULL_PATH2;
   std::string EXPECT_MUT_XML_CONTENT = ""
@@ -106,7 +109,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   MutationResult MR2(M2, "testAddBit", true, 1);
   MR2.saveToFile(MUT_RESULT_DIR);
 
-  XMLReport xmlreport(MUT_RESULT_DIR);
+  XMLReport xmlreport(MUT_RESULT_DIR, SOURCE_DIR);
 
   xmlreport.save(OUT_DIR);
   auto mutationXMLPath = os::findFilesInDirUsingRgx(OUT_DIR,

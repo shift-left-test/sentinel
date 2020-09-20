@@ -27,7 +27,6 @@
 
 #include <tinyxml2/tinyxml2.h>
 #include <string>
-#include "sentinel/MutationResults.hpp"
 #include "sentinel/Report.hpp"
 
 
@@ -42,8 +41,9 @@ class XMLReport : public Report {
    * @brief Default constructor
    *
    * @param resultsPath directory path of mutation results
+   * @param sourcePath directory path of source files
    */
-  explicit XMLReport(const std::string& resultsPath);
+  XMLReport(const std::string& resultsPath, const std::string& sourcePath);
 
   /**
    * @brief save xml format result to path 
@@ -65,7 +65,6 @@ class XMLReport : public Report {
    */
   void addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p,
       const std::string& childName, const std::string& childText);
-  MutationResults mResults;
 };
 
 }  // namespace sentinel

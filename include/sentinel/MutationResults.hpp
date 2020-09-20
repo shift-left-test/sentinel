@@ -68,7 +68,7 @@ class MutationResults : public Persistence {
    *
    * @return number of stored MutationResult
    */
-  int size();
+  int size() const;
 
   /**
    * @brief sort By Index of Mutable DB

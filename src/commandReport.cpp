@@ -23,6 +23,7 @@
 */
 
 #include <iostream>
+#include <string>
 #include <args/args.hxx>
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -43,8 +44,9 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  sentinel::XMLReport xmlReport(input.Get());
+  sentinel::XMLReport xmlReport(input.Get(), git.Get());
   xmlReport.save(output.Get());
   sentinel::HTMLReport htmlReport(input.Get(), git.Get());
   htmlReport.save(output.Get());
+  htmlReport.printSummary();
 }

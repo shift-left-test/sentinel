@@ -47,14 +47,16 @@ class MutationResult {
    * @param detected or not (True: detected, False: not)
    * @param indexOfMutableDB
    */
-  explicit MutationResult(const sentinel::Mutable& mut, const std::string& killingTest,
-                          bool detected, int indexOfMutableDB);
+  explicit MutationResult(const sentinel::Mutable& mut,
+                          const std::string& killingTest, bool detected,
+                          int indexOfMutableDB);
 
   /**
    * @brief Default constructor
    *
    * @param mutationResultFilePath
-   * @throw InvalidArgumentExcpetion when mutationReulstFilePath doesn't have MutationResult
+   * @throw InvalidArgumentExcpetion
+   *        when mutationReulstFilePath doesn't have MutationResult
    */
   explicit MutationResult(const std::string& mutationResultFilePath);
 

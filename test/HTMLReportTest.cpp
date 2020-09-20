@@ -46,7 +46,7 @@ class HTMLReportTest : public ::testing::Test {
     MUT_RESULT_DIR = os::tempDirectory(
         os::path::join(BASE, "MUT_RESLUT_DIR"));
 
-    std::string SOURCE_DIR = os::tempDirectory(
+    SOURCE_DIR = os::tempDirectory(
         os::path::join(BASE, "SOURCE_DIR"));
 
     std::string NESTED_SOURCE_DIR = os::tempDirectory(
@@ -66,9 +66,9 @@ class HTMLReportTest : public ::testing::Test {
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
 
     std::string NESTED_DIR1_DOT = string::replaceAll(
-        os::path::getAbsolutePath(NESTED_SOURCE_DIR), "/", ".");
+        os::path::getRelativePath(NESTED_SOURCE_DIR, SOURCE_DIR), "/", ".");
     std::string NESTED_DIR2_DOT = string::replaceAll(
-        os::path::getAbsolutePath(NESTED_SOURCE_DIR2), "/", ".");
+        os::path::getRelativePath(NESTED_SOURCE_DIR2, SOURCE_DIR), "/", ".");
 
 
     ROOT_INDEX_HTML_CONTENTS = fmt::format(
@@ -112,6 +112,7 @@ class HTMLReportTest : public ::testing::Test {
   std::string BASE;
   std::string OUT_DIR;
   std::string MUT_RESULT_DIR;
+  std::string SOURCE_DIR;
   std::string TARGET_FULL_PATH;
   std::string TARGET_CONTENT = ""
       "int add(int a, int b) {\n"
@@ -740,7 +741,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   MutationResult MR4(M4, "", false, 4);
   MR4.saveToFile(MUT_RESULT_DIR);
 
-  HTMLReport htmlreport(MUT_RESULT_DIR, MUT_RESULT_DIR);
+  HTMLReport htmlreport(MUT_RESULT_DIR, SOURCE_DIR);
 
   htmlreport.save(OUT_DIR);
   auto mutationHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
@@ -775,6 +776,14 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       FAIL() << "Unexpected target*.cpp.html file detected : " + ms;
     }
   }
+
+  testing::internal::CaptureStdout();
+  htmlreport.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+  EXPECT_TRUE(string::contains(out, "      0         1        0%"));
+  EXPECT_TRUE(string::contains(out, "      1         1      100%"));
+  EXPECT_TRUE(string::contains(out, "      1         2       50%"));
+  EXPECT_TRUE(string::contains(out, "      2         4       50%"));
 }
 
 }  // namespace sentinel

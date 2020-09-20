@@ -62,7 +62,7 @@ MutationResult MutationResults::get(std::size_t index) {
   return mData[index];
 }
 
-int MutationResults::size() { return mData.size(); }
+int MutationResults::size() const { return mData.size(); }
 
 void MutationResults::load() {
   auto mutationResultFiles = os::findFilesInDirUsingExt(mPath,

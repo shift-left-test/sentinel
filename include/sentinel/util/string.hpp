@@ -168,7 +168,7 @@ inline std::vector<std::string> split(const std::string& s, char delim = ' ') {
  * @param delimiter
  * @return vecotr of string that is split by delimiter
  */
-inline std::vector<std::string> splitByStringDelimiter(
+inline std::vector<std::string> split(
     const std::string& s, const std::string& delimiter) {
   std::size_t pos_start = 0;
   std::size_t pos_end;
