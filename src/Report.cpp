@@ -103,10 +103,12 @@ void Report::printSummary() {
   int mlen = 10;
   int klen = 10;
   int clen = 10;
-  int maxlen = flen + mlen + klen + clen;
+  int maxlen = flen + mlen + klen + clen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format("{0:^{1}}\n", "Mutation Coverage Report", maxlen);
+  std::cout << fmt::format("Directory: {0}\n",
+                           os::path::getAbsolutePath(mSourcePath));
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "File", flen,
@@ -118,11 +120,15 @@ void Report::printSummary() {
   for ( auto const& p : groupByPath ) {
     int curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
     int filePos = p.first.size() - flen;
+    std::string skipStr = "";
     if (filePos < 0) {
       filePos = 0;
+    } else if (filePos > 1) {
+      filePos += 4;
+      skipStr = "... ";
     }
     std::cout << fmt::format(defFormat,
-                             p.first.substr(filePos), flen,
+                             skipStr + p.first.substr(filePos), flen,
                              std::get<2>(*p.second), klen,
                              std::get<1>(*p.second), mlen,
                              std::to_string(curCov) + "%",
