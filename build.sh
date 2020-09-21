@@ -5,3 +5,4 @@ make doc || exit 1
 make all -j || exit 1
 ctest --output-on-failure || exit 1
 make coverage
+make package

@@ -31,4 +31,5 @@ build_static_library(
   SRCS GitHarness.cpp
   PUBLIC_HEADERS . ${LIBGIT2_INCLUDE_DIR}
   LIBS sentinel-core ${LIBGIT2_LIBRARIES}
+  NO_INSTALL
 )

@@ -39,3 +39,13 @@ if(ENABLE_TEST)
 endif()
 
 add_all_subdirectories()
+
+build_debian_package(
+  MAINTAINER "Sung Gon Kim <sunggon82.kim@lge.com>"
+  CONTACT "sunggon82.kim@lge.com"
+  HOMEPAGE "http://mod.lge.com/hub/yocto/addons/sentinel"
+  VENDOR "LG Electronics"
+  SUMMARY "the mutation testing tool for C/C++ projects"
+  SECTION "devel"
+  DEPENDS "libclang-10-dev, libgit2-dev, llvm-10-dev"
+)

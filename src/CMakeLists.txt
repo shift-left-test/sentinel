@@ -34,6 +34,7 @@ build_static_library(
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt git2
+  NO_INSTALL
 )
 
 build_program(
