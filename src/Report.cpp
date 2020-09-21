@@ -120,7 +120,7 @@ void Report::printSummary() {
   for ( auto const& p : groupByPath ) {
     int curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
     int filePos = p.first.size() - flen;
-    std::string skipStr = "";
+    std::string skipStr;
     if (filePos < 0) {
       filePos = 0;
     } else if (filePos > 1) {
