@@ -25,9 +25,11 @@
 #ifndef INCLUDE_SENTINEL_MUTABLE_HPP_
 #define INCLUDE_SENTINEL_MUTABLE_HPP_
 
+#include <iostream>
 #include <string>
 #include <utility>
 #include "sentinel/SourceTree.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -66,18 +68,8 @@ class Mutable {
  public:
   /**
    * @brief Default constructor
-   *
-   * @param mutationOperator created this mutable
-   * @param path to file from the source tree
-   * @param first location to apply mutation
-   * @param last location to apply mutation
-   * @param token to replace with
    */
-  Mutable(const std::string& mutationOperator,
-          const std::string& path,
-          const Location& first,
-          const Location& last,
-          const std::string& token);
+  Mutable();
 
   /**
    * @brief Default constructor
@@ -177,6 +169,9 @@ class Mutable {
   Location mLast;
   std::string mToken;
 };
+
+std::ostream& operator<<(std::ostream& out, const Mutable& m);
+std::istream& operator>>(std::istream& in, Mutable &m);
 
 }  // namespace sentinel
 

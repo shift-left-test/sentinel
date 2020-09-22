@@ -46,10 +46,9 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  sentinel::Mutables mutables(
-      sentinel::os::path::join(input.Get(), "mutables.db"));
-  mutables.load();
-  sentinel::Mutable m = mutables.get(index.Get());
+  sentinel::Mutables mutables;
+  mutables.load(sentinel::os::path::join(input.Get(), "mutables.db"));
+  sentinel::Mutable m = mutables.at(index.Get());
 
   sentinel::GitRepository repository(git.Get());
   repository.getSourceTree()->modify(m, backup.Get());

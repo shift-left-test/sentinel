@@ -62,14 +62,14 @@ class EvaluatorTest : public ::testing::Test {
 
     MUTABLEDB = os::path::join(BASE, "mutables.db");
 
-    m = new Mutables(MUTABLEDB);
+    m = new Mutables();
     Mutable mutable2("AOR", "input/sample1/sample1.cpp",
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
     Mutable mutable1("BOR", "input/sample1/sample1.cpp",
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
-    m->add(mutable1);
-    m->add(mutable2);
-    m->save();
+    m->push_back(mutable1);
+    m->push_back(mutable2);
+    m->save(MUTABLEDB);
   }
 
   void TearDown() override {

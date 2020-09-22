@@ -57,11 +57,10 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::MutationFactory mutationFactory(generator, selector);
 
   sentinel::Mutables mutables = mutationFactory.populate(
-      sentinel::os::path::join(output.Get(), "mutables.db"),
       sourceLines,
       count.Get());
 
-  mutables.save();
+  mutables.save(sentinel::os::path::join(output.Get(), "mutables.db"));
 
   std::cout << "MutableCount: " << mutables.size() << std::endl;
 }

@@ -38,15 +38,15 @@ TEST(MutationFactoryTest, testPopulateWorks) {
       "input/sample1/sample1.cpp", 59));
 
   UniformMutableGenerator generator{".."};
-  Mutables generated = generator.populate("mutables.db", sourceLines);
+  Mutables generated = generator.populate(sourceLines);
 
   UniformMutableSelector selector;
   Mutables selected = selector.select(generated, sourceLines, 3);
 
   // 1 mutable on line 58, 1 mutable on line 59 are selected
   EXPECT_EQ(selected.size(), 2);
-  EXPECT_EQ(selected.get(0).getFirst().line, 58);
-  EXPECT_EQ(selected.get(1).getFirst().line, 59);
+  EXPECT_EQ(selected.at(0).getFirst().line, 58);
+  EXPECT_EQ(selected.at(1).getFirst().line, 59);
 }
 
 }  // namespace sentinel

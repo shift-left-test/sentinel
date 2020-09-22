@@ -57,12 +57,13 @@ void SOR::populate(clang::Stmt* s, Mutables* mutables) {
 
     for (const auto& mutatedToken : mShiftOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable(mName, path, func,
-          mSrcMgr.getExpansionLineNumber(opStartLoc),
-          mSrcMgr.getExpansionColumnNumber(opStartLoc),
-          mSrcMgr.getExpansionLineNumber(opEndLoc),
-          mSrcMgr.getExpansionColumnNumber(opEndLoc),
-          mutatedToken));
+        mutables->emplace_back(
+            mName, path, func,
+            mSrcMgr.getExpansionLineNumber(opStartLoc),
+            mSrcMgr.getExpansionColumnNumber(opStartLoc),
+            mSrcMgr.getExpansionLineNumber(opEndLoc),
+            mSrcMgr.getExpansionColumnNumber(opEndLoc),
+            mutatedToken);
       }
     }
   }

@@ -36,15 +36,14 @@ namespace sentinel {
 Mutables UniformMutableSelector::select(const Mutables& mutables,
                                         const SourceLines& sourceLines,
                                         int maxMutables) {
-  Mutables ret{mutables.getPath()};
-  std::vector<Mutable> temp_storage;
+  Mutables temp_storage;
   std::random_device rd;
   std::mt19937 mt(rd());
 
   for (const auto& line : sourceLines) {
     std::vector<Mutable> temp;
     for (int i = 0; i < mutables.size(); ++i) {
-      Mutable m = mutables.get(i);
+      Mutable m = mutables.at(i);
       if (os::path::comparePath(m.getPath(), line.getPath()) &&
           m.getFirst().line <= line.getLineNumber() &&
           m.getLast().line >= line.getLineNumber()) {
@@ -61,17 +60,11 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
   }
 
   if (maxMutables >= temp_storage.size()) {
-    for (const auto& e : temp_storage) {
-      ret.add(e);
-    }
-  } else {
-    std::shuffle(temp_storage.begin(), temp_storage.end(), mt);
-    for (int i = 0; i < maxMutables; ++i) {
-      ret.add(temp_storage[i]);
-    }
+    return Mutables(temp_storage.begin(), temp_storage.end());
   }
 
-  return ret;
+  temp_storage.shuffle();
+  return Mutables(temp_storage.begin(), temp_storage.begin() + maxMutables);
 }
 
 }  // namespace sentinel

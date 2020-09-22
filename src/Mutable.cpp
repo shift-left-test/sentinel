@@ -22,6 +22,8 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
+#include <iostream>
 #include <string>
 #include <utility>
 #include "sentinel/Mutable.hpp"
@@ -30,14 +32,7 @@
 
 namespace sentinel {
 
-Mutable::Mutable(const std::string& mutationOperator,
-                 const std::string& path,
-                 const Location& first,
-                 const Location& last,
-                 const std::string& token) :
-    mOperator(mutationOperator), mFirst(first),
-    mLast(last), mToken(token),
-    mPath(os::path::getAbsolutePath(path)) {
+Mutable::Mutable() : mFirst{0, 0}, mLast{0, 0} {
 }
 
 Mutable::Mutable(const std::string& mutationOperator,
@@ -99,6 +94,29 @@ Location Mutable::getLast() const {
 
 std::string Mutable::getToken() const {
   return mToken;
+}
+
+std::ostream& operator<<(std::ostream& out, const Mutable& m) {
+  out << fmt::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                     m.getOperator(),
+                     m.getPath(),
+                     m.getQualifiedFunction(),
+                     m.getFirst().line,
+                     m.getFirst().column,
+                     m.getLast().line,
+                     m.getLast().column,
+                     m.getToken());
+  return out;
+}
+
+std::istream& operator>>(std::istream& in, Mutable &m) {
+  std::string line;
+  if (getline(in, line)) {
+    auto str = string::split(line, "\t");
+    m = Mutable(str[0], str[1], str[2], std::stoi(str[3]), std::stoi(str[4]),
+                std::stoi(str[5]), std::stoi(str[6]), str[7]);
+  }
+  return in;
 }
 
 }  // namespace sentinel

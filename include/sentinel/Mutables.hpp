@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <string>
+#include "sentinel/Container.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/Persistence.hpp"
 
@@ -36,92 +37,11 @@ namespace sentinel {
 /**
  * @brief Mutables class
  */
-class Mutables : public Persistence {
+class Mutables : public Container<Mutable> {
  public:
-  /**
-   * @brief Default constructor
-   *
-   * @param path to the mutables
-   */
-  explicit Mutables(const std::string& path);
+  using Container<Mutable>::Container;
 
-  /**
-   * @brief Add the given mutable to the object
-   *
-   * @param m mutable object
-   */
-  void add(const Mutable& m);
-
-  /**
-   * @brief Return a mutable object at the given index
-   *
-   * @param index for the object
-   * @return Mutable object
-   */
-  Mutable get(std::size_t index) const;
-
-  /**
-   * @brief Return the path to the to-be-generated mutables database
-   *
-   * @return path to the to-be-generated mutables database
-   */
-  std::string getPath() const;
-
-  /**
-   * @brief Return number of stored Mutable
-   *
-   * @return number of stored Mutable
-   */
-  int size() const;
-
-  /**
-   * @brief Return the iterator to the first Mutable in Mutables.
-   *
-   * @return iterator to the first Mutable.
-   */
-  std::vector<Mutable>::const_iterator begin() const;
-
-  /**
-   * @brief Return the iterator to the end of Mutables.
-   *
-   * @return iterator to the last Mutable.
-   */
-  std::vector<Mutable>::const_iterator end() const;
-
-  /**
-   * @brief Return the const iterator to the first Mutable in Mutables.
-   *
-   * @return iterator to the first Mutable.
-   */
-  std::vector<Mutable>::const_iterator cbegin() const;
-
-  /**
-   * @brief Return the const iterator to the end of Mutables.
-   *
-   * @return iterator to the last Mutable.
-   */
-  std::vector<Mutable>::const_iterator cend() const;
-
-  /**
-   * @brief Read a string literal from binary file.
-   *
-   * @return string read from file.
-   */
-  static std::string readStringFromFile(std::ifstream& inFile);
-
-  /**
-   * @brief Read an integer from binary file.
-   *
-   * @return int read from file.
-   */
-  static int readIntFromFile(std::ifstream& inFile);
-
-  void load() override;
-  void save() override;
-
- private:
-  std::string mPath;
-  std::vector<Mutable> mData;
+  void save(const std::string& path) override;
 };
 
 }  // namespace sentinel

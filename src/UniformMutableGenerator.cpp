@@ -35,9 +35,8 @@
 
 namespace sentinel {
 
-Mutables UniformMutableGenerator::populate(const std::string& outPath,
-                                           const SourceLines& sourceLines) {
-  Mutables mutables{outPath};
+Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines) {
+  Mutables mutables;
 
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \

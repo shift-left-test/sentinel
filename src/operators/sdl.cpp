@@ -109,12 +109,13 @@ void SDL::populate(clang::Stmt* s, Mutables* mutables) {
     std::string func = astnode::getContainingFunctionQualifiedName(s,
       mContext);
 
-    mutables->add(Mutable(mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      ""));
+    mutables->emplace_back(
+        mName, path, func,
+        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+        "");
   }
 }
 

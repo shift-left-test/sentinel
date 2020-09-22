@@ -97,28 +97,31 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
 
   if (astnode::getExprType(e)->isArithmeticType() &&
       !astnode::getExprType(e)->isBooleanType()) {
-    mutables->add(Mutable(mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      "((" + stmtStr + ")++)"));
+    mutables->emplace_back(
+        mName, path, func,
+        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+        "((" + stmtStr + ")++)");
 
-    mutables->add(Mutable(mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      "((" + stmtStr + ")--)"));
+    mutables->emplace_back(
+        mName, path, func,
+        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+        "((" + stmtStr + ")--)");
   }
 
   if (astnode::getExprType(e)->isBooleanType()) {
-    mutables->add(Mutable(mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      "(!(" + stmtStr + "))"));
+    mutables->emplace_back(
+        mName, path, func,
+        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+        "(!(" + stmtStr + "))");
   }
 }
 

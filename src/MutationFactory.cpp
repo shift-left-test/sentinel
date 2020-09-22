@@ -38,10 +38,9 @@ MutationFactory::MutationFactory(
     mGenerator(generator), mSelector(selector) {
 }
 
-Mutables MutationFactory::populate(const std::string& outPath,
-                                   const SourceLines& sourceLines,
+Mutables MutationFactory::populate(const SourceLines& sourceLines,
                                    int maxMutables) {
-  Mutables generatedMutables = mGenerator->populate(outPath, sourceLines);
+  Mutables generatedMutables = mGenerator->populate(sourceLines);
   Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
                                                 maxMutables);
   return selectedMutables;

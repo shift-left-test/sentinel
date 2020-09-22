@@ -38,19 +38,18 @@ Evaluator::Evaluator(const std::string& mutableDBDir,
                      const std::string& expectedResultDir,
                      const std::string& outDir,
                      const std::shared_ptr<Logger>& logger) :
-    mMutables(mutableDBDir), mExpectedResult(expectedResultDir),
-    mLogger(logger), mOutDir(outDir) {
+    mExpectedResult(expectedResultDir), mLogger(logger), mOutDir(outDir) {
   if (mLogger == nullptr) {
     mLogger = Logger::getLogger("Evaluator");
   }
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
-  mMutables.load();
+  mMutables.load(mutableDBDir);
   mLogger->debug(fmt::format("Load mutable DB: {}", mutableDBDir));
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(
     const std::string& ActualResultDir, int mutableDBIdx) {
-  auto mMutable = mMutables.get(mutableDBIdx);
+  auto mMutable = mMutables.at(mutableDBIdx);
   mLogger->debug(fmt::format("Load mutable idx: {}", mutableDBIdx));
 
   Result mActualResult(ActualResultDir);

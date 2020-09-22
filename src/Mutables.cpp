@@ -36,137 +36,14 @@
 
 namespace sentinel {
 
-Mutables::Mutables(const std::string& path) : mPath(path) {
-}
-
-void Mutables::add(const Mutable& m) {
-  mData.push_back(m);
-}
-
-Mutable Mutables::get(std::size_t index) const {
-  if (index >= size()) {
-    throw std::out_of_range("Mutables: index out of range");
-  }
-  return mData[index];
-}
-
-std::string Mutables::getPath() const {
-  return mPath;
-}
-
-int Mutables::size() const {
-  return mData.size();
-}
-
-std::vector<Mutable>::const_iterator Mutables::begin() const {
-  return mData.begin();
-}
-
-std::vector<Mutable>::const_iterator Mutables::end() const {
-  return mData.end();
-}
-
-std::vector<Mutable>::const_iterator Mutables::cbegin() const {
-  return mData.cbegin();
-}
-
-std::vector<Mutable>::const_iterator Mutables::cend() const {
-  return mData.cend();
-}
-
-void Mutables::load() {
-  if (!os::path::exists(mPath) ||
-      os::path::isDirectory(mPath)) {
-    throw IOException(EINVAL);
-  }
-
-  std::ifstream inFile(mPath.c_str());
-  int num_mutants = readIntFromFile(inFile);
-
-  for (int i = 0; i < num_mutants; ++i) {
-    std::string path = readStringFromFile(inFile);
-    std::string func = readStringFromFile(inFile);
-    std::string mutationOperator = readStringFromFile(inFile);
-    std::string token = readStringFromFile(inFile);
-    int firstLine = readIntFromFile(inFile);
-    int firstColumn = readIntFromFile(inFile);
-    int lastLine = readIntFromFile(inFile);
-    int lastColumn = readIntFromFile(inFile);
-    mData.emplace_back(Mutable(mutationOperator, path, func, firstLine,
-                               firstColumn, lastLine, lastColumn, token));
-  }
-
-  inFile.close();
-}
-
-void Mutables::save() {
-  std::string dbDir = os::path::dirname(mPath);
+void Mutables::save(const std::string& path) {
+  // Create directory if it does not exist.
+  std::string dbDir = os::path::dirname(path);
   if (!os::path::exists(dbDir)) {
     os::createDirectories(dbDir);
   }
 
-  std::ofstream outFile(mPath.c_str(), std::ios::out | std::ios::binary);
-  if (!outFile) {
-    throw IOException(EBADF, "Failed to open mutable_db");
-  }
-
-  int num_mutants = mData.size();
-  outFile.write(
-      reinterpret_cast<char *>(&num_mutants), sizeof(int));      //NOLINT
-
-  for (const auto& e : mData) {
-    Location first = e.getFirst();
-    Location last = e.getLast();
-    std::string mutationOperator = e.getOperator();
-    std::string path = e.getPath();
-    std::string func = e.getQualifiedFunction();
-    std::string token = e.getToken();
-    size_t operatorLength = mutationOperator.size();
-    size_t pathLength = path.size();
-    size_t funcLength = func.size();
-    size_t tokenLength = token.size();
-
-    outFile.write(
-        reinterpret_cast<char *>(&pathLength), sizeof(size_t));   //NOLINT
-    outFile.write(path.c_str(), pathLength);
-    outFile.write(
-        reinterpret_cast<char *>(&funcLength), sizeof(size_t));   //NOLINT
-    outFile.write(func.c_str(), funcLength);
-    outFile.write(
-        reinterpret_cast<char *>(&operatorLength), sizeof(size_t));   //NOLINT
-    outFile.write(mutationOperator.c_str(), operatorLength);
-    outFile.write(
-        reinterpret_cast<char *>(&tokenLength), sizeof(size_t));  //NOLINT
-    outFile.write(token.c_str(), tokenLength);
-    outFile.write(
-        reinterpret_cast<char *>(&first.line), sizeof(int));      //NOLINT
-    outFile.write(
-        reinterpret_cast<char *>(&first.column), sizeof(int));    //NOLINT
-    outFile.write(
-        reinterpret_cast<char *>(&last.line), sizeof(int));       //NOLINT
-    outFile.write(
-        reinterpret_cast<char *>(&last.column), sizeof(int));     //NOLINT
-  }
-
-  outFile.close();
-}
-
-std::string Mutables::readStringFromFile(std::ifstream& inFile) {
-  size_t length;
-  inFile.read(reinterpret_cast<char *>(&length), sizeof(size_t));  //NOLINT
-
-  char data[length + 1];  //NOLINT
-  inFile.read(&data[0], length);
-  data[length] = '\0';
-  std::string res{&data[0]};
-
-  return res;
-}
-
-int Mutables::readIntFromFile(std::ifstream& inFile) {
-  int res;
-  inFile.read(reinterpret_cast<char *>(&res), sizeof(int));  //NOLINT
-  return res;
+  Container<Mutable>::save(path);
 }
 
 }  // namespace sentinel

@@ -76,115 +76,77 @@ TEST_F(MutablesTest, testConstructorFailWhenInvalidDirGiven) {
 }
 
 TEST_F(MutablesTest, testAdd) {
-  Mutables m{OUTPUT_PATH};
+  Mutables m;
   Mutable newMutable("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
 
   EXPECT_EQ(m.size(), 0);
-  m.add(newMutable);
+  m.push_back(newMutable);
   EXPECT_EQ(m.size(), 1);
-  EXPECT_TRUE(equal(newMutable, m.get(0)));
+  EXPECT_TRUE(equal(newMutable, m.at(0)));
 }
 
 TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
-  Mutables m{OUTPUT_PATH};
-  EXPECT_THROW(m.get(0), std::out_of_range);
+  Mutables m;
+  EXPECT_THROW(m.at(0), std::out_of_range);
 }
 
 TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
-  Mutables m{OUTPUT_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutables m;
+  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
   Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
-  m.add(mutable1);
-  m.add(mutable2);
-  m.save();
-
+  m.push_back(mutable1);
+  m.push_back(mutable2);
+  m.save(OUTPUT_PATH);
   EXPECT_TRUE(os::path::exists(OUTPUT_PATH));
 
   std::ifstream inFile(OUTPUT_PATH);
-  EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
+  Mutable loaded_mutable1;
+  EXPECT_NO_THROW(inFile >> loaded_mutable1);
+  EXPECT_TRUE(equal(mutable1, loaded_mutable1));
 
-  std::string path = Mutables::readStringFromFile(inFile);
-  std::string func = Mutables::readStringFromFile(inFile);
-  std::string mutationOperator = Mutables::readStringFromFile(inFile);
-  std::string token = Mutables::readStringFromFile(inFile);
-  int firstLine = Mutables::readIntFromFile(inFile);
-  int firstColumn = Mutables::readIntFromFile(inFile);
-  int lastLine = Mutables::readIntFromFile(inFile);
-  int lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, func, firstLine,
-                                      firstColumn, lastLine, lastColumn,
-                                      token)));
-
-  path = Mutables::readStringFromFile(inFile);
-  func = Mutables::readStringFromFile(inFile);
-  mutationOperator = Mutables::readStringFromFile(inFile);
-  token = Mutables::readStringFromFile(inFile);
-  firstLine = Mutables::readIntFromFile(inFile);
-  firstColumn = Mutables::readIntFromFile(inFile);
-  lastLine = Mutables::readIntFromFile(inFile);
-  lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, func, firstLine,
-                                      firstColumn,
-                                      lastLine, lastColumn, token)));
+  Mutable loaded_mutable2;
+  EXPECT_NO_THROW(inFile >> loaded_mutable2);
+  EXPECT_TRUE(equal(mutable2, loaded_mutable2));
   inFile.close();
 }
 
 TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
-  Mutables m{NONEXISTED_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutables m;
+  Mutable mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
   Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
-  m.add(mutable1);
-  m.add(mutable2);
-  m.save();
-
+  m.push_back(mutable1);
+  m.push_back(mutable2);
+  m.save(NONEXISTED_PATH);
   EXPECT_TRUE(os::path::exists(NONEXISTED_PATH));
 
   std::ifstream inFile(NONEXISTED_PATH);
-  EXPECT_EQ(Mutables::readIntFromFile(inFile), 2);
+  Mutable loaded_mutable1;
+  EXPECT_NO_THROW(inFile >> loaded_mutable1);
+  EXPECT_TRUE(equal(mutable1, loaded_mutable1));
 
-  std::string path = Mutables::readStringFromFile(inFile);
-  std::string func = Mutables::readStringFromFile(inFile);
-  std::string mutationOperator = Mutables::readStringFromFile(inFile);
-  std::string token = Mutables::readStringFromFile(inFile);
-  int firstLine = Mutables::readIntFromFile(inFile);
-  int firstColumn = Mutables::readIntFromFile(inFile);
-  int lastLine = Mutables::readIntFromFile(inFile);
-  int lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable1, Mutable(mutationOperator, path, func, firstLine,
-                                      firstColumn, lastLine, lastColumn,
-                                      token)));
-
-  path = Mutables::readStringFromFile(inFile);
-  func = Mutables::readStringFromFile(inFile);
-  mutationOperator = Mutables::readStringFromFile(inFile);
-  token = Mutables::readStringFromFile(inFile);
-  firstLine = Mutables::readIntFromFile(inFile);
-  firstColumn = Mutables::readIntFromFile(inFile);
-  lastLine = Mutables::readIntFromFile(inFile);
-  lastColumn = Mutables::readIntFromFile(inFile);
-  EXPECT_TRUE(equal(mutable2, Mutable(mutationOperator, path, func, firstLine,
-                                      firstColumn,
-                                      lastLine, lastColumn, token)));
+  Mutable loaded_mutable2;
+  EXPECT_NO_THROW(inFile >> loaded_mutable2);
+  EXPECT_TRUE(equal(mutable2, loaded_mutable2));
   inFile.close();
 }
 
 TEST_F(MutablesTest, testLoad) {
-  Mutables m{OUTPUT_PATH};
-  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, MULTILINE_TOKEN);
+  Mutables m;
+  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
   Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
-  m.add(mutable1);
-  m.add(mutable2);
-  m.save();
+  m.push_back(mutable1);
+  m.push_back(mutable2);
+  m.save(OUTPUT_PATH);
 
-  Mutables m2{OUTPUT_PATH};
-  m2.load();
+  Mutables m2;
+  m2.load(OUTPUT_PATH);
   EXPECT_EQ(m2.size(), 2);
 
   // Could have made a two line EXPECT_TRUE to compare 2 mutables.
   // This is to test ranged-based for loop implementation is working.
   int counter = 0;
   for (const auto& e : m2) {
-    EXPECT_TRUE(equal(e, m.get(counter)));
+    EXPECT_TRUE(equal(e, m.at(counter)));
     counter += 1;
   }
 }

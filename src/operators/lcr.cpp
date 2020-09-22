@@ -57,12 +57,13 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
 
     for (const auto& mutatedToken : mLogicalOperators) {
       if (mutatedToken != token) {
-        mutables->add(Mutable(mName, path, func,
-          mSrcMgr.getExpansionLineNumber(opStartLoc),
-          mSrcMgr.getExpansionColumnNumber(opStartLoc),
-          mSrcMgr.getExpansionLineNumber(opEndLoc),
-          mSrcMgr.getExpansionColumnNumber(opEndLoc),
-          mutatedToken));
+        mutables->emplace_back(
+            mName, path, func,
+            mSrcMgr.getExpansionLineNumber(opStartLoc),
+            mSrcMgr.getExpansionColumnNumber(opStartLoc),
+            mSrcMgr.getExpansionLineNumber(opEndLoc),
+            mSrcMgr.getExpansionColumnNumber(opEndLoc),
+            mutatedToken);
       }
     }
   }
@@ -78,18 +79,20 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
   std::string func = astnode::getContainingFunctionQualifiedName(s,
     mContext);
-  mutables->add(Mutable(mName, path, func,
-    mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-    mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-    mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-    mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-    "1"));
-  mutables->add(Mutable(mName, path, func,
-    mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-    mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-    mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-    mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-    "0"));
+  mutables->emplace_back(
+      mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      "1");
+  mutables->emplace_back(
+      mName, path, func,
+      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
+      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
+      "0");
 }
 
 }  // namespace sentinel
