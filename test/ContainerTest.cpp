@@ -131,4 +131,11 @@ TEST_F(ContainerTest, testSaveAndLoad) {
   os::removeFile(path);
 }
 
+TEST_F(ContainerTest, testSplit) {
+  auto splitted = integers.split(0, 2);
+  EXPECT_EQ(2, splitted.size());
+  EXPECT_EQ(0, splitted[0]);
+  EXPECT_EQ(1, splitted[1]);
+}
+
 }  // namespace sentinel

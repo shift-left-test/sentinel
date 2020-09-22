@@ -173,6 +173,15 @@ class Container {
   void clear() noexcept;
 
   /**
+   * @brief Return the subset of the elements
+   *
+   * @param first index
+   * @param last index
+   * @return the subset of the elements
+   */
+  Container<T> split(std::size_t first, std::size_t last);
+
+  /**
    * @brief Save the elements to the file
    *
    * @param path to file
@@ -281,6 +290,13 @@ void Container<T>::shuffle() {
 template <typename T>
 void Container<T>::clear() noexcept {
   mData.clear();
+}
+
+template <typename T>
+Container<T> Container<T>::split(std::size_t first,
+                                 std::size_t last) {
+  return Container<T>(std::next(begin(), first),
+                      std::next(begin(), last));
 }
 
 template <typename T>
