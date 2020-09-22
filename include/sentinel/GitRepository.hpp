@@ -30,6 +30,7 @@
 #include "sentinel/exceptions/RepositoryException.hpp"
 #include "sentinel/Repository.hpp"
 #include "sentinel/SourceLines.hpp"
+#include "sentinel/SourceTree.hpp"
 #include "sentinel/Logger.hpp"
 
 
@@ -52,12 +53,9 @@ class GitRepository : public Repository {
    */
   virtual ~GitRepository();
 
-  /**
-   * @brief Return the source lines
-   *
-   * @return SourceLines object
-   */
-  SourceLines getSourceLines();
+  SourceLines getSourceLines() override;
+
+  std::shared_ptr<SourceTree> getSourceTree() override;
 
  private:
   std::string mPath;

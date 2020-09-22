@@ -34,68 +34,15 @@
 
 namespace sentinel {
 
-void SourceTree::modify(const Mutable& info,
-                        const std::string& gitRootPath,
-                        const std::string& backupPath) {
-  if (!os::path::exists(gitRootPath)) {
+SourceTree::SourceTree(const std::string& baseDirectory) :
+    mBaseDirectory(baseDirectory) {
+  if (!os::path::exists(mBaseDirectory)) {
     throw IOException(EINVAL);
   }
+}
 
-  // Backup target file to be mutated
-  std::string targetFilename = \
-      os::path::getAbsolutePath(info.getPath());
-  std::string gitRootAbsolutePath = \
-      os::path::getAbsolutePath(gitRootPath);
-  if (!string::startsWith(os::path::dirname(targetFilename),
-                          gitRootAbsolutePath)) {
-    throw IOException(EINVAL, "Git root does not contain " + targetFilename);
-  }
-  std::string targetRelativePath = \
-      os::path::dirname(targetFilename).substr(
-          gitRootAbsolutePath.length());
-  std::string newBackupPath = backupPath + "/" + targetRelativePath;
-  if (!os::path::exists(newBackupPath)) {
-    os::createDirectories(newBackupPath);
-  }
-  os::copyFile(targetFilename, newBackupPath);
-
-  // Apply mutation
-  std::ifstream originalFile(targetFilename);
-  std::stringstream buffer;
-  if (originalFile) {
-    buffer << originalFile.rdbuf();
-    originalFile.close();
-  } else {
-    throw IOException(EINVAL, "Fail to open " + targetFilename);
-  }
-  std::ofstream mutatedFile(targetFilename, std::ios::trunc);
-
-  // If code line is out of target range, just write to mutant file.
-  // If code line is in target range (start_line < code_line < end_line), skip.
-  // If code line is on start_line, write the code appearing before start_col,
-  // and write mutated token.
-  // If code line is on end_line, write the code appearing after end_col.
-  std::string line;
-  int lineIdx = 0;
-
-  while (std::getline(buffer, line)) {
-    lineIdx += 1;
-
-    if (lineIdx < info.getFirst().line || lineIdx > info.getLast().line) {
-      mutatedFile << line << std::endl;
-    }
-
-    if (lineIdx == info.getFirst().line) {
-      mutatedFile << line.substr(0, info.getFirst().column-1);
-      mutatedFile << info.getToken();
-    }
-
-    if (lineIdx == info.getLast().line) {
-      mutatedFile << line.substr(info.getLast().column-1) << std::endl;
-    }
-  }
-
-  mutatedFile.close();
+std::string SourceTree::getBaseDirectory() const {
+  return mBaseDirectory;
 }
 
 }  // namespace sentinel

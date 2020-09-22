@@ -26,6 +26,7 @@
 #define INCLUDE_SENTINEL_REPOSITORY_HPP_
 
 #include <memory>
+#include "sentinel/SourceLines.hpp"
 #include "sentinel/SourceTree.hpp"
 
 
@@ -35,6 +36,20 @@ namespace sentinel {
  * @brief Repository interface
  */
 class Repository {
+ public:
+  /**
+   * @brief Return the source lines
+   *
+   * @return SourceLines object
+   */
+  virtual SourceLines getSourceLines() = 0;
+
+  /**
+   * @brief Return the source tree
+   *
+   * @return SourceTree object
+   */
+  virtual std::shared_ptr<SourceTree> getSourceTree() = 0;
 };
 
 }  // namespace sentinel

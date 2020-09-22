@@ -39,15 +39,30 @@ class Mutable;
 class SourceTree {
  public:
   /**
+   * @brief Default constructor
+   *
+   * @param baseDirectory repository directory
+   */
+  explicit SourceTree(const std::string& baseDirectory);
+
+  /**
    * @brief Modify the source with respect to the given mutable information
    *
    * @param info Mutable information
-   * @param gitRootPath target git project root directory
    * @param backupPath backup directory
    */
-  void modify(const Mutable& info,
-              const std::string& gitRootPath,
-              const std::string& backupPath);
+  virtual void modify(const Mutable& info, const std::string& backupPath) = 0;
+
+ protected:
+  /**
+   * @brief Return the base directory of the repository
+   *
+   * @return base directory
+   */
+  std::string getBaseDirectory() const;
+
+ private:
+  std::string mBaseDirectory;
 };
 
 }  // namespace sentinel

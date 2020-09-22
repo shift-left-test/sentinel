@@ -24,13 +24,14 @@
 
 #include <gtest/gtest.h>
 #include <fstream>
-#include "sentinel/SourceTree.hpp"
+#include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/os.hpp"
 
+
 namespace sentinel {
 
-TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
+TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
@@ -40,9 +41,9 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
 
   Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
-  SourceTree tree;
+  GitSourceTree tree("/tmp");
   os::createDirectory("/tmp/sentineltest_backup");
-  tree.modify(m, "/tmp", "/tmp/sentineltest_backup");
+  tree.modify(m, "/tmp/sentineltest_backup");
 
   // backup exists
   EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
@@ -67,7 +68,7 @@ TEST(SourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   os::removeDirectories("/tmp/sentineltest_backup");
 }
 
-TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
+TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
@@ -78,9 +79,10 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   // If position does not exist, no changes should be made.
   Mutable nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
                                100, 200, 300, 400, "||"};
-  SourceTree tree;
+  GitSourceTree tree("/tmp");
   os::createDirectory("/tmp/sentineltest_backup");
-  tree.modify(nonexistLinePosition, "/tmp", "/tmp/sentineltest_backup");
+  tree.modify(nonexistLinePosition, "/tmp/sentineltest_backup");
+
   EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
   std::ifstream mutatedFile(tempFilename);
   std::ifstream origFile(targetFilename);
@@ -94,7 +96,7 @@ TEST(SourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   os::removeDirectories("/tmp/sentineltest_backup");
 }
 
-TEST(SourceTreeTest, testBackupWorks) {
+TEST(GitSourceTreeTest, testBackupWorks) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
@@ -108,15 +110,15 @@ TEST(SourceTreeTest, testBackupWorks) {
 
   Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
-  SourceTree tree;
+  GitSourceTree tree("/tmp");
   std::string backupPath = os::tempDirectory("/tmp/");
 
-  tree.modify(m, "/tmp", backupPath);
+  tree.modify(m, backupPath);
 
   // backup exists
   EXPECT_TRUE(os::path::exists(os::path::join(backupPath,
-                                                              tempSubDirName,
-                                                              filename)));
+                                              tempSubDirName,
+                                              filename)));
 
   // mutation is applied correctly
   std::ifstream mutatedFile(tempFilename);
@@ -140,4 +142,3 @@ TEST(SourceTreeTest, testBackupWorks) {
 }
 
 }  // namespace sentinel
-

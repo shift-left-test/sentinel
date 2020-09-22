@@ -26,6 +26,7 @@
 #include <git2.h>
 #include <sstream>
 #include "sentinel/GitRepository.hpp"
+#include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
@@ -196,6 +197,10 @@ SourceLines GitRepository::getSourceLines() {
   }
 
   return targetLines;
+}
+
+std::shared_ptr<SourceTree> GitRepository::getSourceTree() {
+  return std::make_shared<GitSourceTree>(mPath);
 }
 
 }  // namespace sentinel

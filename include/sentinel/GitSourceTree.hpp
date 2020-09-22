@@ -22,35 +22,31 @@
   SOFTWARE.
 */
 
-#include <iostream>
-#include <args/args.hxx>
-#include "sentinel/GitRepository.hpp"
-#include "sentinel/Mutables.hpp"
+#ifndef INCLUDE_SENTINEL_GITSOURCETREE_HPP_
+#define INCLUDE_SENTINEL_GITSOURCETREE_HPP_
+
+#include <string>
+#include "sentinel/Mutable.hpp"
 #include "sentinel/SourceTree.hpp"
-#include "sentinel/util/os.hpp"
 
 
-void mutateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable_db",
-    "Mutable database dir",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
-  args::ValueFlag<std::string> backup(parser, "backup_dir",
-    "Mutated souce backup dir",
-    {'b', "backup"}, args::Options::Required);
-  args::Positional<int> index(parser, "INDEX",
-    "Index of 'Mutable database' to be mutated",
-    args::Options::Required);
+namespace sentinel {
 
-  parser.Parse();
+/**
+ * @brief SourceTree class
+ */
+class GitSourceTree : public SourceTree {
+ public:
+  /**
+   * @brief Default constructor
+   *
+   * @param baseDirectory base directory
+   */
+  explicit GitSourceTree(const std::string& baseDirectory);
 
-  sentinel::Mutables mutables(
-      sentinel::os::path::join(input.Get(), "mutables.db"));
-  mutables.load();
-  sentinel::Mutable m = mutables.get(index.Get());
+  void modify(const Mutable& info, const std::string& backupPath) override;
+};
 
-  sentinel::GitRepository repository(git.Get());
-  repository.getSourceTree()->modify(m, backup.Get());
-}
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_GITSOURCETREE_HPP_
