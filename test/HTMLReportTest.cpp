@@ -55,13 +55,13 @@ class HTMLReportTest : public ::testing::Test {
     std::string NESTED_SOURCE_DIR2 = os::tempDirectory(
         os::path::join(SOURCE_DIR, "NESTED_DIR2"));
 
-    TARGET_FULL_PATH = os::tempFilenameWithSuffix(
+    TARGET_FULL_PATH = os::tempFilename(
         NESTED_SOURCE_DIR + "/target1", ".cpp");
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
-    TARGET_FULL_PATH2 = os::tempFilenameWithSuffix(
+    TARGET_FULL_PATH2 = os::tempFilename(
         NESTED_SOURCE_DIR2 + "/target2", ".cpp");
     writeFile(TARGET_FULL_PATH2, TARGET_CONTENT2);
-    TARGET_FULL_PATH3 = os::tempFilenameWithSuffix(
+    TARGET_FULL_PATH3 = os::tempFilename(
         NESTED_SOURCE_DIR2 + "/target3", ".cpp");
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
 

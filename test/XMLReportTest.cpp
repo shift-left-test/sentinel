@@ -52,10 +52,10 @@ class XMLReportTest : public ::testing::Test {
     std::string NESTED_SOURCE_DIR = os::tempDirectory(
         os::path::join(SOURCE_DIR, "NESTED_DIR"));
 
-    TARGET_FULL_PATH = os::tempFilenameWithSuffix(
+    TARGET_FULL_PATH = os::tempFilename(
         SOURCE_DIR + "/", ".cpp");
     std::string TARGET_NAME = os::path::filename(TARGET_FULL_PATH);
-    TARGET_FULL_PATH2 = os::tempFilenameWithSuffix(
+    TARGET_FULL_PATH2 = os::tempFilename(
         NESTED_SOURCE_DIR + "/", ".cpp");
     std::string TARGET_NAME2 = os::path::filename(TARGET_FULL_PATH2);
     EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,

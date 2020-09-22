@@ -39,17 +39,17 @@ class OsTest : public ::testing::Test {
   void SetUp() override {
     using os::path::join;
     using os::tempFilename;
-    using os::tempFilenameWithSuffix;
+    using os::tempFilename;
     using os::tempPath;
     using os::tempDirectory;
 
     BASE = tempDirectory("fixture");
     FILE = tempFilename(join(BASE, "file"));
-    FILE_XML = tempFilenameWithSuffix(join(BASE, "file"), ".xml");
+    FILE_XML = tempFilename(join(BASE, "file"), ".xml");
     DIRECTORY = tempDirectory(join(BASE, "dir"));
     COPY_DIRECTORY = tempDirectory(join(BASE, "dir"));
     NESTED_FILE = tempFilename(join(DIRECTORY, "file"));
-    NESTED_FILE_TXT = tempFilenameWithSuffix(join(DIRECTORY, "file"), ".TXT");
+    NESTED_FILE_TXT = tempFilename(join(DIRECTORY, "file"), ".TXT");
     NESTED_DIRECTORY = tempDirectory(join(DIRECTORY, "dir"));
     UNKNOWN_PATH = "unknown/unknown";
     UNKNOWN_NESTED_PATH = tempPath(join(DIRECTORY, "unknown"));

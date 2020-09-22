@@ -66,6 +66,7 @@ TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   origFile.close();
   mutatedFile.close();
   os::removeDirectories("/tmp/sentineltest_backup");
+  os::removeFile(tempFilename);
 }
 
 TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
@@ -94,17 +95,18 @@ TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   origFile.close();
   mutatedFile.close();
   os::removeDirectories("/tmp/sentineltest_backup");
+  os::removeFile(tempFilename);
 }
 
 TEST(GitSourceTreeTest, testBackupWorks) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
-  std::string tempSubDirName = os::tempPath();
-  std::string tempSubDirPath = "/tmp/" + tempSubDirName + "/";
+  std::string tempSubDirPath = os::tempPath("/tmp/");
+  std::string tempSubDirName = os::path::filename(tempSubDirPath);
   os::createDirectory(tempSubDirPath);
 
-  std::string tempFilename = os::tempFilename(tempSubDirPath);
+  std::string tempFilename = os::tempFilename(tempSubDirPath + "/");
   std::string filename = os::path::filename(tempFilename);
   os::copyFile(targetFilename, tempFilename);
 

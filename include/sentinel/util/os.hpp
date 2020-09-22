@@ -35,6 +35,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <regex>
 #include <string>
 #include <vector>
@@ -324,18 +325,45 @@ inline void removeDirectories(const std::string& path) {
 }
 
 /**
- * @brief Create a temporary file with the given template.
+ * @brief Replace the file dest with the file src.
  *
- * @param prefix of the filename
- * @return temporary filename
- * @throw IOException if not able to create a file
+ * @param src replacing file
+ * @param dest to-be-replaced file
+ * @throw IOException src is not an exising file, or
+ *                    dest is an existing directory.
  */
-inline std::string tempFilename(const std::string& prefix = "") {
-  auto path = prefix + "XXXXXX";
-  if (mkstemp(&path[0]) == -1) {
+inline void rename(const std::string& src, const std::string& dest) {
+  if (!path::isRegularFile(src)) {
+    throw IOException(EINVAL);
+  }
+  if (std::rename(src.c_str(), dest.c_str()) != 0) {
     throw IOException(errno);
   }
-  return path;
+}
+
+/**
+ * @brief Create a temporary file name with given template.
+ *
+ * @param prefix front part of file name template
+ * @param suffix end part of file name template
+ * @return temporary file name.
+ * @throw IOException a unique name cannot be created.
+ */
+inline std::string tempPath(const std::string& prefix = "",
+                            const std::string& suffix = "") {
+  std::string s =
+      "abcdefghijklmnoperstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  std::string temp;
+
+  std::random_device r;
+  std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+  std::mt19937 eng(seed);
+
+  do {
+    std::shuffle(s.begin(), s.end(), eng);
+    temp = prefix + s.substr(0, 8) + suffix;
+  } while (os::path::exists(temp));
+  return temp;
 }
 
 /**
@@ -346,26 +374,13 @@ inline std::string tempFilename(const std::string& prefix = "") {
  * @return temporary filename
  * @throw IOException if not able to create a file
  */
-inline std::string tempFilenameWithSuffix(const std::string& prefix = "",
+inline std::string tempFilename(const std::string& prefix = "",
     const std::string& suffix = "") {
-  auto path = prefix + "XXXXXX" + suffix;
-  if (mkstemps(&path[0], suffix.length()) == -1) {
-    throw IOException(errno);
-  }
-  return path;
-}
 
-/**
- * @brief Create a temporary file name with given template.
- *
- * @param prefix front part of file name template, before XXXXXX
- * @return temporary file name.
- * @throw IOException a unique name cannot be created.
- */
-inline std::string tempPath(const std::string& prefix = "") {
-  auto path = tempFilename(prefix);
-  removeFile(path);
-  return path;
+  auto retPath = tempPath(prefix, suffix);
+  std::fstream fs(retPath, std::fstream::out);
+  fs.close();
+  return retPath;
 }
 
 /**
@@ -381,23 +396,6 @@ inline std::string tempDirectory(const std::string& prefix = "") {
     throw IOException(errno);
   }
   return path;
-}
-
-/**
- * @brief Replace the file dest with the file src.
- *
- * @param src replacing file
- * @param dest to-be-replaced file
- * @throw IOException src is not an exising file, or
- *                    dest is an existing directory.
- */
-inline void rename(const std::string& src, const std::string& dest) {
-  if (!path::isRegularFile(src)) {
-    throw IOException(EINVAL);
-  }
-  if (std::rename(src.c_str(), dest.c_str()) != 0) {
-    throw IOException(errno);
-  }
 }
 
 /**

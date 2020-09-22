@@ -79,7 +79,7 @@ class EvaluatorTest : public ::testing::Test {
 
   void MAKE_RESULT_XML(const std::string& dirPath,
       const std::string& fileContent) {
-    std::string tmp = os::tempFilenameWithSuffix(
+    std::string tmp = os::tempFilename(
         os::path::join(dirPath, "pre"), ".xml");
     std::ofstream tmpfile;
     tmpfile.open(tmp.c_str());
