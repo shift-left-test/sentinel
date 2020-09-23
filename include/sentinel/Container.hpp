@@ -31,6 +31,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -301,6 +302,10 @@ Container<T> Container<T>::split(std::size_t first,
 
 template <typename T>
 void Container<T>::save(const std::string& path) {
+  auto dirname = os::path::dirname(path);
+  if (!os::path::exists(dirname)) {
+    os::createDirectories(dirname);
+  }
   std::ofstream ofs(path);
   for (const auto& data : mData) {
     ofs << data << std::endl;

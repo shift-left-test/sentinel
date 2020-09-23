@@ -33,15 +33,7 @@
 
 namespace sentinel {
 
-/**
- * @brief Mutables class
- */
-class Mutables : public Container<Mutable> {
- public:
-  using Container<Mutable>::Container;
-
-  void save(const std::string& path) override;
-};
+using Mutables = Container<Mutable>;
 
 }  // namespace sentinel
 

@@ -50,7 +50,7 @@ class Report {
   /**
    * @brief Default Destructor
    */
-  ~Report();
+  virtual ~Report();
   /**
    * @brief Save the report to the given path
    *

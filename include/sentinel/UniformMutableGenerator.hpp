@@ -87,7 +87,7 @@ class UniformMutableGenerator : public MutableGenerator {
     /**
      * @brief Default destructor
      */
-    ~SentinelASTVisitor();
+    virtual ~SentinelASTVisitor();
 
     bool VisitStmt(clang::Stmt *s);
 

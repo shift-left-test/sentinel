@@ -25,8 +25,8 @@
 #ifndef INCLUDE_SENTINEL_RESULT_HPP_
 #define INCLUDE_SENTINEL_RESULT_HPP_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 
 namespace sentinel {

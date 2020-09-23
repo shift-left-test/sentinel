@@ -32,6 +32,7 @@
 #include <string>
 #include "sentinel/Mutables.hpp"
 
+
 namespace sentinel {
 
 /**
@@ -50,7 +51,7 @@ class MutationOperator {
   }
 
   /**
-   * @brief Default destructor 
+   * @brief Default destructor
    */
   virtual ~MutationOperator() {}
 
@@ -91,4 +92,4 @@ class MutationOperator {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP__
+#endif  // INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_

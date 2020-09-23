@@ -22,11 +22,11 @@
   SOFTWARE.
 */
 
+#include <clang/Lex/Lexer.h>
+#include <clang/Tooling/CompilationDatabase.h>
+#include <clang/Tooling/Tooling.h>
 #include <algorithm>
 #include <map>
-#include "clang/Lex/Lexer.h"
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/Tooling.h"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"

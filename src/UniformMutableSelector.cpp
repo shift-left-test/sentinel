@@ -42,14 +42,14 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
 
   for (const auto& line : sourceLines) {
     std::vector<Mutable> temp;
-    for (int i = 0; i < mutables.size(); ++i) {
-      Mutable m = mutables.at(i);
-      if (os::path::comparePath(m.getPath(), line.getPath()) &&
-          m.getFirst().line <= line.getLineNumber() &&
-          m.getLast().line >= line.getLineNumber()) {
-        temp.push_back(m);
-      }
-    }
+
+    auto pred = [&](const auto& m) {
+      return os::path::comparePath(m.getPath(), line.getPath()) &&
+      m.getFirst().line <= line.getLineNumber() &&
+      m.getLast().line >= line.getLineNumber();
+    };
+    std::copy_if(mutables.begin(), mutables.end(),
+                 std::back_inserter(temp), pred);
 
     if (temp.empty()) {
       continue;
