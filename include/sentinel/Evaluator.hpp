@@ -43,27 +43,25 @@ class Evaluator {
   /**
    * @brief Default constructor
    *
-   * @param mutableDBDir Directory Path of Mutable Database
+   * @param mut taget mutable
    * @param expectedResultDir Directory Path of Expected Result
    * @param outDir Directory Path of MutationResult
-   * @param logger object
    */
-  Evaluator(const std::string& mutableDBDir,
+  Evaluator(const Mutable& mut,
             const std::string& expectedResultDir,
-            const std::string& outDir,
-            const std::shared_ptr<Logger>& logger = nullptr);
+            const std::string& outDir);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
    *
    * @param ActualResultDir Directory Path of Actural Result
-   * @param mutableDBIdx Index of Mutable Database
    * @return MutationResult summary of compare
    */
   MutationResult compareAndSaveMutationResult(
-      const std::string& ActualResultDir, int mutableDBIdx);
+      const std::string& ActualResultDir);
 
  private:
+  const Mutable& mMutable;
   std::shared_ptr<Logger> mLogger;
   std::string mOutDir;
   Mutables mMutables;

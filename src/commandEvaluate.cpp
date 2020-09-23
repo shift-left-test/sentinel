@@ -23,15 +23,17 @@
 */
 
 #include <iostream>
+#include <sstream>
 #include <args/args.hxx>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/Mutable.hpp"
 #include "sentinel/util/os.hpp"
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable_db",
-    "Mutable database dir",
+  args::ValueFlag<std::string> input(parser, "mutable string",
+    "Mutable string",
     {'i', "input"}, args::Options::Required);
   args::ValueFlag<std::string> expected(parser, "test_dir",
     "Expected result directory",
@@ -42,17 +44,21 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> output(parser, "eval_dir",
     "Mutation applied test result",
     {'o', "output"}, ".");
-  args::Positional<int> index(parser, "INDEX",
-    "Index of 'mutable database' to be evaluated",
-    args::Options::Required);
 
   parser.Parse();
 
-  sentinel::Evaluator evaluator(
-      sentinel::os::path::join(input.Get(), "mutables.db"),
-      expected.Get(),
-      output.Get());
+  sentinel::Mutable m;
+  std::istringstream iss(input.Get());
+  iss >> m;
+
+  //  delete exists MutationResult File
+  auto mRPath = sentinel::os::path::join(output.Get(), "MutationResult");
+  if (sentinel::os::path::exists(mRPath)) {
+    sentinel::os::removeFile(mRPath);
+  }
+
+  sentinel::Evaluator evaluator(m, expected.Get(), output.Get());
 
   evaluator.compareAndSaveMutationResult(
-      actual.Get(), index.Get());
+      actual.Get());
 }

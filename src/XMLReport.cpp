@@ -24,7 +24,6 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <ctime>
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -40,36 +39,14 @@ XMLReport::XMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void XMLReport::save(const std::string& path) {
-  if (os::path::exists(path)) {
-    if (!os::path::isDirectory(path)) {
-      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-                                                 path));
-    }
-  } else {
-    os::createDirectory(path);
-  }
-
-  std::time_t rawtime;
-  std::tm* timeinfo;
-  char buffer[80];
-
-  rawtime = mResults.getLastModified();
-  if (rawtime == -1) {
-    std::time(&rawtime);
-  }
-
-  timeinfo = std::localtime(&rawtime);
-  std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
-
-  auto dirPath = os::path::join(path, buffer);
+void XMLReport::save(const std::string& dirPath) {
   if (os::path::exists(dirPath)) {
     if (!os::path::isDirectory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-        dirPath));
+      throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})",
+                                                 dirPath));
     }
   } else {
-    os::createDirectory(dirPath);
+    os::createDirectories(dirPath);
   }
 
   auto xmlPath = os::path::join(dirPath, "mutations.xml");
@@ -85,16 +62,16 @@ void XMLReport::save(const std::string& path) {
     pMutation->SetAttribute("detected", r.getDetected());
 
     addChildToParent(doc, pMutation, "sourceFile",
-        os::path::filename(r.getPath()));
+        os::path::filename(r.getMutable().getPath()));
     addChildToParent(doc, pMutation, "sourceFilePath",
-                     os::path::getRelativePath(r.getPath(), mSourcePath));
-    addChildToParent(doc, pMutation, "mutatedClass", r.getMutatedClass());
-    addChildToParent(doc, pMutation, "mutatedMethod", r.getMutatedMethod());
-    addChildToParent(doc, pMutation, "methodDescription",
-        r.getMethodDescription());
+                     os::path::getRelativePath(r.getMutable().getPath(),
+                                               mSourcePath));
+    addChildToParent(doc, pMutation, "mutatedClass", r.getMutable().getClass());
+    addChildToParent(doc, pMutation, "mutatedMethod",
+                     r.getMutable().getFunction());
     addChildToParent(doc, pMutation, "lineNumber",
-        std::to_string(r.getLineNum()));
-    addChildToParent(doc, pMutation, "mutator", r.getMutator());
+        std::to_string(r.getMutable().getFirst().line));
+    addChildToParent(doc, pMutation, "mutator", r.getMutable().getOperator());
     addChildToParent(doc, pMutation, "killingTest", r.getKillingTest());
 
     pMutations->InsertEndChild(pMutation);

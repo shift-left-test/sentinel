@@ -54,47 +54,43 @@ class MutationResultsTest : public ::testing::Test {
 };
 
 TEST_F(MutationResultsTest, testAdd) {
-  MutationResults MRs(OUT_DIR);
+  MutationResults MRs;
   Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
-  MutationResult MR1(M1, "testAdd", true, 0);
   EXPECT_EQ(0, MRs.size());
-
-  MRs.add(MR1);
+  MutationResult MR1(M1, "testAdd", true);
+  MRs.push_back(MR1);
   EXPECT_EQ(1, MRs.size());
 
-  EXPECT_TRUE(MRs.get(0).compare(MR1));
-  EXPECT_EQ(MRs.get(0).getMutator(), "AOR");
-  EXPECT_TRUE(os::path::comparePath(MR1.getPath(), TARGET_FILE));
-  EXPECT_EQ(MR1.getLineNum(), 0);
+  EXPECT_TRUE(MRs[0].compare(MR1));
+  EXPECT_EQ(MRs[0].getMutable().getOperator(), "AOR");
+  EXPECT_TRUE(os::path::comparePath(MR1.getMutable().getPath(), TARGET_FILE));
+  EXPECT_EQ(MR1.getMutable().getFirst().line, 0);
 }
 
 TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
-  MutationResults m{OUT_DIR};
-  EXPECT_THROW(m.get(0), std::out_of_range);
+  MutationResults m;
+  EXPECT_THROW(m[0], std::out_of_range);
 }
 
 TEST_F(MutationResultsTest, testSaveAndLoad) {
-  MutationResults MRs(OUT_DIR);
+  MutationResults MRs;
 
   Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "testAdd", false, 0);
-  MRs.add(MR1);
+  MutationResult MR1(M1, "testAdd", false);
+  MRs.push_back(MR1);
 
   Mutable M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
-  MutationResult MR2(M2, "testAddBit", true, 1);
-  MRs.add(MR2);
+  MutationResult MR2(M2, "testAddBit", true);
+  MRs.push_back(MR2);
 
-  MRs.save();
-  EXPECT_TRUE(os::path::exists(os::path::join(
-      OUT_DIR, "0.MutationResult")));
-  EXPECT_TRUE(os::path::exists(os::path::join(
-      OUT_DIR, "1.MutationResult")));
+  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  MRs.save(mrPath);
+  EXPECT_TRUE(os::path::exists(mrPath));
 
-  MutationResults MRs2(OUT_DIR);
-  MRs2.load();
-
-  EXPECT_TRUE(MRs2.get(0).compare(MR1));
-  EXPECT_TRUE(MRs2.get(1).compare(MR2));
+  MutationResults MRs2;
+  MRs2.load(mrPath);
+  EXPECT_TRUE(MRs2[0].compare(MR1));
+  EXPECT_TRUE(MRs2[1].compare(MR2));
 }
 
 }  // namespace sentinel

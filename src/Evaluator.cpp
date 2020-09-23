@@ -23,35 +23,39 @@
 */
 
 #include <fmt/core.h>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include "sentinel/Evaluator.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutable.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
-Evaluator::Evaluator(const std::string& mutableDBDir,
+Evaluator::Evaluator(const Mutable& mut,
                      const std::string& expectedResultDir,
-                     const std::string& outDir,
-                     const std::shared_ptr<Logger>& logger) :
-    mExpectedResult(expectedResultDir), mLogger(logger), mOutDir(outDir) {
-  if (mLogger == nullptr) {
-    mLogger = Logger::getLogger("Evaluator");
-  }
+                     const std::string& outDir) :
+    mMutable(mut), mExpectedResult(expectedResultDir), mOutDir(outDir),
+    mLogger(Logger::getLogger("Evaluator")) {
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
-  mMutables.load(mutableDBDir);
-  mLogger->debug(fmt::format("Load mutable DB: {}", mutableDBDir));
+
+  if (os::path::exists(mOutDir)) {
+    if (!os::path::isDirectory(mOutDir)) {
+      throw InvalidArgumentException(fmt::format(
+          "dirPath isn't directory({0})", mOutDir));
+    }
+  } else {
+    os::createDirectories(mOutDir);
+  }
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(
-    const std::string& ActualResultDir, int mutableDBIdx) {
-  auto mMutable = mMutables.at(mutableDBIdx);
-  mLogger->debug(fmt::format("Load mutable idx: {}", mutableDBIdx));
-
+    const std::string& ActualResultDir) {
   Result mActualResult(ActualResultDir);
   mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
 
@@ -59,9 +63,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
 
   std::cout << fmt::format(
-      "{idx:>5}/{size:<5}: {mu}({path}, {sl}:{sc}-{el}:{ec}) {status}{kT}",
-      fmt::arg("idx", mutableDBIdx+1),
-      fmt::arg("size", mMutables.size()),
+      "{mu}({path}, {sl}:{sc}-{el}:{ec}) {status}{kT}",
       fmt::arg("mu", mMutable.getOperator()),
       fmt::arg("path", mMutable.getPath()),
       fmt::arg("sl", mMutable.getFirst().line),
@@ -73,8 +75,15 @@ MutationResult Evaluator::compareAndSaveMutationResult(
             << std::endl;
 
   MutationResult ret(mMutable, killingTC,
-                     killingTC.length() != 0, mutableDBIdx);
-  ret.saveToFile(mOutDir);
+                     killingTC.length() != 0);
+
+  std::string filePath = os::path::join(mOutDir, "MutationResult");
+
+  std::ofstream outFile(filePath.c_str(),
+      std::ios::out | std::ios::app);
+  outFile << ret << std::endl;
+  outFile.close();
+
   mLogger->debug(fmt::format("Save MutationResult: {}", mOutDir));
 
   return ret;

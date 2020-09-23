@@ -44,9 +44,10 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
 
   parser.Parse();
 
-  sentinel::XMLReport xmlReport(input.Get(), git.Get());
+  auto mRPath = sentinel::os::path::join(input.Get(), "MutationResult");
+  sentinel::XMLReport xmlReport(mRPath, git.Get());
   xmlReport.save(output.Get());
-  sentinel::HTMLReport htmlReport(input.Get(), git.Get());
+  sentinel::HTMLReport htmlReport(mRPath, git.Get());
   htmlReport.save(output.Get());
   htmlReport.printSummary();
 }

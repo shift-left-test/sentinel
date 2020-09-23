@@ -29,80 +29,19 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
-MutationResult::MutationResult(const sentinel::Mutable& mut,
+MutationResult::MutationResult(const Mutable& m,
                                const std::string& killingTest,
-                               bool detected,
-                               int indexOfMutableDB) :
+                               bool detected) :
     mKillingTest(killingTest), mDetected(detected),
-    mIndexOfMutableDB(indexOfMutableDB), mLineNum(mut.getFirst().line),
-    // mMethodDescription(mut.getMethodDescription()),
-    // mMutatedClass(mut.getMutatedClass()),
-    // mMutatedMethod(mut.getMutatedMethod()),
-    mMethodDescription(""), mMutatedClass(""), mMutatedMethod(""),
-    mMutator(mut.getOperator()), mPath(mut.getPath()) {
-}
-
-MutationResult::MutationResult(const std::string& mutationResultFilePath) {
-  if (!os::path::exists(mutationResultFilePath) ||
-      os::path::isDirectory(mutationResultFilePath)) {
-    throw InvalidArgumentException(fmt::format(
-        "mutationResultFilePath doesn't have MutationResult({0})",
-        mutationResultFilePath));
-  }
-
-  std::ifstream inFile(mutationResultFilePath.c_str());
-
-  mMethodDescription = readStringFromFile(inFile);
-  mMutator = readStringFromFile(inFile);
-  mMutatedClass = readStringFromFile(inFile);
-  mMutatedMethod = readStringFromFile(inFile);
-  mPath = readStringFromFile(inFile);
-  mKillingTest = readStringFromFile(inFile);
-
-  // avoid no initialization warn
-  mDetected = false;
-  mLineNum = 0;
-  mIndexOfMutableDB = 0;
-
-  inFile.read(reinterpret_cast<char *>(&mDetected),    //NOLINT
-              sizeof(mDetected));
-  inFile.read(reinterpret_cast<char *>(&mLineNum),    //NOLINT
-              sizeof(mLineNum));
-  inFile.read(reinterpret_cast<char *>(&mIndexOfMutableDB),    //NOLINT
-              sizeof(mIndexOfMutableDB));
-  inFile.close();
-
-  struct stat sb = {};
-  lstat(mutationResultFilePath.c_str(), &sb);
-  mLastModified = sb.st_mtime;
-}
-
-std::string MutationResult::getMethodDescription() const {
-  return mMethodDescription;
-}
-
-std::string MutationResult::getMutator() const {
-  return mMutator;
-}
-
-std::string MutationResult::getMutatedClass() const {
-  return mMutatedClass;
-}
-
-std::string MutationResult::getMutatedMethod() const {
-  return mMutatedMethod;
-}
-
-std::string MutationResult::getPath() const {
-  return mPath;
+    mMutable(m) {
 }
 
 std::string MutationResult::getKillingTest() const {
@@ -113,82 +52,34 @@ bool MutationResult::getDetected() const {
   return mDetected;
 }
 
-int MutationResult::getLineNum() const {
-  return mLineNum;
+const Mutable& MutationResult::getMutable() const {
+  return mMutable;
 }
-
-int MutationResult::getIndexOfMutableDB() const {
-  return mIndexOfMutableDB;
-}
-
-std::time_t MutationResult::getLastModifiedTime() const {
-  return mLastModified;
-}
-
-void MutationResult::saveToFile(const std::string& dirPath) const {
-  if (os::path::exists(dirPath)) {
-    if (!os::path::isDirectory(dirPath)) {
-      throw InvalidArgumentException(fmt::format(
-          "dirPath isn't directory({0})", dirPath));
-    }
-  } else {
-    os::createDirectory(dirPath);
-  }
-
-  std::string filePath = os::path::join(dirPath,
-        std::to_string(getIndexOfMutableDB()).append(".MutationResult"));
-
-  std::ofstream outFile(filePath.c_str(),
-      std::ios::out | std::ios::binary);
-
-  writeStringToFile(outFile, mMethodDescription);
-  writeStringToFile(outFile, mMutator);
-  writeStringToFile(outFile, mMutatedClass);
-  writeStringToFile(outFile, mMutatedMethod);
-  writeStringToFile(outFile, mPath);
-  writeStringToFile(outFile, mKillingTest);
-
-  outFile.write(reinterpret_cast<const char *>(&mDetected),    //NOLINT
-      sizeof(mDetected));
-  outFile.write(reinterpret_cast<const char *>(&mLineNum),    //NOLINT
-      sizeof(mLineNum));
-  outFile.write(reinterpret_cast<const char *>(&mIndexOfMutableDB),    //NOLINT
-      sizeof(mIndexOfMutableDB));
-
-  outFile.close();
-}
-
 
 bool MutationResult::compare(const MutationResult& other) const {
-  return mMethodDescription == other.getMethodDescription() &&
-      mMutator == other.getMutator() &&
-      mMutatedClass == other.getMutatedClass() &&
-      mMutatedMethod == other.getMutatedMethod() &&
-      mPath == other.getPath() &&
+  return mMutable.compare(other.getMutable()) &&
       mKillingTest == other.getKillingTest() &&
-      mDetected == other.getDetected() &&
-      mLineNum == other.getLineNum() &&
-      mIndexOfMutableDB == other.getIndexOfMutableDB();
+      mDetected == other.getDetected();
 }
 
-std::string MutationResult::readStringFromFile(std::ifstream& inFile) {
-  std::size_t length;
-  inFile.read(reinterpret_cast<char *>(&length), sizeof(size_t));    //NOLINT
-
-  char data[length + 1];    //NOLINT
-  inFile.read(&data[0], length);
-  data[length] = '\0';
-  std::string res{&data[0]};
-
-  return res;
+std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
+  out << fmt::format("{}\t{}\t\t", mr.getKillingTest(),
+                     mr.getDetected() ? 1 : 0);
+  out << mr.getMutable();
+  return out;
 }
 
-void MutationResult::writeStringToFile(std::ofstream& outFile,
-    const std::string& outString) const {
-  std::size_t mOutStringSize = outString.size();
-  outFile.write(reinterpret_cast<char *>(&mOutStringSize),    //NOLINT
-                sizeof(std::size_t));
-  outFile.write(outString.c_str(), mOutStringSize);
+std::istream& operator>>(std::istream& in, MutationResult &mr) {
+  std::string line;
+  if (getline(in, line)) {
+    auto sep = string::split(line, "\t\t");
+    auto str = string::split(sep[0], "\t");
+    Mutable m;
+    std::istringstream iss(sep[1]);
+    iss >> m;
+    mr = MutationResult(m, str[0], std::stoi(str[1]) == 1);
+  }
+  return in;
 }
 
 }  // namespace sentinel

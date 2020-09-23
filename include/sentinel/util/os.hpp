@@ -409,7 +409,7 @@ inline std::vector<std::string> findFilesInDirUsingRgx(
   std::shared_ptr<DIR> dir_ptr(opendir(dir.c_str()),
       [](DIR* dir){ if (dir != nullptr) { closedir(dir); } });
   if (dir_ptr == nullptr) {
-    throw sentinel::IOException(errno, "Error opening: "+ dir);
+    throw IOException(errno, "Error opening: "+ dir);
   }
 
   std::vector<std::string> files;

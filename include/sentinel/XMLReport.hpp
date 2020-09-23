@@ -48,11 +48,11 @@ class XMLReport : public Report {
   /**
    * @brief save xml format result to path 
    *
-   * @param path path of output directory
+   * @param dirPath
    *
    * @throw InvalidArgumentException when path is not directory
    */
-  void save(const std::string& path) override;
+  void save(const std::string& dirPath) override;
 
  private:
   /**

@@ -40,27 +40,27 @@ Result::Result(const std::string& path) {
     tinyxml2::XMLDocument doc;
     auto errcode = doc.LoadFile(xmlPath.c_str());
     if (errcode != 0) {
-      throw sentinel::XMLException(xmlPath, errcode);
+      throw XMLException(xmlPath, errcode);
     }
 
     tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
     if (pRoot == nullptr) {
-      throw sentinel::XMLException(xmlPath, errMsg);
+      throw XMLException(xmlPath, errMsg);
     }
     tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
     if (p == nullptr) {
-      throw sentinel::XMLException(xmlPath, errMsg);
+      throw XMLException(xmlPath, errMsg);
     }
 
     for ( ; p != nullptr ; p = p->NextSiblingElement("testsuite")) {
       tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
       if (q == nullptr) {
-        throw sentinel::XMLException(xmlPath, errMsg);
+        throw XMLException(xmlPath, errMsg);
       }
       for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
         const char* pStatus = q->Attribute("status");
         if (pStatus == nullptr) {
-          throw sentinel::XMLException(xmlPath, errMsg);
+          throw XMLException(xmlPath, errMsg);
         }
 
         if (std::string(pStatus) == std::string("run")  &&
@@ -68,7 +68,7 @@ Result::Result(const std::string& path) {
           const char* pClassName = q->Attribute("classname");
           const char* pName = q->Attribute("name");
           if (pClassName == nullptr || pName == nullptr) {
-            throw sentinel::XMLException(xmlPath, errMsg);
+            throw XMLException(xmlPath, errMsg);
           }
 
           std::string className = std::string(pClassName);

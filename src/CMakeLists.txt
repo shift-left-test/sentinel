@@ -27,7 +27,7 @@ build_static_library(
   SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp Mutables.cpp
        UniformMutableGenerator.cpp UniformMutableSelector.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
-       MutationResult.cpp MutationResults.cpp GitSourceTree.cpp
+       MutationResult.cpp GitSourceTree.cpp
        Report.cpp XMLReport.cpp HTMLReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp

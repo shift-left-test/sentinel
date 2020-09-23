@@ -67,6 +67,7 @@ class XMLReportTest : public ::testing::Test {
   void TearDown() override {
     os::removeDirectories(BASE);
   }
+
   std::string BASE;
   std::string OUT_DIR;
   std::string MUT_RESULT_DIR;
@@ -80,8 +81,7 @@ class XMLReportTest : public ::testing::Test {
       "        <sourceFile>{0}</sourceFile>\n"
       "        <sourceFilePath>{1}</sourceFilePath>\n"
       "        <mutatedClass></mutatedClass>\n"
-      "        <mutatedMethod></mutatedMethod>\n"
-      "        <methodDescription></methodDescription>\n"
+      "        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>\n"
       "        <lineNumber>4</lineNumber>\n"
       "        <mutator>AOR</mutator>\n"
       "        <killingTest></killingTest>\n"
@@ -90,8 +90,7 @@ class XMLReportTest : public ::testing::Test {
       "        <sourceFile>{2}</sourceFile>\n"
       "        <sourceFilePath>{3}</sourceFilePath>\n"
       "        <mutatedClass></mutatedClass>\n"
-      "        <mutatedMethod></mutatedMethod>\n"
-      "        <methodDescription></methodDescription>\n"
+      "        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>\n"
       "        <lineNumber>1</lineNumber>\n"
       "        <mutator>BOR</mutator>\n"
       "        <killingTest>testAddBit</killingTest>\n"
@@ -101,15 +100,19 @@ class XMLReportTest : public ::testing::Test {
 TEST_F(XMLReportTest, testMakeXMLReport) {
   Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "", false, 0);
-  MR1.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR1(M1, "", false);
 
   Mutable M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              1, 2, 3, 4, "|");
-  MutationResult MR2(M2, "testAddBit", true, 1);
-  MR2.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR2(M2, "testAddBit", true);
 
-  XMLReport xmlreport(MUT_RESULT_DIR, SOURCE_DIR);
+  MutationResults MRs;
+  MRs.push_back(MR1);
+  MRs.push_back(MR2);
+  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+  MRs.save(MRPath);
+
+  XMLReport xmlreport(MRPath, SOURCE_DIR);
 
   xmlreport.save(OUT_DIR);
   auto mutationXMLPath = os::findFilesInDirUsingRgx(OUT_DIR,

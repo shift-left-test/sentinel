@@ -24,7 +24,6 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <ctime>
 #include <fstream>
 #include <map>
 #include <set>
@@ -46,54 +45,31 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void HTMLReport::save(const std::string& path) {
-  if (os::path::exists(path)) {
-    if (!os::path::isDirectory(path)) {
-      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-                                                 path));
-    }
-  } else {
-    os::createDirectory(path);
-  }
-
-  std::time_t rawtime;
-  std::tm* timeinfo;
-  char buffer[80];
-
-  rawtime = mResults.getLastModified();
-  if (rawtime == -1) {
-    std::time(&rawtime);
-  }
-  timeinfo = std::localtime(&rawtime);
-  std::strftime(static_cast<char*> (buffer), 80, "%Y%m%d%H%M", timeinfo);
-
-  auto dirPath = os::path::join(path, buffer);
+void HTMLReport::save(const std::string& dirPath) {
   if (os::path::exists(dirPath)) {
     if (!os::path::isDirectory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
+      throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",
                                                  dirPath));
     }
   } else {
-    os::createDirectory(dirPath);
+    os::createDirectories(dirPath);
   }
 
-  auto outputPath = os::path::join(path, buffer);
-
-  std::ofstream ofs(os::path::join(outputPath, "style.css"),
+  std::ofstream ofs(os::path::join(dirPath, "style.css"),
                     std::ofstream::out);
   ofs << styleCssContent;
   ofs.close();
 
   makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-                totNumberOfDetectedMutation, true, "", outputPath);
+                totNumberOfDetectedMutation, true, "", dirPath);
 
   for (const auto& p : groupByDirPath) {
     makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-                  totNumberOfDetectedMutation, false, p.first, outputPath);
+                  totNumberOfDetectedMutation, false, p.first, dirPath);
   }
 
   for (const auto& p : groupByPath) {
-    makeSourceHtml(std::get<0>(*p.second), p.first, outputPath);
+    makeSourceHtml(std::get<0>(*p.second), p.first, dirPath);
   }
 }
 
@@ -293,7 +269,7 @@ void HTMLReport::makeIndexHtml(
                                                    newDir));
       }
     } else {
-      os::createDirectory(newDir);
+      os::createDirectories(newDir);
     }
   }
   doc->SaveFile(os::path::join(outputDir, fileName).c_str());
@@ -325,13 +301,12 @@ void HTMLReport::makeSourceHtml(
         uniqueKillingTest.insert(ts);
       }
     }
-    uniqueMutator.insert(mr->getMutator());
+    uniqueMutator.insert(mr->getMutable().getOperator());
 
-    int curLineNum = mr->getLineNum();
+    int curLineNum = mr->getMutable().getFirst().line;
     if (curLineNum == 0) {
       throw InvalidArgumentException(
-          fmt::format("Muation at line number 0(Mutable DB Index{0})",
-                      mr->getIndexOfMutableDB()));
+          fmt::format("Muation at line number 0"));
     }
     if (curLineNum > maxLineNum) {
       maxLineNum = curLineNum;
@@ -431,7 +406,8 @@ void HTMLReport::makeSourceHtml(
       for (const auto& mr : *curLineMrs) {
         count += 1;
         insertNewNode(doc, pSpanMutator, "b",
-            fmt::format("{0}. {1} -> {2}", count, mr->getMutator(),
+            fmt::format("{0}. {1} -> {2}", count,
+            mr->getMutable().getOperator(),
             mr->getDetected() ? "KILLED" : "NO_COVERAGE").c_str());
         insertNewNode(doc, pSpanMutator, "br");
       }
@@ -459,7 +435,7 @@ void HTMLReport::makeSourceHtml(
       auto pTd3 = insertNewNode(doc, pTr3, "td");
 
       auto pA = insertNewNode(doc, pTd3, "a",
-          std::to_string(mr->getLineNum()).c_str());
+          std::to_string(mr->getMutable().getFirst().line).c_str());
       pA->SetAttribute("href",
           fmt::format("#sentinel.report.html.SourceFile@{0}_{1}",
           srcName, t.first).c_str());
@@ -483,7 +459,8 @@ void HTMLReport::makeSourceHtml(
       auto curKillingTest = mr->getKillingTest();
       insertNewNode(doc, pSpan3, "b", fmt::format("Killed by : {0}",
           curKillingTest.empty() ? "none" : curKillingTest.c_str()).c_str());
-      insertNewNode(doc, pP, "span", fmt::format("{0} -> {1}", mr->getMutator(),
+      insertNewNode(doc, pP, "span", fmt::format("{0} -> {1}",
+          mr->getMutable().getOperator(),
           mr->getDetected() ? "KILLED" : "NO_COVERAGE").c_str());
     }
   }

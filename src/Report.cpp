@@ -38,18 +38,19 @@
 namespace sentinel {
 
 Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
-    mSourcePath(sourcePath), mResults(resultsPath) {
+    mSourcePath(sourcePath) {
   if (!os::path::exists(sourcePath) || !os::path::isDirectory(sourcePath)) {
     throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
                                                sourcePath));
   }
 
-  mResults.load();
+  mResults.load(resultsPath);
   totNumberOfMutation = mResults.size();
   totNumberOfDetectedMutation = 0;
 
   for ( const MutationResult& mr : mResults ) {
-    auto mrPath = os::path::getRelativePath(mr.getPath(), mSourcePath);
+    auto mrPath = os::path::getRelativePath(mr.getMutable().getPath(),
+                                            mSourcePath);
     std::string curDirname = os::path::dirname(mrPath);
     curDirname = string::replaceAll(curDirname, "/", ".");
 
@@ -80,7 +81,7 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
   for ( auto const& p : groupByDirPath ) {
     std::set<std::string> tmpSet;
     for (const MutationResult* mr : *(std::get<0>(*p.second))) {
-      tmpSet.insert(mr->getPath());
+      tmpSet.insert(mr->getMutable().getPath());
     }
     std::get<3>(*p.second) = tmpSet.size();
   }

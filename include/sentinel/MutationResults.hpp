@@ -25,11 +25,9 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
 
-#include <ctime>
-#include <vector>
 #include <string>
+#include "sentinel/Container.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/Persistence.hpp"
 
 
 namespace sentinel {
@@ -37,85 +35,7 @@ namespace sentinel {
 /**
  * @brief MutationResults class
  */
-class MutationResults : public Persistence {
- public:
-  /**
-   * @brief Default constructor
-   *
-   * @param path to the MutationResults
-   *
-   * @throw InvalidArgumentException when path is not directory
-   */
-  explicit MutationResults(const std::string& path);
-
-  /**
-   * @brief Add the given MutationResult to the object
-   *
-   * @param m MutationResult object
-   */
-  void add(const MutationResult& m);
-
-  /**
-   * @brief Return a MutationResult object at the given index
-   *
-   * @param index for the object
-   * @return MutationResult object
-   */
-  MutationResult get(std::size_t index);
-
-  /**
-   * @brief Return number of stored MutationResult
-   *
-   * @return number of stored MutationResult
-   */
-  int size() const;
-
-  /**
-   * @brief sort By Index of Mutable DB
-   *
-   */
-  void sortByIndexOfMutableDB();
-
-  /**
-   * @brief get last modifed time
-   *
-   * @return last modified time if instance is loaded from file (if not -1)
-   */
-  std::time_t getLastModified() const;
-
-  /**
-   * @brief Return the iterator to the first MutationResult in MutationResults.
-   *
-   * @return iterator to the first MutationResult.
-   */
-  inline std::vector<MutationResult>::const_iterator begin() const {
-    return mData.cbegin();
-  }
-
-  /**
-   * @brief Return the iterator to the last MutationResult in MutationResults.
-   *
-   * @return iterator to the last MutationResult.
-   */
-  inline std::vector<MutationResult>::const_iterator end() const {
-    return mData.cend();
-  }
-
-  /**
-   * @brief load from path
-   *
-   * @throw InvalidArgumentException when path is empty
-   */
-  void load() override;
-
-  /**
-   * @brief save to path
-   */
-  void save() override;
-
- private:
-  std::string mPath;
-  std::vector<MutationResult> mData;
+class MutationResults : public Container<MutationResult> {
 };
 
 }  // namespace sentinel

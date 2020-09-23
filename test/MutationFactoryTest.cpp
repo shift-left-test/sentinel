@@ -40,7 +40,7 @@ TEST(MutationFactoryTest, testPopulateWorks) {
       "input/sample1/sample1.cpp", 59));
 
   std::shared_ptr<MutableGenerator> generator =
-      std::make_shared<sentinel::UniformMutableGenerator>("..");
+      std::make_shared<UniformMutableGenerator>("..");
   std::shared_ptr<MutableSelector> selector =
       std::make_shared<UniformMutableSelector>();
   MutationFactory factory(generator, selector);

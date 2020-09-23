@@ -29,7 +29,6 @@
 #include <string>
 #include "sentinel/Container.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/Persistence.hpp"
 
 
 namespace sentinel {

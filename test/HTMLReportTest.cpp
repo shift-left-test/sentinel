@@ -723,25 +723,29 @@ class HTMLReportTest : public ::testing::Test {
 TEST_F(HTMLReportTest, testMakeHTMLReport) {
   Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", false, 0);
-  MR1.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR1(M1, "", false);
 
   Mutable M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "|");
-  MutationResult MR2(M2, "testBitwiseOR", true, 1);
-  MR2.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR2(M2, "testBitwiseOR", true);
 
   Mutable M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              3, 12, 3, 13, "&");
-  MutationResult MR3(M3, "testBitwiseAND, testBitwiseOP", true, 2);
-  MR3.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR3(M3, "testBitwiseAND, testBitwiseOP", true);
 
   Mutable M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MutationResult MR4(M4, "", false, 4);
-  MR4.saveToFile(MUT_RESULT_DIR);
+  MutationResult MR4(M4, "", false);
 
-  HTMLReport htmlreport(MUT_RESULT_DIR, SOURCE_DIR);
+  MutationResults MRs;
+  MRs.push_back(MR1);
+  MRs.push_back(MR2);
+  MRs.push_back(MR3);
+  MRs.push_back(MR4);
+  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+  MRs.save(MRPath);
+
+  HTMLReport htmlreport(MRPath, SOURCE_DIR);
 
   htmlreport.save(OUT_DIR);
   auto mutationHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
