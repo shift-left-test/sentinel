@@ -22,12 +22,16 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
+#include <iostream>
+#include <map>
 #include <memory>
 #include "sentinel/MutableGenerator.hpp"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/MutableSelector.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SourceLines.hpp"
+#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -38,11 +42,60 @@ MutationFactory::MutationFactory(
     mGenerator(generator), mSelector(selector) {
 }
 
-Mutables MutationFactory::populate(const SourceLines& sourceLines,
+Mutables MutationFactory::populate(const std::string& gitPath,
+                                   const SourceLines& sourceLines,
                                    int maxMutables) {
   Mutables generatedMutables = mGenerator->populate(sourceLines);
   Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
                                                 maxMutables);
+
+  std::map<std::string, int> groupByPath;
+  for (const auto& m : selectedMutables) {
+    std::string path = m.getPath();
+    auto it = groupByPath.find(path);
+
+    if (it != groupByPath.end()) {
+      ++it->second;
+    } else {
+      groupByPath[path] = 1;
+    }
+  }
+
+  int flen = 50;
+  int mlen = 10;
+  int maxlen = flen + mlen + 2;
+  std::string defFormat = "{0:<{1}}{2:>{3}}\n";
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::cout << fmt::format("{0:^{1}}\n", "Mutable Population Report", maxlen);
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::cout << fmt::format(defFormat,
+                           "File", flen,
+                           "#mutation", mlen);
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+
+  for (auto const& p : groupByPath) {
+    std::string filePath = os::path::getAbsolutePath(p.first).substr(
+        os::path::getAbsolutePath(gitPath).length() + 1);
+
+    int filePos = filePath.size() - flen;
+    std::string skipStr;
+    if (filePos < 0) {
+      filePos = 0;
+    } else if (filePos > 1) {
+      filePos += 4;
+      skipStr = "... ";
+    }
+    std::cout << fmt::format(defFormat,
+                             skipStr + filePath.substr(filePos), flen,
+                             p.second, mlen);
+  }
+
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::cout << fmt::format(defFormat,
+                           "TOTAL", flen,
+                           selectedMutables.size(), mlen);
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+
   return selectedMutables;
 }
 

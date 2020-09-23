@@ -22,7 +22,9 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <iostream>
+#include <map>
 #include <args/args.hxx>
 #include "sentinel/util/os.hpp"
 #include "sentinel/GitRepository.hpp"
@@ -57,6 +59,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::MutationFactory mutationFactory(generator, selector);
 
   sentinel::Mutables mutables = mutationFactory.populate(
+      git.Get(),
       sourceLines,
       count.Get());
 

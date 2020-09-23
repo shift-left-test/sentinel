@@ -52,11 +52,13 @@ class MutationFactory {
   /**
    * @brief Populate mutables from the given source lines
    *
+   * @param gitPath path to git repo
    * @param sourceLines lines of the source
    * @param maxMutables maximum number of mutables generated
    * @return list of mutables
    */
-  Mutables populate(const SourceLines& sourceLines,
+  Mutables populate(const std::string& gitPath,
+                    const SourceLines& sourceLines,
                     int maxMutables);
 
  private:

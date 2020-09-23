@@ -24,9 +24,11 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
+#include <memory>
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
 #include "sentinel/UniformMutableSelector.hpp"
+#include "sentinel/util/os.hpp"
 
 namespace sentinel {
 
@@ -37,16 +39,25 @@ TEST(MutationFactoryTest, testPopulateWorks) {
   sourceLines.push_back(SourceLine(
       "input/sample1/sample1.cpp", 59));
 
-  UniformMutableGenerator generator{".."};
-  Mutables generated = generator.populate(sourceLines);
+  std::shared_ptr<MutableGenerator> generator =
+      std::make_shared<sentinel::UniformMutableGenerator>("..");
+  std::shared_ptr<MutableSelector> selector =
+      std::make_shared<UniformMutableSelector>();
+  MutationFactory factory(generator, selector);
 
-  UniformMutableSelector selector;
-  Mutables selected = selector.select(generated, sourceLines, 3);
+  testing::internal::CaptureStdout();
+  Mutables selected = factory.populate("input/sample1", sourceLines, 3);
+  std::string out = testing::internal::GetCapturedStdout();
 
   // 1 mutable on line 58, 1 mutable on line 59 are selected
   EXPECT_EQ(selected.size(), 2);
   EXPECT_EQ(selected.at(0).getFirst().line, 58);
   EXPECT_EQ(selected.at(1).getFirst().line, 59);
+
+  EXPECT_TRUE(string::contains(
+      out, "sample1.cpp                                                2"));
+  EXPECT_TRUE(string::contains(
+      out, "TOTAL                                                      2"));
 }
 
 }  // namespace sentinel
