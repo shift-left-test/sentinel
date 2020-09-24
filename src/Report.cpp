@@ -121,7 +121,10 @@ void Report::printSummary() {
 
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   for (const auto& p : groupByPath) {
-    int curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
+    int curCov = -1;
+    if (std::get<1>(*p.second) != 0) {
+      curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
+    }
     int filePos = p.first.size() - flen;
     std::string skipStr;
     if (filePos < 0) {
@@ -134,16 +137,21 @@ void Report::printSummary() {
                              skipStr + p.first.substr(filePos), flen,
                              std::get<2>(*p.second), klen,
                              std::get<1>(*p.second), mlen,
-                             std::to_string(curCov) + "%",
+                             (curCov != -1 ?
+                             std::to_string(curCov) : std::string("-")) + "%",
                              clen);
   }
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  int finalCov = 100 * totNumberOfDetectedMutation / totNumberOfMutation;
+  int finalCov = -1;
+  if (totNumberOfMutation != 0) {
+    finalCov = 100 * totNumberOfDetectedMutation / totNumberOfMutation;
+  }
   std::cout << fmt::format(defFormat,
                            "TOTAL", flen,
                            totNumberOfDetectedMutation, klen,
                            totNumberOfMutation, mlen,
-                           std::to_string(finalCov) + "%",
+                           (finalCov != -1 ?
+                           std::to_string(finalCov) : std::string("-")) + "%",
                            clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 }

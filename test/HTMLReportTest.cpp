@@ -40,19 +40,14 @@ class HTMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
     BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(os::path::join(BASE,
-        "OUT_DIR"));
-
-    MUT_RESULT_DIR = os::tempDirectory(
-        os::path::join(BASE, "MUT_RESLUT_DIR"));
 
     SOURCE_DIR = os::tempDirectory(
         os::path::join(BASE, "SOURCE_DIR"));
 
-    std::string NESTED_SOURCE_DIR = os::tempDirectory(
+    NESTED_SOURCE_DIR = os::tempDirectory(
         os::path::join(SOURCE_DIR, "NESTED_DIR1"));
 
-    std::string NESTED_SOURCE_DIR2 = os::tempDirectory(
+    NESTED_SOURCE_DIR2 = os::tempDirectory(
         os::path::join(SOURCE_DIR, "NESTED_DIR2"));
 
     TARGET_FULL_PATH = os::tempFilename(
@@ -64,29 +59,6 @@ class HTMLReportTest : public ::testing::Test {
     TARGET_FULL_PATH3 = os::tempFilename(
         NESTED_SOURCE_DIR2 + "/target3", ".cpp");
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
-
-    std::string NESTED_DIR1_DOT = string::replaceAll(
-        os::path::getRelativePath(NESTED_SOURCE_DIR, SOURCE_DIR), "/", ".");
-    std::string NESTED_DIR2_DOT = string::replaceAll(
-        os::path::getRelativePath(NESTED_SOURCE_DIR2, SOURCE_DIR), "/", ".");
-
-
-    ROOT_INDEX_HTML_CONTENTS = fmt::format(
-        ROOT_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT, NESTED_DIR2_DOT);
-    NESTED1_INDEX_HTML_CONTENTS = fmt::format(
-        NESTED1_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT,
-        os::path::filename(TARGET_FULL_PATH));
-    NESTED2_INDEX_HTML_CONTENTS = fmt::format(
-        NESTED2_INDEX_HTML_CONTENTS, NESTED_DIR2_DOT,
-        os::path::filename(TARGET_FULL_PATH2),
-        os::path::filename(TARGET_FULL_PATH3));
-
-    TARGET1_HTML_CONTENTS = string::replaceAll(TARGET1_HTML_CONTENTS,
-        "{0}", os::path::filename(TARGET_FULL_PATH));
-    TARGET2_HTML_CONTENTS = string::replaceAll(TARGET2_HTML_CONTENTS,
-        "{0}", os::path::filename(TARGET_FULL_PATH2));
-    TARGET3_HTML_CONTENTS = string::replaceAll(TARGET3_HTML_CONTENTS,
-        "{0}", os::path::filename(TARGET_FULL_PATH3));
   }
 
   void TearDown() override {
@@ -110,9 +82,9 @@ class HTMLReportTest : public ::testing::Test {
   }
 
   std::string BASE;
-  std::string OUT_DIR;
-  std::string MUT_RESULT_DIR;
   std::string SOURCE_DIR;
+  std::string NESTED_SOURCE_DIR;
+  std::string NESTED_SOURCE_DIR2;
   std::string TARGET_FULL_PATH;
   std::string TARGET_CONTENT = ""
       "int add(int a, int b) {\n"
@@ -134,7 +106,7 @@ class HTMLReportTest : public ::testing::Test {
       "int minus(int a, int b){\n"
       "  return a - b;\n"
       "}";
-  std::string ROOT_INDEX_HTML_CONTENTS = ""
+  std::string ORI_ROOT_INDEX_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -205,7 +177,7 @@ class HTMLReportTest : public ::testing::Test {
       "        </h5>\n"
       "    </body>\n"
       "</html>\n";
-  std::string NESTED1_INDEX_HTML_CONTENTS = ""
+  std::string ORI_NESTED1_INDEX_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -261,7 +233,7 @@ class HTMLReportTest : public ::testing::Test {
       "        </h5>\n"
       "    </body>\n"
       "</html>\n";
-  std::string NESTED2_INDEX_HTML_CONTENTS = ""
+  std::string ORI_NESTED2_INDEX_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -330,7 +302,7 @@ class HTMLReportTest : public ::testing::Test {
       "        </h5>\n"
       "    </body>\n"
       "</html>\n";
-  std::string TARGET1_HTML_CONTENTS = ""
+  std::string ORI_TARGET1_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -422,7 +394,7 @@ class HTMLReportTest : public ::testing::Test {
       "        </h5>\n"
       "    </body>\n"
       "</html>\n";
-  std::string TARGET2_HTML_CONTENTS = ""
+  std::string ORI_TARGET2_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -516,7 +488,7 @@ class HTMLReportTest : public ::testing::Test {
       "        </h5>\n"
       "    </body>\n"
       "</html>\n";
-  std::string TARGET3_HTML_CONTENTS = ""
+  std::string ORI_TARGET3_HTML_CONTENTS = ""
       "<!DOCTYPE html>\n"
       "<html>\n"
       "    <head>\n"
@@ -720,7 +692,53 @@ class HTMLReportTest : public ::testing::Test {
       "</html>\n";
 };
 
+TEST_F(HTMLReportTest, testPrintEmptyReport) {
+  std::string MUT_RESULT_DIR = os::tempDirectory(
+      os::path::join(BASE, "MUT_RESLUT_DIR"));
+  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+
+  HTMLReport htmlreport(MRPath, SOURCE_DIR);
+  testing::internal::CaptureStdout();
+  htmlreport.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+  EXPECT_TRUE(string::contains(out, "Directory: " +
+                               os::path::getAbsolutePath(SOURCE_DIR)));
+  EXPECT_TRUE(string::contains(out, "      0         0        -%"));
+}
+
 TEST_F(HTMLReportTest, testMakeHTMLReport) {
+  std::string OUT_DIR = os::tempDirectory(os::path::join(BASE,
+      "OUT_DIR"));
+
+  std::string MUT_RESULT_DIR = os::tempDirectory(
+      os::path::join(BASE, "MUT_RESLUT_DIR"));
+
+  std::string NESTED_DIR1_DOT = string::replaceAll(
+      os::path::getRelativePath(NESTED_SOURCE_DIR, SOURCE_DIR), "/", ".");
+  std::string NESTED_DIR2_DOT = string::replaceAll(
+      os::path::getRelativePath(NESTED_SOURCE_DIR2, SOURCE_DIR), "/", ".");
+
+
+  std::string ROOT_INDEX_HTML_CONTENTS = fmt::format(
+      ORI_ROOT_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT, NESTED_DIR2_DOT);
+  std::string NESTED1_INDEX_HTML_CONTENTS = fmt::format(
+      ORI_NESTED1_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT,
+      os::path::filename(TARGET_FULL_PATH));
+  std::string NESTED2_INDEX_HTML_CONTENTS = fmt::format(
+      ORI_NESTED2_INDEX_HTML_CONTENTS, NESTED_DIR2_DOT,
+      os::path::filename(TARGET_FULL_PATH2),
+      os::path::filename(TARGET_FULL_PATH3));
+
+  std::string TARGET1_HTML_CONTENTS =
+      string::replaceAll(ORI_TARGET1_HTML_CONTENTS,
+      "{0}", os::path::filename(TARGET_FULL_PATH));
+  std::string TARGET2_HTML_CONTENTS =
+      string::replaceAll(ORI_TARGET2_HTML_CONTENTS,
+      "{0}", os::path::filename(TARGET_FULL_PATH2));
+  std::string TARGET3_HTML_CONTENTS =
+      string::replaceAll(ORI_TARGET3_HTML_CONTENTS,
+      "{0}", os::path::filename(TARGET_FULL_PATH3));
+
   Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
   MutationResult MR1(M1, "", false);
