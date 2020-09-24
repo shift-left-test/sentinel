@@ -28,7 +28,6 @@
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutable.hpp"
-#include "sentinel/util/os.hpp"
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
@@ -50,12 +49,6 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
   sentinel::Mutable m;
   std::istringstream iss(input.Get());
   iss >> m;
-
-  //  delete exists MutationResult File
-  auto mRPath = sentinel::os::path::join(output.Get(), "MutationResult");
-  if (sentinel::os::path::exists(mRPath)) {
-    sentinel::os::removeFile(mRPath);
-  }
 
   sentinel::Evaluator evaluator(m, expected.Get(), output.Get());
 
