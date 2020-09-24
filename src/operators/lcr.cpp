@@ -26,7 +26,6 @@
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/lcr.hpp"
-#include "sentinel/util/astnode.hpp"
 
 namespace sentinel {
 
@@ -52,8 +51,7 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
-    std::string func = astnode::getContainingFunctionQualifiedName(s,
-      mContext);
+    std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mLogicalOperators) {
       if (mutatedToken != token) {
@@ -77,8 +75,7 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
   }
 
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s,
-    mContext);
+  std::string func = getContainingFunctionQualifiedName(s);
   mutables->emplace_back(
       mName, path, func,
       mSrcMgr.getExpansionLineNumber(stmtStartLoc),

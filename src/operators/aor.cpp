@@ -27,7 +27,6 @@
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/aor.hpp"
-#include "sentinel/util/astnode.hpp"
 
 namespace sentinel {
 
@@ -53,8 +52,7 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
-    std::string func = astnode::getContainingFunctionQualifiedName(s,
-      mContext);
+    std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mArithmeticOperators) {
       if (mutatedToken == token) {
@@ -65,26 +63,26 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       clang::Expr *rhs = bo->getRHS()->IgnoreImpCasts();
 
       // 2 pointers can only minus each other, so no mutables are generated.
-      if ((astnode::getExprType(lhs)->isPointerType() ||
-           astnode::getExprType(lhs)->isArrayType()) &&
-          (astnode::getExprType(rhs)->isPointerType() ||
-           astnode::getExprType(rhs)->isArrayType())) {
+      if ((getExprType(lhs)->isPointerType() ||
+           getExprType(lhs)->isArrayType()) &&
+          (getExprType(rhs)->isPointerType() ||
+           getExprType(rhs)->isArrayType())) {
         continue;
       }
 
       // modulo operator only takes integral operands.
       if (mutatedToken == "%" &&
-          (!astnode::getExprType(lhs)->isIntegralType(*mContext) ||
-           !astnode::getExprType(rhs)->isIntegralType(*mContext))) {
+          (!getExprType(lhs)->isIntegralType(*mContext) ||
+           !getExprType(rhs)->isIntegralType(*mContext))) {
         continue;
       }
 
       // multiplicative operator only takes non-pointer operands.
       if ((mutatedToken == "*" || mutatedToken == "/") &&
-          (astnode::getExprType(lhs)->isPointerType() ||
-           astnode::getExprType(rhs)->isPointerType() ||
-           astnode::getExprType(lhs)->isArrayType() ||
-           astnode::getExprType(rhs)->isArrayType())) {
+          (getExprType(lhs)->isPointerType() ||
+           getExprType(rhs)->isPointerType() ||
+           getExprType(lhs)->isArrayType() ||
+           getExprType(rhs)->isArrayType())) {
         continue;
       }
 

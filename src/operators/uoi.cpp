@@ -26,7 +26,6 @@
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/uoi.hpp"
-#include "sentinel/util/astnode.hpp"
 
 
 namespace sentinel {
@@ -40,8 +39,8 @@ bool UOI::canMutate(clang::Stmt* s) {
   // UOI targets variable reference expression, which includes
   // a variable reference, member reference (class.member, class->member),
   // array subscript expression (arr[idx]), pointer dereference (*ptr)
-  if (!(astnode::isDeclRefExpr(e) ||
-        astnode::isPointerDereferenceExpr(e) ||
+  if (!(isDeclRefExpr(e) ||
+        isPointerDereferenceExpr(e) ||
         clang::isa<clang::ArraySubscriptExpr>(e) ||
         clang::isa<clang::MemberExpr>(e))) {
     return false;
@@ -49,15 +48,15 @@ bool UOI::canMutate(clang::Stmt* s) {
 
   // UOI targets non-constant, arithmetic/boolean expression only.
   if (e->getType().isConstant(*mContext) ||
-      (!astnode::getExprType(e)->isArithmeticType() &&
-       !astnode::getExprType(e)->isBooleanType())) {
+      (!getExprType(e)->isArithmeticType() &&
+       !getExprType(e)->isBooleanType())) {
     return false;
   }
 
   // UOI should not be applied to variable reference expression that is
   // left hand side of assignment expression, or
   // operand of address-of operator (&).
-  const clang::Stmt* parent = astnode::getParentStmt(s, mContext);
+  const clang::Stmt* parent = getParentStmt(s);
   while (parent != nullptr) {
     if (auto bo = clang::dyn_cast<clang::BinaryOperator>(parent)) {
       if (bo->isAssignmentOp()) {
@@ -75,7 +74,7 @@ bool UOI::canMutate(clang::Stmt* s) {
       }
     }
 
-    parent = astnode::getParentStmt(parent, mContext);
+    parent = getParentStmt(parent);
   }
 
   return true;
@@ -91,12 +90,11 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   }
 
   std::string path = mSrcMgr.getFilename(stmtStartLoc);
-  std::string func = astnode::getContainingFunctionQualifiedName(s,
-    mContext);
-  std::string stmtStr = astnode::convertStmtToString(e, mContext);
+  std::string func = getContainingFunctionQualifiedName(s);
+  std::string stmtStr = convertStmtToString(e);
 
-  if (astnode::getExprType(e)->isArithmeticType() &&
-      !astnode::getExprType(e)->isBooleanType()) {
+  if (getExprType(e)->isArithmeticType() &&
+      !getExprType(e)->isBooleanType()) {
     mutables->emplace_back(
         mName, path, func,
         mSrcMgr.getExpansionLineNumber(stmtStartLoc),
@@ -114,7 +112,7 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
         "((" + stmtStr + ")--)");
   }
 
-  if (astnode::getExprType(e)->isBooleanType()) {
+  if (getExprType(e)->isBooleanType()) {
     mutables->emplace_back(
         mName, path, func,
         mSrcMgr.getExpansionLineNumber(stmtStartLoc),

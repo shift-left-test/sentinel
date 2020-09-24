@@ -73,6 +73,54 @@ class MutationOperator {
    */
   virtual void populate(clang::Stmt* s, Mutables* mutables) = 0;
 
+  /**
+   * @brief Return the code representing given AST node.
+   *
+   * @param s target AST node
+   * @return code string representing s
+   */
+  std::string convertStmtToString(clang::Stmt* s);
+
+  /**
+   * @brief Return the parent AST node of given node.
+   *
+   * @param s target AST node
+   * @return parent ast node of s
+   */
+  const clang::Stmt* getParentStmt(const clang::Stmt* s);
+
+  /**
+   * @brief Return type object of the given AST expression node.
+   *
+   * @param e target AST node
+   * @return type object of e
+   */
+  const clang::Type* getExprType(clang::Expr* e);
+
+  /**
+   * @brief Return True if AST node represents dereference reference expression.
+   *
+   * @param s target AST node
+   * @return True/False
+   */
+  bool isDeclRefExpr(clang::Stmt* s);
+
+  /**
+   * @brief Return True if AST node represents pointer dereference expression.
+   *
+   * @param s target AST node
+   * @return True/False
+   */
+  bool isPointerDereferenceExpr(clang::Stmt *s);
+
+  /**
+   * @brief Return the qualified name of the function surround this ast node.
+   *
+   * @param s target AST node
+   * @return function qualified name
+   */
+  std::string getContainingFunctionQualifiedName(clang::Stmt* s);
+
  protected:
   /**
    * @brief name of mutation operator
@@ -80,7 +128,7 @@ class MutationOperator {
   std::string mName;
 
   /**
-   * @brief Clang compiler management object
+   * @brief Clang AST Context object
    */
   clang::ASTContext* mContext;
 

@@ -27,7 +27,6 @@
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/sdl.hpp"
-#include "sentinel/util/astnode.hpp"
 
 
 namespace sentinel {
@@ -46,7 +45,7 @@ bool SDL::canMutate(clang::Stmt* s) {
 
   // Apply SDL to body of if, for, do, while if it is a single statement
   // (instead of compound statement)
-  const clang::Stmt* parent = astnode::getParentStmt(s, mContext);
+  const clang::Stmt* parent = getParentStmt(s);
   if (parent == nullptr) {
     return false;
   }
@@ -83,7 +82,7 @@ bool SDL::canMutate(clang::Stmt* s) {
   // The last statement of a Statement Expression should not be deleted.
   // Because it is the value of the expression.
   auto cs = clang::dyn_cast<clang::CompoundStmt>(parent);
-  const clang::Stmt *parentOfParent = astnode::getParentStmt(parent, mContext);
+  const clang::Stmt *parentOfParent = getParentStmt(parent);
   if (parentOfParent == nullptr ||
       !clang::isa<clang::StmtExpr>(parentOfParent)) {
     return true;
@@ -106,8 +105,7 @@ void SDL::populate(clang::Stmt* s, Mutables* mutables) {
 
   if (!stmtStartLoc.isMacroID() && !stmtEndLoc.isMacroID()) {
     std::string path = mSrcMgr.getFilename(stmtStartLoc);
-    std::string func = astnode::getContainingFunctionQualifiedName(s,
-      mContext);
+    std::string func = getContainingFunctionQualifiedName(s);
 
     mutables->emplace_back(
         mName, path, func,

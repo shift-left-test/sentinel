@@ -26,7 +26,6 @@
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/bor.hpp"
-#include "sentinel/util/astnode.hpp"
 
 namespace sentinel {
 
@@ -52,8 +51,7 @@ void BOR::populate(clang::Stmt* s, Mutables* mutables) {
 
   if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
-    std::string func = astnode::getContainingFunctionQualifiedName(s,
-      mContext);
+    std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mBitwiseOperators) {
       if (mutatedToken != token) {
