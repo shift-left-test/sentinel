@@ -48,7 +48,7 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
   totNumberOfMutation = mResults.size();
   totNumberOfDetectedMutation = 0;
 
-  for ( const MutationResult& mr : mResults ) {
+  for (const MutationResult& mr : mResults) {
     auto mrPath = os::path::getRelativePath(mr.getMutable().getPath(),
                                             mSourcePath);
     std::string curDirname = os::path::dirname(mrPath);
@@ -80,7 +80,7 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
     }
   }
 
-  for ( auto const& p : groupByDirPath ) {
+  for (const auto& p : groupByDirPath) {
     std::set<std::string> tmpSet;
     for (const MutationResult* mr : *(std::get<0>(*p.second))) {
       tmpSet.insert(mr->getMutable().getPath());
@@ -90,12 +90,12 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
 }
 
 Report::~Report() {
-  for ( auto const& p : groupByDirPath ) {
+  for (const auto& p : groupByDirPath) {
     delete std::get<0>(*p.second);
     delete p.second;
   }
 
-  for ( auto const& p : groupByPath ) {
+  for (const auto& p : groupByPath) {
     delete std::get<0>(*p.second);
     delete p.second;
   }
@@ -120,7 +120,7 @@ void Report::printSummary() {
                            "cov", clen);
 
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  for ( auto const& p : groupByPath ) {
+  for (const auto& p : groupByPath) {
     int curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
     int filePos = p.first.size() - flen;
     std::string skipStr;

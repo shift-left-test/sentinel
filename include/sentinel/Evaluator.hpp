@@ -61,7 +61,7 @@ class Evaluator {
       const std::string& ActualResultDir);
 
  private:
-  const Mutable& mMutable;
+  Mutable mMutable;
   std::shared_ptr<Logger> mLogger;
   std::string mOutDir;
   Mutables mMutables;

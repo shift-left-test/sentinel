@@ -64,7 +64,7 @@ class Logger {
    * @return logger instance
    */
   static std::shared_ptr<Logger> getLogger(const std::string& name,
-                                            const std::string& format);
+                                           const std::string& format);
 
   /**
    * @brief Set the logging level

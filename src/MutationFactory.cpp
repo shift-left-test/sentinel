@@ -73,7 +73,7 @@ Mutables MutationFactory::populate(const std::string& gitPath,
                            "#mutation", mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
-  for (auto const& p : groupByPath) {
+  for (const auto& p : groupByPath) {
     std::string filePath = os::path::getAbsolutePath(p.first).substr(
         os::path::getAbsolutePath(gitPath).length() + 1);
 

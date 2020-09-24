@@ -70,8 +70,8 @@ class UniformMutableGenerator : public MutableGenerator {
    * @brief SentinelASTVistor class
    *        defines what to do at each type of AST node.
    */
-  class SentinelASTVisitor
-      : public clang::RecursiveASTVisitor<SentinelASTVisitor> {
+  class SentinelASTVisitor :
+      public clang::RecursiveASTVisitor<SentinelASTVisitor> {
    public:
     /**
      * @brief Default constructor
@@ -96,7 +96,7 @@ class UniformMutableGenerator : public MutableGenerator {
     clang::SourceManager& mSrcMgr;
     std::vector<MutationOperator*> mMutationOperators;
     Mutables* mMutables;
-    const std::vector<std::size_t>& mTargetLines;
+    std::vector<std::size_t> mTargetLines;
   };
 
   /**
@@ -129,7 +129,7 @@ class UniformMutableGenerator : public MutableGenerator {
    private:
     // SentinelASTVisitor mVisitor;
     Mutables* mMutables;
-    const std::vector<std::size_t>& mTargetLines;
+    std::vector<std::size_t> mTargetLines;
   };
 
   /**
@@ -166,7 +166,7 @@ class UniformMutableGenerator : public MutableGenerator {
 
    private:
     Mutables* mMutables;
-    const std::vector<std::size_t>& mTargetLines;
+    std::vector<std::size_t> mTargetLines;
   };
 
   /**

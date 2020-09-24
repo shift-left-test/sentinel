@@ -38,7 +38,7 @@ std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
 }
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name,
-                                            const std::string& format) {
+                                          const std::string& format) {
   return std::shared_ptr<Logger>(new Logger(name, format));
 }
 
@@ -57,7 +57,7 @@ void Logger::setLevel(Logger::Level level) {
 }
 
 std::string Logger::format(Logger::Level level,
-                            const std::string& message) {
+                           const std::string& message) {
   std::string levelText;
   if (level == Level::DEBUG) {
     levelText = "DEBUG";

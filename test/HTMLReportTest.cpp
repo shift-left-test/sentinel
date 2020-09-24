@@ -753,7 +753,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       std::regex(".*index\\.html"));
   EXPECT_EQ(3, mutationHtmlPath.size());
 
-  for ( auto const& mp : mutationHtmlPath ) {
+  for (const auto& mp : mutationHtmlPath) {
     if (string::contains(mp, "NESTED_DIR1")) {
       readFileAndCompareExpected(mp, NESTED1_INDEX_HTML_CONTENTS);
     } else if (string::contains(mp, "NESTED_DIR2")) {
@@ -770,7 +770,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       std::regex(".*target.*\\.cpp\\.html"));
   EXPECT_EQ(3, srcHtmlPath.size());
 
-  for ( auto const& ms : srcHtmlPath ) {
+  for (const auto& ms : srcHtmlPath) {
     if (string::contains(ms, "target1")) {
       readFileAndCompareExpected(ms, TARGET1_HTML_CONTENTS);
     } else if (string::contains(ms, "target2")) {
