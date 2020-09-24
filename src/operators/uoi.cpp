@@ -85,7 +85,7 @@ void UOI::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
-  if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
+  if (!isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 

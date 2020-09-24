@@ -103,7 +103,7 @@ void SDL::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
 
-  if (!stmtStartLoc.isMacroID() && !stmtEndLoc.isMacroID()) {
+  if (isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     std::string path = mSrcMgr.getFilename(stmtStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 

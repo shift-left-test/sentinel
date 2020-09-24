@@ -121,6 +121,21 @@ class MutationOperator {
    */
   std::string getContainingFunctionQualifiedName(clang::Stmt* s);
 
+  /**
+   * @brief Return True if the given source code range is valid for
+   *        generating Mutable. A source code range is valid if the
+   *        start and end locations are
+   *        (1) valid locations,
+   *        (2) not macro location, and
+   *        (3) resides in main target file of ClangTool.
+   *
+   * @param startLoc start location of source range
+   * @param endLoc end location of source range
+   * @return True if range is valid
+   */
+  bool isValidMutableSourceRange(clang::SourceLocation *startLoc,
+                                 clang::SourceLocation *endLoc);
+
  protected:
   /**
    * @brief name of mutation operator

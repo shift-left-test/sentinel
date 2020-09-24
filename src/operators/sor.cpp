@@ -49,7 +49,7 @@ void SOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
-  if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
+  if (isValidMutableSourceRange(&opStartLoc, &opEndLoc)) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 

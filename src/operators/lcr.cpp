@@ -49,7 +49,7 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getMainFileID(),
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
-  if (!opStartLoc.isMacroID() && !opEndLoc.isMacroID()) {
+  if (isValidMutableSourceRange(&opStartLoc, &opEndLoc)) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 
@@ -70,7 +70,7 @@ void LCR::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
-  if (stmtStartLoc.isMacroID() || stmtEndLoc.isMacroID()) {
+  if (!isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 

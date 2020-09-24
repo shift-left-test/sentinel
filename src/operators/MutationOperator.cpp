@@ -122,5 +122,23 @@ std::string MutationOperator::getContainingFunctionQualifiedName(
   return "";
 }
 
+bool MutationOperator::isValidMutableSourceRange(
+    clang::SourceLocation *startLoc, clang::SourceLocation *endLoc) {
+  if (startLoc->isInvalid() || endLoc->isInvalid()) {
+    return false;
+  }
+
+  if (startLoc->isMacroID() || endLoc->isMacroID()) {
+    return false;
+  }
+
+  if (mSrcMgr.getMainFileID() != mSrcMgr.getFileID(*startLoc) ||
+      mSrcMgr.getMainFileID() != mSrcMgr.getFileID(*endLoc)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace sentinel
 
