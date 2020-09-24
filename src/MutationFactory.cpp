@@ -44,12 +44,12 @@ MutationFactory::MutationFactory(
 
 Mutables MutationFactory::populate(const std::string& gitPath,
                                    const SourceLines& sourceLines,
-                                   int maxMutables) {
+                                   std::size_t maxMutables) {
   Mutables generatedMutables = mGenerator->populate(sourceLines);
   Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
                                                 maxMutables);
 
-  std::map<std::string, int> groupByPath;
+  std::map<std::string, std::size_t> groupByPath;
   for (const auto& m : selectedMutables) {
     std::string path = m.getPath();
     auto it = groupByPath.find(path);
@@ -61,9 +61,9 @@ Mutables MutationFactory::populate(const std::string& gitPath,
     }
   }
 
-  int flen = 50;
-  int mlen = 10;
-  int maxlen = flen + mlen + 2;
+  std::size_t flen = 50;
+  std::size_t mlen = 10;
+  std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format("{0:^{1}}\n", "Mutable Population Report", maxlen);

@@ -74,7 +74,7 @@ void GitSourceTree::modify(const Mutable& info, const std::string& backupPath) {
   // and write mutated token.
   // If code line is on end_line, write the code appearing after end_col.
   std::string line;
-  int lineIdx = 0;
+  std::size_t lineIdx = 0;
 
   while (std::getline(buffer, line)) {
     lineIdx += 1;

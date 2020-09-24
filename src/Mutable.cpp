@@ -38,13 +38,13 @@ Mutable::Mutable() : mFirst{0, 0}, mLast{0, 0} {
 Mutable::Mutable(const std::string& mutationOperator,
                  const std::string& path,
                  const std::string& qualifiedFuncName,
-                 int firstLine, int firstColumn,
-                 int lastLine, int lastColumn,
+                 std::size_t firstLine, std::size_t firstColumn,
+                 std::size_t lastLine, std::size_t lastColumn,
                  const std::string& token) :
     mPath(os::path::getAbsolutePath(path)), mToken(token),
     mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
-  size_t pos = qualifiedFuncName.find_last_of("::");
+  std::size_t pos = qualifiedFuncName.find_last_of("::");
   if (pos == std::string::npos) {
     mClass = "";
     mFunction = qualifiedFuncName;

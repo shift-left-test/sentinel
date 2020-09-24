@@ -70,13 +70,16 @@ class HTMLReport : public Report {
    */
   void makeIndexHtml(
       std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
+      std::tuple<std::vector<const MutationResult*>*,
+                 std::size_t, std::size_t, std::size_t>* >*
       pGroupByDirPath,
       std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int>* >*
+      std::tuple<std::vector<const MutationResult*>*, std::size_t,
+                 std::size_t>* >*
       pGroupByPath,
-      int totNumberOfMutation, int totNumberOfDetectedMutation, bool root,
-      const std::string& currentDirPath, const std::string& outputDir);
+      std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
+      bool root, const std::string& currentDirPath,
+      const std::string& outputDir);
 
   /**
    * @brief makeSourceHtml

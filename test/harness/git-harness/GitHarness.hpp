@@ -78,7 +78,7 @@ class GitHarness {
    * @param col      column number of target location to insert code.
    */
   GitHarness& addCode(const std::string& filename, const std::string& content,
-                      int line = -1, int col = 0);
+                      std::size_t line = 0, std::size_t col = 0);
 
   /**
    * @brief Delete multiple line of codes within target file.
@@ -88,7 +88,7 @@ class GitHarness {
    * @param lines    list of target lines to delete.
    */
   GitHarness& deleteCode(const std::string& filename,
-                         const std::vector<int>& lines);
+                         const std::vector<std::size_t>& lines);
 
   /**
    * @brief Implementation of git add <filenames>.

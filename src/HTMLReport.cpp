@@ -88,13 +88,16 @@ tinyxml2::XMLElement* HTMLReport::insertNewNode(
 
 void HTMLReport::makeIndexHtml(
     std::map<std::string,
-    std::tuple<std::vector<const MutationResult*>*, int, int, int>* >*
+    std::tuple<std::vector<const MutationResult*>*,
+    std::size_t, std::size_t, std::size_t>* >*
     pGroupByDirPath,
     std::map<std::string,
-    std::tuple<std::vector<const MutationResult*>*, int, int>* >*
+    std::tuple<std::vector<const MutationResult*>*,
+    std::size_t, std::size_t>* >*
     pGroupByPath,
-    int totNumberOfMutation, int totNumberOfDetectedMutation, bool root,
-    const std::string& currentDirPath, const std::string& outputDir) {
+    std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
+    bool root, const std::string& currentDirPath,
+    const std::string& outputDir) {
   auto doc = new tinyxml2::XMLDocument();
 
   auto pDOCTYPE = doc->NewUnknown("DOCTYPE html");
@@ -128,9 +131,9 @@ void HTMLReport::makeIndexHtml(
   auto pTbody = insertNewNode(doc, pTable, "tbody");
   auto pTr2 = insertNewNode(doc, pTbody, "tr");
 
-  int sizeOfTargetFiles = 0;
-  int numerator = 0;
-  int denominator = 0;
+  std::size_t sizeOfTargetFiles = 0;
+  std::size_t numerator = 0;
+  std::size_t denominator = 0;
   if (root) {
     sizeOfTargetFiles = pGroupByPath->size();
     numerator = totNumberOfDetectedMutation;
@@ -176,9 +179,9 @@ void HTMLReport::makeIndexHtml(
   if (root) {
     for (const auto& p : *pGroupByDirPath) {
       auto pTr4 = insertNewNode(doc, pTbody2, "tr");
-      int numOfFiles = std::get<3>(*p.second);
-      int numerator2 = std::get<2>(*p.second);
-      int denominator2 = std::get<1>(*p.second);
+      std::size_t numOfFiles = std::get<3>(*p.second);
+      std::size_t numerator2 = std::get<2>(*p.second);
+      std::size_t denominator2 = std::get<1>(*p.second);
 
       auto pTd0 = insertNewNode(doc, pTr4, "td");
       auto pA = insertNewNode(doc, pTd0, "a", p.first.c_str());
@@ -187,9 +190,8 @@ void HTMLReport::makeIndexHtml(
 
       insertNewNode(doc, pTr4, "td", std::to_string(numOfFiles).c_str());
 
-      auto cov2 = static_cast<int>
-          (static_cast<double>(numerator2) /
-          denominator2 * 100);
+      auto cov2 = static_cast<int>(static_cast<double>(numerator2) /
+                                   denominator2 * 100);
       auto pTd2 = insertNewNode(doc, pTr4, "td");
 
       auto pDiv4 = insertNewNode(doc, pTd2, "div",
@@ -219,8 +221,8 @@ void HTMLReport::makeIndexHtml(
 
         auto pTr5 = insertNewNode(doc, pTbody2, "tr");
 
-        int numerator3 = std::get<2>(*p.second);
-        int denominator3 = std::get<1>(*p.second);
+        std::size_t numerator3 = std::get<2>(*p.second);
+        std::size_t denominator3 = std::get<1>(*p.second);
 
         std::string curfilename = os::path::filename(p.first);
 
@@ -230,9 +232,8 @@ void HTMLReport::makeIndexHtml(
         pA->SetAttribute("href", fmt::format("./{0}.html",
             curfilename).c_str());
 
-        auto cov3 = static_cast<int>
-            (static_cast<double>(numerator3) /
-            denominator3 * 100);
+        auto cov3 = static_cast<int>(static_cast<double>(numerator3) /
+                                     denominator3 * 100);
 
         auto pTd2 = insertNewNode(doc, pTr5, "td");
 
@@ -288,11 +289,11 @@ void HTMLReport::makeSourceHtml(
 
   std::string srcName = os::path::filename(absSrcPath);
 
-  std::map<int, std::vector<const MutationResult*>*> groupByLine;
+  std::map<std::size_t, std::vector<const MutationResult*>*> groupByLine;
   std::set<std::string> uniqueKillingTest;
   std::set<std::string> uniqueMutator;
 
-  int maxLineNum = 0;
+  std::size_t maxLineNum = 0;
   for (const MutationResult* mr : *MRs) {
     auto tmpvector = string::split(
         mr->getKillingTest(), ", ");
@@ -303,7 +304,7 @@ void HTMLReport::makeSourceHtml(
     }
     uniqueMutator.insert(mr->getMutable().getOperator());
 
-    int curLineNum = mr->getMutable().getFirst().line;
+    std::size_t curLineNum = mr->getMutable().getFirst().line;
     if (curLineNum == 0) {
       throw InvalidArgumentException(
           fmt::format("Muation at line number 0"));
@@ -402,7 +403,7 @@ void HTMLReport::makeSourceHtml(
     auto pSpanMutator = insertNewNode(doc, pSpan0, "span");
 
     if (curLineMrs != nullptr) {
-      int count = 0;
+      std::size_t count = 0;
       for (const auto& mr : *curLineMrs) {
         count += 1;
         insertNewNode(doc, pSpanMutator, "b",
@@ -428,7 +429,7 @@ void HTMLReport::makeSourceHtml(
   insertNewNode(doc, pTd2, "h2", "Mutations");
 
   for (const auto& t : groupByLine) {
-    int count = 0;
+    std::size_t count = 0;
     for (const auto& mr : *t.second) {
       count += 1;
       auto pTr3 = insertNewNode(doc, pTable, "tr");

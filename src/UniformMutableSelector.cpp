@@ -35,14 +35,13 @@ namespace sentinel {
 
 Mutables UniformMutableSelector::select(const Mutables& mutables,
                                         const SourceLines& sourceLines,
-                                        int maxMutables) {
+                                        std::size_t maxMutables) {
   Mutables temp_storage;
   std::random_device rd;
   std::mt19937 mt(rd());
 
   for (const auto& line : sourceLines) {
     std::vector<Mutable> temp;
-
     auto pred = [&](const auto& m) {
       return os::path::comparePath(m.getPath(), line.getPath()) &&
       m.getFirst().line <= line.getLineNumber() &&
@@ -55,7 +54,7 @@ Mutables UniformMutableSelector::select(const Mutables& mutables,
       continue;
     }
 
-    std::uniform_int_distribution<int> idx(0, temp.size()-1);
+    std::uniform_int_distribution<std::size_t> idx(0, temp.size()-1);
     temp_storage.push_back(temp[idx(mt)]);
   }
 

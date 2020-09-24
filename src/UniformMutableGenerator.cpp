@@ -48,14 +48,14 @@ Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines) {
   }
 
   // convert sourceLines to map from filename to list of target source lines
-  std::map<std::string, std::vector<int>> targetLines;
+  std::map<std::string, std::vector<std::size_t>> targetLines;
 
   for (const auto& sourceLine : sourceLines) {
     std::string filename = sourceLine.getPath();
     auto it = targetLines.find(filename);
 
     if (it == targetLines.end()) {
-      targetLines[filename] = std::vector<int>();
+      targetLines[filename] = std::vector<std::size_t>();
     }
 
     targetLines[filename].push_back(sourceLine.getLineNumber());
@@ -71,7 +71,7 @@ Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines) {
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
     clang::ASTContext* Context, Mutables* mutables,
-    const std::vector<int>& targetLines) :
+    const std::vector<std::size_t>& targetLines) :
     mContext(Context), mSrcMgr(Context->getSourceManager()),
     mMutables(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
@@ -110,10 +110,10 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
         mContext->getLangOpts());
   }
 
-  int startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
-  int endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
+  std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
+  std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
   bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](int lineNum)
+      [startLineNum, endLineNum](std::size_t lineNum)
       { return lineNum >= startLineNum && lineNum <= endLineNum; } );
 
   if (containTargetLine) {
@@ -134,12 +134,13 @@ void UniformMutableGenerator::GenerateMutantAction::ExecuteAction() {
 
 std::unique_ptr<clang::tooling::FrontendActionFactory>
 UniformMutableGenerator::myNewFrontendActionFactory(
-    Mutables* mutables, const std::vector<int>& targetLines) {
+    Mutables* mutables, const std::vector<std::size_t>& targetLines) {
   class SimpleFrontendActionFactory :
           public clang::tooling::FrontendActionFactory {
    public:
-    explicit SimpleFrontendActionFactory(Mutables* mutables,
-                                         const std::vector<int>& targetLines) :
+    explicit SimpleFrontendActionFactory(
+        Mutables* mutables,
+        const std::vector<std::size_t>& targetLines) :
         mMutables(mutables), mTargetLines(targetLines) {
     }
 
@@ -149,7 +150,7 @@ UniformMutableGenerator::myNewFrontendActionFactory(
 
    private:
     Mutables* mMutables;
-    const std::vector<int>& mTargetLines;
+    const std::vector<std::size_t>& mTargetLines;
   };
 
   return std::unique_ptr<clang::tooling::FrontendActionFactory>(

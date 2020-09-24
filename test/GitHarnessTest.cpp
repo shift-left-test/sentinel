@@ -49,7 +49,8 @@ class GitHarnessTest : public ::testing::Test {
       std::vector<std::string>* staged_files,
       std::vector<std::string>* unstaged_files,
       git_status_list *status) {
-    size_t i, maxi = git_status_list_entrycount(status);
+    std::size_t i;
+    std::size_t maxi = git_status_list_entrycount(status);
     const git_status_entry* s;
     const char *old_path, *new_path;
 
@@ -211,7 +212,7 @@ TEST_F(GitHarnessTest, addCode_PositionOutOfBound) {
   // negative line and column number
   // code is added to end (col <= 0) of last line (line <= 0)
   std::string content = "//add\n";
-  repo->addCode("temp.cpp", content, -100, -200);
+  repo->addCode("temp.cpp", content, 0, 0);
 
   std::ifstream created_file(filename.c_str());
   std::string inserted_content((std::istreambuf_iterator<char>(created_file)),
@@ -241,7 +242,7 @@ TEST_F(GitHarnessTest, addCode_FileNotExists) {
 // Expected Output: target lines are deleted from target file
 TEST_F(GitHarnessTest, deleteCode_Normal) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<int> target_lines{2, 4};
+  std::vector<std::size_t> target_lines{2, 4};
   repo->addFile("temp.cpp", initial_content)
       .deleteCode("temp.cpp", target_lines);
 
@@ -257,7 +258,7 @@ TEST_F(GitHarnessTest, deleteCode_Normal) {
 // Expected Output: no lines are deleted
 TEST_F(GitHarnessTest, deleteCode_TargetLineOutOfBound) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<int> target_lines{-2, 400};
+  std::vector<std::size_t> target_lines{0, 400};
   repo->addFile("temp.cpp", initial_content)
       .deleteCode("temp.cpp", target_lines);
 
@@ -272,7 +273,7 @@ TEST_F(GitHarnessTest, deleteCode_TargetLineOutOfBound) {
 // Action: add code to nonexisted file
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, deleteCode_FileNotExists) {
-  std::vector<int> target_lines{2};
+  std::vector<std::size_t> target_lines{2};
   EXPECT_THROW(repo->deleteCode("temp.cpp", target_lines), std::runtime_error);
 }
 

@@ -144,7 +144,7 @@ TEST_F(MutablesTest, testLoad) {
 
   // Could have made a two line EXPECT_TRUE to compare 2 mutables.
   // This is to test ranged-based for loop implementation is working.
-  int counter = 0;
+  std::size_t counter = 0;
   for (const auto& e : m2) {
     EXPECT_TRUE(equal(e, m.at(counter)));
     counter += 1;

@@ -209,8 +209,8 @@ inline std::string getRelativePath(const std::string& path,
     }
   }
   if (diffIdx >= 0) {
-    int itnum = mSplitStart.size() - diffIdx;
-    for (int i = 0 ; i < itnum ; i++) {
+    std::size_t itnum = mSplitStart.size() - diffIdx;
+    for (std::size_t i = 0 ; i < itnum ; i++) {
       ret = "../" + ret;
     }
   }

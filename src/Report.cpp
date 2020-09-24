@@ -56,7 +56,8 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
 
     if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
       groupByDirPath.emplace(curDirname,
-          new std::tuple<std::vector<const MutationResult*>*, int, int, int>(
+          new std::tuple<std::vector<const MutationResult*>*, std::size_t,
+                         std::size_t, std::size_t>(
           new std::vector<const MutationResult*>(), 0, 0, 0));
     }
     std::get<0>(*groupByDirPath[curDirname])->push_back(&mr);
@@ -65,7 +66,8 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
     if (groupByPath.empty() ||
         groupByPath.count(mrPath) == 0) {
       groupByPath.emplace(mrPath,
-          new std::tuple<std::vector<const MutationResult*>*, int, int>(
+          new std::tuple<std::vector<const MutationResult*>*, std::size_t,
+                         std::size_t>(
           new std::vector<const MutationResult*>(), 0, 0));
     }
     std::get<0>(*groupByPath[mrPath])->push_back(&mr);
@@ -100,11 +102,11 @@ Report::~Report() {
 }
 
 void Report::printSummary() {
-  int flen = 50;
-  int mlen = 10;
-  int klen = 10;
-  int clen = 10;
-  int maxlen = flen + mlen + klen + clen + 2;
+  std::size_t flen = 50;
+  std::size_t mlen = 10;
+  std::size_t klen = 10;
+  std::size_t clen = 10;
+  std::size_t maxlen = flen + mlen + klen + clen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format("{0:^{1}}\n", "Mutation Coverage Report", maxlen);

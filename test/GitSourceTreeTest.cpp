@@ -52,7 +52,7 @@ TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::ifstream mutatedFile(tempFilename);
   std::ifstream origFile(targetFilename);
   std::string mutatedFileLine, origFileLine;
-  int lineIdx = 0;
+  std::size_t lineIdx = 0;
   while (std::getline(mutatedFile, mutatedFileLine) &&
          std::getline(origFile, origFileLine)) {
     lineIdx += 1;
@@ -126,7 +126,7 @@ TEST(GitSourceTreeTest, testBackupWorks) {
   std::ifstream mutatedFile(tempFilename);
   std::ifstream origFile(targetFilename);
   std::string mutatedFileLine, origFileLine;
-  int lineIdx = 0;
+  std::size_t lineIdx = 0;
   while (std::getline(mutatedFile, mutatedFileLine) &&
          std::getline(origFile, origFileLine)) {
     lineIdx += 1;

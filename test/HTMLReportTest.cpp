@@ -748,6 +748,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   HTMLReport htmlreport(MRPath, SOURCE_DIR);
 
   htmlreport.save(OUT_DIR);
+
   auto mutationHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
       std::regex(".*index\\.html"));
   EXPECT_EQ(3, mutationHtmlPath.size());

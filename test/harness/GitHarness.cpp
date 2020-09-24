@@ -102,7 +102,7 @@ GitHarness& GitHarness::addFile(const std::string& filename,
 // By default, code is appended to end of file.
 GitHarness& GitHarness::addCode(const std::string& filename,
                                 const std::string& content,
-                                int line, int col) {
+                                std::size_t line, std::size_t col) {
   std::string filename_full = repo_path + "/" + filename;
   if (!os::path::isRegularFile(filename_full)) {
     throw IOException(EINVAL);
@@ -114,7 +114,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
   std::ofstream changed_file(filename_full+".temp",
                              std::ios_base::out | std::ios_base::trunc);
 
-  int line_idx = 0;
+  std::size_t line_idx = 0;
   std::string line_str;
   while (std::getline(orig_file, line_str)) {
     line_idx += 1;
@@ -128,7 +128,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
     // Column number starts from 1.
     // For target line, if column number is negative, content is added to
     // end of line.
-    if (col <= 0 || col > line_str.length()) {
+    if (col == 0 || col > line_str.length()) {
       changed_file << line_str << content << std::endl;
     } else {
       changed_file << line_str.substr(0, col-1) << content
@@ -138,7 +138,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
 
   // If line number is negative or exceeding length of file, content is added
   // to end of file.
-  if (line <= 0 || line > line_idx) {
+  if (line == 0 || line > line_idx) {
     changed_file << content;
   }
 
@@ -152,7 +152,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
 
 // Delete multiple line of codes. Code line starts from 1.
 GitHarness& GitHarness::deleteCode(const std::string& filename,
-                                   const std::vector<int>& lines) {
+                                   const std::vector<std::size_t>& lines) {
   std::string filename_full = repo_path + "/" + filename;
   if (!os::path::isRegularFile(filename_full)) {
     throw IOException(EINVAL);
@@ -163,7 +163,7 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
   std::ifstream orig_file(filename_full);
   std::ofstream changed_file(filename_full+".temp");
 
-  int line_idx = 0;
+  std::size_t line_idx = 0;
   std::string line_str;
   while (std::getline(orig_file, line_str)) {
     line_idx += 1;
@@ -262,25 +262,6 @@ GitHarness& GitHarness::commit(const std::string& message) {
 
   return *this;
 }
-
-// git tag -a <tag_name> -m "message"
-/*GitHarness& GitHarness::addTag(std::string tag_name, std::string commit_id,
-                               std::string message) {
-  git_signature *tagger;
-  git_oid oid;
-  git_object *target;
-
-  libgitErrorCheck(git_revparse_single(&target, repo, commit_id.c_str()),
-                   "Unable to resolve spec");
-  libgitErrorCheck(git_signature_default(&tagger, repo),
-                   "Unable to create signature");
-  libgitErrorCheck(git_tag_create(&oid, repo, tag_name.c_str(),
-        target, tagger, message.c_str(), 0), "Unable to create tag");
-
-  git_object_free(target);
-  git_signature_free(tagger);
-  return *this;
-}*/
 
 // git tag <tag_name> <commit_id>
 GitHarness& GitHarness::addTagLightweight(const std::string& tag_name,

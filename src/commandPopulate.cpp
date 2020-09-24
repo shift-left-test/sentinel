@@ -42,7 +42,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> output(parser, "mutable_db",
     "Mutable database output dir",
     {'o', "output"}, ".");
-  args::Positional<int> count(parser, "COUNT",
+  args::Positional<std::size_t> count(parser, "COUNT",
     "Max mutable count",
     args::Options::Required);
 

@@ -40,7 +40,7 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> backup(parser, "backup_dir",
     "Mutated souce backup dir",
     {'b', "backup"}, args::Options::Required);
-  args::Positional<int> index(parser, "INDEX",
+  args::Positional<std::size_t> index(parser, "INDEX",
     "Index of 'Mutable database' to be mutated",
     args::Options::Required);
 

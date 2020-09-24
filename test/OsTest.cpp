@@ -308,7 +308,7 @@ TEST_F(OsTest, testCopyFile) {
   std::ifstream origFile(FILE);
   std::ifstream copiedFile(copiedFilename);
   std::string copiedFileLine, origFileLine;
-  int lineCounter = 0;
+  std::size_t lineCounter = 0;
   while (std::getline(copiedFile, copiedFileLine) &&
          std::getline(origFile, origFileLine)) {
     lineCounter += 1;

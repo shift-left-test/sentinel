@@ -46,7 +46,7 @@ class MutableSelector {
    */
   virtual Mutables select(const Mutables& mutables,
                           const SourceLines& sourceLines,
-                          int maxMutables) = 0;
+                          std::size_t maxMutables) = 0;
 };
 
 }  // namespace sentinel

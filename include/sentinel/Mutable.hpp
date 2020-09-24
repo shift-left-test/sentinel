@@ -44,19 +44,19 @@ struct Location {
    * @param lineNum number
    * @param colNum number
    */
-  Location(int lineNum, int colNum) :
+  Location(std::size_t lineNum, std::size_t colNum) :
       line(lineNum), column(colNum) {
   }
 
   /**
    * @brief line number
    */
-  int line;
+  std::size_t line;
 
   /**
    * @brief column number
    */
-  int column;
+  std::size_t column;
 };
 
 class SourceTree;
@@ -86,10 +86,10 @@ class Mutable {
   Mutable(const std::string& mutationOperator,
           const std::string& path,
           const std::string& qualifiedFuncName,
-          int firstLine,
-          int firstColumn,
-          int lastLine,
-          int lastColumn,
+          std::size_t firstLine,
+          std::size_t firstColumn,
+          std::size_t lastLine,
+          std::size_t lastColumn,
           const std::string& token);
 
   /**

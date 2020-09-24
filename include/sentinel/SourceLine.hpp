@@ -42,7 +42,7 @@ class SourceLine {
    *
    * @param lineNumber soure line number
    */
-  SourceLine(const std::string& path, int lineNumber);
+  SourceLine(const std::string& path, std::size_t lineNumber);
 
   /**
    * @brief == operator overloading for std::find algorithm
@@ -63,13 +63,13 @@ class SourceLine {
   /**
    * @brief Return line number
    */
-  int getLineNumber() const {
+  std::size_t getLineNumber() const {
     return mLineNumber;
   }
 
  private:
   std::string mPath;
-  int mLineNumber;
+  std::size_t mLineNumber;
 };
 
 }  // namespace sentinel

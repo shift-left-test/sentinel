@@ -82,7 +82,7 @@ class UniformMutableGenerator : public MutableGenerator {
      */
     SentinelASTVisitor(clang::ASTContext* Context,
                        Mutables* mutables,
-                       const std::vector<int>& targetLines);
+                       const std::vector<std::size_t>& targetLines);
 
     /**
      * @brief Default destructor
@@ -96,7 +96,7 @@ class UniformMutableGenerator : public MutableGenerator {
     clang::SourceManager& mSrcMgr;
     std::vector<MutationOperator*> mMutationOperators;
     Mutables* mMutables;
-    const std::vector<int>& mTargetLines;
+    const std::vector<std::size_t>& mTargetLines;
   };
 
   /**
@@ -111,7 +111,7 @@ class UniformMutableGenerator : public MutableGenerator {
      */
     SentinelASTConsumer(const clang::CompilerInstance& CI,
                         Mutables* mutables,
-                        const std::vector<int>& targetLines) :
+                        const std::vector<std::size_t>& targetLines) :
         mMutables(mutables), mTargetLines(targetLines) {
     }
 
@@ -129,7 +129,7 @@ class UniformMutableGenerator : public MutableGenerator {
    private:
     // SentinelASTVisitor mVisitor;
     Mutables* mMutables;
-    const std::vector<int>& mTargetLines;
+    const std::vector<std::size_t>& mTargetLines;
   };
 
   /**
@@ -144,7 +144,7 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param mTargetLines list of target line numbers
      */
     GenerateMutantAction(Mutables* mutables,
-                         const std::vector<int>& targetLines) :
+                         const std::vector<std::size_t>& targetLines) :
         mMutables(mutables), mTargetLines(targetLines) {
     }
 
@@ -166,7 +166,7 @@ class UniformMutableGenerator : public MutableGenerator {
 
    private:
     Mutables* mMutables;
-    const std::vector<int>& mTargetLines;
+    const std::vector<std::size_t>& mTargetLines;
   };
 
   /**
@@ -176,7 +176,7 @@ class UniformMutableGenerator : public MutableGenerator {
    */
   std::unique_ptr<clang::tooling::FrontendActionFactory>
   myNewFrontendActionFactory(Mutables* mutables,
-                             const std::vector<int>& targetLines);
+                             const std::vector<std::size_t>& targetLines);
 };
 
 }  // namespace sentinel

@@ -72,24 +72,25 @@ class Report {
    * @brief group MutationReuslt by Directory
    */
   std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int, int>* >
-      groupByDirPath;
+      std::tuple<std::vector<const MutationResult*>*, std::size_t,
+                 std::size_t, std::size_t>* > groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
   std::map<std::string,
-      std::tuple<std::vector<const MutationResult*>*, int, int>* > groupByPath;
+      std::tuple<std::vector<const MutationResult*>*,
+                 std::size_t, std::size_t>* > groupByPath;
 
   /**
    * @brief total Number Of Mutation
    */
-  int totNumberOfMutation;
+  std::size_t totNumberOfMutation;
 
   /**
    * @brief total number of Deteced Mutation
    */
-  int totNumberOfDetectedMutation;
+  std::size_t totNumberOfDetectedMutation;
 
   /**
    * @brief path of source directory

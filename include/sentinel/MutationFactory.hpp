@@ -59,7 +59,7 @@ class MutationFactory {
    */
   Mutables populate(const std::string& gitPath,
                     const SourceLines& sourceLines,
-                    int maxMutables);
+                    std::size_t maxMutables);
 
  private:
   std::shared_ptr<MutableGenerator> mGenerator;
