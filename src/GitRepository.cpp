@@ -25,6 +25,7 @@
 #include <fmt/core.h>
 #include <experimental/filesystem>
 #include <git2.h>
+#include <algorithm>
 #include <sstream>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/GitSourceTree.hpp"
@@ -182,10 +183,11 @@ GitRepository::GitRepository(const std::string& path,
   logger->info(fmt::format("source root: {}", mSourceRoot));
 
   if (!extensions.empty()) {
-    for (auto & extension : extensions) {
-      mExtensions.push_back(extension.at(0) == '.' ?
-        extension : fmt::format(".{}", extension));
-    }
+    std::transform(extensions.begin(), extensions.end(),
+                   std::back_inserter(mExtensions),
+                   [](auto extension) -> std::string
+                   { return extension.at(0) == '.' ?
+                   extension : fmt::format(".{}", extension); });
   }
 
   this->mExcludes = excludes;

@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/exceptions/RepositoryException.hpp"
 #include "sentinel/Repository.hpp"
 #include "sentinel/SourceLines.hpp"
@@ -49,8 +50,8 @@ class GitRepository : public Repository {
    * @param excludes excluded directory list
    */
   explicit GitRepository(const std::string& path,
-    const std::vector<std::string>& extensions=std::vector<std::string>(),
-    const std::vector<std::string>& excludes=std::vector<std::string>());
+    const std::vector<std::string>& extensions = std::vector<std::string>(),
+    const std::vector<std::string>& excludes = std::vector<std::string>());
 
   /**
    * @brief Default destructor
@@ -58,7 +59,6 @@ class GitRepository : public Repository {
   virtual ~GitRepository();
 
   std::shared_ptr<SourceTree> getSourceTree() override;
-  
   /**
    * @brief Return the diff source lines from commit tree.
    * 
@@ -82,7 +82,7 @@ class GitRepository : public Repository {
    * @return return true if path is valid sourceline target.
    */
   bool isTargetPath(const std::string &path,
-    bool checkExtension=true);
+    bool checkExtension = true);
 
  private:
   std::string mSourceRoot;

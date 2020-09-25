@@ -26,6 +26,7 @@
 #define INCLUDE_SENTINEL_REPOSITORY_HPP_
 
 #include <memory>
+#include <string>
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/SourceTree.hpp"
 
