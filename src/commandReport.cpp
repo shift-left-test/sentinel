@@ -35,19 +35,19 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> input(parser, "eval_dir",
     "Mutation test result directory",
     {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
   args::ValueFlag<std::string> output(parser, "report_dir",
     "Mutation test report directory",
     {'o', "output"}, ".");
+  args::Positional<std::string> source_root(parser, "source_root",
+    "source root directory",
+    args::Options::Required);
 
   parser.Parse();
 
   auto mRPath = sentinel::os::path::join(input.Get(), "MutationResult");
-  sentinel::XMLReport xmlReport(mRPath, git.Get());
+  sentinel::XMLReport xmlReport(mRPath, source_root.Get());
   xmlReport.save(output.Get());
-  sentinel::HTMLReport htmlReport(mRPath, git.Get());
+  sentinel::HTMLReport htmlReport(mRPath, source_root.Get());
   htmlReport.save(output.Get());
   htmlReport.printSummary();
 }

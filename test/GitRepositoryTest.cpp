@@ -36,6 +36,7 @@ class GitRepositoryTest : public ::testing::Test {
   void SetUp() override {
     repo_name = os::tempPath("GitRepositoryTest-");
     repo = std::make_shared<GitHarness>(repo_name);
+    repo_name = os::path::getAbsolutePath(repo_name);
   }
 
   void TearDown() override {
@@ -49,10 +50,13 @@ class GitRepositoryTest : public ::testing::Test {
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
-    EXPECT_THROW({
-        GitRepository gitRepo(".");
+    std::string tmpPath = os::path::join(repo_name, "test");
+    os::createDirectories(tmpPath);
 
-        SourceLines lines = gitRepo.getSourceLines();
+    EXPECT_THROW({
+        GitRepository gitRepo(tmpPath);
+
+        SourceLines lines = gitRepo.getSourceLines("commit");
     }, RepositoryException);
 }
 
@@ -63,21 +67,21 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
 
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_TRUE(sourceLines.empty());
   }
   // only workdir
   {
     repo->addFile(stageFiles[0], content);
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_TRUE(sourceLines.empty());
   }
   // only index
   {
     repo->stageFile(stageFiles);
-        SourceLines sourceLines = gitRepo.getSourceLines();
+        SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
   }
@@ -93,21 +97,21 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
   repo->commit("init");
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
   }
   // only workdir
   {
     repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
   // only index
   {
     repo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
@@ -128,7 +132,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 1);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
@@ -137,7 +141,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   // only workdir
   {
     repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
@@ -146,11 +150,45 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   // only index
   {
     repo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines();
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
       SourceLine(stageFilename, 3)), 1);
+  }
+}
+
+TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
+  GitRepository gitRepo(repo_name);
+  std::string content = "int main() {\n}\n";
+  std::vector<std::string> stageFiles { "temp.cpp" };
+
+  repo->addFile(stageFiles[0], content);
+  repo->stageFile(stageFiles);
+  repo->commit("init");
+  repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+  repo->stageFile(stageFiles);
+  repo->commit("insert plus line");
+
+  // nothing
+  {
+    SourceLines sourceLines = gitRepo.getSourceLines("all");
+
+    EXPECT_EQ(sourceLines.size(), 3);
+  }
+  // only workdir
+  {
+    repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
+    SourceLines sourceLines = gitRepo.getSourceLines("all");
+
+    EXPECT_EQ(sourceLines.size(), 4);
+  }
+  // only index
+  {
+    repo->stageFile(stageFiles);
+    SourceLines sourceLines = gitRepo.getSourceLines("all");
+
+    EXPECT_EQ(sourceLines.size(), 4);
   }
 }
 
@@ -169,7 +207,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithDevtoolTag) {
   repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
   repo->stageFile(stageFiles);
   repo->commit("insert second line");
-  SourceLines sourceLines = gitRepo.getSourceLines();
+  SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
   EXPECT_EQ(sourceLines.size(), 2);
 }
@@ -202,8 +240,23 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
 
   repo->merge(targetBranches);
 
-  SourceLines sourceLines = gitRepo.getSourceLines();
+  SourceLines sourceLines = gitRepo.getSourceLines("commit");
   EXPECT_EQ(sourceLines.size(), 4);
+}
+
+TEST_F(GitRepositoryTest, testIsTarget) {
+  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {"test"});
+  std::string content = "int main() {\n}\n";
+  std::vector<std::string> stageFiles { "temp.cpp", "temp.c", "test/test.cpp" };
+
+  repo->addFolder("test");
+
+  for (auto &file : stageFiles) {
+    repo->addFile(file, content);
+  }
+  EXPECT_TRUE(gitRepo.isTargetPath("temp.cpp"));
+  EXPECT_FALSE(gitRepo.isTargetPath("temp.c"));
+  EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));
 }
 
 }  // namespace sentinel

@@ -31,7 +31,7 @@
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable string",
+  args::ValueFlag<std::string> input(parser, "MUTABLE",
     "Mutable string",
     {'i', "input"}, args::Options::Required);
   args::ValueFlag<std::string> expected(parser, "test_dir",

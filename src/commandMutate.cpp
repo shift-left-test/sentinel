@@ -23,6 +23,7 @@
 */
 
 #include <iostream>
+#include <sstream>
 #include <args/args.hxx>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Mutables.hpp"
@@ -31,25 +32,21 @@
 
 
 void mutateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "mutable_db",
-    "Mutable database dir",
+  args::ValueFlag<std::string> input(parser, "MUTABLE",
+    "Mutable string",
     {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
   args::ValueFlag<std::string> backup(parser, "backup_dir",
     "Mutated souce backup dir",
     {'b', "backup"}, args::Options::Required);
-  args::Positional<std::size_t> index(parser, "INDEX",
-    "Index of 'Mutable database' to be mutated",
+  args::Positional<std::string> source_root(parser, "source_root",
+    "source root directory",
     args::Options::Required);
-
   parser.Parse();
 
-  sentinel::Mutables mutables;
-  mutables.load(sentinel::os::path::join(input.Get(), "mutables.db"));
-  sentinel::Mutable m = mutables.at(index.Get());
+  sentinel::Mutable m;
+  std::istringstream iss(input.Get());
+  iss >> m;
 
-  sentinel::GitRepository repository(git.Get());
+  sentinel::GitRepository repository(source_root.Get());
   repository.getSourceTree()->modify(m, backup.Get());
 }

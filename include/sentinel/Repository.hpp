@@ -38,11 +38,16 @@ namespace sentinel {
 class Repository {
  public:
   /**
-   * @brief Return the source lines
-   *
+   * @brief destructor
+   */
+  virtual ~Repository() = default;
+
+  /**
+   * @brief Return the diff source lines from repository.
+   * 
    * @return SourceLines object
    */
-  virtual SourceLines getSourceLines() = 0;
+  virtual SourceLines getSourceLines(const std::string& scope) = 0;
 
   /**
    * @brief Return the source tree

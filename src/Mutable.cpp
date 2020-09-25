@@ -97,7 +97,7 @@ std::string Mutable::getToken() const {
 }
 
 std::ostream& operator<<(std::ostream& out, const Mutable& m) {
-  out << fmt::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+  out << fmt::format("{},{},{},{},{},{},{},{}",
                      m.getOperator(),
                      m.getPath(),
                      m.getQualifiedFunction(),
@@ -112,7 +112,7 @@ std::ostream& operator<<(std::ostream& out, const Mutable& m) {
 std::istream& operator>>(std::istream& in, Mutable &m) {
   std::string line;
   if (getline(in, line)) {
-    auto str = string::split(line, "\t");
+    auto str = string::split(line, ",");
     m = Mutable(str[0], str[1], str[2], std::stoi(str[3]), std::stoi(str[4]),
                 std::stoi(str[5]), std::stoi(str[6]), str[7]);
   }

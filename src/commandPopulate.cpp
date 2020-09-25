@@ -26,44 +26,64 @@
 #include <iostream>
 #include <map>
 #include <args/args.hxx>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/os.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
 #include "sentinel/UniformMutableSelector.hpp"
 
-void populateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "compile_db",
-    "Compilation command db path",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> git(parser, "git_dir",
-    "Git repository dir",
-    {'g', "git"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "mutable_db",
-    "Mutable database output dir",
-    {'o', "output"}, ".");
-  args::Positional<std::size_t> count(parser, "COUNT",
-    "Max mutable count",
-    args::Options::Required);
 
+void populateCommand(args::Subparser &parser) {  // NOLINT
+  args::ValueFlag<std::string> compile_db_path(parser, "compile_db_path",
+    "Directory where compile_commands.json file exists.",
+    {'b', "build"}, args::Options::Required);
+  args::ValueFlag<std::string> scope(parser, "scope",
+    "diff scope, one of ['commit', 'all']. default: all",
+    {'s', "scope"}, "all");
+  args::ValueFlagList<std::string> extensions(parser, "extensions",
+    "Extentions of source file which could be mutated.",
+    {'t', "extensions"},
+    {"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h", "c++", "h++",
+     "cu", "cuh"});
+  args::ValueFlagList<std::string> exclude(parser, "exclude",
+    "exclude file or path",
+    {'e', "exclude"});
+  args::ValueFlag<int> limit(parser, "limit",
+    "Maximum generated mutable count. default: 10",
+    {'l', "limit"}, 10);
+  args::ValueFlag<std::string> output(parser, "mutable_db",
+    "Mutable database output filename. default: ./mutables.db",
+    {'o', "output"}, "./mutables.db");
+  args::Positional<std::string> source_root(parser, "source_root",
+    "source root directory",
+    args::Options::Required);
   parser.Parse();
 
-  sentinel::GitRepository gitRepo(git.Get());
-  sentinel::SourceLines sourceLines = gitRepo.getSourceLines();
+  std::unique_ptr<sentinel::Repository> repo =
+    std::make_unique<sentinel::GitRepository>(
+      source_root.Get(),
+      extensions.Get(),
+      exclude.Get());
+
+  auto logger = sentinel::Logger::getLogger("populate");
+  sentinel::SourceLines sourceLines = repo->getSourceLines(scope.Get());
 
   std::shared_ptr<sentinel::MutableGenerator> generator =
-      std::make_shared<sentinel::UniformMutableGenerator>(input.Get());
+    std::make_shared<sentinel::UniformMutableGenerator>(
+      compile_db_path.Get());
   std::shared_ptr<sentinel::MutableSelector> selector =
-      std::make_shared<sentinel::UniformMutableSelector>();
+    std::make_shared<sentinel::UniformMutableSelector>();
 
   sentinel::MutationFactory mutationFactory(generator, selector);
 
   sentinel::Mutables mutables = mutationFactory.populate(
-      git.Get(),
+      source_root.Get(),
       sourceLines,
-      count.Get());
+      limit.Get());
 
-  mutables.save(sentinel::os::path::join(output.Get(), "mutables.db"));
-
-  std::cout << "MutableCount: " << mutables.size() << std::endl;
+  mutables.save(output.Get());
+  logger->info(fmt::format("source lines: {}", sourceLines.size()));
+  logger->info(fmt::format("generated mutables count: {}", mutables.size()));
 }

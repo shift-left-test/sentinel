@@ -44,22 +44,50 @@ class GitRepository : public Repository {
   /**
    * @brief Default constructor
    *
-   * @param path to the git repository
+   * @param path to the directory repository
+   * @param extensions compile_commands.json file location
+   * @param excludes excluded directory list
    */
-  explicit GitRepository(const std::string& path);
+  explicit GitRepository(const std::string& path,
+    const std::vector<std::string>& extensions=std::vector<std::string>(),
+    const std::vector<std::string>& excludes=std::vector<std::string>());
 
   /**
    * @brief Default destructor
    */
   virtual ~GitRepository();
 
-  SourceLines getSourceLines() override;
-
   std::shared_ptr<SourceTree> getSourceTree() override;
+  
+  /**
+   * @brief Return the diff source lines from commit tree.
+   * 
+   * @return SourceLines object
+   */
+  SourceLines getSourceLines(const std::string& scope) override;
+
+  /**
+   * @brief Return absolute root path
+   */
+  const std::string& getSourceRoot() { return mSourceRoot; }
+
+  /**
+   * @brief Return path is target path for getSourceLines
+   *
+   * @param path 
+   * 
+   * @param checkExtension if true, 
+   *        check extensino of path is included by extensions_.
+   * 
+   * @return return true if path is valid sourceline target.
+   */
+  bool isTargetPath(const std::string &path,
+    bool checkExtension=true);
 
  private:
-  std::string mPath;
-  std::shared_ptr<Logger> mLogger;
+  std::string mSourceRoot;
+  std::vector<std::string> mExtensions;
+  std::vector<std::string> mExcludes;
 };
 
 }  // namespace sentinel
