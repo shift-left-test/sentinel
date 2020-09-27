@@ -25,6 +25,7 @@
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
@@ -33,27 +34,36 @@
 
 namespace sentinel {
 
+static std::map<std::string, std::shared_ptr<Logger>> loggers;
+static Logger::Level defaultLevel = Logger::Level::OFF;
+
+
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
-  return getLogger(name, "{name}:{level}: {message}");
+  return getLogger(name, "{name} [{level}] {message}");
 }
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name,
                                           const std::string& format) {
-  return std::shared_ptr<Logger>(new Logger(name, format));
+  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name,
+                                                           format,
+                                                           defaultLevel)));
+  return loggers.at(name);
 }
 
-Logger::Logger(const std::string& name, const std::string& format) :
-    mName(name), mFormat(format), mLevel(Level::INFO) {
+void Logger::setLevel(Logger::Level level) {
+  defaultLevel = level;
+}
+
+Logger::Logger(const std::string& name,
+               const std::string& format,
+               Logger::Level level) :
+    mName(name), mFormat(format), mLevel(level) {
   try {
     this->format(mLevel, mName);
   }
   catch (const fmt::format_error& e) {
     throw InvalidArgumentException(e.what());
   }
-}
-
-void Logger::setLevel(Logger::Level level) {
-  mLevel = level;
 }
 
 std::string Logger::format(Logger::Level level,

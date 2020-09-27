@@ -26,6 +26,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutableGenerator.hpp"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/MutableSelector.hpp"
@@ -45,6 +46,7 @@ MutationFactory::MutationFactory(
 Mutables MutationFactory::populate(const std::string& gitPath,
                                    const SourceLines& sourceLines,
                                    std::size_t maxMutables) {
+  auto logger = Logger::getLogger("populate");
   Mutables generatedMutables = mGenerator->populate(sourceLines);
   Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
                                                 maxMutables);
@@ -95,6 +97,10 @@ Mutables MutationFactory::populate(const std::string& gitPath,
                            "TOTAL", flen,
                            selectedMutables.size(), mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+
+  logger->info(fmt::format("source lines: {}", sourceLines.size()));
+  logger->info(fmt::format("generated mutables count: {}",
+                           selectedMutables.size()));
 
   return selectedMutables;
 }

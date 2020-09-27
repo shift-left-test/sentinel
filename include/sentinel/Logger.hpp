@@ -71,7 +71,7 @@ class Logger {
    *
    * @param level of the logging
    */
-  void setLevel(Logger::Level level);
+  static void setLevel(Logger::Level level);
 
   /**
    * @brief Log a debug message
@@ -107,8 +107,11 @@ class Logger {
    *
    * @param name of the logger
    * @param format string
+   * @param level logging level
    */
-  Logger(const std::string& name, const std::string& format);
+  Logger(const std::string& name,
+         const std::string& format,
+         Logger::Level level);
 
   /**
    * @brief Return formatted string

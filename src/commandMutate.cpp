@@ -26,6 +26,7 @@
 #include <sstream>
 #include <args/args.hxx>
 #include "sentinel/GitRepository.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/util/os.hpp"
@@ -41,7 +42,13 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
   args::Positional<std::string> source_root(parser, "source_root",
     "source root directory",
     args::Options::Required);
+  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
+
   parser.Parse();
+
+  if (verbose) {
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+  }
 
   sentinel::Mutable m;
   std::istringstream iss(input.Get());

@@ -22,8 +22,6 @@
   SOFTWARE.
 */
 
-#include <fmt/core.h>
-#include <iostream>
 #include <map>
 #include <args/args.hxx>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -59,31 +57,29 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
   args::Positional<std::string> source_root(parser, "source_root",
     "source root directory",
     args::Options::Required);
+  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
+
   parser.Parse();
 
-  std::unique_ptr<sentinel::Repository> repo =
-    std::make_unique<sentinel::GitRepository>(
-      source_root.Get(),
-      extensions.Get(),
-      exclude.Get());
+  if (verbose) {
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+  }
 
-  auto logger = sentinel::Logger::getLogger("populate");
+  auto repo = std::make_unique<sentinel::GitRepository>(source_root.Get(),
+                                                        extensions.Get(),
+                                                        exclude.Get());
+
   sentinel::SourceLines sourceLines = repo->getSourceLines(scope.Get());
 
-  std::shared_ptr<sentinel::MutableGenerator> generator =
-    std::make_shared<sentinel::UniformMutableGenerator>(
+  auto generator = std::make_shared<sentinel::UniformMutableGenerator>(
       compile_db_path.Get());
-  std::shared_ptr<sentinel::MutableSelector> selector =
-    std::make_shared<sentinel::UniformMutableSelector>();
+  auto selector = std::make_shared<sentinel::UniformMutableSelector>();
 
   sentinel::MutationFactory mutationFactory(generator, selector);
 
-  sentinel::Mutables mutables = mutationFactory.populate(
-      source_root.Get(),
-      sourceLines,
-      limit.Get());
+  auto mutables = mutationFactory.populate(source_root.Get(),
+                                           sourceLines,
+                                           limit.Get());
 
   mutables.save(output.Get());
-  logger->info(fmt::format("source lines: {}", sourceLines.size()));
-  logger->info(fmt::format("generated mutables count: {}", mutables.size()));
 }

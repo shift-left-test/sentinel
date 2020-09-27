@@ -33,6 +33,15 @@ namespace sentinel {
 class LoggerTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    off = Logger::getLogger("off");
+
+    Logger::setLevel(Logger::Level::DEBUG);
+    debug = Logger::getLogger("debug");
+
+    Logger::setLevel(Logger::Level::ALL);
+    all = Logger::getLogger("all");
+
+    Logger::setLevel(Logger::Level::INFO);
     logger = Logger::getLogger("logger");
   }
 
@@ -52,83 +61,111 @@ class LoggerTest : public ::testing::Test {
     return testing::internal::GetCapturedStderr();
   }
 
+  std::shared_ptr<Logger> off;
+  std::shared_ptr<Logger> debug;
+  std::shared_ptr<Logger> all;
   std::shared_ptr<Logger> logger;
 };
 
-TEST_F(LoggerTest, testDebugWithDefaultState) {
+TEST_F(LoggerTest, testInfoWithInitialLevel) {
+  captureStdout();
+  off->info("hello world");
+  EXPECT_STREQ("", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testDebugWithInfoLevel) {
   captureStdout();
   logger->debug("hello world");
   EXPECT_STREQ("", capturedStdout().c_str());
 }
 
-TEST_F(LoggerTest, testInfoWithDefaultState) {
+TEST_F(LoggerTest, testInfoWithInfoLevel) {
   captureStdout();
   logger->info("hello world");
-  EXPECT_STREQ("logger:INFO: hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("logger [INFO] hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggerTest, testWarnWithDefaultState) {
+TEST_F(LoggerTest, testWarnWithInfoLevel) {
   captureStderr();
   logger->warn("hello world");
-  EXPECT_STREQ("logger:WARN: hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("logger [WARN] hello world\n", capturedStderr().c_str());
 }
 
-TEST_F(LoggerTest, testErrorWithDefaultState) {
+TEST_F(LoggerTest, testErrorWithInfoLevel) {
   captureStderr();
   logger->error("hello world");
-  EXPECT_STREQ("logger:ERROR: hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("logger [ERROR] hello world\n", capturedStderr().c_str());
 }
 
-TEST_F(LoggerTest, testDebugWhenDebugLevelSet) {
+TEST_F(LoggerTest, testDebugWithDebugLevel) {
   captureStdout();
-  logger->setLevel(Logger::Level::DEBUG);
-  logger->debug("hello world");
-  EXPECT_STREQ("logger:DEBUG: hello world\n", capturedStdout().c_str());
+  debug->debug("hello world");
+  EXPECT_STREQ("debug [DEBUG] hello world\n", capturedStdout().c_str());
 }
 
-TEST_F(LoggerTest, testLogsWithOnLevelSet) {
+TEST_F(LoggerTest, testLogsWithAllLevel) {
   captureStdout();
   captureStderr();
-  logger->setLevel(Logger::Level::ALL);
-  logger->debug("D");
-  logger->info("I");
-  logger->warn("W");
-  logger->error("E");
-  EXPECT_STREQ("logger:DEBUG: D\nlogger:INFO: I\n",
+  all->debug("D");
+  all->info("I");
+  all->warn("W");
+  all->error("E");
+  EXPECT_STREQ("all [DEBUG] D\nall [INFO] I\n",
                capturedStdout().c_str());
-  EXPECT_STREQ("logger:WARN: W\nlogger:ERROR: E\n",
+  EXPECT_STREQ("all [WARN] W\nall [ERROR] E\n",
                capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithOffLevelSet) {
   captureStdout();
   captureStderr();
-  logger->setLevel(Logger::Level::OFF);
-  logger->debug("D");
-  logger->info("I");
-  logger->warn("W");
-  logger->error("E");
+  off->debug("D");
+  off->info("I");
+  off->warn("W");
+  off->error("E");
   EXPECT_STREQ("", capturedStdout().c_str());
   EXPECT_STREQ("", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogWithDifferentFormat) {
-  logger = Logger::getLogger("logger", "{name} [{level}] {message}");
+  logger = Logger::getLogger("another", "{name}:{level}:{message}");
   captureStdout();
   logger->info("hello world");
-  EXPECT_STREQ("logger [INFO] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("another:INFO:hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testLogWithEmptyFormat) {
-  logger = Logger::getLogger("logger", "");
+  logger = Logger::getLogger("empty", "");
   captureStdout();
   logger->info("hello world");
   EXPECT_STREQ("\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testLogWithWrongFormat) {
-  EXPECT_THROW(Logger::getLogger("logger", "{wrong}"),
+  EXPECT_THROW(Logger::getLogger("wrong", "{wrong}"),
                InvalidArgumentException);
+}
+
+TEST_F(LoggerTest, testLoggersAreShared) {
+  auto logger1 = Logger::getLogger("shared", "{name}:{level}:{message}");
+  auto logger2 = Logger::getLogger("shared");
+  captureStdout();
+  logger1->info("1");
+  logger2->info("2");
+  EXPECT_STREQ("shared:INFO:1\nshared:INFO:2\n", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testSetLevelChangesGlobalLogLevel) {
+  captureStdout();
+  logger->debug("1");
+  EXPECT_STREQ("", capturedStdout().c_str());
+
+  Logger::setLevel(Logger::Level::DEBUG);
+  logger = Logger::getLogger("another");
+
+  captureStdout();
+  logger->debug("1");
+  EXPECT_STREQ("another [DEBUG] 1\n", capturedStdout().c_str());
 }
 
 }  // namespace sentinel

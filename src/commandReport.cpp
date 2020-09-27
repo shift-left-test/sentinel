@@ -26,6 +26,7 @@
 #include <string>
 #include <args/args.hxx>
 #include "sentinel/HTMLReport.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
@@ -41,8 +42,13 @@ void reportCommand(args::Subparser &parser) {  // NOLINT
   args::Positional<std::string> source_root(parser, "source_root",
     "source root directory",
     args::Options::Required);
+  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
 
   parser.Parse();
+
+  if (verbose) {
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+  }
 
   auto mRPath = sentinel::os::path::join(input.Get(), "MutationResult");
   sentinel::XMLReport xmlReport(mRPath, source_root.Get());

@@ -43,8 +43,13 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> output(parser, "eval_dir",
     "Mutation applied test result",
     {'o', "output"}, ".");
+  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
 
   parser.Parse();
+
+  if (verbose) {
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+  }
 
   sentinel::Mutable m;
   std::istringstream iss(input.Get());
