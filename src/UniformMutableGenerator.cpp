@@ -26,6 +26,7 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceLines.hpp"
@@ -144,9 +145,15 @@ UniformMutableGenerator::myNewFrontendActionFactory(
         mMutables(mutables), mTargetLines(targetLines) {
     }
 
+#if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {
       return std::make_unique<GenerateMutantAction>(mMutables, mTargetLines);
     }
+#else
+    clang::FrontendAction *create() override {
+      return new GenerateMutantAction(mMutables, mTargetLines);
+    }
+#endif
 
    private:
     Mutables* mMutables;

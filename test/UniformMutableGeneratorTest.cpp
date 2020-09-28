@@ -45,9 +45,7 @@ TEST(UniformMutableGeneratorTest, testAllMutationOperatorsSuccess) {
   sourceLines.push_back(SourceLine(targetFile, 86));
 
   UniformMutableGenerator generator{".."};
-  std::cout << "poppulating\n";
   Mutables mutables = generator.populate(sourceLines);
-  std::cout << "poppulated\n";
 
   Mutables truth;
   truth.push_back(Mutable("LCR", targetFile, "sumOfEvenPositiveNumber",
