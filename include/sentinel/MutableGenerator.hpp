@@ -41,9 +41,11 @@ class MutableGenerator {
    * @brief Populate mutables from the given source line
    *
    * @param sourceLines list of target source lines
+   * @param maxMutables limit number of generated mutables
    * @return mutables
    */
-  virtual Mutables populate(const SourceLines& sourceLines) = 0;
+  virtual Mutables populate(const SourceLines& sourceLines,
+                            std::size_t maxMutables) = 0;
 };
 
 }  // namespace sentinel

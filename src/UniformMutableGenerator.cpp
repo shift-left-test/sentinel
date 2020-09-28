@@ -26,8 +26,9 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
-#include <iostream>
 #include <map>
+#include <random>
+#include <vector>
 #include "sentinel/Mutables.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
@@ -36,7 +37,8 @@
 
 namespace sentinel {
 
-Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines) {
+Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines,
+                                           std::size_t maxMutables) {
   Mutables mutables;
 
   std::string errorMsg;
@@ -67,7 +69,36 @@ Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines) {
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
   }
 
-  return mutables;
+  // Select one Mutable on each target line
+  Mutables temp_storage;
+  std::random_device rd;
+  std::mt19937 mt(rd());
+
+  for (const auto& line : sourceLines) {
+    std::vector<Mutable> temp;
+    auto pred = [&](const auto& m) {
+      return os::path::comparePath(m.getPath(), line.getPath()) &&
+      m.getFirst().line <= line.getLineNumber() &&
+      m.getLast().line >= line.getLineNumber();
+    };
+    std::copy_if(mutables.begin(), mutables.end(),
+                 std::back_inserter(temp), pred);
+
+    if (temp.empty()) {
+      continue;
+    }
+
+    std::uniform_int_distribution<std::size_t> idx(0, temp.size()-1);
+    temp_storage.push_back(temp[idx(mt)]);
+  }
+
+  // Select randomly <maxMutable> mutables
+  if (maxMutables >= temp_storage.size()) {
+    return Mutables(temp_storage.begin(), temp_storage.end());
+  }
+
+  temp_storage.shuffle();
+  return temp_storage.split(0, maxMutables);
 }
 
 UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(

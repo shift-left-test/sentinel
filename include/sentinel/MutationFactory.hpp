@@ -29,7 +29,6 @@
 #include <string>
 #include "sentinel/MutableGenerator.hpp"
 #include "sentinel/Mutables.hpp"
-#include "sentinel/MutableSelector.hpp"
 #include "sentinel/SourceLines.hpp"
 
 
@@ -44,10 +43,8 @@ class MutationFactory {
    * @brief Default constructor
    *
    * @param generator Mutation generator
-   * @param selector Mutation selector
    */
-  MutationFactory(const std::shared_ptr<MutableGenerator>& generator,
-                  const std::shared_ptr<MutableSelector>& selector);
+  explicit MutationFactory(const std::shared_ptr<MutableGenerator>& generator);
 
   /**
    * @brief Populate mutables from the given source lines
@@ -63,7 +60,6 @@ class MutationFactory {
 
  private:
   std::shared_ptr<MutableGenerator> mGenerator;
-  std::shared_ptr<MutableSelector> mSelector;
 };
 
 }  // namespace sentinel

@@ -29,7 +29,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutableGenerator.hpp"
 #include "sentinel/Mutables.hpp"
-#include "sentinel/MutableSelector.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/util/os.hpp"
@@ -38,21 +37,18 @@
 namespace sentinel {
 
 MutationFactory::MutationFactory(
-    const std::shared_ptr<MutableGenerator>& generator,
-    const std::shared_ptr<MutableSelector>& selector) :
-    mGenerator(generator), mSelector(selector) {
+    const std::shared_ptr<MutableGenerator>& generator) :
+    mGenerator(generator) {
 }
 
 Mutables MutationFactory::populate(const std::string& gitPath,
                                    const SourceLines& sourceLines,
                                    std::size_t maxMutables) {
   auto logger = Logger::getLogger("populate");
-  Mutables generatedMutables = mGenerator->populate(sourceLines);
-  Mutables selectedMutables = mSelector->select(generatedMutables, sourceLines,
-                                                maxMutables);
+  Mutables mutables = mGenerator->populate(sourceLines, maxMutables);
 
   std::map<std::string, std::size_t> groupByPath;
-  for (const auto& m : selectedMutables) {
+  for (const auto& m : mutables) {
     std::string path = m.getPath();
     auto it = groupByPath.find(path);
 
@@ -95,14 +91,14 @@ Mutables MutationFactory::populate(const std::string& gitPath,
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "TOTAL", flen,
-                           selectedMutables.size(), mlen);
+                           mutables.size(), mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   logger->info(fmt::format("source lines: {}", sourceLines.size()));
   logger->info(fmt::format("generated mutables count: {}",
-                           selectedMutables.size()));
+                           mutables.size()));
 
-  return selectedMutables;
+  return mutables;
 }
 
 }  // namespace sentinel

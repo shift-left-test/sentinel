@@ -30,7 +30,6 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
-#include "sentinel/UniformMutableSelector.hpp"
 
 
 void populateCommand(args::Subparser &parser) {  // NOLINT
@@ -73,9 +72,8 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
 
   auto generator = std::make_shared<sentinel::UniformMutableGenerator>(
       compile_db_path.Get());
-  auto selector = std::make_shared<sentinel::UniformMutableSelector>();
 
-  sentinel::MutationFactory mutationFactory(generator, selector);
+  sentinel::MutationFactory mutationFactory(generator);
 
   auto mutables = mutationFactory.populate(source_root.Get(),
                                            sourceLines,

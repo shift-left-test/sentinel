@@ -27,7 +27,6 @@
 #include <memory>
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutableGenerator.hpp"
-#include "sentinel/UniformMutableSelector.hpp"
 #include "sentinel/util/os.hpp"
 
 namespace sentinel {
@@ -41,9 +40,7 @@ TEST(MutationFactoryTest, testPopulateWorks) {
 
   std::shared_ptr<MutableGenerator> generator =
       std::make_shared<UniformMutableGenerator>("..");
-  std::shared_ptr<MutableSelector> selector =
-      std::make_shared<UniformMutableSelector>();
-  MutationFactory factory(generator, selector);
+  MutationFactory factory(generator);
 
   testing::internal::CaptureStdout();
   Mutables selected = factory.populate("input/sample1", sourceLines, 3);

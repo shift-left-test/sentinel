@@ -25,7 +25,7 @@ find_package(Clang REQUIRED)
 build_static_library(
   NAME sentinel-core
   SRCS SourceLine.cpp SourceTree.cpp Mutable.cpp
-       UniformMutableGenerator.cpp UniformMutableSelector.cpp
+       UniformMutableGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp Evaluator.cpp
        MutationResult.cpp GitSourceTree.cpp
        Report.cpp XMLReport.cpp HTMLReport.cpp
