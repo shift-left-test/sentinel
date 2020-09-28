@@ -127,8 +127,8 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   testing::internal::CaptureStdout();
   auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out2, "AOR("));
-  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 0:0-0:0) Killed by C2.TC2"));
+  EXPECT_TRUE(string::contains(out2, "AOR ("));
+  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 0:0-0:0)"));
   EXPECT_TRUE(result.getDetected());
 
   auto mrPath = os::path::join(OUT_DIR, "MutationResult");
@@ -145,7 +145,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   testing::internal::CaptureStdout();
   auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR_ALIVE);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out2, "BOR("));
+  EXPECT_TRUE(string::contains(out2, "BOR ("));
   EXPECT_TRUE(string::contains(out2, "sample1.cpp, 1:1-1:1) Survived"));
   EXPECT_FALSE(result.getDetected());
 

@@ -718,8 +718,6 @@ TEST_F(HTMLReportTest, testPrintEmptyReport) {
   testing::internal::CaptureStdout();
   htmlreport.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "Directory: " +
-                               os::path::getAbsolutePath(SOURCE_DIR)));
   EXPECT_TRUE(string::contains(out, "      0         0        -%"));
 }
 
@@ -820,8 +818,6 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   testing::internal::CaptureStdout();
   htmlreport.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "Directory: " +
-                               os::path::getAbsolutePath(SOURCE_DIR)));
   EXPECT_TRUE(string::contains(out, "      0         1        0%"));
   EXPECT_TRUE(string::contains(out, "      1         1      100%"));
   EXPECT_TRUE(string::contains(out, "      1         2       50%"));

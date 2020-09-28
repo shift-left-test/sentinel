@@ -63,15 +63,14 @@ MutationResult Evaluator::compareAndSaveMutationResult(
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
 
   std::cout << fmt::format(
-      "{mu}({path}, {sl}:{sc}-{el}:{ec}) {status}{kT}",
+      "{mu} ({path}, {sl}:{sc}-{el}:{ec}) {status}",
       fmt::arg("mu", mMutable.getOperator()),
-      fmt::arg("path", mMutable.getPath()),
+      fmt::arg("path", os::path::filename(mMutable.getPath())),
       fmt::arg("sl", mMutable.getFirst().line),
       fmt::arg("sc", mMutable.getFirst().column),
       fmt::arg("el", mMutable.getLast().line),
       fmt::arg("ec", mMutable.getLast().column),
-      fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"),
-      fmt::arg("kT", killingTC.length() != 0 ? " by " + killingTC  : ""))
+      fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"))
             << std::endl;
 
   MutationResult ret(mMutable, killingTC,

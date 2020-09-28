@@ -110,8 +110,6 @@ void Report::printSummary() {
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format("{0:^{1}}\n", "Mutation Coverage Report", maxlen);
-  std::cout << fmt::format("Directory: {0}\n",
-                           os::path::getAbsolutePath(mSourcePath));
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "File", flen,
