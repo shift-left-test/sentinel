@@ -29,7 +29,7 @@
 #include <string>
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/util/os.hpp"
 
 
@@ -55,16 +55,16 @@ class MutationResultsTest : public ::testing::Test {
 
 TEST_F(MutationResultsTest, testAdd) {
   MutationResults MRs;
-  Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
+  Mutant M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
   EXPECT_EQ(0, MRs.size());
   MutationResult MR1(M1, "testAdd", true);
   MRs.push_back(MR1);
   EXPECT_EQ(1, MRs.size());
 
   EXPECT_TRUE(MRs[0].compare(MR1));
-  EXPECT_EQ(MRs[0].getMutable().getOperator(), "AOR");
-  EXPECT_TRUE(os::path::comparePath(MR1.getMutable().getPath(), TARGET_FILE));
-  EXPECT_EQ(MR1.getMutable().getFirst().line, 0);
+  EXPECT_EQ(MRs[0].getMutant().getOperator(), "AOR");
+  EXPECT_TRUE(os::path::comparePath(MR1.getMutant().getPath(), TARGET_FILE));
+  EXPECT_EQ(MR1.getMutant().getFirst().line, 0);
 }
 
 TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
@@ -75,11 +75,11 @@ TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
 TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResults MRs;
 
-  Mutable M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  Mutant M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "testAdd", false);
   MRs.push_back(MR1);
 
-  Mutable M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true);
   MRs.push_back(MR2);
 

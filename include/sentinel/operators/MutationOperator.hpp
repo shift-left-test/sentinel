@@ -30,7 +30,7 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <string>
-#include "sentinel/Mutables.hpp"
+#include "sentinel/Mutants.hpp"
 
 
 namespace sentinel {
@@ -66,12 +66,12 @@ class MutationOperator {
   virtual bool canMutate(clang::Stmt* s) = 0;
 
   /**
-   * @brief Create Mutable from given statement.
+   * @brief Create Mutant from given statement.
    *
    * @param s target AST node
    * @param mutables to store newly created mutable
    */
-  virtual void populate(clang::Stmt* s, Mutables* mutables) = 0;
+  virtual void populate(clang::Stmt* s, Mutants* mutables) = 0;
 
   /**
    * @brief Return the code representing given AST node.
@@ -123,7 +123,7 @@ class MutationOperator {
 
   /**
    * @brief Return True if the given source code range is valid for
-   *        generating Mutable. A source code range is valid if the
+   *        generating Mutant. A source code range is valid if the
    *        start and end locations are
    *        (1) valid locations,
    *        (2) not macro location, and
@@ -133,7 +133,7 @@ class MutationOperator {
    * @param endLoc end location of source range
    * @return True if range is valid
    */
-  bool isValidMutableSourceRange(clang::SourceLocation *startLoc,
+  bool isValidMutantSourceRange(clang::SourceLocation *startLoc,
                                  clang::SourceLocation *endLoc);
 
  protected:

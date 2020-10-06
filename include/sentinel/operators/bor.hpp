@@ -54,12 +54,12 @@ class BOR : public MutationOperator {
   bool canMutate(clang::Stmt* s) override;
 
   /**
-   * @brief Create Mutable from given statement.
+   * @brief Create Mutant from given statement.
    *
    * @param s target AST node
    * @param mutables to store newly created mutable
    */
-  void populate(clang::Stmt* s, Mutables* mutables) override;
+  void populate(clang::Stmt* s, Mutants* mutables) override;
 
  private:
   std::set<std::string> mBitwiseOperators = {"|", "&", "^"};

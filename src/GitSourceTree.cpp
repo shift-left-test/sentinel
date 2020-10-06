@@ -27,7 +27,7 @@
 #include <sstream>
 #include <string>
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/util/os.hpp"
 
@@ -38,7 +38,7 @@ GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
     SourceTree(baseDirectory) {
 }
 
-void GitSourceTree::modify(const Mutable& info, const std::string& backupPath) {
+void GitSourceTree::modify(const Mutant& info, const std::string& backupPath) {
   // Backup target file to be mutated
   std::string targetFilename = \
       os::path::getAbsolutePath(info.getPath());

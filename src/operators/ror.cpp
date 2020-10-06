@@ -39,7 +39,7 @@ bool ROR::canMutate(clang::Stmt* s) {
          mRelationalOperators.end();
 }
 
-void ROR::populate(clang::Stmt* s, Mutables* mutables) {
+void ROR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
   // create mutables by changing the operator
@@ -50,7 +50,7 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
-  if (isValidMutableSourceRange(&opStartLoc, &opEndLoc)) {
+  if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 
@@ -71,7 +71,7 @@ void ROR::populate(clang::Stmt* s, Mutables* mutables) {
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
-  if (!isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
+  if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 

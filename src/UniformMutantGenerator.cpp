@@ -29,17 +29,17 @@
 #include <map>
 #include <random>
 #include <vector>
-#include "sentinel/Mutables.hpp"
+#include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
-#include "sentinel/UniformMutableGenerator.hpp"
+#include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 
 namespace sentinel {
 
-Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines,
-                                           std::size_t maxMutables) {
-  Mutables mutables;
+Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
+                                           std::size_t maxMutants) {
+  Mutants mutables;
 
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \
@@ -69,13 +69,13 @@ Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines,
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
   }
 
-  // Select one Mutable on each target line
-  Mutables temp_storage;
+  // Select one Mutant on each target line
+  Mutants temp_storage;
   std::random_device rd;
   std::mt19937 mt(rd());
 
   for (const auto& line : sourceLines) {
-    std::vector<Mutable> temp;
+    std::vector<Mutant> temp;
     auto pred = [&](const auto& m) {
       return os::path::comparePath(m.getPath(), line.getPath()) &&
       m.getFirst().line <= line.getLineNumber() &&
@@ -92,20 +92,20 @@ Mutables UniformMutableGenerator::populate(const SourceLines& sourceLines,
     temp_storage.push_back(temp[idx(mt)]);
   }
 
-  // Select randomly <maxMutable> mutables
-  if (maxMutables >= temp_storage.size()) {
-    return Mutables(temp_storage.begin(), temp_storage.end());
+  // Select randomly <maxMutant> mutables
+  if (maxMutants >= temp_storage.size()) {
+    return Mutants(temp_storage.begin(), temp_storage.end());
   }
 
   temp_storage.shuffle();
-  return temp_storage.split(0, maxMutables);
+  return temp_storage.split(0, maxMutants);
 }
 
-UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    clang::ASTContext* Context, Mutables* mutables,
+UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(
+    clang::ASTContext* Context, Mutants* mutables,
     const std::vector<std::size_t>& targetLines) :
     mContext(Context), mSrcMgr(Context->getSourceManager()),
-    mMutables(mutables), mTargetLines(targetLines) {
+    mMutants(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -115,7 +115,7 @@ UniformMutableGenerator::SentinelASTVisitor::SentinelASTVisitor(
   mMutationOperators.push_back(new UOI(Context));
 }
 
-UniformMutableGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
+UniformMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
   for (auto op : mMutationOperators) {
     delete op;
   }
@@ -123,7 +123,7 @@ UniformMutableGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
   mMutationOperators.clear();
 }
 
-bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
+bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   clang::SourceLocation startLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = s->getEndLoc();
 
@@ -151,7 +151,7 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   if (containTargetLine) {
     for (auto m : mMutationOperators) {
       if (m->canMutate(s)) {
-        m->populate(s, mMutables);
+        m->populate(s, mMutants);
       }
     }
   }
@@ -159,35 +159,35 @@ bool UniformMutableGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   return true;
 }
 
-void UniformMutableGenerator::GenerateMutantAction::ExecuteAction() {
+void UniformMutantGenerator::GenerateMutantAction::ExecuteAction() {
   // AST Traversal.
   clang::ASTFrontendAction::ExecuteAction();
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory>
-UniformMutableGenerator::myNewFrontendActionFactory(
-    Mutables* mutables, const std::vector<std::size_t>& targetLines) {
+UniformMutantGenerator::myNewFrontendActionFactory(
+    Mutants* mutables, const std::vector<std::size_t>& targetLines) {
   class SimpleFrontendActionFactory :
           public clang::tooling::FrontendActionFactory {
    public:
     explicit SimpleFrontendActionFactory(
-        Mutables* mutables,
+        Mutants* mutables,
         const std::vector<std::size_t>& targetLines) :
-        mMutables(mutables), mTargetLines(targetLines) {
+        mMutants(mutables), mTargetLines(targetLines) {
     }
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {
-      return std::make_unique<GenerateMutantAction>(mMutables, mTargetLines);
+      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines);
     }
 #else
     clang::FrontendAction *create() override {
-      return new GenerateMutantAction(mMutables, mTargetLines);
+      return new GenerateMutantAction(mMutants, mTargetLines);
     }
 #endif
 
    private:
-    Mutables* mMutables;
+    Mutants* mMutants;
     const std::vector<std::size_t>& mTargetLines;
   };
 

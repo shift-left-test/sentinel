@@ -62,16 +62,16 @@ void XMLReport::save(const std::string& dirPath) {
     pMutation->SetAttribute("detected", r.getDetected());
 
     addChildToParent(doc, pMutation, "sourceFile",
-        os::path::filename(r.getMutable().getPath()));
+        os::path::filename(r.getMutant().getPath()));
     addChildToParent(doc, pMutation, "sourceFilePath",
-                     os::path::getRelativePath(r.getMutable().getPath(),
+                     os::path::getRelativePath(r.getMutant().getPath(),
                                                mSourcePath));
-    addChildToParent(doc, pMutation, "mutatedClass", r.getMutable().getClass());
+    addChildToParent(doc, pMutation, "mutatedClass", r.getMutant().getClass());
     addChildToParent(doc, pMutation, "mutatedMethod",
-                     r.getMutable().getFunction());
+                     r.getMutant().getFunction());
     addChildToParent(doc, pMutation, "lineNumber",
-        std::to_string(r.getMutable().getFirst().line));
-    addChildToParent(doc, pMutation, "mutator", r.getMutable().getOperator());
+        std::to_string(r.getMutant().getFirst().line));
+    addChildToParent(doc, pMutation, "mutator", r.getMutant().getOperator());
     addChildToParent(doc, pMutation, "killingTest", r.getKillingTest());
 
     pMutations->InsertEndChild(pMutation);

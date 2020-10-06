@@ -754,19 +754,19 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       string::replaceAll(ORI_TARGET3_HTML_CONTENTS,
       "{0}", os::path::filename(TARGET_FULL_PATH3));
 
-  Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
   MutationResult MR1(M1, "", false);
 
-  Mutable M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "|");
   MutationResult MR2(M2, "testBitwiseOR", true);
 
-  Mutable M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              3, 12, 3, 13, "&");
   MutationResult MR3(M3, "testBitwiseAND, testBitwiseOP", true);
 
-  Mutable M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
   MutationResult MR4(M4, "", false);
 

@@ -33,8 +33,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "sentinel/Mutables.hpp"
-#include "sentinel/MutableGenerator.hpp"
+#include "sentinel/Mutants.hpp"
+#include "sentinel/MutantGenerator.hpp"
 #include "sentinel/operators/MutationOperator.hpp"
 #include "sentinel/operators/aor.hpp"
 #include "sentinel/operators/bor.hpp"
@@ -49,20 +49,20 @@
 namespace sentinel {
 
 /**
- * @brief UniformMutableGenerator class
+ * @brief UniformMutantGenerator class
  */
-class UniformMutableGenerator : public MutableGenerator {
+class UniformMutantGenerator : public MutantGenerator {
  public:
   /**
    * @brief Default constructor
    *
    * @param path to compilation database file
    */
-  explicit UniformMutableGenerator(const std::string& path) : mDbPath(path) {
+  explicit UniformMutantGenerator(const std::string& path) : mDbPath(path) {
   }
 
-  Mutables populate(const SourceLines& sourceLines,
-                    std::size_t maxMutables) override;
+  Mutants populate(const SourceLines& sourceLines,
+                    std::size_t maxMutants) override;
 
  private:
   std::string mDbPath;
@@ -82,7 +82,7 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param targetLines list of target line numbers
      */
     SentinelASTVisitor(clang::ASTContext* Context,
-                       Mutables* mutables,
+                       Mutants* mutables,
                        const std::vector<std::size_t>& targetLines);
 
     /**
@@ -96,7 +96,7 @@ class UniformMutableGenerator : public MutableGenerator {
     clang::ASTContext* mContext;
     clang::SourceManager& mSrcMgr;
     std::vector<MutationOperator*> mMutationOperators;
-    Mutables* mMutables;
+    Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
   };
 
@@ -111,9 +111,9 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param CI Clang compiler management object
      */
     SentinelASTConsumer(const clang::CompilerInstance& CI,
-                        Mutables* mutables,
+                        Mutants* mutables,
                         const std::vector<std::size_t>& targetLines) :
-        mMutables(mutables), mTargetLines(targetLines) {
+        mMutants(mutables), mTargetLines(targetLines) {
     }
 
     /**
@@ -123,13 +123,13 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param Context Clang object holding long-lived AST nodes.
      */
     void HandleTranslationUnit(clang::ASTContext &Context) override {
-      SentinelASTVisitor mVisitor(&Context, mMutables, mTargetLines);
+      SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines);
       mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
     }
 
    private:
     // SentinelASTVisitor mVisitor;
-    Mutables* mMutables;
+    Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
   };
 
@@ -144,9 +144,9 @@ class UniformMutableGenerator : public MutableGenerator {
      * @param mutables list of generated mutables (output)
      * @param mTargetLines list of target line numbers
      */
-    GenerateMutantAction(Mutables* mutables,
+    GenerateMutantAction(Mutants* mutables,
                          const std::vector<std::size_t>& targetLines) :
-        mMutables(mutables), mTargetLines(targetLines) {
+        mMutants(mutables), mTargetLines(targetLines) {
     }
 
     /**
@@ -159,14 +159,14 @@ class UniformMutableGenerator : public MutableGenerator {
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
       clang::CompilerInstance& CI, llvm::StringRef InFile) override {
       return std::unique_ptr<clang::ASTConsumer>(
-          new SentinelASTConsumer(CI, mMutables, mTargetLines));
+          new SentinelASTConsumer(CI, mMutants, mTargetLines));
     }
 
    protected:
     void ExecuteAction() override;
 
    private:
-    Mutables* mMutables;
+    Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
   };
 
@@ -176,7 +176,7 @@ class UniformMutableGenerator : public MutableGenerator {
    * @param mutables list of generated mutables
    */
   std::unique_ptr<clang::tooling::FrontendActionFactory>
-  myNewFrontendActionFactory(Mutables* mutables,
+  myNewFrontendActionFactory(Mutants* mutables,
                              const std::vector<std::size_t>& targetLines);
 };
 

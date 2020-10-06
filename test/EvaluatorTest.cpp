@@ -32,7 +32,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -61,9 +61,9 @@ class EvaluatorTest : public ::testing::Test {
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
 
-    mutable1 = new Mutable("AOR", "input/sample1/sample1.cpp",
+    mutable1 = new Mutant("AOR", "input/sample1/sample1.cpp",
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
-    mutable2 = new Mutable("BOR", "input/sample1/sample1.cpp",
+    mutable2 = new Mutant("BOR", "input/sample1/sample1.cpp",
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
   }
 
@@ -83,8 +83,8 @@ class EvaluatorTest : public ::testing::Test {
     tmpfile.close();
   }
 
-  Mutable* mutable1 = nullptr;
-  Mutable* mutable2 = nullptr;
+  Mutant* mutable1 = nullptr;
+  Mutant* mutable2 = nullptr;
   std::string BASE;
   std::string ORI_DIR;
   std::string OUT_DIR;

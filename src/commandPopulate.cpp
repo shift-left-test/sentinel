@@ -29,7 +29,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
-#include "sentinel/UniformMutableGenerator.hpp"
+#include "sentinel/UniformMutantGenerator.hpp"
 
 
 void populateCommand(args::Subparser &parser) {  // NOLINT
@@ -51,7 +51,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
     "Maximum generated mutable count. default: 10",
     {'l', "limit"}, 10);
   args::ValueFlag<std::string> output(parser, "mutable_db",
-    "Mutable database output filename. default: ./mutables.db",
+    "Mutant database output filename. default: ./mutables.db",
     {'o', "output"}, "./mutables.db");
   args::Positional<std::string> source_root(parser, "source_root",
     "source root directory",
@@ -70,7 +70,7 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
 
   sentinel::SourceLines sourceLines = repo->getSourceLines(scope.Get());
 
-  auto generator = std::make_shared<sentinel::UniformMutableGenerator>(
+  auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
       compile_db_path.Get());
 
   sentinel::MutationFactory mutationFactory(generator);

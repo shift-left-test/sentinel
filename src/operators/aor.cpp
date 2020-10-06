@@ -40,7 +40,7 @@ bool AOR::canMutate(clang::Stmt* s) {
          mArithmeticOperators.end();
 }
 
-void AOR::populate(clang::Stmt* s, Mutables* mutables) {
+void AOR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
   std::string token{bo->getOpcodeStr()};
@@ -50,7 +50,7 @@ void AOR::populate(clang::Stmt* s, Mutables* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
-  if (isValidMutableSourceRange(&opStartLoc, &opEndLoc)) {
+  if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 

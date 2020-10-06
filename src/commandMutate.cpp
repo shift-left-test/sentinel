@@ -27,14 +27,14 @@
 #include <args/args.hxx>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutables.hpp"
+#include "sentinel/Mutants.hpp"
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/util/os.hpp"
 
 
 void mutateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> input(parser, "MUTABLE",
-    "Mutable string",
+    "Mutant string",
     {'i', "input"}, args::Options::Required);
   args::ValueFlag<std::string> backup(parser, "backup_dir",
     "Mutated souce backup dir",
@@ -50,7 +50,7 @@ void mutateCommand(args::Subparser &parser) {  // NOLINT
     sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }
 
-  sentinel::Mutable m;
+  sentinel::Mutant m;
   std::istringstream iss(input.Get());
   iss >> m;
 

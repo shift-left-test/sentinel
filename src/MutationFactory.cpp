@@ -27,8 +27,8 @@
 #include <map>
 #include <memory>
 #include "sentinel/Logger.hpp"
-#include "sentinel/MutableGenerator.hpp"
-#include "sentinel/Mutables.hpp"
+#include "sentinel/MutantGenerator.hpp"
+#include "sentinel/Mutants.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/util/os.hpp"
@@ -37,15 +37,15 @@
 namespace sentinel {
 
 MutationFactory::MutationFactory(
-    const std::shared_ptr<MutableGenerator>& generator) :
+    const std::shared_ptr<MutantGenerator>& generator) :
     mGenerator(generator) {
 }
 
-Mutables MutationFactory::populate(const std::string& gitPath,
+Mutants MutationFactory::populate(const std::string& gitPath,
                                    const SourceLines& sourceLines,
-                                   std::size_t maxMutables) {
+                                   std::size_t maxMutants) {
   auto logger = Logger::getLogger("populate");
-  Mutables mutables = mGenerator->populate(sourceLines, maxMutables);
+  Mutants mutables = mGenerator->populate(sourceLines, maxMutants);
 
   std::map<std::string, std::size_t> groupByPath;
   for (const auto& m : mutables) {
@@ -64,7 +64,7 @@ Mutables MutationFactory::populate(const std::string& gitPath,
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format("{0:^{1}}\n", "Mutable Population Report", maxlen);
+  std::cout << fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "File", flen,

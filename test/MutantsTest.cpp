@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <string>
 #include "sentinel/util/os.hpp"
-#include "sentinel/Mutables.hpp"
+#include "sentinel/Mutants.hpp"
 
 
 namespace sentinel {
@@ -43,7 +43,7 @@ static constexpr const char* ONELINE_TOKEN = "+";
 static constexpr const char* MULTILINE_TOKEN = "a + \\\n\tb";
 static constexpr const char* EMPTY_TOKEN = "";
 
-class MutablesTest : public ::testing::Test {
+class MutantsTest : public ::testing::Test {
  protected:
   void SetUp() override {}
 
@@ -57,7 +57,7 @@ class MutablesTest : public ::testing::Test {
     }
   }
 
-  bool equal(const Mutable& m1, const Mutable& m2) {
+  bool equal(const Mutant& m1, const Mutant& m2) {
     return m1.getOperator() == m2.getOperator() &&
            m1.getPath() == m2.getPath() &&
            m1.getQualifiedFunction() == m2.getQualifiedFunction() &&
@@ -69,76 +69,76 @@ class MutablesTest : public ::testing::Test {
   }
 };
 
-TEST_F(MutablesTest, testConstructorFailWhenInvalidDirGiven) {
-  EXPECT_THROW(Mutable("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0,
+TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {
+  EXPECT_THROW(Mutant("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0,
                        ONELINE_TOKEN),
                IOException);
 }
 
-TEST_F(MutablesTest, testAdd) {
-  Mutables m;
-  Mutable newMutable("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
+TEST_F(MutantsTest, testAdd) {
+  Mutants m;
+  Mutant newMutant("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
 
   EXPECT_EQ(m.size(), 0);
-  m.push_back(newMutable);
+  m.push_back(newMutant);
   EXPECT_EQ(m.size(), 1);
-  EXPECT_TRUE(equal(newMutable, m.at(0)));
+  EXPECT_TRUE(equal(newMutant, m.at(0)));
 }
 
-TEST_F(MutablesTest, testGetFailsWhenGivenIndexOutOfRange) {
-  Mutables m;
+TEST_F(MutantsTest, testGetFailsWhenGivenIndexOutOfRange) {
+  Mutants m;
   EXPECT_THROW(m.at(0), std::out_of_range);
 }
 
-TEST_F(MutablesTest, testSaveWorksWhenExistedDirGiven) {
-  Mutables m;
-  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
+TEST_F(MutantsTest, testSaveWorksWhenExistedDirGiven) {
+  Mutants m;
+  Mutant mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
+  Mutant mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.push_back(mutable1);
   m.push_back(mutable2);
   m.save(OUTPUT_PATH);
   EXPECT_TRUE(os::path::exists(OUTPUT_PATH));
 
   std::ifstream inFile(OUTPUT_PATH);
-  Mutable loaded_mutable1;
+  Mutant loaded_mutable1;
   EXPECT_NO_THROW(inFile >> loaded_mutable1);
   EXPECT_TRUE(equal(mutable1, loaded_mutable1));
 
-  Mutable loaded_mutable2;
+  Mutant loaded_mutable2;
   EXPECT_NO_THROW(inFile >> loaded_mutable2);
   EXPECT_TRUE(equal(mutable2, loaded_mutable2));
   inFile.close();
 }
 
-TEST_F(MutablesTest, testSaveWorksWhenNonexistedDirGiven) {
-  Mutables m;
-  Mutable mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
+TEST_F(MutantsTest, testSaveWorksWhenNonexistedDirGiven) {
+  Mutants m;
+  Mutant mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
+  Mutant mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.push_back(mutable1);
   m.push_back(mutable2);
   m.save(NONEXISTED_PATH);
   EXPECT_TRUE(os::path::exists(NONEXISTED_PATH));
 
   std::ifstream inFile(NONEXISTED_PATH);
-  Mutable loaded_mutable1;
+  Mutant loaded_mutable1;
   EXPECT_NO_THROW(inFile >> loaded_mutable1);
   EXPECT_TRUE(equal(mutable1, loaded_mutable1));
 
-  Mutable loaded_mutable2;
+  Mutant loaded_mutable2;
   EXPECT_NO_THROW(inFile >> loaded_mutable2);
   EXPECT_TRUE(equal(mutable2, loaded_mutable2));
   inFile.close();
 }
 
-TEST_F(MutablesTest, testLoad) {
-  Mutables m;
-  Mutable mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
-  Mutable mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
+TEST_F(MutantsTest, testLoad) {
+  Mutants m;
+  Mutant mutable1("AOR", NORMAL_FILENAME, "foo", 0, 0, 0, 0, ONELINE_TOKEN);
+  Mutant mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.push_back(mutable1);
   m.push_back(mutable2);
   m.save(OUTPUT_PATH);
 
-  Mutables m2;
+  Mutants m2;
   m2.load(OUTPUT_PATH);
   EXPECT_EQ(m2.size(), 2);
 

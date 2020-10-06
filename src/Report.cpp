@@ -49,7 +49,7 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
   totNumberOfDetectedMutation = 0;
 
   for (const MutationResult& mr : mResults) {
-    auto mrPath = os::path::getRelativePath(mr.getMutable().getPath(),
+    auto mrPath = os::path::getRelativePath(mr.getMutant().getPath(),
                                             mSourcePath);
     std::string curDirname = os::path::dirname(mrPath);
     curDirname = string::replaceAll(curDirname, "/", ".");
@@ -83,7 +83,7 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
   for (const auto& p : groupByDirPath) {
     std::set<std::string> tmpSet;
     for (const MutationResult* mr : *(std::get<0>(*p.second))) {
-      tmpSet.insert(mr->getMutable().getPath());
+      tmpSet.insert(mr->getMutant().getPath());
     }
     std::get<3>(*p.second) = tmpSet.size();
   }

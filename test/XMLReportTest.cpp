@@ -98,11 +98,11 @@ class XMLReportTest : public ::testing::Test {
 };
 
 TEST_F(XMLReportTest, testMakeXMLReport) {
-  Mutable M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
   MutationResult MR1(M1, "", false);
 
-  Mutable M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              1, 2, 3, 4, "|");
   MutationResult MR2(M2, "testAddBit", true);
 

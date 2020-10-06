@@ -179,9 +179,9 @@ void HTMLReport::makeSourceHtml(
         uniqueKillingTest.insert(ts);
       }
     }
-    uniqueMutator.insert(mr->getMutable().getOperator());
+    uniqueMutator.insert(mr->getMutant().getOperator());
 
-    std::size_t curLineNum = mr->getMutable().getFirst().line;
+    std::size_t curLineNum = mr->getMutant().getFirst().line;
     if (curLineNum == 0) {
       throw InvalidArgumentException(
           fmt::format("Muation at line number 0"));
@@ -247,7 +247,7 @@ void HTMLReport::makeSourceHtml(
       std::size_t count = 0;
       for (const auto& mr : *curLineMrs) {
         count += 1;
-        lineExplainVec.emplace_back(count, mr->getMutable().getOperator(),
+        lineExplainVec.emplace_back(count, mr->getMutant().getOperator(),
                                     mr->getDetected());
       }
     }
@@ -259,7 +259,7 @@ void HTMLReport::makeSourceHtml(
     for (const auto& mr : *t.second) {
       count += 1;
       shg.pushMutation(t.first, mr->getDetected(), count, mr->getKillingTest(),
-                       mr->getMutable().getOperator());
+                       mr->getMutant().getOperator());
     }
   }
 

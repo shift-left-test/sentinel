@@ -80,12 +80,12 @@ bool UOI::canMutate(clang::Stmt* s) {
   return true;
 }
 
-void UOI::populate(clang::Stmt* s, Mutables* mutables) {
+void UOI::populate(clang::Stmt* s, Mutants* mutables) {
   auto e = clang::dyn_cast<clang::Expr>(s);
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
-  if (!isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
+  if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 

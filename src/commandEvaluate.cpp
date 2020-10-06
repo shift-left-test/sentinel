@@ -27,12 +27,12 @@
 #include <args/args.hxx>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 
 
 void evaluateCommand(args::Subparser &parser) {  // NOLINT
   args::ValueFlag<std::string> input(parser, "MUTABLE",
-    "Mutable string",
+    "Mutant string",
     {'i', "input"}, args::Options::Required);
   args::ValueFlag<std::string> expected(parser, "test_dir",
     "Expected result directory",
@@ -51,7 +51,7 @@ void evaluateCommand(args::Subparser &parser) {  // NOLINT
     sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }
 
-  sentinel::Mutable m;
+  sentinel::Mutant m;
   std::istringstream iss(input.Get());
   iss >> m;
 

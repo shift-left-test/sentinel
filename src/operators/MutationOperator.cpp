@@ -122,7 +122,7 @@ std::string MutationOperator::getContainingFunctionQualifiedName(
   return "";
 }
 
-bool MutationOperator::isValidMutableSourceRange(
+bool MutationOperator::isValidMutantSourceRange(
     clang::SourceLocation *startLoc, clang::SourceLocation *endLoc) {
   if (startLoc->isInvalid() || endLoc->isInvalid()) {
     return false;

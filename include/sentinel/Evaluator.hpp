@@ -28,7 +28,7 @@
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutables.hpp"
+#include "sentinel/Mutants.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 
@@ -47,7 +47,7 @@ class Evaluator {
    * @param expectedResultDir Directory Path of Expected Result
    * @param outDir Directory Path of MutationResult
    */
-  Evaluator(const Mutable& mut,
+  Evaluator(const Mutant& mut,
             const std::string& expectedResultDir,
             const std::string& outDir);
 
@@ -61,10 +61,10 @@ class Evaluator {
       const std::string& ActualResultDir);
 
  private:
-  Mutable mMutable;
+  Mutant mMutant;
   std::shared_ptr<Logger> mLogger;
   std::string mOutDir;
-  Mutables mMutables;
+  Mutants mMutants;
   Result mExpectedResult;
 };
 

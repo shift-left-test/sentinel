@@ -32,16 +32,16 @@
 #include <sstream>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 
 
 namespace sentinel {
 
-MutationResult::MutationResult(const Mutable& m,
+MutationResult::MutationResult(const Mutant& m,
                                const std::string& killingTest,
                                bool detected) :
     mKillingTest(killingTest), mDetected(detected),
-    mMutable(m) {
+    mMutant(m) {
 }
 
 std::string MutationResult::getKillingTest() const {
@@ -52,12 +52,12 @@ bool MutationResult::getDetected() const {
   return mDetected;
 }
 
-const Mutable& MutationResult::getMutable() const {
-  return mMutable;
+const Mutant& MutationResult::getMutant() const {
+  return mMutant;
 }
 
 bool MutationResult::compare(const MutationResult& other) const {
-  return mMutable.compare(other.getMutable()) &&
+  return mMutant.compare(other.getMutant()) &&
       mKillingTest == other.getKillingTest() &&
       mDetected == other.getDetected();
 }
@@ -65,7 +65,7 @@ bool MutationResult::compare(const MutationResult& other) const {
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
   out << fmt::format("{}\t{}\t\t", mr.getKillingTest(),
                      mr.getDetected() ? 1 : 0);
-  out << mr.getMutable();
+  out << mr.getMutant();
   return out;
 }
 
@@ -74,7 +74,7 @@ std::istream& operator>>(std::istream& in, MutationResult &mr) {
   if (getline(in, line)) {
     auto sep = string::split(line, "\t\t");
     auto str = string::split(sep[0], "\t");
-    Mutable m;
+    Mutant m;
     std::istringstream iss(sep[1]);
     iss >> m;
     mr = MutationResult(m, str[0], std::stoi(str[1]) == 1);

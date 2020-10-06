@@ -62,14 +62,14 @@ struct Location {
 class SourceTree;
 
 /**
- * @brief Mutable class
+ * @brief Mutant class
  */
-class Mutable {
+class Mutant {
  public:
   /**
    * @brief Default constructor
    */
-  Mutable();
+  Mutant();
 
   /**
    * @brief Default constructor
@@ -83,7 +83,7 @@ class Mutable {
    * @param lastColumn column number of last location
    * @param token to replace with
    */
-  Mutable(const std::string& mutationOperator,
+  Mutant(const std::string& mutationOperator,
           const std::string& path,
           const std::string& qualifiedFuncName,
           std::size_t firstLine,
@@ -93,12 +93,12 @@ class Mutable {
           const std::string& token);
 
   /**
-   * @brief compare this Mutable with another.
+   * @brief compare this Mutant with another.
    *
-   * @param other Mutable
-   * @return True if Mutables are same. False otherwise
+   * @param other Mutant
+   * @return True if Mutants are same. False otherwise
    */
-  bool compare(const Mutable& other) const;
+  bool compare(const Mutant& other) const;
 
   /**
    * @brief Return the mutation operator creating this mutable.
@@ -170,8 +170,8 @@ class Mutable {
   std::string mToken;
 };
 
-std::ostream& operator<<(std::ostream& out, const Mutable& m);
-std::istream& operator>>(std::istream& in, Mutable &m);
+std::ostream& operator<<(std::ostream& out, const Mutant& m);
+std::istream& operator>>(std::istream& in, Mutant &m);
 
 }  // namespace sentinel
 

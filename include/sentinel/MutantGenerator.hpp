@@ -22,19 +22,32 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTABLES_HPP_
-#define INCLUDE_SENTINEL_MUTABLES_HPP_
+#ifndef INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
+#define INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
 
-#include <vector>
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutants.hpp"
+#include "sentinel/SourceLines.hpp"
 
 
 namespace sentinel {
 
-using Mutables = Container<Mutable>;
+/**
+ * @brief MutantGenerator class
+ */
+class MutantGenerator {
+ public:
+  /**
+   * @brief Populate mutables from the given source line
+   *
+   * @param sourceLines list of target source lines
+   * @param maxMutants limit number of generated mutables
+   * @return mutables
+   */
+  virtual Mutants populate(const SourceLines& sourceLines,
+                            std::size_t maxMutants) = 0;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTABLES_HPP_
+#endif  // INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_

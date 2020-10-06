@@ -28,7 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 
 
 namespace sentinel {
@@ -46,11 +46,11 @@ class MutationResult {
   /**
    * @brief Default constructor
    *
-   * @param m Mutable class' instance
+   * @param m Mutant class' instance
    * @param killingTest that killed mutant
    * @param detected or not (True: detected, False: not)
    */
-  MutationResult(const Mutable& m,
+  MutationResult(const Mutant& m,
                  const std::string& killingTest, bool detected);
 
   /**
@@ -72,7 +72,7 @@ class MutationResult {
    *
    * @return bool value to check if mutant is dead
    */
-  const Mutable& getMutable() const;
+  const Mutant& getMutant() const;
 
   /**
    * @brief compare this with other
@@ -86,7 +86,7 @@ class MutationResult {
  private:
   std::string mKillingTest;
   bool mDetected;
-  Mutable mMutable;
+  Mutant mMutant;
 };
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr);

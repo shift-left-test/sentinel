@@ -27,7 +27,7 @@
 #include <sstream>
 #include <string>
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/util/os.hpp"
 

@@ -31,7 +31,7 @@
 
 namespace sentinel {
 
-TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
+TEST(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
@@ -39,7 +39,7 @@ TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   std::string filename = os::path::filename(tempFilename);
   os::copyFile(targetFilename, tempFilename);
 
-  Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   GitSourceTree tree("/tmp");
   os::createDirectory("/tmp/sentineltest_backup");
@@ -69,7 +69,7 @@ TEST(GitSourceTreeTest, testModifyWorksWhenValidMutableGiven) {
   os::removeFile(tempFilename);
 }
 
-TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
+TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
   // create a temporary copy of target file
@@ -78,7 +78,7 @@ TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutableGiven) {
   os::copyFile(targetFilename, tempFilename);
 
   // If position does not exist, no changes should be made.
-  Mutable nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+  Mutant nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
                                100, 200, 300, 400, "||"};
   GitSourceTree tree("/tmp");
   os::createDirectory("/tmp/sentineltest_backup");
@@ -110,7 +110,7 @@ TEST(GitSourceTreeTest, testBackupWorks) {
   std::string filename = os::path::filename(tempFilename);
   os::copyFile(targetFilename, tempFilename);
 
-  Mutable m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   GitSourceTree tree("/tmp");
   std::string backupPath = os::tempDirectory("/tmp/");

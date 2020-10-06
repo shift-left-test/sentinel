@@ -29,7 +29,7 @@
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/os.hpp"
@@ -37,10 +37,10 @@
 
 namespace sentinel {
 
-Evaluator::Evaluator(const Mutable& mut,
+Evaluator::Evaluator(const Mutant& mut,
                      const std::string& expectedResultDir,
                      const std::string& outDir) :
-    mMutable(mut), mExpectedResult(expectedResultDir), mOutDir(outDir),
+    mMutant(mut), mExpectedResult(expectedResultDir), mOutDir(outDir),
     mLogger(Logger::getLogger("Evaluator")) {
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
 
@@ -64,16 +64,16 @@ MutationResult Evaluator::compareAndSaveMutationResult(
 
   std::cout << fmt::format(
       "{mu} ({path}, {sl}:{sc}-{el}:{ec}) {status}",
-      fmt::arg("mu", mMutable.getOperator()),
-      fmt::arg("path", os::path::filename(mMutable.getPath())),
-      fmt::arg("sl", mMutable.getFirst().line),
-      fmt::arg("sc", mMutable.getFirst().column),
-      fmt::arg("el", mMutable.getLast().line),
-      fmt::arg("ec", mMutable.getLast().column),
+      fmt::arg("mu", mMutant.getOperator()),
+      fmt::arg("path", os::path::filename(mMutant.getPath())),
+      fmt::arg("sl", mMutant.getFirst().line),
+      fmt::arg("sc", mMutant.getFirst().column),
+      fmt::arg("el", mMutant.getLast().line),
+      fmt::arg("ec", mMutant.getLast().column),
       fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"))
             << std::endl;
 
-  MutationResult ret(mMutable, killingTC,
+  MutationResult ret(mMutant, killingTC,
                      killingTC.length() != 0);
 
   std::string filePath = os::path::join(mOutDir, "MutationResult");

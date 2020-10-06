@@ -26,12 +26,12 @@
 #define INCLUDE_SENTINEL_SOURCETREE_HPP_
 
 #include <string>
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 
 
 namespace sentinel {
 
-class Mutable;
+class Mutant;
 
 /**
  * @brief SourceTree class
@@ -48,10 +48,10 @@ class SourceTree {
   /**
    * @brief Modify the source with respect to the given mutable information
    *
-   * @param info Mutable information
+   * @param info Mutant information
    * @param backupPath backup directory
    */
-  virtual void modify(const Mutable& info, const std::string& backupPath) = 0;
+  virtual void modify(const Mutant& info, const std::string& backupPath) = 0;
 
  protected:
   /**

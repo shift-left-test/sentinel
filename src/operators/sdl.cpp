@@ -98,12 +98,12 @@ bool SDL::canMutate(clang::Stmt* s) {
   return !(it == cs->body_end());
 }
 
-void SDL::populate(clang::Stmt* s, Mutables* mutables) {
+void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   clang::SourceLocation stmtStartLoc = s->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
 
-  if (isValidMutableSourceRange(&stmtStartLoc, &stmtEndLoc)) {
+  if (isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     std::string path = mSrcMgr.getFilename(stmtStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 

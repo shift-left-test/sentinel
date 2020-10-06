@@ -27,8 +27,8 @@
 
 #include <memory>
 #include <string>
-#include "sentinel/MutableGenerator.hpp"
-#include "sentinel/Mutables.hpp"
+#include "sentinel/MutantGenerator.hpp"
+#include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 
 
@@ -44,22 +44,22 @@ class MutationFactory {
    *
    * @param generator Mutation generator
    */
-  explicit MutationFactory(const std::shared_ptr<MutableGenerator>& generator);
+  explicit MutationFactory(const std::shared_ptr<MutantGenerator>& generator);
 
   /**
    * @brief Populate mutables from the given source lines
    *
    * @param gitPath path to git repo
    * @param sourceLines lines of the source
-   * @param maxMutables maximum number of mutables generated
+   * @param maxMutants maximum number of mutables generated
    * @return list of mutables
    */
-  Mutables populate(const std::string& gitPath,
+  Mutants populate(const std::string& gitPath,
                     const SourceLines& sourceLines,
-                    std::size_t maxMutables);
+                    std::size_t maxMutants);
 
  private:
-  std::shared_ptr<MutableGenerator> mGenerator;
+  std::shared_ptr<MutantGenerator> mGenerator;
 };
 
 }  // namespace sentinel

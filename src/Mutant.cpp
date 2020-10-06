@@ -26,16 +26,16 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include "sentinel/Mutable.hpp"
+#include "sentinel/Mutant.hpp"
 #include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
-Mutable::Mutable() : mFirst{0, 0}, mLast{0, 0} {
+Mutant::Mutant() : mFirst{0, 0}, mLast{0, 0} {
 }
 
-Mutable::Mutable(const std::string& mutationOperator,
+Mutant::Mutant(const std::string& mutationOperator,
                  const std::string& path,
                  const std::string& qualifiedFuncName,
                  std::size_t firstLine, std::size_t firstColumn,
@@ -54,7 +54,7 @@ Mutable::Mutable(const std::string& mutationOperator,
   }
 }
 
-bool Mutable::compare(const Mutable& other) const {
+bool Mutant::compare(const Mutant& other) const {
   return mOperator == other.getOperator() &&
       os::path::comparePath(mPath, other.getPath()) &&
       mFirst.line == other.getFirst().line &&
@@ -64,39 +64,39 @@ bool Mutable::compare(const Mutable& other) const {
       mToken == other.getToken();
 }
 
-std::string Mutable::getOperator() const {
+std::string Mutant::getOperator() const {
   return mOperator;
 }
 
-std::string Mutable::getPath() const {
+std::string Mutant::getPath() const {
   return mPath;
 }
 
-std::string Mutable::getClass() const {
+std::string Mutant::getClass() const {
   return mClass;
 }
 
-std::string Mutable::getFunction() const {
+std::string Mutant::getFunction() const {
   return mFunction;
 }
 
-std::string Mutable::getQualifiedFunction() const {
+std::string Mutant::getQualifiedFunction() const {
   return mFunction;
 }
 
-Location Mutable::getFirst() const {
+Location Mutant::getFirst() const {
   return mFirst;
 }
 
-Location Mutable::getLast() const {
+Location Mutant::getLast() const {
   return mLast;
 }
 
-std::string Mutable::getToken() const {
+std::string Mutant::getToken() const {
   return mToken;
 }
 
-std::ostream& operator<<(std::ostream& out, const Mutable& m) {
+std::ostream& operator<<(std::ostream& out, const Mutant& m) {
   out << fmt::format("{},{},{},{},{},{},{},{}",
                      m.getOperator(),
                      m.getPath(),
@@ -109,11 +109,11 @@ std::ostream& operator<<(std::ostream& out, const Mutable& m) {
   return out;
 }
 
-std::istream& operator>>(std::istream& in, Mutable &m) {
+std::istream& operator>>(std::istream& in, Mutant &m) {
   std::string line;
   if (getline(in, line)) {
     auto str = string::split(line, ",");
-    m = Mutable(str[0], str[1], str[2], std::stoi(str[3]), std::stoi(str[4]),
+    m = Mutant(str[0], str[1], str[2], std::stoi(str[3]), std::stoi(str[4]),
                 std::stoi(str[5]), std::stoi(str[6]), str[7]);
   }
   return in;
