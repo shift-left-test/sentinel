@@ -31,6 +31,10 @@
 
 namespace sentinel {
 
+TEST(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
+  EXPECT_THROW(GitSourceTree tree("unknown"), IOException);
+}
+
 TEST(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   std::string targetFilename = "input/sample1/sample1.cpp";
 
@@ -96,6 +100,10 @@ TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   mutatedFile.close();
   os::removeDirectories("/tmp/sentineltest_backup");
   os::removeFile(tempFilename);
+
+  Mutant m{"LCR", targetFilename, "", 1, 2, 3, 4, "||"};
+  GitSourceTree tree2("/tmp");
+  EXPECT_THROW(tree2.modify(m, "/tmp/sentineltest_backup"), IOException);
 }
 
 TEST(GitSourceTreeTest, testBackupWorks) {

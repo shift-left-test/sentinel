@@ -28,6 +28,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -120,6 +121,17 @@ class EvaluatorTest : public ::testing::Test {
     "\t</testsuite>\n"
     "</testsuites>\n";
 };
+
+TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
+  EXPECT_NO_THROW(Evaluator mEvaluator(*mutable1, ORI_DIR, "unknown"));
+  if (os::path::exists("unknown")) {
+    os::removeDirectories("unknown");
+  }
+
+  EXPECT_THROW(Evaluator mEvaluator(*mutable1, ORI_DIR,
+                                    "input/sample1/sample1.cpp"),
+               InvalidArgumentException);
+}
 
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   Evaluator mEvaluator(*mutable1, ORI_DIR, OUT_DIR);

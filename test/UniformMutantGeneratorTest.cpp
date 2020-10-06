@@ -208,6 +208,13 @@ class UniformMutantGeneratorTest : public ::testing::Test {
   std::string TARGET_FILE;
 };
 
+TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
+  // UniformMutantGenerator generator{"input/sample1"};
+  UniformMutantGenerator generator{"."};
+  EXPECT_THROW(Mutants mutables = generator.populate(*sourceLines, 100),
+               IOException);
+}
+
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   UniformMutantGenerator generator{".."};
   Mutants mutables = generator.populate(*sourceLines, 100);

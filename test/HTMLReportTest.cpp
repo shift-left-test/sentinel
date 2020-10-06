@@ -28,6 +28,7 @@
 #include <regex>
 #include <string>
 #include <sstream>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/os.hpp"
@@ -726,7 +727,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       "OUT_DIR"));
 
   std::string MUT_RESULT_DIR = os::tempDirectory(
-      os::path::join(BASE, "MUT_RESLUT_DIR"));
+      os::path::join(BASE, "MUT_RESULT_DIR"));
 
   std::string NESTED_DIR1_DOT = string::replaceAll(
       os::path::getRelativePath(NESTED_SOURCE_DIR, SOURCE_DIR), "/", ".");
@@ -822,6 +823,32 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   EXPECT_TRUE(string::contains(out, "      1         1      100%"));
   EXPECT_TRUE(string::contains(out, "      1         2       50%"));
   EXPECT_TRUE(string::contains(out, "      2         4       50%"));
+}
+
+TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
+  EXPECT_THROW(HTMLReport htmlreport("unknown", "unknown"),
+               InvalidArgumentException);
+}
+
+TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
+  std::string MUT_RESULT_DIR = os::tempDirectory(
+      os::path::join(BASE, "MUT_RESULT_DIR"));
+
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             2, 12, 2, 13, "+");
+  MutationResult MR1(M1, "", false);
+
+  MutationResults MRs;
+  MRs.push_back(MR1);
+  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+  MRs.save(MRPath);
+
+  HTMLReport htmlreport(MRPath, SOURCE_DIR);
+
+  EXPECT_THROW(htmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
+  EXPECT_NO_THROW(htmlreport.save("unknown"));
+  ASSERT_TRUE(os::path::exists("unknown"));
+  os::removeDirectories("unknown");
 }
 
 }  // namespace sentinel

@@ -100,7 +100,7 @@ class GitHarnessTest : public ::testing::Test {
 
 // Action: create a new directory and git init
 // Expected Output: new directory created, containing .git folder
-TEST_F(GitHarnessTest, init_Normal) {
+TEST_F(GitHarnessTest, testInitWorks) {
   EXPECT_TRUE(os::path::isDirectory(repo_name));
 
   std::string git_dir = repo_name + "/.git";
@@ -109,7 +109,7 @@ TEST_F(GitHarnessTest, init_Normal) {
 
 // Action: initiate a git repo twice
 // Expected Output: assertion error
-TEST_F(GitHarnessTest, init_DirAlreadyExist) {
+TEST_F(GitHarnessTest, testInitFailWhenDirAlreadyExists) {
   EXPECT_THROW(
       std::unique_ptr<GitHarness> test_repo = \
           std::make_unique<GitHarness>(repo_name),
@@ -118,7 +118,7 @@ TEST_F(GitHarnessTest, init_DirAlreadyExist) {
 
 // Action: create new folder in git repo
 // Expected Output: folder created at within repo at correct location
-TEST_F(GitHarnessTest, addFolder_Normal) {
+TEST_F(GitHarnessTest, testAddFolderWorks) {
   repo->addFolder("temp");
   EXPECT_TRUE(os::path::isDirectory(
     os::path::join(repo_name, "temp")));
@@ -126,14 +126,14 @@ TEST_F(GitHarnessTest, addFolder_Normal) {
 
 // Action: call addFolder with a folder that already exist
 // Expected Output: assertion errors
-TEST_F(GitHarnessTest, addFolder_FolderExisted) {
+TEST_F(GitHarnessTest, testAddFolderFailWhenFolderExisted) {
   repo->addFolder("temp");
   EXPECT_THROW({repo->addFolder("temp");}, std::runtime_error);
 }
 
 // Action: call addFolder with invalid path
 // Expected Output: assertion errors
-TEST_F(GitHarnessTest, addFolder_InvalidPath) {
+TEST_F(GitHarnessTest, testAddFolderWhenInvalidPathGiven) {
   std::string msg = "Fail to make directory";
   // EXPECT_DEATH({repo->addFolder("unexisted/temp");}, msg.c_str());
   EXPECT_THROW(repo->addFolder("unexisted/temp"), IOException);
@@ -141,7 +141,7 @@ TEST_F(GitHarnessTest, addFolder_InvalidPath) {
 
 // Action: create new file in git repo with empty main function
 // Expected Output: cile created at within repo at correct location and content.
-TEST_F(GitHarnessTest, addFile_Normal) {
+TEST_F(GitHarnessTest, testAddFileWorks) {
   std::string filename = "temp.cpp";
   std::string content = "int main() {}";
   repo->addFile(filename, content);
@@ -158,7 +158,7 @@ TEST_F(GitHarnessTest, addFile_Normal) {
 
 // Action: call addFile with a file that already exist
 // Expected Output: assertion errors
-TEST_F(GitHarnessTest, addFile_FileExisted) {
+TEST_F(GitHarnessTest, testAddFileFailWhenFileExisted) {
   std::string content = "int main() {}";
   repo->addFile("temp.cpp", content);
   EXPECT_THROW({repo->addFile("temp.cpp", content);}, std::runtime_error);
@@ -166,7 +166,7 @@ TEST_F(GitHarnessTest, addFile_FileExisted) {
 
 // Action: call addFile with invalid path
 // Expected Output: assertion errors
-TEST_F(GitHarnessTest, addFile_InvalidPath) {
+TEST_F(GitHarnessTest, testAddFileFailWhenInvalidPathGiven) {
   std::string content = "int main() {}";
   EXPECT_THROW({repo->addFile("unexisted/temp.cpp", content);},
                std::runtime_error);
@@ -175,7 +175,7 @@ TEST_F(GitHarnessTest, addFile_InvalidPath) {
 // Action: add content to file
 // Expected Output: content are added properly to the right file. Other files
 // are unaffected.
-TEST_F(GitHarnessTest, addCode_Normal) {
+TEST_F(GitHarnessTest, testAddCodeWorks) {
   std::string filename = repo_name + "/" + "temp.cpp";
   std::string initial_content = "// comment\n";
   repo->addFile("temp.cpp", initial_content);
@@ -204,7 +204,7 @@ TEST_F(GitHarnessTest, addCode_Normal) {
 // Action: add code to a position with line/col number of out of bound
 // (i.e. larger than EOF, negative, larger than line size)
 // Expected Output: add code to the nearest valid location in target file.
-TEST_F(GitHarnessTest, addCode_PositionOutOfBound) {
+TEST_F(GitHarnessTest, testAddCodeFailWhenPositionOutOfBound) {
   std::string filename = repo_name + "/" + "temp.cpp";
   std::string initial_content = "int main() {}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
@@ -233,14 +233,14 @@ TEST_F(GitHarnessTest, addCode_PositionOutOfBound) {
 
 // Action: add code to nonexisted file
 // Expected Output: assertion error
-TEST_F(GitHarnessTest, addCode_FileNotExists) {
+TEST_F(GitHarnessTest, testAddCodeFailWhenFileNotExists) {
   std::string content = "content";
   EXPECT_THROW({repo->addCode("temp.cpp", content);}, std::runtime_error);
 }
 
 // Action: delete code lines within file length
 // Expected Output: target lines are deleted from target file
-TEST_F(GitHarnessTest, deleteCode_Normal) {
+TEST_F(GitHarnessTest, testDeleteCodeWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::size_t> target_lines{2, 4};
   repo->addFile("temp.cpp", initial_content)
@@ -256,7 +256,7 @@ TEST_F(GitHarnessTest, deleteCode_Normal) {
 
 // Action: delete code lines out of file range (negative, or too large)
 // Expected Output: no lines are deleted
-TEST_F(GitHarnessTest, deleteCode_TargetLineOutOfBound) {
+TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::size_t> target_lines{0, 400};
   repo->addFile("temp.cpp", initial_content)
@@ -272,14 +272,14 @@ TEST_F(GitHarnessTest, deleteCode_TargetLineOutOfBound) {
 
 // Action: add code to nonexisted file
 // Expected Output: assertion error
-TEST_F(GitHarnessTest, deleteCode_FileNotExists) {
+TEST_F(GitHarnessTest, testDeleteCodeFailWhenFileNotExists) {
   std::vector<std::size_t> target_lines{2};
   EXPECT_THROW(repo->deleteCode("temp.cpp", target_lines), std::runtime_error);
 }
 
 // Action: create 2 new files in the git repo and git add 1 of them.
 // Expected Output: target file is staged, the other one remains untracked.
-TEST_F(GitHarnessTest, stageFile_Normal) {
+TEST_F(GitHarnessTest, testStageFileWorks) {
   // Setup new git repo with 2 new files.
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
@@ -331,14 +331,14 @@ TEST_F(GitHarnessTest, stageFile_Normal) {
 
 // Action: git add a file that does not exist
 // Expected Output: assertion error
-TEST_F(GitHarnessTest, stageFile_FileNotExist) {
+TEST_F(GitHarnessTest, testStageFileFailWhenFileNotExist) {
   std::vector<std::string> target_files{"temp.cpp"};
   EXPECT_THROW(repo->stageFile(target_files), std::runtime_error);
 }
 
 // Action: create a new file and commit with a message
 // Expected Output: HEAD commit and new commit point to the same commit
-TEST_F(GitHarnessTest, commit_Normal) {
+TEST_F(GitHarnessTest, testCommitWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
   std::vector<std::string> target_files{"temp.cpp"};
@@ -363,9 +363,13 @@ TEST_F(GitHarnessTest, commit_Normal) {
   git_commit_free(commit);
 }
 
+TEST_F(GitHarnessTest, testGetLatestCommitFailWhenNoCommitWasMade) {
+  EXPECT_THROW(repo->getLatestCommitId(), std::range_error);
+}
+
 // Action: tag an untagged commit
 // Expected Output: target commit is tagged
-TEST_F(GitHarnessTest, addTagLightweight_Normal) {
+TEST_F(GitHarnessTest, testAddTagLightweightWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::string> target_files{"temp.cpp"};
   std::string message{"test commit_Normal"};
@@ -396,7 +400,7 @@ TEST_F(GitHarnessTest, addTagLightweight_Normal) {
 
 // Action: tagging another commit using a used tag.
 // Expected Output: error message
-TEST_F(GitHarnessTest, addTagLightweight_FailWhenCommitAlreadyTagged) {
+TEST_F(GitHarnessTest, testAddTagLightweightFailWhenCommitAlreadyTagged) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::string message{"test commit_Normal"};
   std::string tag_name{"v0.1"};
@@ -406,6 +410,7 @@ TEST_F(GitHarnessTest, addTagLightweight_FailWhenCommitAlreadyTagged) {
   repo->addFile("temp.cpp", initial_content)
       .stageFile(target_files).commit(message);
   std::string target_oid{repo->getLatestCommitId()};
+  EXPECT_THROW(repo->addTagLightweight("", target_oid), std::runtime_error);
   repo->addTagLightweight(tag_name, target_oid);
 
   // Create and tag the second commit using the same tag name.
@@ -419,7 +424,7 @@ TEST_F(GitHarnessTest, addTagLightweight_FailWhenCommitAlreadyTagged) {
                IOException);
 }
 
-TEST_F(GitHarnessTest, createBranch_Normal) {
+TEST_F(GitHarnessTest, testCreateBranchWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::string> target_files{"temp.cpp"};
   std::string init_message{"init commit"};
@@ -438,7 +443,7 @@ TEST_F(GitHarnessTest, createBranch_Normal) {
   git_reference_free(ref);
 }
 
-TEST_F(GitHarnessTest, checkoutBranch_Normal) {
+TEST_F(GitHarnessTest, testCheckoutBranchWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::string> target_files{"temp.cpp"};
   std::string init_message{"init commit"};
@@ -472,7 +477,7 @@ TEST_F(GitHarnessTest, checkoutBranch_Normal) {
   git_reference_free(master_branch);
 }
 
-TEST_F(GitHarnessTest, merge_Normal) {
+TEST_F(GitHarnessTest, testMergeWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::string> target_files{"temp.cpp"};
   std::string init_message{"init commit"};
@@ -524,7 +529,7 @@ TEST_F(GitHarnessTest, merge_Normal) {
     os::path::join(repo_name, "temp3.cpp")));
 }
 
-TEST_F(GitHarnessTest, merge_NormalWhenUsingVariadicArguments) {
+TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   std::vector<std::string> target_files{"temp.cpp"};
   std::string init_message{"init commit"};

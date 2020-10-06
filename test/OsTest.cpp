@@ -157,6 +157,20 @@ TEST_F(OsTest, testCreateAndRemoveDirectoryWhenValidDirsGiven) {
   os::removeDirectories(temp1);
 }
 
+TEST_F(OsTest, testRemoveDirectoryWhenInvalidDirGiven) {
+  EXPECT_THROW(os::removeDirectory("."), IOException);
+  EXPECT_THROW(os::removeDirectory(".."), IOException);
+  EXPECT_THROW(os::removeDirectory(BASE), IOException);
+  EXPECT_THROW(os::removeDirectory(UNKNOWN_PATH), IOException);
+}
+
+TEST_F(OsTest, testRemoveFileFailWhenInvalidFileGiven) {
+  EXPECT_THROW(os::removeFile("."), IOException);
+  EXPECT_THROW(os::removeFile(".."), IOException);
+  EXPECT_THROW(os::removeFile(BASE), IOException);
+  EXPECT_THROW(os::removeFile(UNKNOWN_PATH), IOException);
+}
+
 TEST_F(OsTest, testCreateAndRemoveDirectoryWhenInvalidDirsGiven) {
   EXPECT_THROW(os::createDirectory(DIRECTORY), IOException);
   EXPECT_THROW(os::createDirectories(NESTED_DIRECTORY),
@@ -182,6 +196,8 @@ TEST_F(OsTest, testTempDirectory) {
 
   os::removeDirectory(tempname1);
   os::removeDirectory(tempname2);
+
+  EXPECT_THROW(os::tempDirectory(UNKNOWN_PATH), IOException);
 }
 
 TEST_F(OsTest, testJoinPath) {
@@ -254,6 +270,9 @@ TEST_F(OsTest, testFindFilesInDirUsingRgx) {
       filesInDir.end(), NESTED_FILE_TXT), filesInDir.end());
   EXPECT_NE(std::find(filesInDir.begin(),
       filesInDir.end(), NESTED_FILE), filesInDir.end());
+  EXPECT_THROW(os::findFilesInDirUsingRgx(UNKNOWN_PATH,
+                                          std::regex(".+")).empty(),
+               IOException);
 }
 
 TEST_F(OsTest, testFindFilesInDir) {
@@ -326,6 +345,7 @@ TEST_F(OsTest, testCopyFile) {
 
 TEST_F(OsTest, testComparePath) {
   EXPECT_TRUE(os::path::comparePath(".", "../test"));
+  EXPECT_THROW(os::path::comparePath(UNKNOWN_PATH, UNKNOWN_PATH), IOException);
 }
 
 TEST_F(OsTest, testRelativePath) {

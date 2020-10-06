@@ -28,6 +28,7 @@
 #include <regex>
 #include <string>
 #include <sstream>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
@@ -125,6 +126,24 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   std::string mutationXMLContent = buffer.str();
   t.close();
   EXPECT_EQ(mutationXMLContent, EXPECT_MUT_XML_CONTENT);
+}
+
+TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             4, 5, 6, 7, "+");
+  MutationResult MR1(M1, "", false);
+
+  MutationResults MRs;
+  MRs.push_back(MR1);
+  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+  MRs.save(MRPath);
+
+  XMLReport xmlreport(MRPath, SOURCE_DIR);
+
+  EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
+  EXPECT_NO_THROW(xmlreport.save("unknown"));
+  ASSERT_TRUE(os::path::exists("unknown"));
+  os::removeDirectories("unknown");
 }
 
 }  // namespace sentinel
