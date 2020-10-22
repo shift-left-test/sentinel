@@ -52,7 +52,8 @@ class HTMLReportTest : public ::testing::Test {
         os::path::join(SOURCE_DIR, "NESTED_DIR2"));
 
     TARGET_FULL_PATH = os::tempFilename(
-        NESTED_SOURCE_DIR + "/target1", ".cpp");
+        NESTED_SOURCE_DIR + "/target1_verylongFilePath"
+        , ".cpp");
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
     TARGET_FULL_PATH2 = os::tempFilename(
         NESTED_SOURCE_DIR2 + "/target2", ".cpp");
@@ -787,38 +788,54 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       std::regex(".*index\\.html"));
   EXPECT_EQ(3, mutationHtmlPath.size());
 
+  bool NESTED1_INDEX_HTML_EXIST = false;
+  bool NESTED2_INDEX_HTML_EXIST = false;
+  bool ROOT_INDEX_HTML_EXIST = false;
+
   for (const auto& mp : mutationHtmlPath) {
     if (string::contains(mp, "NESTED_DIR1")) {
       readFileAndCompareExpected(mp, NESTED1_INDEX_HTML_CONTENTS);
+      NESTED1_INDEX_HTML_EXIST = true;
     } else if (string::contains(mp, "NESTED_DIR2")) {
       readFileAndCompareExpected(mp, NESTED2_INDEX_HTML_CONTENTS);
+      NESTED2_INDEX_HTML_EXIST = true;
     } else if (!string::contains(mp, "NESTED_DIR") &&
         string::contains(mp, "OUT_DIR")) {
       readFileAndCompareExpected(mp, ROOT_INDEX_HTML_CONTENTS);
-    } else {
-      FAIL() << "Unexpected index.html file detected : " + mp;
+      ROOT_INDEX_HTML_EXIST = true;
     }
   }
+
+  EXPECT_TRUE(NESTED1_INDEX_HTML_EXIST && NESTED2_INDEX_HTML_EXIST &&
+              ROOT_INDEX_HTML_EXIST);
 
   auto srcHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
       std::regex(".*target.*\\.cpp\\.html"));
   EXPECT_EQ(3, srcHtmlPath.size());
 
+  bool TARGET1_HTML_EXIST = false;
+  bool TARGET2_HTML_EXIST = false;
+  bool TARGET3_HTML_EXIST = false;
+
   for (const auto& ms : srcHtmlPath) {
     if (string::contains(ms, "target1")) {
       readFileAndCompareExpected(ms, TARGET1_HTML_CONTENTS);
+      TARGET1_HTML_EXIST = true;
     } else if (string::contains(ms, "target2")) {
       readFileAndCompareExpected(ms, TARGET2_HTML_CONTENTS);
+      TARGET2_HTML_EXIST = true;
     } else if (string::contains(ms, "target3")) {
       readFileAndCompareExpected(ms, TARGET3_HTML_CONTENTS);
-    } else {
-      FAIL() << "Unexpected target*.cpp.html file detected : " + ms;
+      TARGET3_HTML_EXIST = true;
     }
   }
+
+  EXPECT_TRUE(TARGET1_HTML_EXIST && TARGET2_HTML_EXIST && TARGET3_HTML_EXIST);
 
   testing::internal::CaptureStdout();
   htmlreport.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
+  EXPECT_TRUE(string::contains(out, "... IR1"));
   EXPECT_TRUE(string::contains(out, "      0         1        0%"));
   EXPECT_TRUE(string::contains(out, "      1         1      100%"));
   EXPECT_TRUE(string::contains(out, "      1         2       50%"));
@@ -831,24 +848,71 @@ TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
 }
 
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
-  std::string MUT_RESULT_DIR = os::tempDirectory(
-      os::path::join(BASE, "MUT_RESULT_DIR"));
-
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
   MutationResult MR1(M1, "", false);
 
   MutationResults MRs;
   MRs.push_back(MR1);
-  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
-  MRs.save(MRPath);
 
-  HTMLReport htmlreport(MRPath, SOURCE_DIR);
+  HTMLReport htmlreport(MRs, SOURCE_DIR);
 
   EXPECT_THROW(htmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(htmlreport.save("unknown"));
   ASSERT_TRUE(os::path::exists("unknown"));
   os::removeDirectories("unknown");
+
+
+  std::string OUT_DIR = os::tempDirectory(os::path::join(BASE,
+      "OUT_DIR"));
+  std::string ERR_FILE = os::path::join(OUT_DIR,
+      os::path::filename(NESTED_SOURCE_DIR));
+  std::ofstream(ERR_FILE).close();
+  EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
+
+TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
+  std::string OUT_DIR = os::tempDirectory(os::path::join(BASE,
+      "OUT_DIR"));
+  std::string tmpPath = TARGET_FULL_PATH + "_tmpPath";
+  os::copyFile(TARGET_FULL_PATH, tmpPath);
+  Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
+             2, 12, 2, 13, "+");
+  MutationResult MR1(M1, "", false);
+
+  MutationResults MRs;
+  MRs.push_back(MR1);
+
+  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  os::removeFile(tmpPath);
+  EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
+}
+
+TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
+  std::string OUT_DIR = os::tempDirectory(os::path::join(BASE,
+      "OUT_DIR"));
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             0, 12, 2, 13, "+");
+  MutationResult MR1(M1, "", false);
+
+  MutationResults MRs;
+  MRs.push_back(MR1);
+
+  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
+
+  std::string OUT_DIR2 = os::tempDirectory(os::path::join(BASE,
+      "OUT_DIR"));
+  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             1000, 12, 1000, 13, "+");
+  MutationResult MR2(M2, "", false);
+
+  MutationResults MRs2;
+  MRs2.push_back(MR2);
+
+  HTMLReport htmlreport2(MRs2, SOURCE_DIR);
+  EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
+}
+
 
 }  // namespace sentinel

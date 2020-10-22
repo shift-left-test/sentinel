@@ -355,6 +355,7 @@ TEST_F(OsTest, testRelativePath) {
             os::path::getAbsolutePath(FILE).substr(1));
   EXPECT_EQ(os::path::getRelativePath(NESTED_FILE_TXT, COPY_DIRECTORY),
             "../dir" + string::split(NESTED_FILE_TXT, "/dir").back());
+  EXPECT_THROW(os::path::getRelativePath(FILE, FILE), IOException);
 }
 
 }  // namespace sentinel

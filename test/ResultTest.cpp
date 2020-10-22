@@ -57,6 +57,35 @@ class ResultTest : public ::testing::Test {
     tmpfile.close();
   }
 
+  void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& targetTag,
+      const std::string& ignoreTag = "") {
+    std::string MUT_DIR = os::tempDirectory(
+        os::path::join(BASE, "mut_dir"));
+    std::string XMLContents = TC3;
+    std::string tmpTag = "1A2B3C4D5F";
+
+    if (!ignoreTag.empty()) {
+      XMLContents = string::replaceAll(XMLContents, ignoreTag, tmpTag);
+    }
+    XMLContents = string::replaceAll(XMLContents, targetTag, "wrongTag");
+    if (!ignoreTag.empty()) {
+      XMLContents = string::replaceAll(XMLContents, tmpTag, ignoreTag);
+    }
+
+    MAKE_RESULT_XML(MUT_DIR, XMLContents);
+    EXPECT_THROW({
+        try {
+          Result mut(MUT_DIR);
+        }
+        catch (const XMLException& e){
+          EXPECT_TRUE(string::contains(e.what(),
+              "This file doesn't follow googletest result format"));
+          throw;
+        }
+    }, XMLException);
+    os::removeDirectories(MUT_DIR);
+  }
+
   std::string BASE;
   std::string ORI_DIR;
   std::string TC1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -184,19 +213,12 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
 }
 
 TEST_F(ResultTest, testResultWithWrongResultFmt) {
-  std::string MUT_DIR = os::tempDirectory(
-      os::path::join(BASE, "mut_dir"));
-  MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "testsuites", "tag"));
-  EXPECT_THROW({
-      try {
-        Result mut(MUT_DIR);
-      }
-      catch (const XMLException& e){
-        EXPECT_TRUE(string::contains(e.what(),
-            "This file doesn't follow googletest result format"));
-        throw;
-      }
-  }, XMLException);
+  MAKE_AND_TEST_WRONG_RESULT_XML("testsuites");
+  MAKE_AND_TEST_WRONG_RESULT_XML("testsuite", "testsuites");
+  MAKE_AND_TEST_WRONG_RESULT_XML("testcase");
+  MAKE_AND_TEST_WRONG_RESULT_XML("status");
+  MAKE_AND_TEST_WRONG_RESULT_XML("classname");
+  MAKE_AND_TEST_WRONG_RESULT_XML("name", "classname");
 }
 
 }  // namespace sentinel

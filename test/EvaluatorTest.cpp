@@ -157,7 +157,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   Evaluator mEvaluator(ORI_DIR);
 
   testing::internal::CaptureStdout();
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto mrPath = os::path::join(OUT_DIR, "newDir", "MutationResult");
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     MUT_DIR_ALIVE, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();

@@ -135,10 +135,8 @@ TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
 
   MutationResults MRs;
   MRs.push_back(MR1);
-  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
-  MRs.save(MRPath);
 
-  XMLReport xmlreport(MRPath, SOURCE_DIR);
+  XMLReport xmlreport(MRs, SOURCE_DIR);
 
   EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(xmlreport.save("unknown"));
