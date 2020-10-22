@@ -22,6 +22,8 @@
   SOFTWARE.
 */
 
+#include <algorithm>
+#include <iostream>
 #include <map>
 #include <args/args.hxx>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -69,6 +71,10 @@ void populateCommand(args::Subparser &parser) {  // NOLINT
                                                         exclude.Get());
 
   sentinel::SourceLines sourceLines = repo->getSourceLines(scope.Get());
+
+  // Shuffle target lines as an attempt to reduce mutant selecting time.
+  auto rng = std::default_random_engine{};
+  std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
   auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
       compile_db_path.Get());

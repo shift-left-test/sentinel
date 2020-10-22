@@ -26,6 +26,9 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iostream>
 #include <map>
 #include <random>
 #include <vector>
@@ -38,7 +41,7 @@
 namespace sentinel {
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
-                                           std::size_t maxMutants) {
+                                         std::size_t maxMutants) {
   Mutants mutables;
 
   std::string errorMsg;
@@ -66,13 +69,14 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
 
   for (const auto& file : targetLines) {
     clang::tooling::ClangTool tool(*compileDb, file.first);
+    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
+        "-ferror-limit=0"));
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
   }
 
   // Select one Mutant on each target line
   Mutants temp_storage;
-  std::random_device rd;
-  std::mt19937 mt(rd());
+  auto rng = std::default_random_engine{};
 
   for (const auto& line : sourceLines) {
     std::vector<Mutant> temp;
@@ -88,17 +92,15 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
       continue;
     }
 
-    std::uniform_int_distribution<std::size_t> idx(0, temp.size()-1);
-    temp_storage.push_back(temp[idx(mt)]);
+    std::shuffle(std::begin(temp), std::end(temp), rng);
+    temp_storage.push_back(temp[0]);
+
+    if (temp_storage.size() == maxMutants) {
+      break;
+    }
   }
 
-  // Select randomly <maxMutant> mutables
-  if (maxMutants >= temp_storage.size()) {
-    return Mutants(temp_storage.begin(), temp_storage.end());
-  }
-
-  temp_storage.shuffle();
-  return temp_storage.split(0, maxMutants);
+  return Mutants(temp_storage.begin(), temp_storage.end());
 }
 
 UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(

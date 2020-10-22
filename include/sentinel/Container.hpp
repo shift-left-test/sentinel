@@ -66,6 +66,14 @@ class Container {
   std::size_t size() const noexcept;
 
   /**
+   * @brief Remove the element specified by the iterator
+   *
+   * @return the iterator following the last removed element
+   */
+  typename std::vector<T>::iterator erase(
+      typename std::vector<T>::const_iterator pos);
+
+  /**
    * @brief Return the iterator pointing to the first element
    *
    * @return the beginning iterator
@@ -209,6 +217,12 @@ Container<T>::Container(typename std::vector<T>::iterator first,
 template <typename T>
 std::size_t Container<T>::size() const noexcept {
   return mData.size();
+}
+
+template <typename T>
+typename std::vector<T>::iterator Container<T>::erase(
+    typename std::vector<T>::const_iterator pos) {
+  return mData.erase(pos);
 }
 
 template <typename T>

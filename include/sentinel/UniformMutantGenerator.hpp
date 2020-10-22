@@ -30,6 +30,7 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>

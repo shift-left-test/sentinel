@@ -56,6 +56,15 @@ class MutationOperator {
   virtual ~MutationOperator() {}
 
   /**
+   * @brief Return the name of the mutation operator
+   *
+   * @return name of mutation operator
+   */
+  std::string getName() const {
+    return mName;
+  }
+
+  /**
    * @brief Return True if this mutation operator can be applied to give AST
    *        node. Consider the domain of the mutation operator as well as
    *        the AST node's surrounding context to avoid generating stillborn
