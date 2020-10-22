@@ -22,6 +22,7 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -30,9 +31,11 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/util/os.hpp"
+#include "sentinel/Logger.hpp"
 
 
 namespace sentinel {
+const char * cGitSourceTreeLoggerName = "GitSourceTree";
 
 GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
     SourceTree(baseDirectory) {
@@ -40,6 +43,8 @@ GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
 
 void GitSourceTree::modify(const Mutant& info, const std::string& backupPath) {
   // Backup target file to be mutated
+  auto logger = Logger::getLogger(cGitSourceTreeLoggerName);
+
   std::string targetFilename = \
       os::path::getAbsolutePath(info.getPath());
   std::string gitRootAbsolutePath = \
@@ -56,6 +61,7 @@ void GitSourceTree::modify(const Mutant& info, const std::string& backupPath) {
     os::createDirectories(newBackupPath);
   }
   os::copyFile(targetFilename, newBackupPath);
+  logger->info(fmt::format("backup: {}", newBackupPath));
 
   // Apply mutation
   std::ifstream originalFile(targetFilename);

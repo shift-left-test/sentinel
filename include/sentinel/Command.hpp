@@ -22,19 +22,54 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
+#ifndef INCLUDE_SENTINEL_COMMAND_HPP_
+#define INCLUDE_SENTINEL_COMMAND_HPP_
 
-#include <vector>
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <CLI11.hpp>
 
 
 namespace sentinel {
 
-using Mutants = Container<Mutant>;
+/**
+ * @brief Command interface
+ */
+class Command {
+ public:
+  /**
+   * @brief destructor
+   */
+  virtual ~Command() = default;
+
+  /**
+   * @brief Execute subcommand.
+   * 
+   * @param sourceRoot source root path
+   * @param workDir temorary working path
+   * @param outputDir output save path
+   * @param verbose log verbosity
+   * @return exit code
+   */
+  virtual int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) = 0;
+
+  /**
+   * @brief check this command is included at command line
+   * 
+   * @return bool
+   */
+  bool isParsed() {
+    return mSubApp->parsed();
+  }
+
+ protected:
+  /**
+   * @brief sub command pointer
+   */
+  CLI::App* mSubApp;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+#endif  // INCLUDE_SENTINEL_COMMAND_HPP_

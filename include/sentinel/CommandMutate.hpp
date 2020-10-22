@@ -22,19 +22,35 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
+#ifndef INCLUDE_SENTINEL_COMMANDMUTATE_HPP_
+#define INCLUDE_SENTINEL_COMMANDMUTATE_HPP_
 
-#include <vector>
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <vector>
+#include <CLI11.hpp>
+#include "sentinel/Command.hpp"
 
 
 namespace sentinel {
 
-using Mutants = Container<Mutant>;
+/**
+ * @brief sentinel commandline 'mutate' subcommand class
+ */
+class CommandMutate : public Command {
+ public:
+  /**
+   * @brief constructor
+   */
+  explicit CommandMutate(CLI::App* app);
+
+  int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) override;
+
+ private:
+  std::string mMutantStr;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+#endif  // INCLUDE_SENTINEL_COMMANDMUTATE_HPP_

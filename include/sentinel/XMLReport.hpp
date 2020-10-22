@@ -40,6 +40,14 @@ class XMLReport : public Report {
   /**
    * @brief Default constructor
    *
+   * @param results mutation results
+   * @param sourcePath directory path of source files
+   */
+  XMLReport(const MutationResults& results, const std::string& sourcePath);
+
+  /**
+   * @brief Default constructor
+   *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    */

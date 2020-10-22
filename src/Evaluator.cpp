@@ -37,24 +37,13 @@
 
 namespace sentinel {
 
-Evaluator::Evaluator(const Mutant& mut,
-                     const std::string& expectedResultDir,
-                     const std::string& outDir) :
-    mMutant(mut), mExpectedResult(expectedResultDir), mOutDir(outDir),
+Evaluator::Evaluator(const std::string& expectedResultDir) :
+    mExpectedResult(expectedResultDir),
     mLogger(Logger::getLogger("Evaluator")) {
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
-
-  if (os::path::exists(mOutDir)) {
-    if (!os::path::isDirectory(mOutDir)) {
-      throw InvalidArgumentException(fmt::format(
-          "dirPath isn't directory({0})", mOutDir));
-    }
-  } else {
-    os::createDirectories(mOutDir);
-  }
 }
 
-MutationResult Evaluator::compareAndSaveMutationResult(
+MutationResult Evaluator::compare(const Mutant& mut,
     const std::string& ActualResultDir) {
   Result mActualResult(ActualResultDir);
   mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
@@ -64,26 +53,43 @@ MutationResult Evaluator::compareAndSaveMutationResult(
 
   std::cout << fmt::format(
       "{mu} ({path}, {sl}:{sc}-{el}:{ec}) {status}",
-      fmt::arg("mu", mMutant.getOperator()),
-      fmt::arg("path", os::path::filename(mMutant.getPath())),
-      fmt::arg("sl", mMutant.getFirst().line),
-      fmt::arg("sc", mMutant.getFirst().column),
-      fmt::arg("el", mMutant.getLast().line),
-      fmt::arg("ec", mMutant.getLast().column),
+      fmt::arg("mu", mut.getOperator()),
+      fmt::arg("path", os::path::filename(mut.getPath())),
+      fmt::arg("sl", mut.getFirst().line),
+      fmt::arg("sc", mut.getFirst().column),
+      fmt::arg("el", mut.getLast().line),
+      fmt::arg("ec", mut.getLast().column),
       fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"))
             << std::endl;
 
-  MutationResult ret(mMutant, killingTC,
+  MutationResult ret(mut, killingTC,
                      killingTC.length() != 0);
 
-  std::string filePath = os::path::join(mOutDir, "MutationResult");
+  mMutationResults.push_back(ret);
 
-  std::ofstream outFile(filePath.c_str(),
+  return ret;
+}
+
+MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
+    const std::string& ActualResultDir, const std::string& evalFilePath) {
+  std::string outDir = os::path::dirname(evalFilePath);
+  if (os::path::exists(outDir)) {
+    if (!os::path::isDirectory(outDir)) {
+      throw InvalidArgumentException(fmt::format(
+          "dirPath isn't directory({0})", outDir));
+    }
+  } else {
+    os::createDirectories(outDir);
+  }
+
+  MutationResult ret = compare(mut, ActualResultDir);
+
+  std::ofstream outFile(evalFilePath.c_str(),
       std::ios::out | std::ios::app);
   outFile << ret << std::endl;
   outFile.close();
 
-  mLogger->debug(fmt::format("Save MutationResult: {}", mOutDir));
+  mLogger->debug(fmt::format("Save MutationResult: {}", outDir));
 
   return ret;
 }

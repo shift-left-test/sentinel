@@ -34,8 +34,13 @@
 
 namespace sentinel {
 
+XMLReport::XMLReport(const MutationResults& results,
+                     const std::string& sourcePath) :
+    Report(results, sourcePath) {
+}
+
 XMLReport::XMLReport(const std::string& resultsPath,
-                       const std::string& sourcePath) :
+                     const std::string& sourcePath) :
     Report(resultsPath, sourcePath) {
 }
 

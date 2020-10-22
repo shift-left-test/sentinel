@@ -30,6 +30,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
 
 
@@ -43,29 +44,43 @@ class Evaluator {
   /**
    * @brief Default constructor
    *
-   * @param mut taget mutable
    * @param expectedResultDir Directory Path of Expected Result
-   * @param outDir Directory Path of MutationResult
    */
-  Evaluator(const Mutant& mut,
-            const std::string& expectedResultDir,
-            const std::string& outDir);
+  explicit Evaluator(const std::string& expectedResultDir);
+
+  /**
+   * @brief Compare an actual with the expected
+   *
+   * @param mut taget mutable
+   * @param ActualResultDir Directory Path of Actural Result
+   * @return MutationResult summary of compare
+   */
+  MutationResult compare(const Mutant& mut,
+      const std::string& ActualResultDir);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
    *
+   * @param mut taget mutable
    * @param ActualResultDir Directory Path of Actural Result
+   * @param evalFilePath File Path of MutationResult
    * @return MutationResult summary of compare
    */
-  MutationResult compareAndSaveMutationResult(
-      const std::string& ActualResultDir);
+  MutationResult compareAndSaveMutationResult(const Mutant& mut,
+      const std::string& ActualResultDir, const std::string& evalFilePath);
+
+  /**
+   * @brief Return mutation results
+   *
+   * @return MutationResults
+   */
+  const MutationResults& getMutationResults() { return mMutationResults; }
 
  private:
-  Mutant mMutant;
   std::shared_ptr<Logger> mLogger;
-  std::string mOutDir;
   Mutants mMutants;
   Result mExpectedResult;
+  MutationResults mMutationResults;
 };
 
 }  // namespace sentinel

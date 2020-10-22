@@ -22,38 +22,44 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <iostream>
-#include <string>
-#include <args/args.hxx>
-#include "sentinel/HTMLReport.hpp"
+#include <sstream>
+#include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/MutationResult.hpp"
+#include "sentinel/Mutants.hpp"
+#include "sentinel/SourceTree.hpp"
 #include "sentinel/util/os.hpp"
-#include "sentinel/XMLReport.hpp"
+#include "sentinel/CommandMutate.hpp"
 
 
-void reportCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "eval_dir",
-    "Mutation test result directory",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "report_dir",
-    "Mutation test report directory",
-    {'o', "output"}, ".");
-  args::Positional<std::string> source_root(parser, "source_root",
-    "source root directory",
-    args::Options::Required);
-  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
+namespace sentinel {
+const char * cCommandMutateLoggerName = "CommandMutate";
 
-  parser.Parse();
+CommandMutate::CommandMutate(CLI::App* app) {
+  mSubApp = app->add_subcommand("mutate",
+    "Apply the selected 'mutable' to the source. "
+    "The original file is backed up in 'work-dir'");
+  mSubApp->add_option("-m,--mutant", mMutantStr,
+    "Mutant string")->required();
+}
+
+int CommandMutate::run(const std::string& sourceRoot,
+  const std::string& workDir, const std::string& outputDir,
+  bool verbose) {
+  auto logger = Logger::getLogger(cCommandMutateLoggerName);
+  sentinel::Mutant m;
+  std::istringstream iss(mMutantStr);
+  iss >> m;
 
   if (verbose) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+    logger->info(fmt::format("mutant: {}", mMutantStr));
+    logger->info(fmt::format("backup dir: {}", workDir));
   }
 
-  auto mRPath = sentinel::os::path::join(input.Get(), "MutationResult");
-  sentinel::XMLReport xmlReport(mRPath, source_root.Get());
-  xmlReport.save(output.Get());
-  sentinel::HTMLReport htmlReport(mRPath, source_root.Get());
-  htmlReport.save(output.Get());
-  htmlReport.printSummary();
+  sentinel::GitRepository repository(sourceRoot);
+  repository.getSourceTree()->modify(m, workDir);
+
+  return 0;
 }
+}  // namespace sentinel

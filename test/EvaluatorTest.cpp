@@ -123,27 +123,29 @@ class EvaluatorTest : public ::testing::Test {
 };
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
-  EXPECT_NO_THROW(Evaluator mEvaluator(*mutable1, ORI_DIR, "unknown"));
-  if (os::path::exists("unknown")) {
-    os::removeDirectories("unknown");
-  }
+  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  EXPECT_NO_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
+    MUT_DIR, mrPath));
 
-  EXPECT_THROW(Evaluator mEvaluator(*mutable1, ORI_DIR,
-                                    "input/sample1/sample1.cpp"),
-               InvalidArgumentException);
+  auto mrPathForException = os::path::join("input/sample1/sample1.cpp",
+    "MutationResult");
+  EXPECT_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
+    MUT_DIR, mrPathForException), InvalidArgumentException);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
-  Evaluator mEvaluator(*mutable1, ORI_DIR, OUT_DIR);
+  Evaluator mEvaluator(ORI_DIR);
 
   testing::internal::CaptureStdout();
-  auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR);
+  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto result = mEvaluator.compareAndSaveMutationResult(*mutable1,
+    MUT_DIR, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "AOR ("));
   EXPECT_TRUE(string::contains(out2, "sample1.cpp, 0:0-0:0)"));
   EXPECT_TRUE(result.getDetected());
 
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+
   MutationResults MRs;
   MRs.load(mrPath);
   auto mr = MRs[0];
@@ -152,16 +154,18 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
-  Evaluator mEvaluator(*mutable2, ORI_DIR, OUT_DIR);
+  Evaluator mEvaluator(ORI_DIR);
 
   testing::internal::CaptureStdout();
-  auto result = mEvaluator.compareAndSaveMutationResult(MUT_DIR_ALIVE);
+  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
+    MUT_DIR_ALIVE, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR ("));
   EXPECT_TRUE(string::contains(out2, "sample1.cpp, 1:1-1:1) Survived"));
   EXPECT_FALSE(result.getDetected());
 
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+
   MutationResults MRs;
   MRs.load(mrPath);
   auto mr = MRs[0];

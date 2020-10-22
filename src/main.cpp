@@ -23,50 +23,60 @@
 */
 
 #include <iostream>
-#include <args/args.hxx>
+#include <memory>
+#include <list>
+#include <CLI11.hpp>
+#include "sentinel/Logger.hpp"
+#include "sentinel/CommandPopulate.hpp"
+#include "sentinel/CommandMutate.hpp"
+#include "sentinel/CommandEvaluate.hpp"
+#include "sentinel/CommandReport.hpp"
+#include "sentinel/CommandStandAlone.hpp"
+#include "sentinel/util/os.hpp"
 
-
-void populateCommand(args::Subparser &parser);  // NOLINT
-void mutateCommand(args::Subparser &parser);  // NOLINT
-void evaluateCommand(args::Subparser &parser);  // NOLINT
-void reportCommand(args::Subparser &parser);  // NOLINT
 
 int main(int argc, char** argv) {
-  args::Group arguments("arguments");
-  args::HelpFlag h(arguments, "help",
-  "Display this help menu. \n"
-  "Use 'sentinal COMMAND --help' to see help for each command.",
-  {'h', "help"});
+  CLI::App app("sentinel");
+  app.set_help_all_flag("--help-all", "Expand all help");
 
-  args::ArgumentParser parser("Mutation Test");
+  std::list<std::unique_ptr<sentinel::Command>> commandList;
 
-  args::Group commands(static_cast<args::Group&>(parser), "commands");
-  args::Command populate(commands, "populate",
-    "Identify mutable test targets and application methods in'git' "
-    "and print a list",
-    &populateCommand);
-  args::Command mutate(commands, "mutate",
-    "Apply the selected 'mutable' to the source",
-    &mutateCommand);
-  args::Command evaluate(commands, "evaluate",
-    "Compare the test result with mutable applied and the test result "
-    "not applied",
-    &evaluateCommand);
-  args::Command report(commands, "report",
-    "Create a mutation test report based on the'evaluate' result "
-    "and source code",
-    &reportCommand);
+  CLI::Option* verbose = app.add_flag("-v,--verbose", "Verbosity");
+  std::string work_dir("./sentinel_tmp");
+  app.add_option("-w,--work-dir", work_dir,
+    "Sentinel temporary working directory.", true);
+  std::string output_dir(".");
+  app.add_option("-o,--output-dir", output_dir,
+    "Directory for saving output.", true);
+  std::string source_root(".");
+  app.add_option("source-root", source_root,
+    "source root directory.")->required();
 
-  args::GlobalOptions globals(parser, arguments);
+  commandList.push_back(std::make_unique<sentinel::CommandPopulate>(&app));
+  commandList.push_back(std::make_unique<sentinel::CommandMutate>(&app));
+  commandList.push_back(std::make_unique<sentinel::CommandEvaluate>(&app));
+  commandList.push_back(std::make_unique<sentinel::CommandReport>(&app));
+  commandList.push_back(std::make_unique<sentinel::CommandStandAlone>(&app));
 
-  try {
-    parser.ParseCLI(argc, argv);
-  } catch (args::Help& e) {
-    std::cout << parser;
-  } catch (args::Error& e) {
-    std::cerr << e.what() << std::endl << parser;
-    return 1;
+  CLI11_PARSE(app, argc, argv);
+
+  if (verbose != nullptr) {
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }
 
-  return 0;
+  source_root = sentinel::os::path::getAbsolutePath(source_root);
+  sentinel::os::createDirectories(work_dir, true);
+  work_dir = sentinel::os::path::getAbsolutePath(work_dir);
+  sentinel::os::createDirectories(output_dir, true);
+  output_dir = sentinel::os::path::getAbsolutePath(output_dir);
+
+  for (auto& subcmd : commandList) {
+    if (subcmd->isParsed()) {
+      return subcmd->run(source_root, work_dir, output_dir, verbose != nullptr);
+    }
+  }
+
+  std::cout << app.help();
+
+  return -1;
 }

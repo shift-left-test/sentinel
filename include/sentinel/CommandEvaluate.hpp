@@ -22,38 +22,38 @@
   SOFTWARE.
 */
 
-#include <iostream>
-#include <sstream>
-#include <args/args.hxx>
-#include "sentinel/GitRepository.hpp"
-#include "sentinel/Logger.hpp"
-#include "sentinel/Mutants.hpp"
-#include "sentinel/SourceTree.hpp"
-#include "sentinel/util/os.hpp"
+#ifndef INCLUDE_SENTINEL_COMMANDEVALUATE_HPP_
+#define INCLUDE_SENTINEL_COMMANDEVALUATE_HPP_
+
+#include <string>
+#include <vector>
+#include <CLI11.hpp>
+#include "sentinel/Command.hpp"
 
 
-void mutateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "MUTABLE",
-    "Mutant string",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> backup(parser, "backup_dir",
-    "Mutated souce backup dir",
-    {'b', "backup"}, args::Options::Required);
-  args::Positional<std::string> source_root(parser, "source_root",
-    "source root directory",
-    args::Options::Required);
-  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
+namespace sentinel {
 
-  parser.Parse();
+/**
+ * @brief sentinel commandline 'evaluate' subcommand class
+ */
+class CommandEvaluate : public Command {
+ public:
+  /**
+   * @brief constructor
+   */
+  explicit CommandEvaluate(CLI::App* app);
 
-  if (verbose) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
-  }
+  int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) override;
 
-  sentinel::Mutant m;
-  std::istringstream iss(input.Get());
-  iss >> m;
+ private:
+  std::string mMutantStr;
+  std::string mExpectedDir;
+  std::string mActualDir;
+  std::string mEvalFile;
+};
 
-  sentinel::GitRepository repository(source_root.Get());
-  repository.getSourceTree()->modify(m, backup.Get());
-}
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_COMMANDEVALUATE_HPP_

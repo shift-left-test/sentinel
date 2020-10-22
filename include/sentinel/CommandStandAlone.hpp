@@ -22,19 +22,49 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
+#ifndef INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_
+#define INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_
 
-#include <vector>
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <vector>
+#include <CLI11.hpp>
+#include "sentinel/Command.hpp"
 
 
 namespace sentinel {
 
-using Mutants = Container<Mutant>;
+/**
+ * @brief sentinel commandline 'populate' subcommand class
+ */
+class CommandStandAlone : public Command {
+ public:
+  /**
+   * @brief constructor
+   */
+  explicit CommandStandAlone(CLI::App* app);
+
+  int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) override;
+
+ private:
+  void copyTestReportTo(const std::string& from,
+    const std::string& to, const std::vector<std::string>& exts);
+  void restoreBackup(const std::string& backup,
+    const std::string& srcRoot);
+
+ private:
+  std::string mBuildDir;
+  std::string mTestResultDir;
+  std::string mBuildCmd;
+  std::string mTestCmd;
+  std::vector<std::string> mTestResultFileExts;
+  std::vector<std::string> mExtensions;
+  std::vector<std::string> mExcludes;
+  std::string mScope;
+  int mLimit;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+#endif  // INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_

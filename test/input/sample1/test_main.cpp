@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Loc Duy Phan
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,11 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
-
-#include <vector>
-#include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <gtest/gtest.h>
 
 
-namespace sentinel {
+int sumOfEvenPositiveNumber(int from, int to);
 
-using Mutants = Container<Mutant>;
-
-}  // namespace sentinel
-
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+TEST(SampleTest, testSumOfEvenPositiveNumber) {
+    EXPECT_EQ(sumOfEvenPositiveNumber(2, 10), 24);
+}

@@ -41,6 +41,16 @@ class Report {
   /**
    * @brief Default Constructor
    *
+   * @param results mutation results
+   * @param sourcePath directory path of source files
+   * @throw InvalidArgumentException
+   *        when resultsPath is empty or sourcePath doesn't exist
+   */
+  Report(const MutationResults& results, const std::string& sourcePath);
+
+  /**
+   * @brief Default Constructor
+   *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    * @throw InvalidArgumentException
@@ -62,6 +72,9 @@ class Report {
    * @brief Print summury of report
    */
   void printSummary();
+
+ private:
+  void generateReport();
 
  protected:
   /**
@@ -85,12 +98,12 @@ class Report {
   /**
    * @brief total Number Of Mutation
    */
-  std::size_t totNumberOfMutation;
+  std::size_t totNumberOfMutation = 0;
 
   /**
    * @brief total number of Deteced Mutation
    */
-  std::size_t totNumberOfDetectedMutation;
+  std::size_t totNumberOfDetectedMutation = 0;
 
   /**
    * @brief path of source directory

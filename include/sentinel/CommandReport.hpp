@@ -22,19 +22,35 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
+#ifndef INCLUDE_SENTINEL_COMMANDREPORT_HPP_
+#define INCLUDE_SENTINEL_COMMANDREPORT_HPP_
 
-#include <vector>
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <vector>
+#include <CLI11.hpp>
+#include "sentinel/Command.hpp"
 
 
 namespace sentinel {
 
-using Mutants = Container<Mutant>;
+/**
+ * @brief sentinel commandline 'report' subcommand class
+ */
+class CommandReport : public Command {
+ public:
+  /**
+   * @brief constructor
+   */
+  explicit CommandReport(CLI::App* app);
+
+  int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) override;
+
+ private:
+  std::string mEvalFile;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+#endif  // INCLUDE_SENTINEL_COMMANDREPORT_HPP_

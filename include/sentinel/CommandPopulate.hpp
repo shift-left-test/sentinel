@@ -22,19 +22,41 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
-#define INCLUDE_SENTINEL_MUTANTS_HPP_
+#ifndef INCLUDE_SENTINEL_COMMANDPOPULATE_HPP_
+#define INCLUDE_SENTINEL_COMMANDPOPULATE_HPP_
 
-#include <vector>
+
 #include <string>
-#include "sentinel/Container.hpp"
-#include "sentinel/Mutant.hpp"
+#include <vector>
+#include <CLI11.hpp>
+#include "sentinel/Command.hpp"
 
 
 namespace sentinel {
 
-using Mutants = Container<Mutant>;
+/**
+ * @brief sentinel commandline 'populate' subcommand class
+ */
+class CommandPopulate : public Command {
+ public:
+  /**
+   * @brief constructor
+   */
+  explicit CommandPopulate(CLI::App* app);
+
+  int run(const std::string& sourceRoot,
+    const std::string& workDir, const std::string& outputDir,
+    bool verbose) override;
+
+ private:
+  std::string mBuildDir;
+  std::string mScope;
+  std::vector<std::string> mExtensions;
+  std::vector<std::string> mExcludes;
+  int mLimit;
+  std::string mMutableFilename;
+};
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTANTS_HPP_
+#endif  // INCLUDE_SENTINEL_COMMANDPOPULATE_HPP_

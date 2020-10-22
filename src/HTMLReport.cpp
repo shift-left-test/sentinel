@@ -42,6 +42,11 @@
 
 namespace sentinel {
 
+HTMLReport::HTMLReport(const MutationResults& results,
+                       const std::string& sourcePath) :
+    Report(results, sourcePath) {
+}
+
 HTMLReport::HTMLReport(const std::string& resultsPath,
                        const std::string& sourcePath) :
     Report(resultsPath, sourcePath) {

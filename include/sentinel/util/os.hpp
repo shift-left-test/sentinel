@@ -241,9 +241,10 @@ inline void createDirectory(const std::string& path) {
  *        Create parent directory if needed.
  *
  * @param path to new folder.
+ * @param force ignore exists.
  * @throw IOException given path already exists.
  */
-inline void createDirectories(const std::string& path) {
+inline void createDirectories(const std::string& path, bool force = false) {
   bool existed = true;
   for (auto iter = path.begin(); iter != path.end(); ) {
     auto nextSlash = std::find(iter, path.end(), path::SEPARATOR);
@@ -264,7 +265,7 @@ inline void createDirectories(const std::string& path) {
     }
   }
 
-  if (existed) {
+  if (!force && existed) {
     throw IOException(EEXIST, path + " already exists");
   }
 }

@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTABLE_HPP_
-#define INCLUDE_SENTINEL_MUTABLE_HPP_
+#ifndef INCLUDE_SENTINEL_MUTANT_HPP_
+#define INCLUDE_SENTINEL_MUTANT_HPP_
 
 #include <iostream>
 #include <string>
@@ -175,4 +175,4 @@ std::istream& operator>>(std::istream& in, Mutant &m);
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTABLE_HPP_
+#endif  // INCLUDE_SENTINEL_MUTANT_HPP_

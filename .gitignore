@@ -130,6 +130,7 @@ unittest
 CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
 html/
+test/input/sample1/sample1_test
 test/result/
 GPATH
 GRTAGS
@@ -140,3 +141,4 @@ CPackConfig.cmake
 CPackSourceConfig.cmake
 _CPack_Packages/
 *.deb
+__pycache__

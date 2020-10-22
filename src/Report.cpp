@@ -37,16 +37,37 @@
 
 namespace sentinel {
 
+Report::Report(const MutationResults& results, const std::string& sourcePath) :
+    mSourcePath(sourcePath), mResults(results) {
+  generateReport();
+}
+
 Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
     mSourcePath(sourcePath) {
-  if (!os::path::exists(sourcePath) || !os::path::isDirectory(sourcePath)) {
-    throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
-                                               sourcePath));
+  mResults.load(resultsPath);
+
+  generateReport();
+}
+
+Report::~Report() {
+  for (const auto& p : groupByDirPath) {
+    delete std::get<0>(*p.second);
+    delete p.second;
   }
 
-  mResults.load(resultsPath);
+  for (const auto& p : groupByPath) {
+    delete std::get<0>(*p.second);
+    delete p.second;
+  }
+}
+
+void Report::generateReport() {
+  if (!os::path::exists(mSourcePath) || !os::path::isDirectory(mSourcePath)) {
+    throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
+                                               mSourcePath));
+  }
+
   totNumberOfMutation = mResults.size();
-  totNumberOfDetectedMutation = 0;
 
   for (const MutationResult& mr : mResults) {
     auto mrPath = os::path::getRelativePath(mr.getMutant().getPath(),
@@ -86,18 +107,6 @@ Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
       tmpSet.insert(mr->getMutant().getPath());
     }
     std::get<3>(*p.second) = tmpSet.size();
-  }
-}
-
-Report::~Report() {
-  for (const auto& p : groupByDirPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
-  }
-
-  for (const auto& p : groupByPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
   }
 }
 

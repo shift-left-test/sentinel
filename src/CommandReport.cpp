@@ -22,41 +22,42 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <iostream>
-#include <sstream>
-#include <args/args.hxx>
-#include "sentinel/Evaluator.hpp"
+#include <string>
+#include "sentinel/HTMLReport.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutant.hpp"
+#include "sentinel/MutationResult.hpp"
+#include "sentinel/util/os.hpp"
+#include "sentinel/XMLReport.hpp"
+#include "sentinel/CommandReport.hpp"
 
 
-void evaluateCommand(args::Subparser &parser) {  // NOLINT
-  args::ValueFlag<std::string> input(parser, "MUTABLE",
-    "Mutant string",
-    {'i', "input"}, args::Options::Required);
-  args::ValueFlag<std::string> expected(parser, "test_dir",
-    "Expected result directory",
-    {'e', "expected"}, args::Options::Required);
-  args::ValueFlag<std::string> actual(parser, "test_dir",
-    "Actual result directory",
-    {'a', "actual"}, args::Options::Required);
-  args::ValueFlag<std::string> output(parser, "eval_dir",
-    "Mutation applied test result",
-    {'o', "output"}, ".");
-  args::Flag verbose(parser, "verbose", "Verbosity", {'v', "verbose"});
+namespace sentinel {
+const char * cCommandReportLoggerName = "CommandReport";
 
-  parser.Parse();
-
-  if (verbose) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
-  }
-
-  sentinel::Mutant m;
-  std::istringstream iss(input.Get());
-  iss >> m;
-
-  sentinel::Evaluator evaluator(m, expected.Get(), output.Get());
-
-  evaluator.compareAndSaveMutationResult(
-      actual.Get());
+CommandReport::CommandReport(CLI::App* app) {
+  mSubApp = app->add_subcommand("report",
+    "Create a mutation test report based on the'evaluate' result "
+    "and source code");
+  mSubApp->add_option("--evaluation-file", mEvalFile,
+    "Mutation test result file")->required();
 }
+
+int CommandReport::run(const std::string& sourceRoot,
+  const std::string& workDir, const std::string& outputDir,
+  bool verbose) {
+  auto logger = Logger::getLogger(cCommandReportLoggerName);
+
+  logger->info(fmt::format("evaluation-file: {}", mEvalFile));
+  logger->info(fmt::format("output dir: {}", outputDir));
+
+  sentinel::XMLReport xmlReport(mEvalFile, sourceRoot);
+  xmlReport.save(outputDir);
+  sentinel::HTMLReport htmlReport(mEvalFile, sourceRoot);
+  htmlReport.save(outputDir);
+  htmlReport.printSummary();
+
+  return 0;
+}
+}  // namespace sentinel

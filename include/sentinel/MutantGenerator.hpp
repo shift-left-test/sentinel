@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
-#define INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
+#ifndef INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
+#define INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
 
 #include <string>
 #include "sentinel/Mutants.hpp"
@@ -50,4 +50,4 @@ class MutantGenerator {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTABLEGENERATOR_HPP_
+#endif  // INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
