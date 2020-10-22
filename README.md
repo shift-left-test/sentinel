@@ -1,6 +1,6 @@
 # sentinel
 
-[![Build Status](http://10.177.233.77:8080/buildStatus/icon?job=sentinel)](http://10.177.233.77:8080/job/sentinel/)
+[![Build Status](http://10.178.85.91:8080/buildStatus/icon?job=sentinel)](http://10.178.85.91:8080/job/sentinel/)
 
 > The mutation testing tool for the meta-shift project
 
