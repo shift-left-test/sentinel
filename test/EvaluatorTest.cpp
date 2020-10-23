@@ -30,7 +30,6 @@
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Evaluator.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Mutant.hpp"

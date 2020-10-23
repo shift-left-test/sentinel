@@ -22,19 +22,23 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
 #include <algorithm>
 #include <vector>
 #include <string>
 #include "sentinel/exceptions/XMLException.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
-Result::Result(const std::string& path) {
-  const char* errMsg = "This file doesn't follow googletest result format";
+Result::Result(const std::string& path) :
+    mLogger(Logger::getLogger("Result")) {
+  std::string logFormat =
+      "This file doesn't follow googletest result format: {}";
   auto xmlFiles = os::findFilesInDirUsingExt(path, {"xml"});
   for (const std::string& xmlPath : xmlFiles) {
     tinyxml2::XMLDocument doc;
@@ -45,22 +49,26 @@ Result::Result(const std::string& path) {
 
     tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
     if (pRoot == nullptr) {
-      throw XMLException(xmlPath, errMsg);
+      mLogger->debug(fmt::format(logFormat, xmlPath));
+      continue;
     }
     tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
     if (p == nullptr) {
-      throw XMLException(xmlPath, errMsg);
+      mLogger->debug(fmt::format(logFormat, xmlPath));
+      continue;
     }
 
     for ( ; p != nullptr ; p = p->NextSiblingElement("testsuite")) {
       tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
       if (q == nullptr) {
-        throw XMLException(xmlPath, errMsg);
+        mLogger->debug(fmt::format(logFormat, xmlPath));
+        continue;
       }
       for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
         const char* pStatus = q->Attribute("status");
         if (pStatus == nullptr) {
-          throw XMLException(xmlPath, errMsg);
+          mLogger->debug(fmt::format(logFormat, xmlPath));
+          continue;
         }
 
         if (std::string(pStatus) == std::string("run")  &&
@@ -68,7 +76,8 @@ Result::Result(const std::string& path) {
           const char* pClassName = q->Attribute("classname");
           const char* pName = q->Attribute("name");
           if (pClassName == nullptr || pName == nullptr) {
-            throw XMLException(xmlPath, errMsg);
+            mLogger->debug(fmt::format(logFormat, xmlPath));
+            continue;
           }
 
           std::string className = std::string(pClassName);

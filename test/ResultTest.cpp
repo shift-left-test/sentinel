@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include "sentinel/exceptions/XMLException.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
@@ -73,16 +74,13 @@ class ResultTest : public ::testing::Test {
     }
 
     MAKE_RESULT_XML(MUT_DIR, XMLContents);
-    EXPECT_THROW({
-        try {
-          Result mut(MUT_DIR);
-        }
-        catch (const XMLException& e){
-          EXPECT_TRUE(string::contains(e.what(),
-              "This file doesn't follow googletest result format"));
-          throw;
-        }
-    }, XMLException);
+    Logger::setLevel(Logger::Level::DEBUG);
+    testing::internal::CaptureStdout();
+    Result mut(MUT_DIR);
+    std::string out = testing::internal::GetCapturedStdout();
+    EXPECT_TRUE(string::contains(out,
+        "This file doesn't follow googletest result format:"));
+
     os::removeDirectories(MUT_DIR);
   }
 
