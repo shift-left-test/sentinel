@@ -42,7 +42,6 @@ class Result {
    * @brief Default constructor
    *
    * @param path to a test result
-   * @throw XMLException when loading result xml file fails
    */
   explicit Result(const std::string& path);
 

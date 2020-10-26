@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <vector>
 #include <string>
-#include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/os.hpp"
@@ -37,14 +36,21 @@ namespace sentinel {
 
 Result::Result(const std::string& path) :
     mLogger(Logger::getLogger("Result")) {
+  std::vector<std::string> failedFiles;
   std::string logFormat =
       "This file doesn't follow googletest result format: {}";
   auto xmlFiles = os::findFilesInDirUsingExt(path, {"xml"});
+
+  // gtest result format
   for (const std::string& xmlPath : xmlFiles) {
+    failedFiles.push_back(xmlPath);
+    std::vector<std::string> tmpPassedTC;
     tinyxml2::XMLDocument doc;
     auto errcode = doc.LoadFile(xmlPath.c_str());
     if (errcode != 0) {
-      throw XMLException(xmlPath, errcode);
+      mLogger->debug(fmt::format("{}: {}",
+          tinyxml2::XMLDocument::ErrorIDToName(errcode), xmlPath));
+      continue;
     }
 
     tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
@@ -58,17 +64,21 @@ Result::Result(const std::string& path) :
       continue;
     }
 
-    for ( ; p != nullptr ; p = p->NextSiblingElement("testsuite")) {
+    bool allParsed = true;
+    for ( ; p != nullptr && allParsed
+        ; p = p->NextSiblingElement("testsuite")) {
       tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
       if (q == nullptr) {
         mLogger->debug(fmt::format(logFormat, xmlPath));
-        continue;
+        allParsed = false;
+        break;
       }
       for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
         const char* pStatus = q->Attribute("status");
         if (pStatus == nullptr) {
           mLogger->debug(fmt::format(logFormat, xmlPath));
-          continue;
+          allParsed = false;
+          break;
         }
 
         if (std::string(pStatus) == std::string("run")  &&
@@ -77,16 +87,71 @@ Result::Result(const std::string& path) :
           const char* pName = q->Attribute("name");
           if (pClassName == nullptr || pName == nullptr) {
             mLogger->debug(fmt::format(logFormat, xmlPath));
-            continue;
+            allParsed = false;
+            break;
           }
 
           std::string className = std::string(pClassName);
           std::string caseName = std::string(pName);
-          mPassedTC.push_back(className.append(".").append(caseName));
+          tmpPassedTC.push_back(className.append(".").append(caseName));
         }
       }
     }
+    if (allParsed) {
+      mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+    } else {
+      failedFiles.pop_back();
+    }
   }
+
+  logFormat =
+      "This file doesn't follow QtTest result format: {}";
+  // QtTest result format
+  for (const std::string& xmlPath : failedFiles) {
+    std::vector<std::string> tmpPassedTC;
+    tinyxml2::XMLDocument doc;
+    doc.LoadFile(xmlPath.c_str());
+
+    tinyxml2::XMLElement *p = doc.FirstChildElement("testsuite");
+    if (p == nullptr) {
+      mLogger->debug(fmt::format(logFormat + "1", xmlPath));
+      continue;
+    }
+
+    tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+    if (q == nullptr) {
+      mLogger->debug(fmt::format(logFormat + "1", xmlPath));
+      continue;
+    }
+
+    bool allParsed = true;
+    for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
+      const char* pResult = q->Attribute("result");
+      if (pResult == nullptr) {
+        mLogger->debug(fmt::format(logFormat + "2", xmlPath));
+        allParsed = false;
+        break;
+      }
+
+      if (std::string(pResult) == std::string("pass")) {
+        const char* pClassName = p->Attribute("name");
+        const char* pName = q->Attribute("name");
+        if (pClassName == nullptr || pName == nullptr) {
+          mLogger->debug(fmt::format(logFormat + "3", xmlPath));
+          allParsed = false;
+          break;
+        }
+
+        std::string className = std::string(pClassName);
+        std::string caseName = std::string(pName);
+        tmpPassedTC.push_back(className.append(".").append(caseName));
+      }
+    }
+    if (allParsed) {
+      mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+    }
+  }
+
   if (!mPassedTC.empty()) {
     std::sort(mPassedTC.begin(), mPassedTC.end());
   }

@@ -25,7 +25,6 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>
-#include "sentinel/exceptions/XMLException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/os.hpp"
@@ -58,11 +57,11 @@ class ResultTest : public ::testing::Test {
     tmpfile.close();
   }
 
-  void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& targetTag,
-      const std::string& ignoreTag = "") {
+  void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& givenXMLContents,
+      const std::string& targetTag, const std::string& ignoreTag = "") {
+    std::string XMLContents = givenXMLContents;
     std::string MUT_DIR = os::tempDirectory(
         os::path::join(BASE, "mut_dir"));
-    std::string XMLContents = TC3;
     std::string tmpTag = "1A2B3C4D5F";
 
     if (!ignoreTag.empty()) {
@@ -76,54 +75,83 @@ class ResultTest : public ::testing::Test {
     MAKE_RESULT_XML(MUT_DIR, XMLContents);
     Logger::setLevel(Logger::Level::DEBUG);
     testing::internal::CaptureStdout();
-    Result mut(MUT_DIR);
+    auto mut = new Result(MUT_DIR);
     std::string out = testing::internal::GetCapturedStdout();
     EXPECT_TRUE(string::contains(out,
         "This file doesn't follow googletest result format:"));
 
     os::removeDirectories(MUT_DIR);
+    delete mut;
   }
 
   std::string BASE;
   std::string ORI_DIR;
-  std::string TC1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C1\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC1\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
-  std::string TC2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C2\" />\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
-  std::string TC2_FAIL = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C2\">\n"
-    "\t\t\t<failure message=\"fail message\" type=\"\" />"
-    "\t\t</testcase>\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
-  std::string TC3 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C1\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC3\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
+  std::string TC1 =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
+	<testsuite name="C1" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
+		<testcase name="TC1" status="run" result="completed" time="*" timestamp="*" classname="C1" />
+	</testsuite>
+</testsuites>
+)";
+  std::string TC2 =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
+	<testsuite name="C2" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
+		<testcase name="TC2" status="run" result="completed" time="*" timestamp="*" classname="C2" />
+	</testsuite>
+</testsuites>
+)";
+  std::string TC2_FAIL =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
+	<testsuite name="C2" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
+		<testcase name="TC2" status="run" result="completed" time="*" timestamp="*" classname="C2">
+			<failure message="fail message" type="" />
+		</testcase>
+	</testsuite>
+</testsuites>
+)";
+  std::string TC3 =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
+	<testsuite name="C1" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
+		<testcase name="TC3" status="run" result="completed" time="*" timestamp="*" classname="C1" />
+	</testsuite>
+</testsuites>
+)";
+  std::string TC4_QT =
+      R"asdf(<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" tests="4" name="qmake5-project.MinusTest">
+  <properties>
+    <property value="5.14.2" name="QTestVersion"/>
+    <property value="5.14.2" name="QtVersion"/>
+    <property value="Qt 5.14.2 (arm64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 9.3.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testShouldReturnExpectedValue"/>
+  <testcase result="pass" name="testShouldAlsoFail"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>
+)asdf";
+  std::string TC4_QT_FAIL =
+      R"asdf(<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="4" name="qmake5-project.MinusTest">
+  <properties>
+    <property value="5.14.2" name="QTestVersion"/>
+    <property value="5.14.2" name="QtVersion"/>
+    <property value="Qt 5.14.2 (arm64&#x002D;little_endian&#x002D;lp64 shared (dynamic) release build; by GCC 9.3.0)" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testShouldReturnExpectedValue"/>
+  <testcase result="fail" name="testShouldAlsoFail">
+    <failure message="&apos;3 == arithmetic::minus(1, 2)&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>
+)asdf";
 };
 
 TEST_F(ResultTest, testResultWithAliveMutation) {
@@ -144,6 +172,21 @@ TEST_F(ResultTest, testResultWithKillMutation) {
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
   EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+}
+
+TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
+  std::string QT5_RESULT = os::tempDirectory(
+      os::path::join(BASE, "ori_dir"));
+  std::string MUT_DIR = os::tempDirectory(
+      os::path::join(BASE, "mut_dir"));
+  MAKE_RESULT_XML(QT5_RESULT, TC4_QT);
+  MAKE_RESULT_XML(MUT_DIR, TC4_QT_FAIL);
+
+  Result ori(QT5_RESULT);
+  Result mut(MUT_DIR);
+
+  EXPECT_EQ(Result::kill(ori, mut),
+      R"(qmake5-project.MinusTest.testShouldAlsoFail)");
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
@@ -199,24 +242,27 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   std::string MUT_DIR = os::tempDirectory(
       os::path::join(BASE, "mut_dir"));
   MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
-  EXPECT_THROW({
-      try {
-        Result mut(MUT_DIR);
-      }
-      catch (const XMLException& e){
-        EXPECT_TRUE(string::contains(e.what(), "XML_ERROR_PARSING"));
-        throw;
-      }
-  }, XMLException);
+
+  Logger::setLevel(Logger::Level::DEBUG);
+  testing::internal::CaptureStdout();
+  auto mut = new Result(MUT_DIR);
+  std::string out = testing::internal::GetCapturedStdout();
+  EXPECT_TRUE(string::contains(out,
+      "XML_ERROR_PARSING:"));
+  delete mut;
 }
 
 TEST_F(ResultTest, testResultWithWrongResultFmt) {
-  MAKE_AND_TEST_WRONG_RESULT_XML("testsuites");
-  MAKE_AND_TEST_WRONG_RESULT_XML("testsuite", "testsuites");
-  MAKE_AND_TEST_WRONG_RESULT_XML("testcase");
-  MAKE_AND_TEST_WRONG_RESULT_XML("status");
-  MAKE_AND_TEST_WRONG_RESULT_XML("classname");
-  MAKE_AND_TEST_WRONG_RESULT_XML("name", "classname");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "testsuites");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "testsuite", "testsuites");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "testcase");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "status");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "classname");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC3, "name", "classname");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC4_QT, "testsuite");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC4_QT, "testcase");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC4_QT, "result");
+  MAKE_AND_TEST_WRONG_RESULT_XML(TC4_QT, "name");
 }
 
 }  // namespace sentinel
