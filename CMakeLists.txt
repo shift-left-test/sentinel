@@ -47,5 +47,5 @@ build_debian_package(
   VENDOR "LG Electronics"
   SUMMARY "the mutation testing tool for C/C++ projects"
   SECTION "devel"
-  DEPENDS "libclang-10-dev, libgit2-dev, llvm-10-dev"
+  DEPENDS "libgit2-dev"
 )

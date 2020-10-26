@@ -76,7 +76,7 @@ execute_process(
 )
 
 execute_process(
-  COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs
+  COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs --link-static
   OUTPUT_VARIABLE LLVM_LIBS
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -110,7 +110,7 @@ if (NOT CLANG_LIBS)
   message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
 endif()
 
-set(LLVM_CLANG_LIBS ${CLANG_LIBS} ${LLVM_LIBS} pthread z)
+set(LLVM_CLANG_LIBS ${CLANG_LIBS} ${LLVM_LIBS} pthread z tinfo)
 set(CLANG_INCLUDE_DIRS ${LLVM_INCLUDE_DIRS})
 
 mark_as_advanced(LLVM_CLANG_LIBS)

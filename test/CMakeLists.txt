@@ -25,6 +25,7 @@ if(NOT ENABLE_TEST)
 endif()
 
 find_package(Clang REQUIRED)
+link_directories(${LLVM_LIBRARY_DIRS})
 
 build_test_program(
   NAME unittest

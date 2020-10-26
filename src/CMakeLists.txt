@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+find_package(LibGit2 REQUIRED)
 find_package(Clang REQUIRED)
+link_directories(${LLVM_LIBRARY_DIRS})
 
 build_static_library(
   NAME sentinel-core
@@ -35,7 +37,7 @@ build_static_library(
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
-  LIBS tinyxml2 fmt git2 stdc++fs
+  LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs
   NO_INSTALL
 )
 
