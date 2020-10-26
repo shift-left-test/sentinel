@@ -24,15 +24,17 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 
 
 namespace sentinel {
 
-class UniformMutantGeneratorTest : public ::testing::Test {
+class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
-    TARGET_FILE = "input/sample1/sample1.cpp";
+    SampleFileGeneratorForTest::SetUp();
+    TARGET_FILE = SAMPLE1_PATH;
     sourceLines = new SourceLines();
     sourceLines->push_back(SourceLine(TARGET_FILE, 58));
     sourceLines->push_back(SourceLine(TARGET_FILE, 59));
@@ -201,6 +203,7 @@ class UniformMutantGeneratorTest : public ::testing::Test {
   void TearDown() override {
     delete allMutants;
     delete sourceLines;
+    SampleFileGeneratorForTest::TearDown();
   }
 
   Mutants* allMutants = nullptr;
@@ -209,7 +212,7 @@ class UniformMutantGeneratorTest : public ::testing::Test {
 };
 
 TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
-  // UniformMutantGenerator generator{"input/sample1"};
+  // UniformMutantGenerator generator{SAMPLE1_DIR};
   UniformMutantGenerator generator{"."};
   EXPECT_THROW(Mutants mutables = generator.populate(*sourceLines, 100),
                IOException);

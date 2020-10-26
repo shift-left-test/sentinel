@@ -28,6 +28,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -39,9 +40,10 @@
 
 namespace sentinel {
 
-class EvaluatorTest : public ::testing::Test {
+class EvaluatorTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
+    SampleFileGeneratorForTest::SetUp();
     BASE = os::tempDirectory("fixture");
     OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "OUT_DIR"));
@@ -61,9 +63,9 @@ class EvaluatorTest : public ::testing::Test {
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
 
-    mutable1 = new Mutant("AOR", "input/sample1/sample1.cpp",
+    mutable1 = new Mutant("AOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
-    mutable2 = new Mutant("BOR", "input/sample1/sample1.cpp",
+    mutable2 = new Mutant("BOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
   }
 
@@ -71,6 +73,7 @@ class EvaluatorTest : public ::testing::Test {
     os::removeDirectories(BASE);
     delete mutable1;
     delete mutable2;
+    SampleFileGeneratorForTest::TearDown();
   }
 
   void MAKE_RESULT_XML(const std::string& dirPath,
@@ -126,7 +129,7 @@ TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
   EXPECT_NO_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
     MUT_DIR, mrPath));
 
-  auto mrPathForException = os::path::join("input/sample1/sample1.cpp",
+  auto mrPathForException = os::path::join(SAMPLE1_PATH,
     "MutationResult");
   EXPECT_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
     MUT_DIR, mrPathForException), InvalidArgumentException);
@@ -141,7 +144,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
     MUT_DIR, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "AOR ("));
-  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 0:0-0:0)"));
+  EXPECT_TRUE(string::contains(out2, SAMPLE1_NAME + ", 0:0-0:0)"));
   EXPECT_TRUE(result.getDetected());
 
 
@@ -161,7 +164,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
     MUT_DIR_ALIVE, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR ("));
-  EXPECT_TRUE(string::contains(out2, "sample1.cpp, 1:1-1:1) Survived"));
+  EXPECT_TRUE(string::contains(out2, SAMPLE1_NAME + ", 1:1-1:1) Survived"));
   EXPECT_FALSE(result.getDetected());
 
 

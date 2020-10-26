@@ -27,6 +27,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutant.hpp"
@@ -35,17 +36,19 @@
 
 namespace sentinel {
 
-class MutationResultsTest : public ::testing::Test {
+class MutationResultsTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
+    SampleFileGeneratorForTest::SetUp();
     BASE = os::tempDirectory("fixture");
     OUT_DIR = os::tempDirectory(os::path::join(BASE,
         "ORI_DIR"));
-    TARGET_FILE = "input/sample1/sample1.cpp";
+    TARGET_FILE = SAMPLE1_PATH;
   }
 
   void TearDown() override {
     os::removeDirectories(BASE);
+    SampleFileGeneratorForTest::TearDown();
   }
 
   std::string BASE;

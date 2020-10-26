@@ -27,25 +27,19 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/util/os.hpp"
 #include "sentinel/Mutants.hpp"
 
 
 namespace sentinel {
 
-static constexpr const char* NONEXISTED_DIR = "nonexist";
-static constexpr const char* OUTPUT_PATH = "./mutables.db";
-static constexpr const char* NONEXISTED_PATH = "nonexist/mutables.db";
-static constexpr const char* NORMAL_FILENAME = "input/sample1/sample1.cpp";
-static constexpr const char* NONEXISTED_FILENAME = "nonexist/nonexist.cpp";
-static constexpr const char* ABNORMAL_FILENAME = "some,weird\"~ name";
-static constexpr const char* ONELINE_TOKEN = "+";
-static constexpr const char* MULTILINE_TOKEN = "a + \\\n\tb";
-static constexpr const char* EMPTY_TOKEN = "";
-
-class MutantsTest : public ::testing::Test {
+class MutantsTest : public SampleFileGeneratorForTest {
  protected:
-  void SetUp() override {}
+  void SetUp() override {
+    SampleFileGeneratorForTest::SetUp();
+    NORMAL_FILENAME = SAMPLE1_PATH;
+  }
 
   void TearDown() override {
     if (os::path::exists(OUTPUT_PATH)) {
@@ -55,6 +49,7 @@ class MutantsTest : public ::testing::Test {
     if (os::path::exists(NONEXISTED_DIR)) {
       os::removeDirectories(NONEXISTED_DIR);
     }
+    SampleFileGeneratorForTest::TearDown();
   }
 
   bool equal(const Mutant& m1, const Mutant& m2) {
@@ -67,6 +62,16 @@ class MutantsTest : public ::testing::Test {
            m1.getLast().column == m2.getLast().column &&
            m1.getToken() == m2.getToken();
   }
+
+  std::string NONEXISTED_DIR = "nonexist";
+  std::string OUTPUT_PATH = "./mutables.db";
+  std::string NONEXISTED_PATH = "nonexist/mutables.db";
+  std::string NORMAL_FILENAME;
+  std::string NONEXISTED_FILENAME = "nonexist/nonexist.cpp";
+  std::string ABNORMAL_FILENAME = "some,weird\"~ name";
+  std::string ONELINE_TOKEN = "+";
+  std::string MULTILINE_TOKEN = "a + \\\n\tb";
+  std::string EMPTY_TOKEN = "";
 };
 
 TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {

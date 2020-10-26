@@ -25,25 +25,29 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <memory>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/util/os.hpp"
 
 namespace sentinel {
 
-TEST(MutationFactoryTest, testPopulateWorks) {
+class MutationFactoryTest : public SampleFileGeneratorForTest {
+};
+
+TEST_F(MutationFactoryTest, testPopulateWorks) {
   SourceLines sourceLines;
   sourceLines.push_back(SourceLine(
-      "input/sample1/sample1.cpp", 58));
+      SAMPLE1_PATH, 58));
   sourceLines.push_back(SourceLine(
-      "input/sample1/sample1.cpp", 59));
+      SAMPLE1_PATH, 59));
 
   std::shared_ptr<MutantGenerator> generator =
       std::make_shared<UniformMutantGenerator>("..");
   MutationFactory factory(generator);
 
   testing::internal::CaptureStdout();
-  Mutants selected = factory.populate("input/sample1", sourceLines, 3);
+  Mutants selected = factory.populate(SAMPLE1_DIR, sourceLines, 3);
   std::string out = testing::internal::GetCapturedStdout();
 
   // 1 mutable on line 58, 1 mutable on line 59 are selected
@@ -52,7 +56,7 @@ TEST(MutationFactoryTest, testPopulateWorks) {
   EXPECT_EQ(selected.at(1).getFirst().line, 59);
 
   EXPECT_TRUE(string::contains(
-      out, "sample1.cpp                                                2"));
+      out, SAMPLE1_NAME + "                                                2"));
   EXPECT_TRUE(string::contains(
       out, "TOTAL                                                      2"));
 }

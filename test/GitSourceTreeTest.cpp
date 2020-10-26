@@ -24,6 +24,7 @@
 
 #include <gtest/gtest.h>
 #include <fstream>
+#include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/os.hpp"
@@ -31,12 +32,15 @@
 
 namespace sentinel {
 
-TEST(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
+class GitSourceTreeTest : public SampleFileGeneratorForTest {
+};
+
+TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
   EXPECT_THROW(GitSourceTree tree("unknown"), IOException);
 }
 
-TEST(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
-  std::string targetFilename = "input/sample1/sample1.cpp";
+TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
+  std::string targetFilename = SAMPLE1_PATH;
 
   // create a temporary copy of target file
   std::string tempFilename = os::tempFilename("/tmp/");
@@ -73,8 +77,8 @@ TEST(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   os::removeFile(tempFilename);
 }
 
-TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
-  std::string targetFilename = "input/sample1/sample1.cpp";
+TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
+  std::string targetFilename = SAMPLE1_PATH;
 
   // create a temporary copy of target file
   std::string tempFilename = os::tempFilename("/tmp/");
@@ -106,8 +110,8 @@ TEST(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   EXPECT_THROW(tree2.modify(m, "/tmp/sentineltest_backup"), IOException);
 }
 
-TEST(GitSourceTreeTest, testBackupWorks) {
-  std::string targetFilename = "input/sample1/sample1.cpp";
+TEST_F(GitSourceTreeTest, testBackupWorks) {
+  std::string targetFilename = SAMPLE1_PATH;
 
   // create a temporary copy of target file
   std::string tempSubDirPath = os::tempPath("/tmp/");

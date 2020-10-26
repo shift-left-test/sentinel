@@ -130,7 +130,6 @@ unittest
 CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
 html/
-test/input/sample1/sample1_test
 test/result/
 GPATH
 GRTAGS

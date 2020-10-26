@@ -1,6 +1,62 @@
 /*
   MIT License
 
+  Copyright (c) 2020 Sangmo Kang
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
+#ifndef TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
+#define TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
+
+#include <gtest/gtest.h>
+#include <iostream>
+#include <string>
+#include "sentinel/util/os.hpp"
+
+
+namespace sentinel {
+
+class  SampleFileGeneratorForTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    SAMPLE_BASE = os::tempDirectory("input");
+    SAMPLE1_DIR = os::tempDirectory(os::path::join(SAMPLE_BASE, "sample1"));
+    SAMPLE1_NAME = "sample1.cpp";
+    SAMPLE1_PATH = os::path::join(SAMPLE1_DIR, SAMPLE1_NAME);
+    std::ofstream t(SAMPLE1_PATH);
+    t << SAMPLE1_CONTENTS;
+    t.close();
+  }
+
+  void TearDown() override {
+    os::removeDirectories(SAMPLE_BASE);
+  }
+
+  std::string SAMPLE_BASE;
+  std::string SAMPLE1_PATH;
+  std::string SAMPLE1_DIR;
+  std::string SAMPLE1_NAME;
+  std::string SAMPLE1_CONTENTS =
+      R"asdf(/*
+  MIT License
+
   Copyright (c) 2020 Loc Duy Phan
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,4 +140,9 @@ int sdlBlockedCases() {
   while (true) {}
 
   return ({3;});
-}
+})asdf";
+};
+
+}  // namespace sentinel
+
+#endif  // TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_

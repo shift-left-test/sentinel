@@ -35,5 +35,6 @@ build_test_program(
        MutationFactoryTest.cpp EvaluatorTest.cpp
        GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp
        ContainerTest.cpp
+  PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}
 )
