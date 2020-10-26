@@ -54,7 +54,7 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
   std::string SAMPLE1_DIR;
   std::string SAMPLE1_NAME;
   std::string SAMPLE1_CONTENTS =
-      R"asdf(/*
+      R"a1s2d3f4(/*
   MIT License
 
   Copyright (c) 2020 Loc Duy Phan
@@ -140,7 +140,7 @@ int sdlBlockedCases() {
   while (true) {}
 
   return ({3;});
-})asdf";
+})a1s2d3f4";
 };
 
 }  // namespace sentinel

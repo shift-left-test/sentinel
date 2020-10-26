@@ -45,8 +45,10 @@ class Evaluator {
    * @brief Default constructor
    *
    * @param expectedResultDir Directory Path of Expected Result
+   * @param sourcePath Directory Path of Source
    */
-  explicit Evaluator(const std::string& expectedResultDir);
+  explicit Evaluator(const std::string& expectedResultDir,
+      const std::string& sourcePath);
 
   /**
    * @brief Compare an actual with the expected
@@ -78,6 +80,7 @@ class Evaluator {
 
  private:
   std::shared_ptr<Logger> mLogger;
+  std::string mSourcePath;
   Mutants mMutants;
   Result mExpectedResult;
   MutationResults mMutationResults;

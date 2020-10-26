@@ -61,7 +61,7 @@ int CommandEvaluate::run(const std::string& sourceRoot,
     logger->info(fmt::format("mutant: {}", mMutantStr));
   }
 
-  sentinel::Evaluator evaluator(mExpectedDir);
+  sentinel::Evaluator evaluator(mExpectedDir, sourceRoot);
 
   evaluator.compareAndSaveMutationResult(m, mActualDir,
     sentinel::os::path::join(outputDir, mEvalFile));

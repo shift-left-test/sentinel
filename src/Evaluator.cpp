@@ -37,7 +37,8 @@
 
 namespace sentinel {
 
-Evaluator::Evaluator(const std::string& expectedResultDir) :
+Evaluator::Evaluator(const std::string& expectedResultDir,
+    const std::string& sourcePath) : mSourcePath(sourcePath),
     mExpectedResult(expectedResultDir),
     mLogger(Logger::getLogger("Evaluator")) {
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
@@ -51,14 +52,30 @@ MutationResult Evaluator::compare(const Mutant& mut,
   std::string killingTC = Result::kill(mExpectedResult, mActualResult);
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
 
-  std::cout << fmt::format(
-      "{mu} ({path}, {sl}:{sc}-{el}:{ec}) {status}",
-      fmt::arg("mu", mut.getOperator()),
-      fmt::arg("path", os::path::filename(mut.getPath())),
+  std::size_t flen = 60;
+  std::string mutLoc = fmt::format(
+      "{path} ({sl}:{sc}-{el}:{ec})",
+      fmt::arg("path", os::path::getRelativePath(
+      mut.getPath(), mSourcePath)),
       fmt::arg("sl", mut.getFirst().line),
       fmt::arg("sc", mut.getFirst().column),
       fmt::arg("el", mut.getLast().line),
-      fmt::arg("ec", mut.getLast().column),
+      fmt::arg("ec", mut.getLast().column));
+
+  int filePos = mutLoc.size() - flen;
+  std::string skipStr;
+  if (filePos < 0) {
+    filePos = 0;
+  } else if (filePos > 1) {
+    filePos += 4;
+    skipStr = "... ";
+  }
+
+  std::cout << fmt::format(
+      "{mu:>5} : {loc:.<{flen}} {status}",
+      fmt::arg("mu", mut.getOperator()),
+      fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
+      fmt::arg("flen", flen),
       fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"))
             << std::endl;
 

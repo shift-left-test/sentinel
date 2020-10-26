@@ -130,7 +130,7 @@ int CommandStandAlone::run(const std::string& sourceRoot,
     }
   }
 
-  sentinel::Evaluator evaluator(expectedDir);
+  sentinel::Evaluator evaluator(expectedDir, sourceRoot);
 
   for (auto& m : mutants) {
     // mutate

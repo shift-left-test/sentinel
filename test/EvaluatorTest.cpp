@@ -65,7 +65,10 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 
     mutable1 = new Mutant("AOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
-    mutable2 = new Mutant("BOR", SAMPLE1_PATH,
+    std::string SAMPLE1_CLONE_PATH = os::tempPath(
+        SAMPLE1_DIR + "/veryVeryVeryLongSampleFile", ".cpp");
+    os::copyFile(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
+    mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH,
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
   }
 
@@ -126,25 +129,26 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
   auto mrPath = os::path::join(OUT_DIR, "MutationResult");
-  EXPECT_NO_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
-    MUT_DIR, mrPath));
+  EXPECT_NO_THROW(Evaluator(ORI_DIR,
+      SAMPLE_BASE).compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath));
 
   auto mrPathForException = os::path::join(SAMPLE1_PATH,
     "MutationResult");
-  EXPECT_THROW(Evaluator(ORI_DIR).compareAndSaveMutationResult(*mutable1,
-    MUT_DIR, mrPathForException), InvalidArgumentException);
+  EXPECT_THROW(Evaluator(ORI_DIR, SAMPLE_BASE).compareAndSaveMutationResult(
+      *mutable1, MUT_DIR, mrPathForException), InvalidArgumentException);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
-  Evaluator mEvaluator(ORI_DIR);
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
   testing::internal::CaptureStdout();
   auto mrPath = os::path::join(OUT_DIR, "MutationResult");
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable1,
     MUT_DIR, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out2, "AOR ("));
-  EXPECT_TRUE(string::contains(out2, SAMPLE1_NAME + ", 0:0-0:0)"));
+  EXPECT_TRUE(string::contains(out2, "AOR : "));
+  EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0)"));
+  EXPECT_TRUE(string::contains(out2, "Killed"));
   EXPECT_TRUE(result.getDetected());
 
 
@@ -156,15 +160,16 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
-  Evaluator mEvaluator(ORI_DIR);
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
   testing::internal::CaptureStdout();
   auto mrPath = os::path::join(OUT_DIR, "newDir", "MutationResult");
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     MUT_DIR_ALIVE, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out2, "BOR ("));
-  EXPECT_TRUE(string::contains(out2, SAMPLE1_NAME + ", 1:1-1:1) Survived"));
+  EXPECT_TRUE(string::contains(out2, "BOR : "));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
+  EXPECT_TRUE(string::contains(out2, "Survived"));
   EXPECT_FALSE(result.getDetected());
 
 
