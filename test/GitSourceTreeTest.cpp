@@ -33,6 +33,23 @@
 namespace sentinel {
 
 class GitSourceTreeTest : public SampleFileGeneratorForTest {
+ protected:
+  void SetUp() override {
+    SampleFileGeneratorForTest::SetUp();
+    BASE_DIR = os::tempDirectory("fixture");
+    TMP_FILE_PATH = os::tempPath(BASE_DIR + "/");
+    TMP_FILE_NAME = os::path::filename(TMP_FILE_PATH);
+    os::copyFile(SAMPLE1_PATH, TMP_FILE_PATH);
+  }
+
+  void TearDown() override {
+    os::removeDirectories(BASE_DIR);
+    SampleFileGeneratorForTest::TearDown();
+  }
+
+  std::string BASE_DIR;
+  std::string TMP_FILE_PATH;
+  std::string TMP_FILE_NAME;
 };
 
 TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
@@ -40,25 +57,19 @@ TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
 }
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
-  std::string targetFilename = SAMPLE1_PATH;
-
-  // create a temporary copy of target file
-  std::string tempFilename = os::tempFilename("/tmp/");
-  std::string filename = os::path::filename(tempFilename);
-  os::copyFile(targetFilename, tempFilename);
-
-  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+  Mutant m{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
-  GitSourceTree tree("/tmp");
-  os::createDirectory("/tmp/sentineltest_backup");
-  tree.modify(m, "/tmp/sentineltest_backup");
+  GitSourceTree tree(BASE_DIR);
+  std::string BACKUP_PATH = os::path::join(BASE_DIR, "sentineltest_backup");
+  os::createDirectory(BACKUP_PATH);
+  tree.modify(m, BACKUP_PATH);
 
   // backup exists
-  EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
+  EXPECT_TRUE(os::path::exists(os::path::join(BACKUP_PATH, TMP_FILE_NAME)));
 
   // mutation is applied correctly
-  std::ifstream mutatedFile(tempFilename);
-  std::ifstream origFile(targetFilename);
+  std::ifstream mutatedFile(TMP_FILE_PATH);
+  std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   std::size_t lineIdx = 0;
   while (std::getline(mutatedFile, mutatedFileLine) &&
@@ -73,28 +84,21 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
 
   origFile.close();
   mutatedFile.close();
-  os::removeDirectories("/tmp/sentineltest_backup");
-  os::removeFile(tempFilename);
 }
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
-  std::string targetFilename = SAMPLE1_PATH;
-
-  // create a temporary copy of target file
-  std::string tempFilename = os::tempFilename("/tmp/");
-  std::string filename = os::path::filename(tempFilename);
-  os::copyFile(targetFilename, tempFilename);
-
   // If position does not exist, no changes should be made.
-  Mutant nonexistLinePosition{"LCR", tempFilename, "sumOfEvenPositiveNumber",
+  Mutant nonexistLinePosition{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
                                100, 200, 300, 400, "||"};
-  GitSourceTree tree("/tmp");
-  os::createDirectory("/tmp/sentineltest_backup");
-  tree.modify(nonexistLinePosition, "/tmp/sentineltest_backup");
+  GitSourceTree tree(BASE_DIR);
 
-  EXPECT_TRUE(os::path::exists("/tmp/sentineltest_backup/" + filename));
-  std::ifstream mutatedFile(tempFilename);
-  std::ifstream origFile(targetFilename);
+  std::string BACKUP_PATH = os::path::join(BASE_DIR, "sentineltest_backup");
+  os::createDirectory(BACKUP_PATH);
+  tree.modify(nonexistLinePosition, BACKUP_PATH);
+
+  EXPECT_TRUE(os::path::exists(os::path::join(BACKUP_PATH, TMP_FILE_NAME)));
+  std::ifstream mutatedFile(TMP_FILE_PATH);
+  std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   while (std::getline(mutatedFile, mutatedFileLine) &&
          std::getline(origFile, origFileLine)) {
@@ -102,30 +106,27 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   }
   origFile.close();
   mutatedFile.close();
-  os::removeDirectories("/tmp/sentineltest_backup");
-  os::removeFile(tempFilename);
+  os::removeDirectories(BACKUP_PATH);
 
-  Mutant m{"LCR", targetFilename, "", 1, 2, 3, 4, "||"};
-  GitSourceTree tree2("/tmp");
-  EXPECT_THROW(tree2.modify(m, "/tmp/sentineltest_backup"), IOException);
+  Mutant m{"LCR", SAMPLE1_PATH, "", 1, 2, 3, 4, "||"};
+  GitSourceTree tree2(BASE_DIR);
+  EXPECT_THROW(tree2.modify(m, BACKUP_PATH), IOException);
 }
 
 TEST_F(GitSourceTreeTest, testBackupWorks) {
-  std::string targetFilename = SAMPLE1_PATH;
-
   // create a temporary copy of target file
-  std::string tempSubDirPath = os::tempPath("/tmp/");
+  std::string tempSubDirPath = os::tempPath(BASE_DIR + "/");
   std::string tempSubDirName = os::path::filename(tempSubDirPath);
   os::createDirectory(tempSubDirPath);
 
   std::string tempFilename = os::tempFilename(tempSubDirPath + "/");
   std::string filename = os::path::filename(tempFilename);
-  os::copyFile(targetFilename, tempFilename);
+  os::copyFile(SAMPLE1_PATH, tempFilename);
 
   Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
-  GitSourceTree tree("/tmp");
-  std::string backupPath = os::tempDirectory("/tmp/");
+  GitSourceTree tree(BASE_DIR);
+  std::string backupPath = os::tempDirectory(BASE_DIR + "/");
 
   tree.modify(m, backupPath);
 
@@ -136,7 +137,7 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
 
   // mutation is applied correctly
   std::ifstream mutatedFile(tempFilename);
-  std::ifstream origFile(targetFilename);
+  std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   std::size_t lineIdx = 0;
   while (std::getline(mutatedFile, mutatedFileLine) &&
@@ -151,8 +152,6 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
 
   origFile.close();
   mutatedFile.close();
-  os::removeDirectories(backupPath);
-  os::removeDirectories(tempSubDirPath);
 }
 
 }  // namespace sentinel
