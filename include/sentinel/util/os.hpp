@@ -28,10 +28,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <experimental/filesystem>
+#include <algorithm>
 #include <climits>
 #include <cstdlib>
 #include <cstring>
-#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -41,6 +42,9 @@
 #include <vector>
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/string.hpp"
+
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 namespace os {
@@ -54,122 +58,12 @@ static constexpr const char SEPARATOR = '/';
 /**
  * @brief The dot for the filesystem paths
  */
-static constexpr const char DOT = '.';
+static const char* DOT = ".";
 
 /**
  * @brief The doulbe dots for the filesystem paths
  */
 static const char* DOUBLEDOTS = "..";
-
-/**
- * @brief Check if the given file exists
- *
- * @param path to file
- * @return true if the file exists, false otherwise
- */
-inline bool exists(const std::string& path) {
-  return access(path.c_str(), 0) == 0;
-}
-
-/**
- * @brief Check if the given file is a directory
- *
- * @param path to file
- * @return true if the file is a directory, false otherwise
- */
-inline bool isDirectory(const std::string& path) {
-  struct stat sb = {};
-  lstat(path.c_str(), &sb);
-  return S_ISDIR(sb.st_mode) != 0;
-}
-
-/**
- * @brief Check if the given file is a regular file
- *
- * @param path to file
- * @return true if the file is a regular file, false otherwise
- */
-inline bool isRegularFile(const std::string& path) {
-  struct stat sb = {};
-  lstat(path.c_str(), &sb);
-  return S_ISREG(sb.st_mode) != 0;
-}
-
-/**
- * @brief Return the directory name of the given path
- *
- * @param path to file
- * @return directory name
- */
-inline std::string dirname(const std::string& path) {
-  auto position = path.find_last_of(SEPARATOR, path.size() - 2);
-  if (position == std::string::npos) {
-    return std::string(1, DOT);
-  }
-  if (position == 0) {
-    return std::string(1, SEPARATOR);
-  }
-  return path.substr(0, position);
-}
-
-/**
- * @brief Return the filename of the given path
- *
- * @param path to file
- * @return filename
- */
-inline std::string filename(std::string path) {
-  while (path.back() == SEPARATOR) {
-    path.pop_back();
-  }
-  auto position = path.find_last_of(SEPARATOR);
-  return (position == std::string::npos) ? path : path.substr(position + 1);
-}
-
-/**
- * @brief Join the given paths with slash ('/')
- *
- * @param path1 the first path
- * @param paths the other paths, in order.
- * @return joined path
- */
-template <typename ... Arg>
-inline std::string join(const std::string& path1,
-                        const Arg&... paths) {
-  return string::join(SEPARATOR, {path1, paths ...});  // NOLINT
-}
-
-/**
- * @brief Return True if 2 paths point to the same dir/file
- *
- * @param path1 first path
- * @param path2 second path
- * @return True if 2 paths point to the same dir/file
- */
-inline bool comparePath(const std::string& path1, const std::string& path2) {
-  if (!exists(path1) || !exists(path2)) {
-    throw IOException(EINVAL);
-  }
-
-  std::string absolutePath1{realpath(path1.c_str(), nullptr)};
-  std::string absolutePath2{realpath(path2.c_str(), nullptr)};
-  return absolutePath1 == absolutePath2;
-}
-
-/**
- * @brief Return the absolute path of given path
- *
- * @param path target path
- * @return absolute path of target path
- */
-inline std::string getAbsolutePath(const std::string& path) {
-  if (!exists(path)) {
-    throw IOException(EINVAL);
-  }
-
-  std::string absolutePath{realpath(path.c_str(), nullptr)};
-  return absolutePath;
-}
 
 /**
  * @brief Return the relative path from start dir
@@ -178,169 +72,37 @@ inline std::string getAbsolutePath(const std::string& path) {
  * @param path start dir
  * @return the relative path from start dir
  */
-inline std::string getRelativePath(const std::string& path,
+inline fs::path getRelativePath(const std::string& path,
                                    const std::string& start) {
-  auto mPath = getAbsolutePath(path);
-  auto mStart = getAbsolutePath(start);
-  if (!isDirectory(mStart)) {
-    throw IOException(EINVAL);
-  }
-  auto mSplitPath = string::split(mPath, "/");
-  auto mSplitStart = string::split(mStart, "/");
-  if (mSplitStart.back().empty()) {
-    mSplitStart.pop_back();
-  }
-  int diffIdx = -1;
-  std::string ret = "";
-  for (auto it = mSplitPath.begin() ; it != mSplitPath.end() ; ++it) {
-    auto idx = std::distance(mSplitPath.begin(), it);
-    if (diffIdx == -1) {
-      if ( idx >= mSplitStart.size() ) {
-        diffIdx = -2;
-      } else if (*it != mSplitStart.at(idx)) {
-        diffIdx = idx;
-      }
-    }
-    if (diffIdx != -1) {
-      if (!ret.empty()) {
-        ret += "/";
-      }
-      ret += *it;
+  auto mPath = fs::canonical(path);
+  auto mBase = fs::canonical(start);
+  
+  fs::path resultPath;
+  auto itPath = mPath.begin();
+  auto itBase = mBase.begin();
+
+  for (; itPath != mPath.end() && itBase != mBase.end(); ++itPath, ++itBase) {
+    if (*itPath != *itBase) {
+      break;
     }
   }
-  if (diffIdx >= 0) {
-    std::size_t itnum = mSplitStart.size() - diffIdx;
-    for (std::size_t i = 0 ; i < itnum ; i++) {
-      ret = "../" + ret;
+
+  for (; itBase != mBase.end(); ++itBase) {
+    if (*itBase != ".") {
+      resultPath /= "..";
     }
   }
-  if (ret.empty()) {
-    ret = ".";
+
+  for(; itPath != mPath.end(); ++itPath) {
+    if (*itPath != ".") {
+      resultPath /= *itPath;
+    }
   }
-  return ret;
+
+  return resultPath.empty() ? "." : resultPath;
 }
 
 }  // namespace path
-
-/**
- * @brief Create a new directory at given path.
- *
- * @param path to new folder (name included).
- * @throw IOException given path already exists, or
- *                    a component of the path prefix does not exist, or
- *                    a component of the path prefix is not a director.
- */
-inline void createDirectory(const std::string& path) {
-  if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
-    throw IOException(errno);
-  }
-}
-
-/**
- * @brief Create a new directory at given path.
- *        Create parent directory if needed.
- *
- * @param path to new folder.
- * @param force ignore exists.
- * @throw IOException given path already exists.
- */
-inline void createDirectories(const std::string& path, bool force = false) {
-  bool existed = true;
-  for (auto iter = path.begin(); iter != path.end(); ) {
-    auto nextSlash = std::find(iter, path.end(), path::SEPARATOR);
-    std::string currentPath = std::string(path.begin(), nextSlash);
-    if (currentPath == "" && iter != path.end()) {
-      ++iter;
-      continue;
-    }
-
-    if (!path::exists(currentPath)) {
-      existed = false;
-      createDirectory(currentPath);
-    }
-
-    iter = nextSlash;
-    if (iter != path.end()) {
-      ++iter;
-    }
-  }
-
-  if (!force && existed) {
-    throw IOException(EEXIST, path + " already exists");
-  }
-}
-
-/**
- * @brief Delete a specified empty directory.
- *
- * @param path to target directory.
- * @throw IOException given path is not an empty directory, or
- *                    given path last component is . or .., or
- *                    given path is not a directory, or
- *                    given path does not exist.
- */
-inline void removeDirectory(const std::string& path) {
-  if (rmdir(path.c_str()) != 0) {
-    throw IOException(errno);
-  }
-}
-
-/**
- * @brief Delete a specified file.
- *
- * @param path to target directory.
- * @throw IOException given path is not a file, or
- *                    given path does not exist.
- */
-inline void removeFile(const std::string& path) {
-  if (std::remove(path.c_str()) != 0) {
-    throw IOException(errno);
-  }
-}
-
-/**
- * @brief Delete a directory at given path.
- *        Recursively delete the directory content before deleting it.
- *
- * @param path to new folder.
- */
-inline void removeDirectories(const std::string& path) {
-  DIR* d = opendir(path.c_str());
-  if (d != nullptr) {
-    struct dirent* entry = nullptr;
-    while ((entry = readdir(d)) != nullptr) {
-      if (std::strcmp(static_cast<const char *>(entry->d_name), ".") == 0 ||
-          std::strcmp(static_cast<const char *>(entry->d_name), "..") == 0) {
-        continue;
-      }
-      auto subpath = path::join(path, entry->d_name);
-      if (path::isDirectory(subpath)) {
-        removeDirectories(subpath);
-      } else {
-        removeFile(subpath);
-      }
-    }
-    closedir(d);
-  }
-  removeDirectory(path);
-}
-
-/**
- * @brief Replace the file dest with the file src.
- *
- * @param src replacing file
- * @param dest to-be-replaced file
- * @throw IOException src is not an exising file, or
- *                    dest is an existing directory.
- */
-inline void rename(const std::string& src, const std::string& dest) {
-  if (!path::isRegularFile(src)) {
-    throw IOException(EINVAL);
-  }
-  if (std::rename(src.c_str(), dest.c_str()) != 0) {
-    throw IOException(errno);
-  }
-}
 
 /**
  * @brief Create a temporary file name with given template.
@@ -363,7 +125,7 @@ inline std::string tempPath(const std::string& prefix = "",
   do {
     std::shuffle(s.begin(), s.end(), eng);
     temp = prefix + s.substr(0, 8) + suffix;
-  } while (os::path::exists(temp));
+  } while (fs::exists(temp));
   return temp;
 }
 
@@ -406,30 +168,18 @@ inline std::string tempDirectory(const std::string& prefix = "") {
  * @return path of files that match regex
  */
 inline std::vector<std::string> findFilesInDirUsingRgx(
-    const std::string& dir, const std::regex& exp) {
-  std::shared_ptr<DIR> dir_ptr(opendir(dir.c_str()),
-      [](DIR* dir){ if (dir != nullptr) { closedir(dir); } });
-  if (dir_ptr == nullptr) {
-    throw IOException(errno, "Error opening: "+ dir);
-  }
-
+    const fs::path& dir, const std::regex& exp) {
   std::vector<std::string> files;
-  struct dirent *dirent_ptr;
-  while ((dirent_ptr = readdir(dir_ptr.get())) != nullptr) {
-    const std::string f_name(static_cast<char*>(dirent_ptr->d_name));
-    if (dirent_ptr->d_type == DT_DIR) {
-      if (f_name != path::DOUBLEDOTS && f_name != std::string(1, path::DOT)) {
-        std::vector<std::string> child_dir_files = findFilesInDirUsingRgx(
-            path::join(dir, f_name), exp);
-        files.insert(end(files),
-            begin(child_dir_files), end(child_dir_files));
-      }
-    } else if (dirent_ptr->d_type == DT_REG) {
-      if (std::regex_match(f_name, exp)) {
-          files.push_back(path::join(dir, f_name));
+
+  for(auto& dirent: fs::recursive_directory_iterator(dir)) {
+    auto entry = dirent.path();
+    if (fs::is_regular_file(entry)) {
+      if (std::regex_match(entry.filename().string(), exp)) {
+          files.push_back(entry);
       }
     }
   }
+  
   return files;
 }
 
@@ -440,13 +190,43 @@ inline std::vector<std::string> findFilesInDirUsingRgx(
  * @return path of files that have specific extension
  */
 inline std::vector<std::string> findFilesInDirUsingExt(
-    const std::string& dir, const std::vector<std::string>& exts) {
-  std::string exp(".+");
-  if (!exts.empty()) {
-    exp = exp + "\\.(" + string::join("|", exts) + ")$";
+    const fs::path& dir, const std::vector<std::string>& exts) {
+  std::vector<std::string> files;
+
+  if (exts.empty()) {
+    for(auto& dirent: fs::recursive_directory_iterator(dir)) {
+      auto entry = dirent.path();
+      if (fs::is_regular_file(entry)) {
+        files.push_back(entry);
+      }
+    }
+  } else {
+    std::vector<std::string> tmpExts;
+    for(auto& ext: exts) {
+      std::string tmp(ext);
+      std::transform(tmp.begin(), tmp.end(), tmp.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+      tmpExts.push_back(tmp);
+    }
+
+    for(auto& dirent: fs::recursive_directory_iterator(dir)) {
+      auto entry = dirent.path();
+      if (fs::is_regular_file(entry)) {
+        std::string ext = entry.extension();
+        if (!ext.empty()) {
+          ext = ext.substr(1);
+          std::transform(ext.begin(), ext.end(), ext.begin(),
+            [](unsigned char c) { return std::tolower(c); });
+          if (std::find(tmpExts.begin(), tmpExts.end(), ext)
+            != tmpExts.end()) {
+            files.push_back(entry);
+          }
+        }
+      }
+    }
   }
-  return findFilesInDirUsingRgx(dir, std::regex(
-    exp, std::regex_constants::icase));
+  
+  return files;
 }
 
 /**
@@ -458,29 +238,6 @@ inline std::vector<std::string> findFilesInDirUsingExt(
 inline std::vector<std::string> findFilesInDir(
     const std::string& dir) {
   return findFilesInDirUsingExt(dir, {});
-}
-
-/**
- * @brief Make a copy of target file
- *
- * @param srcPath target file path
- * @param destPath path to copy directory
- */
-inline void copyFile(const std::string& srcPath, const std::string& destPath) {
-  if (!path::isRegularFile(srcPath)) {
-    throw IOException(EINVAL);
-  }
-
-  std::string newFilename = destPath;
-  if (path::isDirectory(destPath)) {
-    newFilename = destPath + "/" + path::filename(srcPath);
-  }
-
-  std::ifstream src(srcPath, std::ios::binary);
-  std::ofstream dest(newFilename, std::ios::binary | std::ios::trunc);
-  dest << src.rdbuf();
-  src.close();
-  dest.close();
 }
 
 }  // namespace os

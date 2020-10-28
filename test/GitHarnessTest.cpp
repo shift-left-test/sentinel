@@ -23,6 +23,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <cstdio>
 #include <fstream>
 #include <memory>
@@ -31,6 +32,8 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -42,7 +45,7 @@ class GitHarnessTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    os::removeDirectories(repo_name);
+    fs::remove_all(repo_name);
   }
 
   static void getStagedAndUnstagedFiles(
@@ -94,17 +97,17 @@ class GitHarnessTest : public ::testing::Test {
     }
   }
 
-  std::string repo_name;
+  fs::path repo_name;
   std::shared_ptr<GitHarness> repo;
 };
 
 // Action: create a new directory and git init
 // Expected Output: new directory created, containing .git folder
 TEST_F(GitHarnessTest, testInitWorks) {
-  EXPECT_TRUE(os::path::isDirectory(repo_name));
+  EXPECT_TRUE(fs::is_directory(repo_name));
 
-  std::string git_dir = repo_name + "/.git";
-  EXPECT_TRUE(os::path::isDirectory(git_dir));
+  auto git_dir = repo_name / ".git";
+  EXPECT_TRUE(fs::is_directory(git_dir));
 }
 
 // Action: initiate a git repo twice
@@ -120,8 +123,7 @@ TEST_F(GitHarnessTest, testInitFailWhenDirAlreadyExists) {
 // Expected Output: folder created at within repo at correct location
 TEST_F(GitHarnessTest, testAddFolderWorks) {
   repo->addFolder("temp");
-  EXPECT_TRUE(os::path::isDirectory(
-    os::path::join(repo_name, "temp")));
+  EXPECT_TRUE(fs::is_directory(repo_name / "temp"));
 }
 
 // Action: call addFolder with a folder that already exist
@@ -131,14 +133,6 @@ TEST_F(GitHarnessTest, testAddFolderFailWhenFolderExisted) {
   EXPECT_THROW({repo->addFolder("temp");}, std::runtime_error);
 }
 
-// Action: call addFolder with invalid path
-// Expected Output: assertion errors
-TEST_F(GitHarnessTest, testAddFolderWhenInvalidPathGiven) {
-  std::string msg = "Fail to make directory";
-  // EXPECT_DEATH({repo->addFolder("unexisted/temp");}, msg.c_str());
-  EXPECT_THROW(repo->addFolder("unexisted/temp"), IOException);
-}
-
 // Action: create new file in git repo with empty main function
 // Expected Output: cile created at within repo at correct location and content.
 TEST_F(GitHarnessTest, testAddFileWorks) {
@@ -146,8 +140,8 @@ TEST_F(GitHarnessTest, testAddFileWorks) {
   std::string content = "int main() {}";
   repo->addFile(filename, content);
 
-  filename = repo_name + "/" + filename;
-  EXPECT_TRUE(os::path::isRegularFile(filename));
+  filename = repo_name / filename;
+  EXPECT_TRUE(fs::is_regular_file(filename));
 
   std::ifstream created_file(filename.c_str());
   std::string inserted_content((std::istreambuf_iterator<char>(created_file)),
@@ -176,7 +170,7 @@ TEST_F(GitHarnessTest, testAddFileFailWhenInvalidPathGiven) {
 // Expected Output: content are added properly to the right file. Other files
 // are unaffected.
 TEST_F(GitHarnessTest, testAddCodeWorks) {
-  std::string filename = repo_name + "/" + "temp.cpp";
+  std::string filename = repo_name / "temp.cpp";
   std::string initial_content = "// comment\n";
   repo->addFile("temp.cpp", initial_content);
 
@@ -205,7 +199,7 @@ TEST_F(GitHarnessTest, testAddCodeWorks) {
 // (i.e. larger than EOF, negative, larger than line size)
 // Expected Output: add code to the nearest valid location in target file.
 TEST_F(GitHarnessTest, testAddCodeFailWhenPositionOutOfBound) {
-  std::string filename = repo_name + "/" + "temp.cpp";
+  std::string filename = repo_name / "temp.cpp";
   std::string initial_content = "int main() {}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
 
@@ -246,7 +240,7 @@ TEST_F(GitHarnessTest, testDeleteCodeWorks) {
   repo->addFile("temp.cpp", initial_content)
       .deleteCode("temp.cpp", target_lines);
 
-  std::string filename = repo_name + "/" + "temp.cpp";
+  std::string filename = repo_name / "temp.cpp";
   std::ifstream file(filename.c_str());
   std::string content((std::istreambuf_iterator<char>(file)),
                                (std::istreambuf_iterator<char>()));
@@ -262,7 +256,7 @@ TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
   repo->addFile("temp.cpp", initial_content)
       .deleteCode("temp.cpp", target_lines);
 
-  std::string filename = repo_name + "/" + "temp.cpp";
+  std::string filename = repo_name / "temp.cpp";
   std::ifstream file(filename.c_str());
   std::string content((std::istreambuf_iterator<char>(file)),
                                (std::istreambuf_iterator<char>()));
@@ -469,10 +463,8 @@ TEST_F(GitHarnessTest, testCheckoutBranchWorks) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp.cpp")));
-  EXPECT_FALSE(os::path::exists(
-    os::path::join(repo_name, "temp2.cpp")));
+  EXPECT_TRUE(fs::exists(repo_name / "temp.cpp"));
+  EXPECT_FALSE(fs::exists(repo_name / "temp2.cpp"));
 
   git_reference_free(master_branch);
 }
@@ -519,14 +511,10 @@ TEST_F(GitHarnessTest, testMergeWorks) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp1.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp2.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp3.cpp")));
+  EXPECT_TRUE(fs::exists(repo_name / "temp.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp1.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp2.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp3.cpp"));
 }
 
 TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
@@ -570,14 +558,10 @@ TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp1.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp2.cpp")));
-  EXPECT_TRUE(os::path::exists(
-    os::path::join(repo_name, "temp3.cpp")));
+  EXPECT_TRUE(fs::exists(repo_name / "temp.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp1.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp2.cpp"));
+  EXPECT_TRUE(fs::exists(repo_name / "temp3.cpp"));
 }
 
 }  // namespace sentinel

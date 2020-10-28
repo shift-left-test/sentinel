@@ -23,12 +23,15 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -37,18 +40,18 @@ class GitSourceTreeTest : public SampleFileGeneratorForTest {
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
     BASE_DIR = os::tempDirectory("fixture");
-    TMP_FILE_PATH = os::tempPath(BASE_DIR + "/");
-    TMP_FILE_NAME = os::path::filename(TMP_FILE_PATH);
-    os::copyFile(SAMPLE1_PATH, TMP_FILE_PATH);
+    TMP_FILE_PATH = os::tempPath(BASE_DIR.string() + "/");
+    TMP_FILE_NAME = TMP_FILE_PATH.filename();
+    fs::copy(SAMPLE1_PATH, TMP_FILE_PATH);
   }
 
   void TearDown() override {
-    os::removeDirectories(BASE_DIR);
+    fs::remove_all(BASE_DIR);
     SampleFileGeneratorForTest::TearDown();
   }
 
-  std::string BASE_DIR;
-  std::string TMP_FILE_PATH;
+  fs::path BASE_DIR;
+  fs::path TMP_FILE_PATH;
   std::string TMP_FILE_NAME;
 };
 
@@ -60,12 +63,12 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   Mutant m{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   GitSourceTree tree(BASE_DIR);
-  std::string BACKUP_PATH = os::path::join(BASE_DIR, "sentineltest_backup");
-  os::createDirectory(BACKUP_PATH);
+  fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
+  fs::create_directories(BACKUP_PATH);
   tree.modify(m, BACKUP_PATH);
 
   // backup exists
-  EXPECT_TRUE(os::path::exists(os::path::join(BACKUP_PATH, TMP_FILE_NAME)));
+  EXPECT_TRUE(fs::exists(BACKUP_PATH / TMP_FILE_NAME));
 
   // mutation is applied correctly
   std::ifstream mutatedFile(TMP_FILE_PATH);
@@ -92,11 +95,11 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
                                100, 200, 300, 400, "||"};
   GitSourceTree tree(BASE_DIR);
 
-  std::string BACKUP_PATH = os::path::join(BASE_DIR, "sentineltest_backup");
-  os::createDirectory(BACKUP_PATH);
+  fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
+  fs::create_directories(BACKUP_PATH);
   tree.modify(nonexistLinePosition, BACKUP_PATH);
 
-  EXPECT_TRUE(os::path::exists(os::path::join(BACKUP_PATH, TMP_FILE_NAME)));
+  EXPECT_TRUE(fs::exists(BACKUP_PATH / TMP_FILE_NAME));
   std::ifstream mutatedFile(TMP_FILE_PATH);
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
@@ -106,7 +109,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   }
   origFile.close();
   mutatedFile.close();
-  os::removeDirectories(BACKUP_PATH);
+  fs::remove_all(BACKUP_PATH);
 
   Mutant m{"LCR", SAMPLE1_PATH, "", 1, 2, 3, 4, "||"};
   GitSourceTree tree2(BASE_DIR);
@@ -115,25 +118,23 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
 
 TEST_F(GitSourceTreeTest, testBackupWorks) {
   // create a temporary copy of target file
-  std::string tempSubDirPath = os::tempPath(BASE_DIR + "/");
-  std::string tempSubDirName = os::path::filename(tempSubDirPath);
-  os::createDirectory(tempSubDirPath);
+  fs::path tempSubDirPath = os::tempPath(BASE_DIR.string() + "/");
+  std::string tempSubDirName = tempSubDirPath.filename();
+  fs::create_directories(tempSubDirPath);
 
-  std::string tempFilename = os::tempFilename(tempSubDirPath + "/");
-  std::string filename = os::path::filename(tempFilename);
-  os::copyFile(SAMPLE1_PATH, tempFilename);
+  fs::path tempFilename = os::tempFilename(tempSubDirPath.string() + "/");
+  std::string filename = tempFilename.filename();
+  fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
   Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   GitSourceTree tree(BASE_DIR);
-  std::string backupPath = os::tempDirectory(BASE_DIR + "/");
+  fs::path backupPath = os::tempDirectory(BASE_DIR.string() + "/");
 
   tree.modify(m, backupPath);
 
   // backup exists
-  EXPECT_TRUE(os::path::exists(os::path::join(backupPath,
-                                              tempSubDirName,
-                                              filename)));
+  EXPECT_TRUE(fs::exists(backupPath / tempSubDirName / filename));
 
   // mutation is applied correctly
   std::ifstream mutatedFile(tempFilename);

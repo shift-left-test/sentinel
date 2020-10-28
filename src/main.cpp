@@ -22,6 +22,7 @@
   SOFTWARE.
 */
 
+#include <experimental/filesystem>
 #include <iostream>
 #include <memory>
 #include <list>
@@ -34,6 +35,8 @@
 #include "sentinel/CommandStandAlone.hpp"
 #include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 int main(int argc, char** argv) {
   CLI::App app("sentinel");
@@ -64,11 +67,11 @@ int main(int argc, char** argv) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }
 
-  source_root = sentinel::os::path::getAbsolutePath(source_root);
-  sentinel::os::createDirectories(work_dir, true);
-  work_dir = sentinel::os::path::getAbsolutePath(work_dir);
-  sentinel::os::createDirectories(output_dir, true);
-  output_dir = sentinel::os::path::getAbsolutePath(output_dir);
+  source_root = fs::canonical(source_root);
+  fs::create_directories(work_dir);
+  work_dir = fs::canonical(work_dir);
+  fs::create_directories(output_dir);
+  output_dir = fs::canonical(output_dir);
 
   for (auto& subcmd : commandList) {
     if (subcmd->isParsed()) {

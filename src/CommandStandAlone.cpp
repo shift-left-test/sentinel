@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <cstdlib>
 #include <map>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -69,8 +70,8 @@ CommandStandAlone::CommandStandAlone(CLI::App* app) :
     "Test command output file extensions", true);
 }
 
-int CommandStandAlone::run(const std::string& sourceRoot,
-  const std::string& workDir, const std::string& outputDir,
+int CommandStandAlone::run(const fs::path& sourceRoot,
+  const fs::path& workDir, const fs::path& outputDir,
   bool verbose) {
   auto logger = Logger::getLogger(cCommandStandAloneLoggerName);
   logger->info(fmt::format("build dir: {}", mBuildDir));
@@ -78,22 +79,18 @@ int CommandStandAlone::run(const std::string& sourceRoot,
   logger->info(fmt::format("test cmd:{}", mTestCmd));
   logger->info(fmt::format("test result dir: {}", mTestResultDir));
 
-  mBuildDir = sentinel::os::path::getAbsolutePath(mBuildDir);
-  os::createDirectories(mTestResultDir, true);
-  mTestResultDir = sentinel::os::path::getAbsolutePath(
-    mTestResultDir);
+  mBuildDir = fs::canonical(mBuildDir);
+  fs::create_directories(mTestResultDir);
+  mTestResultDir = fs::canonical(mTestResultDir);
   // create work directories
-  os::createDirectories(workDir, true);
-  os::createDirectories(sentinel::os::path::join(workDir, "backup"), true);
-  os::createDirectories(sentinel::os::path::join(workDir, "expected"), true);
-  os::createDirectories(sentinel::os::path::join(workDir, "actual"), true);
+  fs::create_directories(workDir);
+  fs::create_directories(workDir / "backup");
+  fs::create_directories(workDir / "expected");
+  fs::create_directories(workDir / "actual");
 
-  std::string backupDir = sentinel::os::path::getAbsolutePath(
-    sentinel::os::path::join(workDir, "backup"));
-  std::string expectedDir = sentinel::os::path::getAbsolutePath(
-    sentinel::os::path::join(workDir, "expected"));
-  std::string actualDir = sentinel::os::path::getAbsolutePath(
-    sentinel::os::path::join(workDir, "actual"));
+  std::string backupDir = fs::canonical(workDir / "backup");
+  std::string expectedDir = fs::canonical(workDir / "expected");
+  std::string actualDir = fs::canonical(workDir / "actual");
 
   // restore if previous backup is exists
   restoreBackup(backupDir, sourceRoot);
@@ -168,12 +165,12 @@ void CommandStandAlone::copyTestReportTo(const std::string& from,
   const std::string& to, const std::vector<std::string>& exts) {
   auto xmlFiles = sentinel::os::findFilesInDirUsingExt(from, exts);
 
-  sentinel::os::removeDirectories(to);
-  sentinel::os::createDirectories(to);
+  fs::remove_all(to);
+  fs::create_directories(to);
 
   for (auto& xmlFile : xmlFiles) {
     // TODO(daeseong.seong): keep relative directory of backupFile
-    sentinel::os::copyFile(xmlFile, to);
+    fs::copy(xmlFile, to);
   }
 }
 
@@ -183,8 +180,8 @@ void CommandStandAlone::restoreBackup(const std::string& backup,
 
   for (auto& backupFile : backupFiles) {
     // TODO(daeseong.seong): keep relative directory of backupFile
-    sentinel::os::copyFile(backupFile, srcRoot);
-    sentinel::os::removeFile(backupFile);
+    fs::copy(backupFile, srcRoot, fs::copy_options::overwrite_existing);
+    fs::remove(backupFile);
   }
 }
 }  // namespace sentinel

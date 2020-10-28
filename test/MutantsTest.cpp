@@ -23,6 +23,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -31,6 +32,8 @@
 #include "sentinel/util/os.hpp"
 #include "sentinel/Mutants.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -42,12 +45,12 @@ class MutantsTest : public SampleFileGeneratorForTest {
   }
 
   void TearDown() override {
-    if (os::path::exists(OUTPUT_PATH)) {
-      os::removeFile(OUTPUT_PATH);
+    if (fs::exists(OUTPUT_PATH)) {
+      fs::remove(OUTPUT_PATH);
     }
 
-    if (os::path::exists(NONEXISTED_DIR)) {
-      os::removeDirectories(NONEXISTED_DIR);
+    if (fs::exists(NONEXISTED_DIR)) {
+      fs::remove_all(NONEXISTED_DIR);
     }
     SampleFileGeneratorForTest::TearDown();
   }
@@ -77,7 +80,7 @@ class MutantsTest : public SampleFileGeneratorForTest {
 TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {
   EXPECT_THROW(Mutant("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0,
                        ONELINE_TOKEN),
-               IOException);
+               fs::filesystem_error);
 }
 
 TEST_F(MutantsTest, testAdd) {
@@ -102,7 +105,7 @@ TEST_F(MutantsTest, testSaveWorksWhenExistedDirGiven) {
   m.push_back(mutable1);
   m.push_back(mutable2);
   m.save(OUTPUT_PATH);
-  EXPECT_TRUE(os::path::exists(OUTPUT_PATH));
+  EXPECT_TRUE(fs::exists(OUTPUT_PATH));
 
   std::ifstream inFile(OUTPUT_PATH);
   Mutant loaded_mutable1;
@@ -122,7 +125,7 @@ TEST_F(MutantsTest, testSaveWorksWhenNonexistedDirGiven) {
   m.push_back(mutable1);
   m.push_back(mutable2);
   m.save(NONEXISTED_PATH);
-  EXPECT_TRUE(os::path::exists(NONEXISTED_PATH));
+  EXPECT_TRUE(fs::exists(NONEXISTED_PATH));
 
   std::ifstream inFile(NONEXISTED_PATH);
   Mutant loaded_mutable1;

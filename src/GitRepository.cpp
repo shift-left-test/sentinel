@@ -23,7 +23,6 @@
 */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
 #include <git2.h>
 #include <algorithm>
 #include <sstream>
@@ -34,8 +33,6 @@
 #include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-
-namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -102,8 +99,8 @@ class DiffData {
    * @param line line number
    */
   void addSourceLine(const std::string & file, int line) {
-    std::string filePath = os::path::join(
-      mGitRepo->getSourceRoot(), file);
+    fs::path filePath(mGitRepo->getSourceRoot());
+    filePath.append(file);
     if (mGitRepo->isTargetPath(filePath)) {
       mSourceLines.push_back(SourceLine(filePath, line));
     }
@@ -180,7 +177,7 @@ GitRepository::GitRepository(const std::string& path,
     throw InvalidArgumentException(fmt::format("source_root option error: {}",
         e.what()));
   }
-  logger->info(fmt::format("source root: {}", mSourceRoot));
+  logger->info(fmt::format("source root: {}", mSourceRoot.string()));
 
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(),
@@ -197,7 +194,7 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
-bool GitRepository::isTargetPath(const std::string &path,
+bool GitRepository::isTargetPath(const fs::path &path,
   bool checkExtension) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
@@ -226,7 +223,7 @@ bool GitRepository::isTargetPath(const std::string &path,
   }
 
   if (checkExtension) {
-    std::string extension = fs::path(path).extension();
+    std::string extension = path.extension();
 
     if (!this->mExtensions.empty() &&
       std::find(this->mExtensions.begin(), this->mExtensions.end(),

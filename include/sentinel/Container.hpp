@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_CONTAINER_HPP_
 #define INCLUDE_SENTINEL_CONTAINER_HPP_
 
+#include <experimental/filesystem>
 #include <algorithm>
 #include <fstream>
 #include <iterator>
@@ -33,6 +34,8 @@
 #include <vector>
 #include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -316,9 +319,10 @@ Container<T> Container<T>::split(std::size_t first,
 
 template <typename T>
 void Container<T>::save(const std::string& path) {
-  auto dirname = os::path::dirname(path);
-  if (!os::path::exists(dirname)) {
-    os::createDirectories(dirname);
+  fs::path tmpPath(path);
+  auto dirname = tmpPath.parent_path();
+  if (!dirname.empty()) {
+    fs::create_directories(dirname);
   }
   std::ofstream ofs(path);
   for (const auto& data : mData) {

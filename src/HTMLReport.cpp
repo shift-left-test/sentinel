@@ -52,18 +52,17 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void HTMLReport::save(const std::string& dirPath) {
-  if (os::path::exists(dirPath)) {
-    if (!os::path::isDirectory(dirPath)) {
+void HTMLReport::save(const fs::path& dirPath) {
+  if (fs::exists(dirPath)) {
+    if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",
-                                                 dirPath));
+                                                 dirPath.string()));
     }
   } else {
-    os::createDirectories(dirPath);
+    fs::create_directories(dirPath);
   }
 
-  std::ofstream ofs(os::path::join(dirPath, "style.css"),
-                    std::ofstream::out);
+  std::ofstream ofs(dirPath / "style.css", std::ofstream::out);
   CSSGenerator cg;
   ofs << cg.str();
   ofs.close();
@@ -82,17 +81,17 @@ void HTMLReport::save(const std::string& dirPath) {
 }
 
 void HTMLReport::makeIndexHtml(
-    std::map<std::string,
+    std::map<fs::path,
     std::tuple<std::vector<const MutationResult*>*,
     std::size_t, std::size_t, std::size_t>* >*
     pGroupByDirPath,
-    std::map<std::string,
+    std::map<fs::path,
     std::tuple<std::vector<const MutationResult*>*,
     std::size_t, std::size_t>* >*
     pGroupByPath,
     std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
-    bool root, const std::string& currentDirPath,
-    const std::string& outputDir) {
+    bool root, const fs::path& currentDirPath,
+    const fs::path& outputDir) {
 
   std::size_t sizeOfTargetFiles = 0;
   std::size_t numerator = 0;
@@ -122,7 +121,7 @@ void HTMLReport::makeIndexHtml(
     }
   } else {
     for (const auto& p : *pGroupByPath) {
-      std::string curDirname = os::path::dirname(p.first);
+      std::string curDirname = p.first.parent_path();
       curDirname = string::replaceAll(curDirname, "/", ".");
 
       if (currentDirPath != curDirname) {
@@ -133,7 +132,7 @@ void HTMLReport::makeIndexHtml(
       std::size_t subMut = std::get<1>(*p.second);
       auto subCov = 100 * subDetected / subMut;
 
-      ihg.pushItemToTable(os::path::filename(p.first),
+      ihg.pushItemToTable(p.first.filename(),
                           subCov, subDetected, subMut, -1);
     }
   }
@@ -142,34 +141,33 @@ void HTMLReport::makeIndexHtml(
 
   std::string fileName = "index.html";
   if (!root) {
-    fileName = os::path::join(currentDirPath, "index.html");
-    std::string newDir = os::path::join(outputDir, currentDirPath);
-    if (os::path::exists(newDir)) {
-      if (!os::path::isDirectory(newDir)) {
+    fileName = currentDirPath / "index.html";
+    auto newDir = outputDir / currentDirPath;
+    if (fs::exists(newDir)) {
+      if (!fs::is_directory(newDir)) {
         throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-                                                   newDir));
+                                                   newDir.string()));
       }
     } else {
-      os::createDirectories(newDir);
+      fs::create_directories(newDir);
     }
   }
-  std::ofstream ofs(os::path::join(outputDir, fileName),
-                    std::ofstream::out);
+  std::ofstream ofs(outputDir / fileName, std::ofstream::out);
   ofs << contents;
   ofs.close();
 }
 
 void HTMLReport::makeSourceHtml(
     std::vector<const MutationResult*>* MRs,
-    const std::string& srcPath,
-    const std::string& outputDir) {
-  auto absSrcPath = os::path::join(mSourcePath, srcPath);
-  if (!os::path::exists(absSrcPath)) {
+    const fs::path& srcPath,
+    const fs::path& outputDir) {
+  auto absSrcPath = mSourcePath / srcPath;
+  if (!fs::exists(absSrcPath)) {
     throw InvalidArgumentException(
-        fmt::format("Source doesn't exists: {0}", absSrcPath));
+        fmt::format("Source doesn't exists: {0}", absSrcPath.string()));
   }
 
-  std::string srcName = os::path::filename(absSrcPath);
+  std::string srcName = absSrcPath.filename();
 
   std::map<std::size_t, std::vector<const MutationResult*>*> groupByLine;
   std::set<std::string> uniqueKillingTest;
@@ -278,12 +276,11 @@ void HTMLReport::makeSourceHtml(
 
   auto contents = shg.str();
 
-  std::string fileName = os::path::join(outputDir,
-      string::replaceAll(os::path::dirname(srcPath), "/", "."),
-      fmt::format("{0}.html", srcName));
+  std::string fileName = outputDir /
+      string::replaceAll(srcPath.parent_path(), "/", ".") /
+      fmt::format("{0}.html", srcName);
 
-  std::ofstream ofs(fileName,
-                    std::ofstream::out);
+  std::ofstream ofs(fileName, std::ofstream::out);
   ofs << contents;
   ofs.close();
 

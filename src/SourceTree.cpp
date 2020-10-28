@@ -34,14 +34,14 @@
 
 namespace sentinel {
 
-SourceTree::SourceTree(const std::string& baseDirectory) :
+SourceTree::SourceTree(const fs::path& baseDirectory) :
     mBaseDirectory(baseDirectory) {
-  if (!os::path::exists(mBaseDirectory)) {
+  if (!fs::exists(mBaseDirectory)) {
     throw IOException(EINVAL);
   }
 }
 
-std::string SourceTree::getBaseDirectory() const {
+fs::path SourceTree::getBaseDirectory() const {
   return mBaseDirectory;
 }
 

@@ -28,7 +28,7 @@
 
 namespace sentinel {
 
-SourceLine::SourceLine(const std::string& path, std::size_t lineNumber) :
+SourceLine::SourceLine(const fs::path& path, std::size_t lineNumber) :
     mPath(path), mLineNumber(lineNumber) {
 }
 

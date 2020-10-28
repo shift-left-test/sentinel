@@ -56,7 +56,7 @@ MutationResult Evaluator::compare(const Mutant& mut,
   std::string mutLoc = fmt::format(
       "{path} ({sl}:{sc}-{el}:{ec})",
       fmt::arg("path", os::path::getRelativePath(
-      mut.getPath(), mSourcePath)),
+      mut.getPath(), mSourcePath).string()),
       fmt::arg("sl", mut.getFirst().line),
       fmt::arg("sc", mut.getFirst().column),
       fmt::arg("el", mut.getLast().line),
@@ -88,15 +88,15 @@ MutationResult Evaluator::compare(const Mutant& mut,
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
-    const std::string& ActualResultDir, const std::string& evalFilePath) {
-  std::string outDir = os::path::dirname(evalFilePath);
-  if (os::path::exists(outDir)) {
-    if (!os::path::isDirectory(outDir)) {
+    const fs::path& ActualResultDir, const fs::path& evalFilePath) {
+  auto outDir = evalFilePath.parent_path();
+  if (fs::exists(outDir)) {
+    if (!fs::is_directory(outDir)) {
       throw InvalidArgumentException(fmt::format(
-          "dirPath isn't directory({0})", outDir));
+          "dirPath isn't directory({0})", outDir.string()));
     }
   } else {
-    os::createDirectories(outDir);
+    fs::create_directories(outDir);
   }
 
   MutationResult ret = compare(mut, ActualResultDir);
@@ -106,7 +106,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
   outFile << ret << std::endl;
   outFile.close();
 
-  mLogger->debug(fmt::format("Save MutationResult: {}", outDir));
+  mLogger->debug(fmt::format("Save MutationResult: {}", outDir.string()));
 
   return ret;
 }

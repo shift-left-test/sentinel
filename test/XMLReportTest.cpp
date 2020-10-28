@@ -24,6 +24,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
@@ -35,46 +36,45 @@
 #include "sentinel/XMLReport.hpp"
 
 
+namespace fs = std::experimental::filesystem;
+
 namespace sentinel {
 
 class XMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
     BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(os::path::join(BASE,
-        "OUT_DIR"));
+    OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
 
-    MUT_RESULT_DIR = os::tempDirectory(
-        os::path::join(BASE, "MUT_RESLUT_DIR"));
+    MUT_RESULT_DIR = os::tempDirectory(BASE / "MUT_RESLUT_DIR");
 
-    SOURCE_DIR = os::tempDirectory(
-        os::path::join(BASE, "SOURCE_DIR"));
+    SOURCE_DIR = os::tempDirectory(BASE / "SOURCE_DIR");
 
-    std::string NESTED_SOURCE_DIR = os::tempDirectory(
-        os::path::join(SOURCE_DIR, "NESTED_DIR"));
+    fs::path NESTED_SOURCE_DIR = os::tempDirectory(
+      SOURCE_DIR / "NESTED_DIR");
 
     TARGET_FULL_PATH = os::tempFilename(
-        SOURCE_DIR + "/", ".cpp");
-    std::string TARGET_NAME = os::path::filename(TARGET_FULL_PATH);
+        SOURCE_DIR.string() + "/", ".cpp");
+    std::string TARGET_NAME = TARGET_FULL_PATH.filename();
     TARGET_FULL_PATH2 = os::tempFilename(
-        NESTED_SOURCE_DIR + "/", ".cpp");
-    std::string TARGET_NAME2 = os::path::filename(TARGET_FULL_PATH2);
+        NESTED_SOURCE_DIR.string() + "/", ".cpp");
+    std::string TARGET_NAME2 = TARGET_FULL_PATH2.filename();
     EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
-        TARGET_NAME, os::path::filename(TARGET_FULL_PATH),
-        TARGET_NAME2, os::path::filename(NESTED_SOURCE_DIR) + "/" +
-        os::path::filename(TARGET_FULL_PATH2));
+        TARGET_NAME, TARGET_FULL_PATH.filename().string(),
+        TARGET_NAME2, NESTED_SOURCE_DIR.filename().string() + "/" +
+        TARGET_FULL_PATH2.filename().string());
   }
 
   void TearDown() override {
-    os::removeDirectories(BASE);
+    fs::remove_all(BASE);
   }
 
-  std::string BASE;
-  std::string OUT_DIR;
-  std::string MUT_RESULT_DIR;
-  std::string SOURCE_DIR;
-  std::string TARGET_FULL_PATH;
-  std::string TARGET_FULL_PATH2;
+  fs::path BASE;
+  fs::path OUT_DIR;
+  fs::path MUT_RESULT_DIR;
+  fs::path SOURCE_DIR;
+  fs::path TARGET_FULL_PATH;
+  fs::path TARGET_FULL_PATH2;
   std::string EXPECT_MUT_XML_CONTENT = ""
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<mutations>\n"
@@ -110,7 +110,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   MutationResults MRs;
   MRs.push_back(MR1);
   MRs.push_back(MR2);
-  auto MRPath = os::path::join(MUT_RESULT_DIR, "MutationResult");
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
   XMLReport xmlreport(MRPath, SOURCE_DIR);
@@ -140,8 +140,8 @@ TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
 
   EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(xmlreport.save("unknown"));
-  ASSERT_TRUE(os::path::exists("unknown"));
-  os::removeDirectories("unknown");
+  ASSERT_TRUE(fs::exists("unknown"));
+  fs::remove_all("unknown");
 }
 
 }  // namespace sentinel

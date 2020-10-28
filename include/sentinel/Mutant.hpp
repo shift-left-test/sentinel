@@ -25,12 +25,15 @@
 #ifndef INCLUDE_SENTINEL_MUTANT_HPP_
 #define INCLUDE_SENTINEL_MUTANT_HPP_
 
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 #include <utility>
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/util/string.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -112,7 +115,7 @@ class Mutant {
    *
    * @return path to the file
    */
-  std::string getPath() const;
+  fs::path getPath() const;
 
   /**
    * @brief Return the namespace, class containing mutation location.
@@ -161,7 +164,7 @@ class Mutant {
 
  private:
   std::string mOperator;
-  std::string mPath;
+  fs::path mPath;
   std::string mClass;
   std::string mFunction;
   std::string mQualifiedFunction;

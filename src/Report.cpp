@@ -37,12 +37,12 @@
 
 namespace sentinel {
 
-Report::Report(const MutationResults& results, const std::string& sourcePath) :
+Report::Report(const MutationResults& results, const fs::path& sourcePath) :
     mSourcePath(sourcePath), mResults(results) {
   generateReport();
 }
 
-Report::Report(const std::string& resultsPath, const std::string& sourcePath) :
+Report::Report(const fs::path& resultsPath, const fs::path& sourcePath) :
     mSourcePath(sourcePath) {
   mResults.load(resultsPath);
 
@@ -62,17 +62,17 @@ Report::~Report() {
 }
 
 void Report::generateReport() {
-  if (!os::path::exists(mSourcePath) || !os::path::isDirectory(mSourcePath)) {
+  if (!fs::exists(mSourcePath) || !fs::is_directory(mSourcePath)) {
     throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
-                                               mSourcePath));
+                                               mSourcePath.string()));
   }
 
   totNumberOfMutation = mResults.size();
 
   for (const MutationResult& mr : mResults) {
-    auto mrPath = os::path::getRelativePath(mr.getMutant().getPath(),
+    fs::path mrPath = os::path::getRelativePath(mr.getMutant().getPath(),
                                             mSourcePath);
-    std::string curDirname = os::path::dirname(mrPath);
+    std::string curDirname = mrPath.parent_path();
     curDirname = string::replaceAll(curDirname, "/", ".");
 
     if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
@@ -132,7 +132,7 @@ void Report::printSummary() {
     if (std::get<1>(*p.second) != 0) {
       curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
     }
-    int filePos = p.first.size() - flen;
+    int filePos = p.first.string().size() - flen;
     std::string skipStr;
     if (filePos < 0) {
       filePos = 0;
@@ -141,7 +141,7 @@ void Report::printSummary() {
       skipStr = "... ";
     }
     std::cout << fmt::format(defFormat,
-                             skipStr + p.first.substr(filePos), flen,
+                             skipStr + p.first.string().substr(filePos), flen,
                              std::get<2>(*p.second), klen,
                              std::get<1>(*p.second), mlen,
                              (curCov != -1 ?

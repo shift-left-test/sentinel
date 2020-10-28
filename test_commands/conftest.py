@@ -145,7 +145,7 @@ int sdlBlockedCases() {
 
   return ({3;});
 }"""
-        files["test_main"] = r"""/*
+        files["test_main.cpp"] = r"""/*
   MIT License
 
   Copyright (c) 2020 Loc Duy Phan

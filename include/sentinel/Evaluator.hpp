@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_EVALUATOR_HPP_
 #define INCLUDE_SENTINEL_EVALUATOR_HPP_
 
+#include <experimental/filesystem>
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
@@ -33,6 +34,8 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -69,7 +72,7 @@ class Evaluator {
    * @return MutationResult summary of compare
    */
   MutationResult compareAndSaveMutationResult(const Mutant& mut,
-      const std::string& ActualResultDir, const std::string& evalFilePath);
+      const fs::path& ActualResultDir, const fs::path& evalFilePath);
 
   /**
    * @brief Return mutation results

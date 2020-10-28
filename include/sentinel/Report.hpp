@@ -25,11 +25,15 @@
 #ifndef INCLUDE_SENTINEL_REPORT_HPP_
 #define INCLUDE_SENTINEL_REPORT_HPP_
 
+#include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <tuple>
 #include <vector>
 #include "sentinel/MutationResults.hpp"
+
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -46,7 +50,7 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const MutationResults& results, const std::string& sourcePath);
+  Report(const MutationResults& results, const fs::path& sourcePath);
 
   /**
    * @brief Default Constructor
@@ -56,7 +60,7 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const std::string& resultsPath, const std::string& sourcePath);
+  Report(const fs::path& resultsPath, const fs::path& sourcePath);
   /**
    * @brief Default Destructor
    */
@@ -66,7 +70,7 @@ class Report {
    *
    * @param path to save the report
    */
-  virtual void save(const std::string& path) = 0;
+  virtual void save(const fs::path& path) = 0;
 
   /**
    * @brief Print summury of report
@@ -84,14 +88,14 @@ class Report {
   /**
    * @brief group MutationReuslt by Directory
    */
-  std::map<std::string,
+  std::map<fs::path,
       std::tuple<std::vector<const MutationResult*>*, std::size_t,
                  std::size_t, std::size_t>* > groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
-  std::map<std::string,
+  std::map<fs::path,
       std::tuple<std::vector<const MutationResult*>*,
                  std::size_t, std::size_t>* > groupByPath;
 
@@ -108,7 +112,7 @@ class Report {
   /**
    * @brief path of source directory
    */
-  std::string mSourcePath;
+  fs::path mSourcePath;
 };
 
 }  // namespace sentinel

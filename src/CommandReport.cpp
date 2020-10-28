@@ -44,13 +44,13 @@ CommandReport::CommandReport(CLI::App* app) {
     "Mutation test result file")->required();
 }
 
-int CommandReport::run(const std::string& sourceRoot,
-  const std::string& workDir, const std::string& outputDir,
+int CommandReport::run(const fs::path& sourceRoot,
+  const fs::path& workDir, const fs::path& outputDir,
   bool verbose) {
   auto logger = Logger::getLogger(cCommandReportLoggerName);
 
   logger->info(fmt::format("evaluation-file: {}", mEvalFile));
-  logger->info(fmt::format("output dir: {}", outputDir));
+  logger->info(fmt::format("output dir: {}", outputDir.string()));
 
   sentinel::XMLReport xmlReport(mEvalFile, sourceRoot);
   xmlReport.save(outputDir);

@@ -23,6 +23,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -34,6 +35,8 @@
 #include "sentinel/util/os.hpp"
 
 
+namespace fs = std::experimental::filesystem;
+
 namespace sentinel {
 
 class MutationResultsTest : public SampleFileGeneratorForTest {
@@ -41,18 +44,17 @@ class MutationResultsTest : public SampleFileGeneratorForTest {
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
     BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(os::path::join(BASE,
-        "ORI_DIR"));
+    OUT_DIR = os::tempDirectory(BASE / "ORI_DIR");
     TARGET_FILE = SAMPLE1_PATH;
   }
 
   void TearDown() override {
-    os::removeDirectories(BASE);
+    fs::remove_all(BASE);
     SampleFileGeneratorForTest::TearDown();
   }
 
-  std::string BASE;
-  std::string OUT_DIR;
+  fs::path BASE;
+  fs::path OUT_DIR;
   std::string TARGET_FILE;
 };
 
@@ -66,7 +68,7 @@ TEST_F(MutationResultsTest, testAdd) {
 
   EXPECT_TRUE(MRs[0].compare(MR1));
   EXPECT_EQ(MRs[0].getMutant().getOperator(), "AOR");
-  EXPECT_TRUE(os::path::comparePath(MR1.getMutant().getPath(), TARGET_FILE));
+  EXPECT_TRUE(fs::equivalent(MR1.getMutant().getPath(), TARGET_FILE));
   EXPECT_EQ(MR1.getMutant().getFirst().line, 0);
 }
 
@@ -86,9 +88,9 @@ TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResult MR2(M2, "testAddBit", true);
   MRs.push_back(MR2);
 
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto mrPath = OUT_DIR / "MutationResult";
   MRs.save(mrPath);
-  EXPECT_TRUE(os::path::exists(mrPath));
+  EXPECT_TRUE(fs::exists(mrPath));
 
   MutationResults MRs2;
   MRs2.load(mrPath);

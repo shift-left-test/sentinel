@@ -128,7 +128,7 @@ TEST_F(ContainerTest, testSaveAndLoad) {
   integers.save(path);
   none.load(path);
   EXPECT_EQ(integers, none);
-  os::removeFile(path);
+  fs::remove(path);
 }
 
 TEST_F(ContainerTest, testSplit) {

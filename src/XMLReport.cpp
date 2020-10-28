@@ -44,17 +44,17 @@ XMLReport::XMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void XMLReport::save(const std::string& dirPath) {
-  if (os::path::exists(dirPath)) {
-    if (!os::path::isDirectory(dirPath)) {
+void XMLReport::save(const fs::path& dirPath) {
+  if (fs::exists(dirPath)) {
+    if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})",
-                                                 dirPath));
+                                                 dirPath.string()));
     }
   } else {
-    os::createDirectories(dirPath);
+    fs::create_directories(dirPath);
   }
 
-  auto xmlPath = os::path::join(dirPath, "mutations.xml");
+  auto xmlPath = dirPath / "mutations.xml";
 
   auto doc = new tinyxml2::XMLDocument();
   tinyxml2::XMLDeclaration* pDecl = doc->NewDeclaration();
@@ -67,7 +67,7 @@ void XMLReport::save(const std::string& dirPath) {
     pMutation->SetAttribute("detected", r.getDetected());
 
     addChildToParent(doc, pMutation, "sourceFile",
-        os::path::filename(r.getMutant().getPath()));
+        r.getMutant().getPath().filename());
     addChildToParent(doc, pMutation, "sourceFilePath",
                      os::path::getRelativePath(r.getMutant().getPath(),
                                                mSourcePath));

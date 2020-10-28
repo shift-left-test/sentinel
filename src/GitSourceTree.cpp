@@ -41,27 +41,27 @@ GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
     SourceTree(baseDirectory) {
 }
 
-void GitSourceTree::modify(const Mutant& info, const std::string& backupPath) {
+void GitSourceTree::modify(const Mutant& info, const fs::path& backupPath) {
   // Backup target file to be mutated
   auto logger = Logger::getLogger(cGitSourceTreeLoggerName);
 
-  std::string targetFilename = \
-      os::path::getAbsolutePath(info.getPath());
-  std::string gitRootAbsolutePath = \
-      os::path::getAbsolutePath(getBaseDirectory());
-  if (!string::startsWith(os::path::dirname(targetFilename),
+  fs::path targetFilename = fs::canonical(info.getPath());
+  fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
+  if (!string::startsWith(targetFilename.parent_path(),
                           gitRootAbsolutePath)) {
-    throw IOException(EINVAL, "Git root does not contain " + targetFilename);
+    throw IOException(EINVAL, "Git root does not contain "
+      + targetFilename.string());
   }
   std::string targetRelativePath = \
-      os::path::dirname(targetFilename).substr(
-          gitRootAbsolutePath.length());
-  std::string newBackupPath = backupPath + "/" + targetRelativePath;
-  if (!os::path::exists(newBackupPath)) {
-    os::createDirectories(newBackupPath);
+      targetFilename.parent_path().string().substr(
+          gitRootAbsolutePath.string().length());
+  fs::path newBackupPath = backupPath / targetRelativePath;
+  if (!fs::exists(newBackupPath)) {
+    fs::create_directories(newBackupPath);
   }
-  os::copyFile(targetFilename, newBackupPath);
-  logger->info(fmt::format("backup: {}", newBackupPath));
+  fs::copy(targetFilename, newBackupPath,
+    fs::copy_options::overwrite_existing);
+  logger->info(fmt::format("backup: {}", newBackupPath.string()));
 
   // Apply mutation
   std::ifstream originalFile(targetFilename);
@@ -70,7 +70,7 @@ void GitSourceTree::modify(const Mutant& info, const std::string& backupPath) {
     buffer << originalFile.rdbuf();
     originalFile.close();
   } else {
-    throw IOException(EINVAL, "Failed to open " + targetFilename);
+    throw IOException(EINVAL, "Failed to open " + targetFilename.string());
   }
   std::ofstream mutatedFile(targetFilename, std::ios::trunc);
 

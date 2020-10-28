@@ -25,10 +25,13 @@
 #ifndef INCLUDE_SENTINEL_GITSOURCETREE_HPP_
 #define INCLUDE_SENTINEL_GITSOURCETREE_HPP_
 
+#include <experimental/filesystem>
 #include <string>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -44,7 +47,7 @@ class GitSourceTree : public SourceTree {
    */
   explicit GitSourceTree(const std::string& baseDirectory);
 
-  void modify(const Mutant& info, const std::string& backupPath) override;
+  void modify(const Mutant& info, const fs::path& backupPath) override;
 };
 
 }  // namespace sentinel

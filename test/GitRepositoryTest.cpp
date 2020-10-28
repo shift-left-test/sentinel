@@ -23,11 +23,15 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <string>
 #include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/os.hpp"
+
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -36,22 +40,22 @@ class GitRepositoryTest : public ::testing::Test {
   void SetUp() override {
     repo_name = os::tempPath("GitRepositoryTest-");
     repo = std::make_shared<GitHarness>(repo_name);
-    repo_name = os::path::getAbsolutePath(repo_name);
+    repo_name = fs::canonical(repo_name);
   }
 
   void TearDown() override {
     if (!HasFailure()) {
-      os::removeDirectories(repo_name);
+      fs::remove_all(repo_name);
     }
   }
 
-  std::string repo_name;
+  fs::path repo_name;
   std::shared_ptr<GitHarness> repo;
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
-    std::string tmpPath = os::path::join(repo_name, "test");
-    os::createDirectories(tmpPath);
+    std::string tmpPath = repo_name / "test";
+    fs::create_directories(tmpPath);
 
     EXPECT_THROW({
         GitRepository gitRepo(tmpPath);
@@ -121,7 +125,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles { "temp.cpp" };
-  std::string stageFilename = repo_name + "/" + "temp.cpp";
+  std::string stageFilename = repo_name / "temp.cpp";
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);

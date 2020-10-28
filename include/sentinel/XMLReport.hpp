@@ -60,7 +60,7 @@ class XMLReport : public Report {
    *
    * @throw InvalidArgumentException when path is not directory
    */
-  void save(const std::string& dirPath) override;
+  void save(const fs::path& dirPath) override;
 
  private:
   /**

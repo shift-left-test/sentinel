@@ -44,8 +44,8 @@ class CommandPopulate : public Command {
    */
   explicit CommandPopulate(CLI::App* app);
 
-  int run(const std::string& sourceRoot,
-    const std::string& workDir, const std::string& outputDir,
+  int run(const fs::path& sourceRoot,
+    const fs::path& workDir, const fs::path& outputDir,
     bool verbose) override;
 
  private:

@@ -14,6 +14,8 @@ def test_integration(sentinel_env):
         sentinel_env.build_dir],
         stdout=PIPE, stderr=PIPE)
     outs, errs = populate.communicate()
+    print(outs)
+    print(errs)
     assert str(outs).find("Mutant Population Report") != -1
     populate_output = os.path.join(sentinel_env.output_dir, "mutables.db")
     assert os.path.exists(populate_output)

@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -41,7 +42,7 @@ Mutant::Mutant(const std::string& mutationOperator,
                  std::size_t firstLine, std::size_t firstColumn,
                  std::size_t lastLine, std::size_t lastColumn,
                  const std::string& token) :
-    mPath(os::path::getAbsolutePath(path)), mToken(token),
+    mPath(fs::canonical(path)), mToken(token),
     mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
   std::size_t pos = qualifiedFuncName.find_last_of("::");
@@ -56,7 +57,7 @@ Mutant::Mutant(const std::string& mutationOperator,
 
 bool Mutant::compare(const Mutant& other) const {
   return mOperator == other.getOperator() &&
-      os::path::comparePath(mPath, other.getPath()) &&
+      fs::equivalent(mPath, other.getPath()) &&
       mFirst.line == other.getFirst().line &&
       mFirst.column == other.getFirst().column &&
       mLast.line == other.getLast().line &&
@@ -68,7 +69,7 @@ std::string Mutant::getOperator() const {
   return mOperator;
 }
 
-std::string Mutant::getPath() const {
+fs::path Mutant::getPath() const {
   return mPath;
 }
 
@@ -99,7 +100,7 @@ std::string Mutant::getToken() const {
 std::ostream& operator<<(std::ostream& out, const Mutant& m) {
   out << fmt::format("{},{},{},{},{},{},{},{}",
                      m.getOperator(),
-                     m.getPath(),
+                     m.getPath().string(),
                      m.getQualifiedFunction(),
                      m.getFirst().line,
                      m.getFirst().column,

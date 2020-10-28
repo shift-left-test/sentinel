@@ -26,10 +26,13 @@
 #define TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 #include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -37,21 +40,21 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
  protected:
   void SetUp() override {
     SAMPLE_BASE = os::tempDirectory("input");
-    SAMPLE1_DIR = os::tempDirectory(os::path::join(SAMPLE_BASE, "sample1"));
+    SAMPLE1_DIR = os::tempDirectory(SAMPLE_BASE / "sample1");
     SAMPLE1_NAME = "sample1.cpp";
-    SAMPLE1_PATH = os::path::join(SAMPLE1_DIR, SAMPLE1_NAME);
+    SAMPLE1_PATH = SAMPLE1_DIR / SAMPLE1_NAME;
     std::ofstream t(SAMPLE1_PATH);
     t << SAMPLE1_CONTENTS;
     t.close();
   }
 
   void TearDown() override {
-    os::removeDirectories(SAMPLE_BASE);
+    fs::remove_all(SAMPLE_BASE);
   }
 
-  std::string SAMPLE_BASE;
-  std::string SAMPLE1_PATH;
-  std::string SAMPLE1_DIR;
+  fs::path SAMPLE_BASE;
+  fs::path SAMPLE1_PATH;
+  fs::path SAMPLE1_DIR;
   std::string SAMPLE1_NAME;
   std::string SAMPLE1_CONTENTS =
       R"a1s2d3f4(/*

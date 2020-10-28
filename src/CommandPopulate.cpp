@@ -62,12 +62,12 @@ CommandPopulate::CommandPopulate(CLI::App* app) :
     "Populated result file name which will be created at output-dir.", true);
 }
 
-int CommandPopulate::run(const std::string& sourceRoot,
-  const std::string& workDir, const std::string& outputDir,
+int CommandPopulate::run(const fs::path& sourceRoot,
+  const fs::path& workDir, const fs::path& outputDir,
   bool verbose) {
   auto logger = Logger::getLogger(cCommandPopulateLoggerName);
   if (verbose) {
-    logger->info(fmt::format("source root:{}", sourceRoot));
+    logger->info(fmt::format("source root:{}", sourceRoot.string()));
     for (auto&exclude : mExcludes) {
       logger->info(fmt::format("exclude:{}", exclude));
     }
@@ -100,7 +100,7 @@ int CommandPopulate::run(const std::string& sourceRoot,
     }
   }
 
-  mutants.save(sentinel::os::path::join(outputDir, mMutableFilename));
+  mutants.save(outputDir /mMutableFilename);
 
   return 0;
 }

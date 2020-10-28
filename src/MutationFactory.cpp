@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -72,8 +73,8 @@ Mutants MutationFactory::populate(const std::string& gitPath,
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   for (const auto& p : groupByPath) {
-    std::string filePath = os::path::getAbsolutePath(p.first).substr(
-        os::path::getAbsolutePath(gitPath).length() + 1);
+    std::string filePath = fs::canonical(p.first).string().substr(
+        fs::canonical(gitPath).string().length() + 1);
 
     int filePos = filePath.size() - flen;
     std::string skipStr;

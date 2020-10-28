@@ -23,6 +23,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -38,6 +39,8 @@
 #include "sentinel/util/string.hpp"
 
 
+namespace fs = std::experimental::filesystem;
+
 namespace sentinel {
 
 class EvaluatorTest : public SampleFileGeneratorForTest {
@@ -45,44 +48,39 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
     BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(os::path::join(BASE,
-        "OUT_DIR"));
+    OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
 
-    ORI_DIR = os::tempDirectory(os::path::join(BASE,
-        "ORI_DIR"));
+    ORI_DIR = os::tempDirectory(BASE / "ORI_DIR");
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
 
-    MUT_DIR = os::tempDirectory(os::path::join(BASE,
-        "MUT_DIR"));
+    MUT_DIR = os::tempDirectory(BASE / "MUT_DIR");
     MAKE_RESULT_XML(MUT_DIR, TC1);
     MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
 
-    MUT_DIR_ALIVE = os::tempDirectory(os::path::join(BASE,
-        "MUT_DIR_ALIVE"));
+    MUT_DIR_ALIVE = os::tempDirectory(BASE / "MUT_DIR_ALIVE");
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
 
     mutable1 = new Mutant("AOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
     std::string SAMPLE1_CLONE_PATH = os::tempPath(
-        SAMPLE1_DIR + "/veryVeryVeryLongSampleFile", ".cpp");
-    os::copyFile(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
+        SAMPLE1_DIR / "veryVeryVeryLongSampleFile", ".cpp");
+    fs::copy(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
     mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH,
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
   }
 
   void TearDown() override {
-    os::removeDirectories(BASE);
+    fs::remove_all(BASE);
     delete mutable1;
     delete mutable2;
     SampleFileGeneratorForTest::TearDown();
   }
 
-  void MAKE_RESULT_XML(const std::string& dirPath,
+  void MAKE_RESULT_XML(const fs::path& dirPath,
       const std::string& fileContent) {
-    std::string tmp = os::tempFilename(
-        os::path::join(dirPath, "pre"), ".xml");
+    std::string tmp = os::tempFilename(dirPath / "pre", ".xml");
     std::ofstream tmpfile;
     tmpfile.open(tmp.c_str());
     tmpfile << fileContent.c_str();
@@ -91,9 +89,9 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 
   Mutant* mutable1 = nullptr;
   Mutant* mutable2 = nullptr;
-  std::string BASE;
+  fs::path BASE;
   std::string ORI_DIR;
-  std::string OUT_DIR;
+  fs::path OUT_DIR;
   std::string MUT_DIR;
   std::string MUT_DIR_ALIVE;
   std::string TC1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -128,12 +126,11 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto mrPath = OUT_DIR / "MutationResult";
   EXPECT_NO_THROW(Evaluator(ORI_DIR,
       SAMPLE_BASE).compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath));
 
-  auto mrPathForException = os::path::join(SAMPLE1_PATH,
-    "MutationResult");
+  auto mrPathForException = SAMPLE1_PATH / "MutationResult";
   EXPECT_THROW(Evaluator(ORI_DIR, SAMPLE_BASE).compareAndSaveMutationResult(
       *mutable1, MUT_DIR, mrPathForException), InvalidArgumentException);
 }
@@ -142,7 +139,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
   testing::internal::CaptureStdout();
-  auto mrPath = os::path::join(OUT_DIR, "MutationResult");
+  auto mrPath = OUT_DIR / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable1,
     MUT_DIR, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
@@ -156,14 +153,14 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   MRs.load(mrPath);
   auto mr = MRs[0];
   EXPECT_TRUE(mr.compare(result));
-  os::removeFile(mrPath);
+  fs::remove(mrPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
   testing::internal::CaptureStdout();
-  auto mrPath = os::path::join(OUT_DIR, "newDir", "MutationResult");
+  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     MUT_DIR_ALIVE, mrPath);
   std::string out2 = testing::internal::GetCapturedStdout();
@@ -177,7 +174,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   MRs.load(mrPath);
   auto mr = MRs[0];
   EXPECT_TRUE(mr.compare(result));
-  os::removeFile(mrPath);
+  fs::remove(mrPath);
 }
 
 }  // namespace sentinel

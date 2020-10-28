@@ -26,9 +26,12 @@
 #define TEST_HARNESS_GIT_HARNESS_GITHARNESS_HPP_
 
 #include <git2.h>
+#include <experimental/filesystem>
 #include <string>
 #include <vector>
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -174,7 +177,7 @@ class GitHarness {
   static void libgitErrorCheck(int error, const char* msg);
 
  private:
-  std::string repo_path;
+  fs::path repo_path;
   git_repository* repo;
   std::vector<git_oid> commit_ids;
 };

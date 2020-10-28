@@ -44,8 +44,8 @@ CommandMutate::CommandMutate(CLI::App* app) {
     "Mutant string")->required();
 }
 
-int CommandMutate::run(const std::string& sourceRoot,
-  const std::string& workDir, const std::string& outputDir,
+int CommandMutate::run(const fs::path& sourceRoot,
+  const fs::path& workDir, const fs::path& outputDir,
   bool verbose) {
   auto logger = Logger::getLogger(cCommandMutateLoggerName);
   sentinel::Mutant m;
@@ -54,7 +54,7 @@ int CommandMutate::run(const std::string& sourceRoot,
 
   if (verbose) {
     logger->info(fmt::format("mutant: {}", mMutantStr));
-    logger->info(fmt::format("backup dir: {}", workDir));
+    logger->info(fmt::format("backup dir: {}", workDir.string()));
   }
 
   sentinel::GitRepository repository(sourceRoot);

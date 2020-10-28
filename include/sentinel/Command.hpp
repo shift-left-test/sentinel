@@ -25,9 +25,12 @@
 #ifndef INCLUDE_SENTINEL_COMMAND_HPP_
 #define INCLUDE_SENTINEL_COMMAND_HPP_
 
+#include <experimental/filesystem>
 #include <string>
 #include <CLI11.hpp>
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -50,8 +53,8 @@ class Command {
    * @param verbose log verbosity
    * @return exit code
    */
-  virtual int run(const std::string& sourceRoot,
-    const std::string& workDir, const std::string& outputDir,
+  virtual int run(const fs::path& sourceRoot,
+    const fs::path& workDir, const fs::path& outputDir,
     bool verbose) = 0;
 
   /**

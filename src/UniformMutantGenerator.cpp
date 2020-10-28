@@ -81,7 +81,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
   for (const auto& line : sourceLines) {
     std::vector<Mutant> temp;
     auto pred = [&](const auto& m) {
-      return os::path::comparePath(m.getPath(), line.getPath()) &&
+      return fs::equivalent(m.getPath(), line.getPath()) &&
       m.getFirst().line <= line.getLineNumber() &&
       m.getLast().line >= line.getLineNumber();
     };
