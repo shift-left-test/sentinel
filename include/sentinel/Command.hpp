@@ -30,8 +30,6 @@
 #include <CLI11.hpp>
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -53,8 +51,9 @@ class Command {
    * @param verbose log verbosity
    * @return exit code
    */
-  virtual int run(const fs::path& sourceRoot,
-    const fs::path& workDir, const fs::path& outputDir,
+  virtual int run(const std::experimental::filesystem::path& sourceRoot,
+    const std::experimental::filesystem::path& workDir,
+    const std::experimental::filesystem::path& outputDir,
     bool verbose) = 0;
 
   /**

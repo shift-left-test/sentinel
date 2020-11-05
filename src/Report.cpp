@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <map>
 #include <set>
@@ -32,17 +33,21 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Report.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
+
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-Report::Report(const MutationResults& results, const fs::path& sourcePath) :
+Report::Report(const MutationResults& results,
+    const std::experimental::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mResults(results) {
   generateReport();
 }
 
-Report::Report(const fs::path& resultsPath, const fs::path& sourcePath) :
+Report::Report(const std::experimental::filesystem::path& resultsPath,
+    const std::experimental::filesystem::path& sourcePath) :
     mSourcePath(sourcePath) {
   mResults.load(resultsPath);
 
@@ -62,6 +67,7 @@ Report::~Report() {
 }
 
 void Report::generateReport() {
+  namespace fs = std::experimental::filesystem;
   if (!fs::exists(mSourcePath) || !fs::is_directory(mSourcePath)) {
     throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})",
                                                mSourcePath.string()));
@@ -70,7 +76,7 @@ void Report::generateReport() {
   totNumberOfMutation = mResults.size();
 
   for (const MutationResult& mr : mResults) {
-    fs::path mrPath = os::path::getRelativePath(mr.getMutant().getPath(),
+    fs::path mrPath = getRelativePath(mr.getMutant().getPath(),
                                             mSourcePath);
     std::string curDirname = mrPath.parent_path();
     curDirname = string::replaceAll(curDirname, "/", ".");
@@ -161,6 +167,39 @@ void Report::printSummary() {
                            std::to_string(finalCov) : std::string("-")) + "%",
                            clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+}
+
+fs::path Report::getRelativePath(
+    const std::string& path, const std::string& start) {
+  // 1. convert p and base to absolute paths
+  auto p = fs::canonical(path);
+  auto base = fs::canonical(start);
+
+  // 2. find first mismatch and shared root path
+  auto mismatched = std::mismatch(p.begin(), p.end(), base.begin(), base.end());
+
+  // 3. if no mismatch return "."
+  if (mismatched.first == p.end() && mismatched.second == base.end()) {
+      return ".";
+  }
+
+  auto it_p = mismatched.first;
+  auto it_base = mismatched.second;
+
+  fs::path ret;
+
+  // 4. iterate abase to the shared root and append "../"
+  for (; it_base != base.end(); ++it_base) {
+    if (!it_base->empty()) {
+      ret /= "..";
+    }
+  }
+
+  // 5. iterate from the shared root to the p and append its parts
+  for (; it_p != p.end(); ++it_p) {
+    ret /= *it_p;
+  }
+  return ret;
 }
 
 }  // namespace sentinel

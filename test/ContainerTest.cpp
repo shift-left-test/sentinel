@@ -23,11 +23,11 @@
 */
 
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include "sentinel/util/os.hpp"
 #include "sentinel/Container.hpp"
 
 
@@ -124,7 +124,9 @@ TEST_F(ContainerTest, testClear) {
 }
 
 TEST_F(ContainerTest, testSaveAndLoad) {
-  auto path = os::tempPath();
+  namespace fs = std::experimental::filesystem;
+  auto path = fs::temp_directory_path() / "SENTINEL_CONTAINERTEST_TMP_FILE";
+  fs::remove_all(path);
   integers.save(path);
   none.load(path);
   EXPECT_EQ(integers, none);

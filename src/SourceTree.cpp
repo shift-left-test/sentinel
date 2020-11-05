@@ -29,19 +29,19 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
 
-SourceTree::SourceTree(const fs::path& baseDirectory) :
+SourceTree::SourceTree(
+    const std::experimental::filesystem::path& baseDirectory) :
     mBaseDirectory(baseDirectory) {
-  if (!fs::exists(mBaseDirectory)) {
+  if (!std::experimental::filesystem::exists(mBaseDirectory)) {
     throw IOException(EINVAL);
   }
 }
 
-fs::path SourceTree::getBaseDirectory() const {
+std::experimental::filesystem::path SourceTree::getBaseDirectory() const {
   return mBaseDirectory;
 }
 

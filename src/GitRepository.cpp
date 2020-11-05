@@ -29,7 +29,6 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
@@ -99,6 +98,8 @@ class DiffData {
    * @param line line number
    */
   void addSourceLine(const std::string & file, int line) {
+    namespace fs = std::experimental::filesystem;
+
     fs::path filePath(mGitRepo->getSourceRoot());
     filePath.append(file);
     if (mGitRepo->isTargetPath(filePath)) {
@@ -167,6 +168,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree,
 GitRepository::GitRepository(const std::string& path,
   const std::vector<std::string>& extensions,
   const std::vector<std::string>& excludes) {
+  namespace fs = std::experimental::filesystem;
+
   git_libgit2_init();
 
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
@@ -194,8 +197,10 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
-bool GitRepository::isTargetPath(const fs::path &path,
-  bool checkExtension) {
+bool GitRepository::isTargetPath(
+  const std::experimental::filesystem::path &path, bool checkExtension) {
+  namespace fs = std::experimental::filesystem;
+
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   if (!this->mExcludes.empty()) {

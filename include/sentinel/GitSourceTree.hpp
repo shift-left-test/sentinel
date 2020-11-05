@@ -31,8 +31,6 @@
 #include "sentinel/SourceTree.hpp"
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -47,7 +45,8 @@ class GitSourceTree : public SourceTree {
    */
   explicit GitSourceTree(const std::string& baseDirectory);
 
-  void modify(const Mutant& info, const fs::path& backupPath) override;
+  void modify(const Mutant& info,
+      const std::experimental::filesystem::path& backupPath) override;
 };
 
 }  // namespace sentinel

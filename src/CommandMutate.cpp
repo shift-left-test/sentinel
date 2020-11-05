@@ -29,7 +29,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceTree.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/CommandMutate.hpp"
 
 
@@ -44,9 +43,9 @@ CommandMutate::CommandMutate(CLI::App* app) {
     "Mutant string")->required();
 }
 
-int CommandMutate::run(const fs::path& sourceRoot,
-  const fs::path& workDir, const fs::path& outputDir,
-  bool verbose) {
+int CommandMutate::run(const std::experimental::filesystem::path& sourceRoot,
+  const std::experimental::filesystem::path& workDir,
+  const std::experimental::filesystem::path& outputDir, bool verbose) {
   auto logger = Logger::getLogger(cCommandMutateLoggerName);
   sentinel::Mutant m;
   std::istringstream iss(mMutantStr);

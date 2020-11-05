@@ -25,8 +25,8 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include "SampleFileGeneratorForTest.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
-
 
 namespace sentinel {
 

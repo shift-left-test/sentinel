@@ -33,8 +33,6 @@
 #include "sentinel/Report.hpp"
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -64,7 +62,7 @@ class HTMLReport : public Report {
    * @param dirPath
    * @throw InvalidArgumentException when path is not directory
    */
-  void save(const fs::path& dirPath) override;
+  void save(const std::experimental::filesystem::path& dirPath) override;
 
  private:
   /**
@@ -79,17 +77,17 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeIndexHtml(
-      std::map<fs::path,
+      std::map<std::experimental::filesystem::path,
       std::tuple<std::vector<const MutationResult*>*,
                  std::size_t, std::size_t, std::size_t>* >*
       pGroupByDirPath,
-      std::map<fs::path,
+      std::map<std::experimental::filesystem::path,
       std::tuple<std::vector<const MutationResult*>*, std::size_t,
                  std::size_t>* >*
       pGroupByPath,
       std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
-      bool root, const fs::path& currentDirPath,
-      const fs::path& outputDir);
+      bool root, const std::experimental::filesystem::path& currentDirPath,
+      const std::experimental::filesystem::path& outputDir);
 
   /**
    * @brief makeSourceHtml
@@ -99,8 +97,9 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeSourceHtml(
-      std::vector<const MutationResult*>* MRs, const fs::path& srcPath,
-      const fs::path& outputDir);
+      std::vector<const MutationResult*>* MRs,
+      const std::experimental::filesystem::path& srcPath,
+      const std::experimental::filesystem::path& outputDir);
 };
 
 }  // namespace sentinel

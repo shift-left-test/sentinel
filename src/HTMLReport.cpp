@@ -36,7 +36,6 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -52,7 +51,9 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void HTMLReport::save(const fs::path& dirPath) {
+void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
+  namespace fs = std::experimental::filesystem;
+
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",
@@ -81,17 +82,18 @@ void HTMLReport::save(const fs::path& dirPath) {
 }
 
 void HTMLReport::makeIndexHtml(
-    std::map<fs::path,
+    std::map<std::experimental::filesystem::path,
     std::tuple<std::vector<const MutationResult*>*,
     std::size_t, std::size_t, std::size_t>* >*
     pGroupByDirPath,
-    std::map<fs::path,
+    std::map<std::experimental::filesystem::path,
     std::tuple<std::vector<const MutationResult*>*,
     std::size_t, std::size_t>* >*
     pGroupByPath,
     std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
-    bool root, const fs::path& currentDirPath,
-    const fs::path& outputDir) {
+    bool root, const std::experimental::filesystem::path& currentDirPath,
+    const std::experimental::filesystem::path& outputDir) {
+  namespace fs = std::experimental::filesystem;
 
   std::size_t sizeOfTargetFiles = 0;
   std::size_t numerator = 0;
@@ -159,8 +161,10 @@ void HTMLReport::makeIndexHtml(
 
 void HTMLReport::makeSourceHtml(
     std::vector<const MutationResult*>* MRs,
-    const fs::path& srcPath,
-    const fs::path& outputDir) {
+    const std::experimental::filesystem::path& srcPath,
+    const std::experimental::filesystem::path& outputDir) {
+  namespace fs = std::experimental::filesystem;
+
   auto absSrcPath = mSourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
     throw InvalidArgumentException(

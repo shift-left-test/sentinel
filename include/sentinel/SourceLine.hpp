@@ -29,8 +29,6 @@
 #include <string>
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -45,7 +43,8 @@ class SourceLine {
    *
    * @param lineNumber soure line number
    */
-  SourceLine(const fs::path& path, std::size_t lineNumber);
+  SourceLine(const std::experimental::filesystem::path& path,
+      std::size_t lineNumber);
 
   /**
    * @brief == operator overloading for std::find algorithm
@@ -53,14 +52,14 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator ==(const SourceLine& other) const {
-    return fs::equivalent(this->mPath, other.mPath)
+    return std::experimental::filesystem::equivalent(this->mPath, other.mPath)
       && this->mLineNumber == other.mLineNumber;
   }
 
   /**
    * @brief Return path to file
    */
-  fs::path getPath() const {
+  std::experimental::filesystem::path getPath() const {
     return mPath;
   }
 
@@ -72,7 +71,7 @@ class SourceLine {
   }
 
  private:
-  fs::path mPath;
+  std::experimental::filesystem::path mPath;
   std::size_t mLineNumber;
 };
 

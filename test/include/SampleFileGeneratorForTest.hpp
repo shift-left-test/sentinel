@@ -27,20 +27,21 @@
 
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
-#include <iostream>
+#include <fstream>
 #include <string>
-#include "sentinel/util/os.hpp"
 
-
-namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
 class  SampleFileGeneratorForTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    SAMPLE_BASE = os::tempDirectory("input");
-    SAMPLE1_DIR = os::tempDirectory(SAMPLE_BASE / "sample1");
+    namespace fs = std::experimental::filesystem;
+    SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR";
+    fs::remove_all(SAMPLE_BASE);
+    SAMPLE1_DIR = SAMPLE_BASE / "sample1";
+    fs::create_directories(SAMPLE1_DIR);
+
     SAMPLE1_NAME = "sample1.cpp";
     SAMPLE1_PATH = SAMPLE1_DIR / SAMPLE1_NAME;
     std::ofstream t(SAMPLE1_PATH);
@@ -49,12 +50,12 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    fs::remove_all(SAMPLE_BASE);
+    std::experimental::filesystem::remove_all(SAMPLE_BASE);
   }
 
-  fs::path SAMPLE_BASE;
-  fs::path SAMPLE1_PATH;
-  fs::path SAMPLE1_DIR;
+  std::experimental::filesystem::path SAMPLE_BASE;
+  std::experimental::filesystem::path SAMPLE1_DIR;
+  std::experimental::filesystem::path SAMPLE1_PATH;
   std::string SAMPLE1_NAME;
   std::string SAMPLE1_CONTENTS =
       R"a1s2d3f4(/*

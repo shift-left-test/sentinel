@@ -33,12 +33,11 @@
 #include "sentinel/CommandEvaluate.hpp"
 #include "sentinel/CommandReport.hpp"
 #include "sentinel/CommandStandAlone.hpp"
-#include "sentinel/util/os.hpp"
 
-
-namespace fs = std::experimental::filesystem;
 
 int main(int argc, char** argv) {
+  namespace fs = std::experimental::filesystem;
+
   CLI::App app("sentinel");
   app.set_help_all_flag("--help-all", "Expand all help");
 

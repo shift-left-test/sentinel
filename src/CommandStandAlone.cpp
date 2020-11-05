@@ -23,11 +23,11 @@
 */
 
 #include <fmt/core.h>
+#include <unistd.h>
 #include <experimental/filesystem>
 #include <cstdlib>
 #include <map>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
@@ -70,9 +70,12 @@ CommandStandAlone::CommandStandAlone(CLI::App* app) :
     "Test command output file extensions", true);
 }
 
-int CommandStandAlone::run(const fs::path& sourceRoot,
-  const fs::path& workDir, const fs::path& outputDir,
-  bool verbose) {
+int CommandStandAlone::run(
+  const std::experimental::filesystem::path& sourceRoot,
+  const std::experimental::filesystem::path& workDir,
+  const std::experimental::filesystem::path& outputDir, bool verbose) {
+  namespace fs = std::experimental::filesystem;
+
   auto logger = Logger::getLogger(cCommandStandAloneLoggerName);
   logger->info(fmt::format("build dir: {}", mBuildDir));
   logger->info(fmt::format("build cmd: {}", mBuildCmd));
@@ -163,25 +166,51 @@ int CommandStandAlone::run(const fs::path& sourceRoot,
 
 void CommandStandAlone::copyTestReportTo(const std::string& from,
   const std::string& to, const std::vector<std::string>& exts) {
-  auto xmlFiles = sentinel::os::findFilesInDirUsingExt(from, exts);
+  namespace fs = std::experimental::filesystem;
 
   fs::remove_all(to);
   fs::create_directories(to);
 
-  for (auto& xmlFile : xmlFiles) {
-    // TODO(daeseong.seong): keep relative directory of backupFile
-    fs::copy(xmlFile, to);
+  for (const auto& dirent : fs::recursive_directory_iterator(from)) {
+    const auto& curPath = dirent.path();
+    std::string curExt = curPath.extension().string();
+    std::transform(curExt.begin(), curExt.end(), curExt.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (fs::is_regular_file(curPath)) {
+      bool copyFlag = false;
+      if (exts.empty()) {
+        copyFlag = true;
+      } else {
+        for (const auto& t : exts) {
+          std::string tmp("." + t);
+          std::transform(tmp.begin(), tmp.end(), tmp.begin(),
+              [](unsigned char c) { return std::tolower(c); });
+          if (tmp == curExt) {
+            copyFlag = true;
+            break;
+          }
+        }
+      }
+
+      if (copyFlag) {
+        // TODO(daeseong.seong): keep relative directory of backupFile
+        fs::copy(curPath, to);
+      }
+    }
   }
 }
 
 void CommandStandAlone::restoreBackup(const std::string& backup,
   const std::string& srcRoot) {
-  auto backupFiles = sentinel::os::findFilesInDir(backup);
+  namespace fs = std::experimental::filesystem;
 
-  for (auto& backupFile : backupFiles) {
-    // TODO(daeseong.seong): keep relative directory of backupFile
-    fs::copy(backupFile, srcRoot, fs::copy_options::overwrite_existing);
-    fs::remove(backupFile);
+  for (const auto& dirent : fs::recursive_directory_iterator(backup)) {
+    const auto& backupFile = dirent.path();
+    if (fs::is_regular_file(backupFile)) {
+      // TODO(daeseong.seong): keep relative directory of backupFile
+      fs::copy(backupFile, srcRoot, fs::copy_options::overwrite_existing);
+      fs::remove(backupFile);
+    }
   }
 }
 }  // namespace sentinel

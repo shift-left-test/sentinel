@@ -28,7 +28,6 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/CommandReport.hpp"
 
@@ -44,9 +43,9 @@ CommandReport::CommandReport(CLI::App* app) {
     "Mutation test result file")->required();
 }
 
-int CommandReport::run(const fs::path& sourceRoot,
-  const fs::path& workDir, const fs::path& outputDir,
-  bool verbose) {
+int CommandReport::run(const std::experimental::filesystem::path& sourceRoot,
+  const std::experimental::filesystem::path& workDir,
+  const std::experimental::filesystem::path& outputDir, bool verbose) {
   auto logger = Logger::getLogger(cCommandReportLoggerName);
 
   logger->info(fmt::format("evaluation-file: {}", mEvalFile));

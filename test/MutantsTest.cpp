@@ -29,7 +29,6 @@
 #include <stdexcept>
 #include <string>
 #include "SampleFileGeneratorForTest.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/Mutants.hpp"
 
 

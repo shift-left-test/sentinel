@@ -22,13 +22,13 @@
   SOFTWARE.
 */
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
 #include <string>
 #include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -39,9 +39,12 @@ namespace sentinel {
 class ResultTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = os::tempDirectory("fixture");
-    ORI_DIR = os::tempDirectory(
-        BASE / "ori_dir");
+    BASE = fs::temp_directory_path() / "SENTINEL_RESULTTEST_TMP_DIR";
+    fs::remove_all(BASE);
+    fs::create_directories(BASE);
+
+    ORI_DIR = BASE / "ori_dir";
+    fs::create_directories(ORI_DIR);
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
   }
@@ -52,19 +55,20 @@ class ResultTest : public ::testing::Test {
 
   void MAKE_RESULT_XML(const fs::path& dirPath,
       const std::string& fileContent) {
-    std::string tmp = os::tempFilename(
-        dirPath / "pre", ".xml");
+    static int inc = 0;
     std::ofstream tmpfile;
-    tmpfile.open(tmp.c_str());
+    tmpfile.open(dirPath / fmt::format("tmp{0}.xml", inc++));
     tmpfile << fileContent.c_str();
     tmpfile.close();
   }
 
   void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& givenXMLContents,
       const std::string& targetTag, const std::string& ignoreTag = "") {
+    static int inc = 0;
     std::string XMLContents = givenXMLContents;
-    std::string MUT_DIR = os::tempDirectory(
-        BASE / "mut_dir");
+    auto MUT_DIR = BASE /
+        fmt::format("mut_dir_make_and_test_wrong_result_xml_{0}", inc++);
+    fs::create_directories(MUT_DIR);
     std::string tmpTag = "1A2B3C4D5F";
 
     if (!ignoreTag.empty()) {
@@ -88,7 +92,7 @@ class ResultTest : public ::testing::Test {
   }
 
   fs::path BASE;
-  std::string ORI_DIR;
+  fs::path ORI_DIR;
   std::string TC1 =
       R"(<?xml version="1.0" encoding="UTF-8"?>
 <testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
@@ -158,8 +162,9 @@ class ResultTest : public ::testing::Test {
 };
 
 TEST_F(ResultTest, testResultWithAliveMutation) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_alive_mutation";
+  fs::create_directories(MUT_DIR);
+
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
   Result ori(ORI_DIR);
@@ -168,8 +173,9 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
 }
 
 TEST_F(ResultTest, testResultWithKillMutation) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation";
+  fs::create_directories(MUT_DIR);
+
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   Result ori(ORI_DIR);
@@ -178,10 +184,10 @@ TEST_F(ResultTest, testResultWithKillMutation) {
 }
 
 TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
-  std::string QT5_RESULT = os::tempDirectory(
-      BASE / "ori_dir");
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto QT5_RESULT = BASE / "qt_ori_dir";
+  fs::create_directories(QT5_RESULT);
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation_using_qt_test_result";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(QT5_RESULT, TC4_QT);
   MAKE_RESULT_XML(MUT_DIR, TC4_QT_FAIL);
 
@@ -193,8 +199,8 @@ TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_alive_mutation_add_new_tc";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
   MAKE_RESULT_XML(MUT_DIR, TC3);
@@ -204,8 +210,8 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
 }
 
 TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation_add_new_tc";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   MAKE_RESULT_XML(MUT_DIR, TC3);
@@ -215,8 +221,8 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation_error_tc";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
@@ -224,8 +230,8 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
 }
 
 TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation_error_tc_and_add_new_tc";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
@@ -234,16 +240,16 @@ TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
 }
 
 TEST_F(ResultTest, testResultWithEmptyMutationDir) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_empty_mutation_dir";
+  fs::create_directories(MUT_DIR);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
   EXPECT_EQ(Result::kill(ori, mut), "C1.TC1, C2.TC2");
 }
 
 TEST_F(ResultTest, testResultWithWrongXMLFmt) {
-  std::string MUT_DIR = os::tempDirectory(
-      BASE / "mut_dir");
+  auto MUT_DIR = BASE / "mut_dir_kill_wrong_xml_fmt";
+  fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
 
   Logger::setLevel(Logger::Level::DEBUG);

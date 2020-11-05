@@ -28,7 +28,6 @@
 #include <map>
 #include "sentinel/CommandPopulate.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
@@ -62,9 +61,9 @@ CommandPopulate::CommandPopulate(CLI::App* app) :
     "Populated result file name which will be created at output-dir.", true);
 }
 
-int CommandPopulate::run(const fs::path& sourceRoot,
-  const fs::path& workDir, const fs::path& outputDir,
-  bool verbose) {
+int CommandPopulate::run(const std::experimental::filesystem::path& sourceRoot,
+  const std::experimental::filesystem::path& workDir,
+  const std::experimental::filesystem::path& outputDir, bool verbose) {
   auto logger = Logger::getLogger(cCommandPopulateLoggerName);
   if (verbose) {
     logger->info(fmt::format("source root:{}", sourceRoot.string()));

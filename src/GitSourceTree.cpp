@@ -30,7 +30,6 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/GitSourceTree.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/Logger.hpp"
 
 
@@ -41,7 +40,10 @@ GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
     SourceTree(baseDirectory) {
 }
 
-void GitSourceTree::modify(const Mutant& info, const fs::path& backupPath) {
+void GitSourceTree::modify(const Mutant& info,
+    const std::experimental::filesystem::path& backupPath) {
+  namespace fs = std::experimental::filesystem;
+
   // Backup target file to be mutated
   auto logger = Logger::getLogger(cGitSourceTreeLoggerName);
 

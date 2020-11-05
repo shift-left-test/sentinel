@@ -32,7 +32,6 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutant.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace fs = std::experimental::filesystem;
@@ -43,8 +42,12 @@ class MutationResultsTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(BASE / "ORI_DIR");
+
+    BASE =
+        fs::temp_directory_path() / "SENTINEL_MUTATIONRESULTSTEST_TMP_DIR";
+    fs::remove_all(BASE);
+    OUT_DIR = BASE / "ORI_DIR";
+    fs::create_directories(OUT_DIR);
     TARGET_FILE = SAMPLE1_PATH;
   }
 

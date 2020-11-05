@@ -33,8 +33,6 @@
 #include "sentinel/util/string.hpp"
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -115,7 +113,7 @@ class Mutant {
    *
    * @return path to the file
    */
-  fs::path getPath() const;
+  std::experimental::filesystem::path getPath() const;
 
   /**
    * @brief Return the namespace, class containing mutation location.
@@ -164,7 +162,7 @@ class Mutant {
 
  private:
   std::string mOperator;
-  fs::path mPath;
+  std::experimental::filesystem::path mPath;
   std::string mClass;
   std::string mFunction;
   std::string mQualifiedFunction;

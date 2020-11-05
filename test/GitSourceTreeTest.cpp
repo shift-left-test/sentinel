@@ -28,7 +28,6 @@
 #include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace fs = std::experimental::filesystem;
@@ -39,8 +38,11 @@ class GitSourceTreeTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE_DIR = os::tempDirectory("fixture");
-    TMP_FILE_PATH = os::tempPath(BASE_DIR.string() + "/");
+    BASE_DIR =
+        fs::temp_directory_path() / "SENTINEL_GITSOURCETREETEST_TMP_DIR";
+    fs::remove_all(BASE_DIR);
+    fs::create_directories(BASE_DIR);
+    TMP_FILE_PATH = BASE_DIR / "sample1.cpp";
     TMP_FILE_NAME = TMP_FILE_PATH.filename();
     fs::copy(SAMPLE1_PATH, TMP_FILE_PATH);
   }
@@ -118,18 +120,19 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
 
 TEST_F(GitSourceTreeTest, testBackupWorks) {
   // create a temporary copy of target file
-  fs::path tempSubDirPath = os::tempPath(BASE_DIR.string() + "/");
+  auto tempSubDirPath = BASE_DIR / "SUB_DIR";
   std::string tempSubDirName = tempSubDirPath.filename();
   fs::create_directories(tempSubDirPath);
 
-  fs::path tempFilename = os::tempFilename(tempSubDirPath.string() + "/");
+  auto tempFilename = tempSubDirPath / "TMP_FILE";
   std::string filename = tempFilename.filename();
   fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
   Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
             58, 29, 58, 31, "||"};
   GitSourceTree tree(BASE_DIR);
-  fs::path backupPath = os::tempDirectory(BASE_DIR.string() + "/");
+  auto backupPath = BASE_DIR / "BACKUP_DIR";
+  fs::create_directories(backupPath);
 
   tree.modify(m, backupPath);
 

@@ -49,9 +49,9 @@ CommandEvaluate::CommandEvaluate(CLI::App* app) :
     "Evaluated output filename(joined with output-dir)", true);
 }
 
-int CommandEvaluate::run(const fs::path& sourceRoot,
-  const fs::path& workDir, const fs::path& outputDir,
-  bool verbose) {
+int CommandEvaluate::run(const std::experimental::filesystem::path& sourceRoot,
+  const std::experimental::filesystem::path& workDir,
+  const std::experimental::filesystem::path& outputDir, bool verbose) {
   auto logger = Logger::getLogger(cCommandEvaluateLoggerName);
   sentinel::Mutant m;
   std::istringstream iss(mMutantStr);

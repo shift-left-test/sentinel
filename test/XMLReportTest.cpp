@@ -31,7 +31,6 @@
 #include <sstream>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/XMLReport.hpp"
 
@@ -43,22 +42,28 @@ namespace sentinel {
 class XMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
+    BASE =
+        fs::temp_directory_path() / "SENTINEL_XMLREPORTTEST_TMP_DIR";
+    fs::remove_all(BASE);
 
-    MUT_RESULT_DIR = os::tempDirectory(BASE / "MUT_RESLUT_DIR");
+    OUT_DIR = BASE / "OUT_DIR";
+    fs::create_directories(OUT_DIR);
 
-    SOURCE_DIR = os::tempDirectory(BASE / "SOURCE_DIR");
+    MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR";
+    fs::create_directories(MUT_RESULT_DIR);
 
-    fs::path NESTED_SOURCE_DIR = os::tempDirectory(
-      SOURCE_DIR / "NESTED_DIR");
+    SOURCE_DIR = BASE / "SOURCE_DIR";
+    auto NESTED_SOURCE_DIR = SOURCE_DIR / "NESTED_DIR";
+    fs::create_directories(NESTED_SOURCE_DIR);
 
-    TARGET_FULL_PATH = os::tempFilename(
-        SOURCE_DIR.string() + "/", ".cpp");
+    TARGET_FULL_PATH = SOURCE_DIR / "file1.cpp";
     std::string TARGET_NAME = TARGET_FULL_PATH.filename();
-    TARGET_FULL_PATH2 = os::tempFilename(
-        NESTED_SOURCE_DIR.string() + "/", ".cpp");
+    std::ofstream(TARGET_FULL_PATH).close();
+
+    TARGET_FULL_PATH2 = NESTED_SOURCE_DIR / "file2.cpp";
     std::string TARGET_NAME2 = TARGET_FULL_PATH2.filename();
+    std::ofstream(TARGET_FULL_PATH2).close();
+
     EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
         TARGET_NAME, TARGET_FULL_PATH.filename().string(),
         TARGET_NAME2, NESTED_SOURCE_DIR.filename().string() + "/" +
@@ -116,11 +121,11 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   XMLReport xmlreport(MRPath, SOURCE_DIR);
 
   xmlreport.save(OUT_DIR);
-  auto mutationXMLPath = os::findFilesInDirUsingRgx(OUT_DIR,
-      std::regex(".*mutations.xml"));
-  EXPECT_EQ(1, mutationXMLPath.size());
 
-  std::ifstream t(mutationXMLPath[0]);
+  auto outXMLPath = OUT_DIR / "mutations.xml";
+  EXPECT_TRUE(fs::exists(outXMLPath));
+
+  std::ifstream t(outXMLPath);
   std::stringstream buffer;
   buffer << t.rdbuf();
   std::string mutationXMLContent = buffer.str();

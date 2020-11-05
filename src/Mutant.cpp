@@ -28,7 +28,6 @@
 #include <string>
 #include <utility>
 #include "sentinel/Mutant.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -42,7 +41,7 @@ Mutant::Mutant(const std::string& mutationOperator,
                  std::size_t firstLine, std::size_t firstColumn,
                  std::size_t lastLine, std::size_t lastColumn,
                  const std::string& token) :
-    mPath(fs::canonical(path)), mToken(token),
+    mPath(std::experimental::filesystem::canonical(path)), mToken(token),
     mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
   std::size_t pos = qualifiedFuncName.find_last_of("::");
@@ -56,6 +55,8 @@ Mutant::Mutant(const std::string& mutationOperator,
 }
 
 bool Mutant::compare(const Mutant& other) const {
+  namespace fs = std::experimental::filesystem;
+
   return mOperator == other.getOperator() &&
       fs::equivalent(mPath, other.getPath()) &&
       mFirst.line == other.getFirst().line &&
@@ -69,7 +70,7 @@ std::string Mutant::getOperator() const {
   return mOperator;
 }
 
-fs::path Mutant::getPath() const {
+std::experimental::filesystem::path Mutant::getPath() const {
   return mPath;
 }
 

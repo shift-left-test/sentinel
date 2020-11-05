@@ -29,7 +29,7 @@ link_directories(${LLVM_LIBRARY_DIRS})
 
 build_test_program(
   NAME unittest
-  SRCS GitHarnessTest.cpp StringTest.cpp OsTest.cpp ExceptionTest.cpp
+  SRCS GitHarnessTest.cpp StringTest.cpp ExceptionTest.cpp
        GitRepositoryTest.cpp ResultTest.cpp MutantsTest.cpp
        LoggerTest.cpp UniformMutantGeneratorTest.cpp MutationResultsTest.cpp
        MutationFactoryTest.cpp EvaluatorTest.cpp

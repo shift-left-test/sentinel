@@ -35,7 +35,6 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Mutant.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -47,25 +46,31 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE = os::tempDirectory("fixture");
-    OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
+    BASE = fs::temp_directory_path() / "SENTINEL_EVALUATORTEST_TMP_DIR";
+    fs::remove_all(BASE);
 
-    ORI_DIR = os::tempDirectory(BASE / "ORI_DIR");
+    OUT_DIR = BASE / "OUT_DIR";
+    fs::create_directories(OUT_DIR);
+    ORI_DIR = BASE / "ORI_DIR";
+    fs::create_directories(ORI_DIR);
+
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
 
-    MUT_DIR = os::tempDirectory(BASE / "MUT_DIR");
+    MUT_DIR = BASE / "MUT_DIR";
+    fs::create_directories(MUT_DIR);
     MAKE_RESULT_XML(MUT_DIR, TC1);
     MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
 
-    MUT_DIR_ALIVE = os::tempDirectory(BASE / "MUT_DIR_ALIVE");
+    MUT_DIR_ALIVE = BASE / "MUT_DIR_ALIVE";
+    fs::create_directories(MUT_DIR_ALIVE);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
     MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
 
     mutable1 = new Mutant("AOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
-    std::string SAMPLE1_CLONE_PATH = os::tempPath(
-        SAMPLE1_DIR / "veryVeryVeryLongSampleFile", ".cpp");
+    auto SAMPLE1_CLONE_PATH =
+      SAMPLE1_DIR / "veryVeryVeryVeryVeryVeryVeryVeryVeryLongSampleFile.cpp";
     fs::copy(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
     mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH,
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
@@ -80,7 +85,7 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 
   void MAKE_RESULT_XML(const fs::path& dirPath,
       const std::string& fileContent) {
-    std::string tmp = os::tempFilename(dirPath / "pre", ".xml");
+    auto tmp = dirPath / "pre.xml";
     std::ofstream tmpfile;
     tmpfile.open(tmp.c_str());
     tmpfile << fileContent.c_str();

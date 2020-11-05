@@ -32,7 +32,6 @@
 #include "sentinel/Mutants.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SourceLines.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace sentinel {
@@ -45,6 +44,8 @@ MutationFactory::MutationFactory(
 Mutants MutationFactory::populate(const std::string& gitPath,
                                    const SourceLines& sourceLines,
                                    std::size_t maxMutants) {
+  namespace fs = std::experimental::filesystem;
+
   auto logger = Logger::getLogger("populate");
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants);
 

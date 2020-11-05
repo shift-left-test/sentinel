@@ -28,7 +28,6 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/XMLReport.hpp"
 
 
@@ -44,7 +43,9 @@ XMLReport::XMLReport(const std::string& resultsPath,
     Report(resultsPath, sourcePath) {
 }
 
-void XMLReport::save(const fs::path& dirPath) {
+void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
+  namespace fs = std::experimental::filesystem;
+
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})",
@@ -69,8 +70,7 @@ void XMLReport::save(const fs::path& dirPath) {
     addChildToParent(doc, pMutation, "sourceFile",
         r.getMutant().getPath().filename());
     addChildToParent(doc, pMutation, "sourceFilePath",
-                     os::path::getRelativePath(r.getMutant().getPath(),
-                                               mSourcePath));
+                     getRelativePath(r.getMutant().getPath(), mSourcePath));
     addChildToParent(doc, pMutation, "mutatedClass", r.getMutant().getClass());
     addChildToParent(doc, pMutation, "mutatedMethod",
                      r.getMutant().getFunction());

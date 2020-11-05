@@ -33,8 +33,6 @@
 #include "sentinel/MutationResults.hpp"
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 /**
@@ -50,7 +48,8 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const MutationResults& results, const fs::path& sourcePath);
+  Report(const MutationResults& results,
+      const std::experimental::filesystem::path& sourcePath);
 
   /**
    * @brief Default Constructor
@@ -60,7 +59,8 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const fs::path& resultsPath, const fs::path& sourcePath);
+  Report(const std::experimental::filesystem::path& resultsPath,
+      const std::experimental::filesystem::path& sourcePath);
   /**
    * @brief Default Destructor
    */
@@ -70,7 +70,7 @@ class Report {
    *
    * @param path to save the report
    */
-  virtual void save(const fs::path& path) = 0;
+  virtual void save(const std::experimental::filesystem::path& path) = 0;
 
   /**
    * @brief Print summury of report
@@ -82,20 +82,30 @@ class Report {
 
  protected:
   /**
+   * @brief Return the relative path from start dir
+   *
+   * @param path target path
+   * @param start start dir
+   * @return the relative path from start dir
+   */
+  std::experimental::filesystem::path getRelativePath(
+      const std::string& path, const std::string& start);
+
+  /**
    * @brief MutationResults instance
    */
   MutationResults mResults;
   /**
    * @brief group MutationReuslt by Directory
    */
-  std::map<fs::path,
+  std::map<std::experimental::filesystem::path,
       std::tuple<std::vector<const MutationResult*>*, std::size_t,
                  std::size_t, std::size_t>* > groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
-  std::map<fs::path,
+  std::map<std::experimental::filesystem::path,
       std::tuple<std::vector<const MutationResult*>*,
                  std::size_t, std::size_t>* > groupByPath;
 
@@ -112,7 +122,7 @@ class Report {
   /**
    * @brief path of source directory
    */
-  fs::path mSourcePath;
+  std::experimental::filesystem::path mSourcePath;
 };
 
 }  // namespace sentinel

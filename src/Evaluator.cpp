@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -32,8 +33,9 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -52,11 +54,35 @@ MutationResult Evaluator::compare(const Mutant& mut,
   std::string killingTC = Result::kill(mExpectedResult, mActualResult);
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
 
+  fs::path relPath;
+
+  auto p = fs::canonical(mut.getPath());
+  auto base = fs::canonical(mSourcePath);
+
+  auto mismatched = std::mismatch(p.begin(), p.end(), base.begin(), base.end());
+
+  if (mismatched.first == p.end() && mismatched.second == base.end()) {
+    relPath /= ".";
+  } else {
+    auto it_p = mismatched.first;
+    auto it_base = mismatched.second;
+
+    for (; it_base != base.end(); ++it_base) {
+      if (!it_base->empty()) {
+        relPath /= "..";
+      }
+    }
+
+    for (; it_p != p.end(); ++it_p) {
+      relPath /= *it_p;
+    }
+  }
+
+
   std::size_t flen = 60;
   std::string mutLoc = fmt::format(
       "{path} ({sl}:{sc}-{el}:{ec})",
-      fmt::arg("path", os::path::getRelativePath(
-      mut.getPath(), mSourcePath).string()),
+      fmt::arg("path", relPath.string()),
       fmt::arg("sl", mut.getFirst().line),
       fmt::arg("sc", mut.getFirst().column),
       fmt::arg("el", mut.getLast().line),
@@ -88,7 +114,8 @@ MutationResult Evaluator::compare(const Mutant& mut,
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
-    const fs::path& ActualResultDir, const fs::path& evalFilePath) {
+    const std::experimental::filesystem::path& ActualResultDir,
+    const std::experimental::filesystem::path& evalFilePath) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {

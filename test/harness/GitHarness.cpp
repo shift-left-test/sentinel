@@ -32,9 +32,10 @@
 #include <iostream>
 #include <stdexcept>
 #include "git-harness/GitHarness.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 

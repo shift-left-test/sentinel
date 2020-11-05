@@ -30,8 +30,6 @@
 #include "sentinel/Mutant.hpp"
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 class Mutant;
@@ -46,7 +44,7 @@ class SourceTree {
    *
    * @param baseDirectory repository directory
    */
-  explicit SourceTree(const fs::path& baseDirectory);
+  explicit SourceTree(const std::experimental::filesystem::path& baseDirectory);
 
   /**
    * @brief Modify the source with respect to the given mutable information
@@ -54,7 +52,8 @@ class SourceTree {
    * @param info Mutant information
    * @param backupPath backup directory
    */
-  virtual void modify(const Mutant& info, const fs::path& backupPath) = 0;
+  virtual void modify(const Mutant& info,
+      const std::experimental::filesystem::path& backupPath) = 0;
 
  protected:
   /**
@@ -62,10 +61,10 @@ class SourceTree {
    *
    * @return base directory
    */
-  fs::path getBaseDirectory() const;
+  std::experimental::filesystem::path getBaseDirectory() const;
 
  private:
-  fs::path mBaseDirectory;
+  std::experimental::filesystem::path mBaseDirectory;
 };
 
 }  // namespace sentinel

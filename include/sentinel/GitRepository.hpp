@@ -69,7 +69,9 @@ class GitRepository : public Repository {
   /**
    * @brief Return absolute root path
    */
-  const fs::path& getSourceRoot() { return mSourceRoot; }
+  const std::experimental::filesystem::path& getSourceRoot() {
+    return mSourceRoot;
+  }
 
   /**
    * @brief Return path is target path for getSourceLines
@@ -81,11 +83,11 @@ class GitRepository : public Repository {
    * 
    * @return return true if path is valid sourceline target.
    */
-  bool isTargetPath(const fs::path &path,
+  bool isTargetPath(const std::experimental::filesystem::path &path,
     bool checkExtension = true);
 
  private:
-  fs::path mSourceRoot;
+  std::experimental::filesystem::path mSourceRoot;
   std::vector<std::string> mExtensions;
   std::vector<std::string> mExcludes;
 };

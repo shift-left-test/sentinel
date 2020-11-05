@@ -28,7 +28,6 @@
 #include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
-#include "sentinel/util/os.hpp"
 
 namespace sentinel {
 

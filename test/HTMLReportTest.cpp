@@ -32,7 +32,6 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/os.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -43,23 +42,23 @@ namespace sentinel {
 class HTMLReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = os::tempDirectory("fixture");
+    BASE = fs::temp_directory_path() / "SENTINEL_HTMLREPORTTEST_TMP_DIR";
+    fs::remove_all(BASE);
 
-    SOURCE_DIR = os::tempDirectory(BASE / "SOURCE_DIR");
+    SOURCE_DIR = BASE / "SOURCE_DIR";
+    fs::create_directories(SOURCE_DIR);
+    NESTED_SOURCE_DIR = SOURCE_DIR / "NESTED_DIR1/NESTED_DIR";
+    fs::create_directories(NESTED_SOURCE_DIR);
+    NESTED_SOURCE_DIR2 = SOURCE_DIR / "NESTED_DIR2";
+    fs::create_directories(NESTED_SOURCE_DIR2);
 
-    NESTED_SOURCE_DIR = os::tempDirectory(SOURCE_DIR / "NESTED_DIR1");
 
-    NESTED_SOURCE_DIR2 = os::tempDirectory(SOURCE_DIR / "NESTED_DIR2");
-
-    TARGET_FULL_PATH = os::tempFilename(
-        NESTED_SOURCE_DIR / "target1_verylongFilePath"
-        , ".cpp");
+    TARGET_FULL_PATH =
+        NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
-    TARGET_FULL_PATH2 = os::tempFilename(
-        NESTED_SOURCE_DIR2 / "target2", ".cpp");
+    TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
     writeFile(TARGET_FULL_PATH2, TARGET_CONTENT2);
-    TARGET_FULL_PATH3 = os::tempFilename(
-        NESTED_SOURCE_DIR2 / "target3", ".cpp");
+    TARGET_FULL_PATH3 = NESTED_SOURCE_DIR2 / "target3.cpp";
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
   }
 
@@ -69,6 +68,8 @@ class HTMLReportTest : public ::testing::Test {
 
   void readFileAndCompareExpected(const std::string& path,
       const std::string& expectedContents) {
+    EXPECT_TRUE(fs::exists(path));
+
     std::ifstream t(path);
     std::stringstream buffer;
     buffer << t.rdbuf();
@@ -712,8 +713,8 @@ int minus(int a, int b){
 };
 
 TEST_F(HTMLReportTest, testPrintEmptyReport) {
-  fs::path MUT_RESULT_DIR = os::tempDirectory(
-      BASE / "MUT_RESLUT_DIR");
+  auto MUT_RESULT_DIR = BASE / "MUT_RESLUT_DIR";
+  fs::create_directories(MUT_RESULT_DIR);
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
 
   HTMLReport htmlreport(MRPath, SOURCE_DIR);
@@ -724,24 +725,24 @@ TEST_F(HTMLReportTest, testPrintEmptyReport) {
 }
 
 TEST_F(HTMLReportTest, testMakeHTMLReport) {
-  std::string OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
+  auto OUT_DIR = BASE / "OUT_DIR_MAKEHTMLREPORT";
+  fs::create_directories(OUT_DIR);
 
-  fs::path MUT_RESULT_DIR = os::tempDirectory(
-      BASE / "MUT_RESULT_DIR");
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR";
+  fs::create_directories(MUT_RESULT_DIR);
 
-  std::string NESTED_DIR1_DOT = string::replaceAll(
-      os::path::getRelativePath(NESTED_SOURCE_DIR, SOURCE_DIR), "/", ".");
-  std::string NESTED_DIR2_DOT = string::replaceAll(
-      os::path::getRelativePath(NESTED_SOURCE_DIR2, SOURCE_DIR), "/", ".");
-
+  std::string nestedSourceDir =
+    NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
+    NESTED_SOURCE_DIR.filename().string();
 
   std::string ROOT_INDEX_HTML_CONTENTS = fmt::format(
-      ORI_ROOT_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT, NESTED_DIR2_DOT);
+      ORI_ROOT_INDEX_HTML_CONTENTS, nestedSourceDir,
+      NESTED_SOURCE_DIR2.filename().string());
   std::string NESTED1_INDEX_HTML_CONTENTS = fmt::format(
-      ORI_NESTED1_INDEX_HTML_CONTENTS, NESTED_DIR1_DOT,
+      ORI_NESTED1_INDEX_HTML_CONTENTS, nestedSourceDir,
       TARGET_FULL_PATH.filename().string());
   std::string NESTED2_INDEX_HTML_CONTENTS = fmt::format(
-      ORI_NESTED2_INDEX_HTML_CONTENTS, NESTED_DIR2_DOT,
+      ORI_NESTED2_INDEX_HTML_CONTENTS, NESTED_SOURCE_DIR2.filename().string(),
       TARGET_FULL_PATH2.filename().string(),
       TARGET_FULL_PATH3.filename().string());
 
@@ -783,58 +784,26 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
 
   htmlreport.save(OUT_DIR);
 
-  auto mutationHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
-      std::regex(".*index\\.html"));
-  EXPECT_EQ(3, mutationHtmlPath.size());
+  readFileAndCompareExpected(OUT_DIR / "index.html",
+      ROOT_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(
+      OUT_DIR / nestedSourceDir / "index.html",
+      NESTED1_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(
+      OUT_DIR / NESTED_SOURCE_DIR2.filename() / "index.html",
+      NESTED2_INDEX_HTML_CONTENTS);
 
-  bool NESTED1_INDEX_HTML_EXIST = false;
-  bool NESTED2_INDEX_HTML_EXIST = false;
-  bool ROOT_INDEX_HTML_EXIST = false;
-
-  for (const auto& mp : mutationHtmlPath) {
-    if (string::contains(mp, "NESTED_DIR1")) {
-      readFileAndCompareExpected(mp, NESTED1_INDEX_HTML_CONTENTS);
-      NESTED1_INDEX_HTML_EXIST = true;
-    } else if (string::contains(mp, "NESTED_DIR2")) {
-      readFileAndCompareExpected(mp, NESTED2_INDEX_HTML_CONTENTS);
-      NESTED2_INDEX_HTML_EXIST = true;
-    } else if (!string::contains(mp, "NESTED_DIR") &&
-        string::contains(mp, "OUT_DIR")) {
-      readFileAndCompareExpected(mp, ROOT_INDEX_HTML_CONTENTS);
-      ROOT_INDEX_HTML_EXIST = true;
-    }
-  }
-
-  EXPECT_TRUE(NESTED1_INDEX_HTML_EXIST && NESTED2_INDEX_HTML_EXIST &&
-              ROOT_INDEX_HTML_EXIST);
-
-  auto srcHtmlPath = os::findFilesInDirUsingRgx(OUT_DIR,
-      std::regex(".*target.*\\.cpp\\.html"));
-  EXPECT_EQ(3, srcHtmlPath.size());
-
-  bool TARGET1_HTML_EXIST = false;
-  bool TARGET2_HTML_EXIST = false;
-  bool TARGET3_HTML_EXIST = false;
-
-  for (const auto& ms : srcHtmlPath) {
-    if (string::contains(ms, "target1")) {
-      readFileAndCompareExpected(ms, TARGET1_HTML_CONTENTS);
-      TARGET1_HTML_EXIST = true;
-    } else if (string::contains(ms, "target2")) {
-      readFileAndCompareExpected(ms, TARGET2_HTML_CONTENTS);
-      TARGET2_HTML_EXIST = true;
-    } else if (string::contains(ms, "target3")) {
-      readFileAndCompareExpected(ms, TARGET3_HTML_CONTENTS);
-      TARGET3_HTML_EXIST = true;
-    }
-  }
-
-  EXPECT_TRUE(TARGET1_HTML_EXIST && TARGET2_HTML_EXIST && TARGET3_HTML_EXIST);
+  readFileAndCompareExpected(OUT_DIR / nestedSourceDir /
+      (TARGET_FULL_PATH.filename().string() + ".html"), TARGET1_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / NESTED_SOURCE_DIR2.filename() /
+      (TARGET_FULL_PATH2.filename().string() + ".html"), TARGET2_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / NESTED_SOURCE_DIR2.filename() /
+      (TARGET_FULL_PATH3.filename().string() + ".html"), TARGET3_HTML_CONTENTS);
 
   testing::internal::CaptureStdout();
   htmlreport.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "... IR1"));
+  EXPECT_TRUE(string::contains(out, "... "));
   EXPECT_TRUE(string::contains(out, "      0         1        0%"));
   EXPECT_TRUE(string::contains(out, "      1         1      100%"));
   EXPECT_TRUE(string::contains(out, "      1         2       50%"));
@@ -861,16 +830,21 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   ASSERT_TRUE(fs::exists("unknown"));
   fs::remove_all("unknown");
 
+  std::string nestedSourceDir =
+    NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
+    NESTED_SOURCE_DIR.filename().string();
 
-  fs::path OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
-  std::string ERR_FILE = OUT_DIR / NESTED_SOURCE_DIR.filename();
+  auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDDIRPATHGIVEN";
+  fs::create_directories(OUT_DIR);
+  auto ERR_FILE = OUT_DIR / nestedSourceDir;
   std::ofstream(ERR_FILE).close();
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
 
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
-  fs::path OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
-  fs::path tmpPath = TARGET_FULL_PATH;
+  auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDSOURCEPATH";
+  fs::create_directories(OUT_DIR);
+  auto tmpPath = TARGET_FULL_PATH;
   tmpPath.concat("_tmpPath");
   fs::copy(TARGET_FULL_PATH, tmpPath);
   Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
@@ -886,7 +860,8 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
 }
 
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
-  std::string OUT_DIR = os::tempDirectory(BASE / "OUT_DIR");
+  auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER";
+  fs::create_directories(OUT_DIR);
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              0, 12, 2, 13, "+");
   MutationResult MR1(M1, "", false);
@@ -897,7 +872,8 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   HTMLReport htmlreport(MRs, SOURCE_DIR);
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 
-  std::string OUT_DIR2 = os::tempDirectory(BASE / "OUT_DIR");
+  auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
+  fs::create_directories(OUT_DIR2);
   Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              1000, 12, 1000, 13, "+");
   MutationResult MR2(M2, "", false);

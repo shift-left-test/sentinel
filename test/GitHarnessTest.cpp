@@ -30,7 +30,6 @@
 #include <stdexcept>
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/os.hpp"
 
 
 namespace fs = std::experimental::filesystem;
@@ -40,7 +39,9 @@ namespace sentinel {
 class GitHarnessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name = os::tempPath("GitHarnessTest-");
+    repo_name =
+        fs::temp_directory_path() / "SENTINEL_GITHARNESSTEST_TMP_DIR";
+    fs::remove_all(repo_name);
     repo = std::make_shared<GitHarness>(repo_name);
   }
 

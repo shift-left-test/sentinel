@@ -24,13 +24,15 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
+#include <experimental/filesystem>
 #include <algorithm>
 #include <vector>
 #include <string>
 #include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/os.hpp"
 
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -39,68 +41,75 @@ Result::Result(const std::string& path) :
   std::vector<std::string> failedFiles;
   std::string logFormat =
       "This file doesn't follow googletest result format: {}";
-  auto xmlFiles = os::findFilesInDirUsingExt(path, {"xml"});
 
   // gtest result format
-  for (const std::string& xmlPath : xmlFiles) {
-    failedFiles.push_back(xmlPath);
-    std::vector<std::string> tmpPassedTC;
-    tinyxml2::XMLDocument doc;
-    auto errcode = doc.LoadFile(xmlPath.c_str());
-    if (errcode != 0) {
-      mLogger->debug(fmt::format("{}: {}",
-          tinyxml2::XMLDocument::ErrorIDToName(errcode), xmlPath));
-      continue;
-    }
-
-    tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
-    if (pRoot == nullptr) {
-      mLogger->debug(fmt::format(logFormat, xmlPath));
-      continue;
-    }
-    tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
-    if (p == nullptr) {
-      mLogger->debug(fmt::format(logFormat, xmlPath));
-      continue;
-    }
-
-    bool allParsed = true;
-    for ( ; p != nullptr && allParsed
-        ; p = p->NextSiblingElement("testsuite")) {
-      tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
-      if (q == nullptr) {
-        mLogger->debug(fmt::format(logFormat, xmlPath));
-        allParsed = false;
-        break;
+  for (const auto& dirent : fs::recursive_directory_iterator(path)) {
+    const auto& curPath = dirent.path();
+    std::string curExt = curPath.extension().string();
+    std::transform(curExt.begin(), curExt.end(), curExt.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (fs::is_regular_file(curPath) && curExt == ".xml") {
+      const auto& xmlPath = curPath.string();
+      failedFiles.push_back(xmlPath);
+      std::vector<std::string> tmpPassedTC;
+      tinyxml2::XMLDocument doc;
+      auto errcode = doc.LoadFile(xmlPath.c_str());
+      if (errcode != 0) {
+        mLogger->debug(fmt::format("{}: {}",
+            tinyxml2::XMLDocument::ErrorIDToName(errcode), xmlPath));
+        continue;
       }
-      for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
-        const char* pStatus = q->Attribute("status");
-        if (pStatus == nullptr) {
+
+      tinyxml2::XMLElement *pRoot = doc.FirstChildElement("testsuites");
+      if (pRoot == nullptr) {
+        mLogger->debug(fmt::format(logFormat, xmlPath));
+        continue;
+      }
+      tinyxml2::XMLElement *p = pRoot->FirstChildElement("testsuite");
+      if (p == nullptr) {
+        mLogger->debug(fmt::format(logFormat, xmlPath));
+        continue;
+      }
+
+      bool allParsed = true;
+      for ( ; p != nullptr && allParsed
+          ; p = p->NextSiblingElement("testsuite")) {
+        tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+        if (q == nullptr) {
           mLogger->debug(fmt::format(logFormat, xmlPath));
           allParsed = false;
           break;
         }
-
-        if (std::string(pStatus) == std::string("run")  &&
-            q->FirstChildElement("failure") == nullptr) {
-          const char* pClassName = q->Attribute("classname");
-          const char* pName = q->Attribute("name");
-          if (pClassName == nullptr || pName == nullptr) {
+        for ( ; q != nullptr ; q = q->NextSiblingElement("testcase")) {
+          const char* pStatus = q->Attribute("status");
+          if (pStatus == nullptr) {
             mLogger->debug(fmt::format(logFormat, xmlPath));
             allParsed = false;
             break;
           }
 
-          std::string className = std::string(pClassName);
-          std::string caseName = std::string(pName);
-          tmpPassedTC.push_back(className.append(".").append(caseName));
+          if (std::string(pStatus) == std::string("run")  &&
+              q->FirstChildElement("failure") == nullptr) {
+            const char* pClassName = q->Attribute("classname");
+            const char* pName = q->Attribute("name");
+            if (pClassName == nullptr || pName == nullptr) {
+              mLogger->debug(fmt::format(logFormat, xmlPath));
+              allParsed = false;
+              break;
+            }
+
+            std::string className = std::string(pClassName);
+            std::string caseName = std::string(pName);
+            tmpPassedTC.push_back(className.append(".").append(caseName));
+          }
         }
       }
-    }
-    if (allParsed) {
-      mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
-    } else {
-      failedFiles.pop_back();
+      if (allParsed) {
+        mPassedTC.insert(
+            mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+      } else {
+        failedFiles.pop_back();
+      }
     }
   }
 

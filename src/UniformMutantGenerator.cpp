@@ -81,9 +81,10 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
   for (const auto& line : sourceLines) {
     std::vector<Mutant> temp;
     auto pred = [&](const auto& m) {
-      return fs::equivalent(m.getPath(), line.getPath()) &&
-      m.getFirst().line <= line.getLineNumber() &&
-      m.getLast().line >= line.getLineNumber();
+      return std::experimental::filesystem::equivalent(
+          m.getPath(), line.getPath()) &&
+          m.getFirst().line <= line.getLineNumber() &&
+          m.getLast().line >= line.getLineNumber();
     };
     std::copy_if(mutables.begin(), mutables.end(),
                  std::back_inserter(temp), pred);

@@ -31,8 +31,6 @@
 #include <vector>
 
 
-namespace fs = std::experimental::filesystem;
-
 namespace sentinel {
 
 class GitHarness {
@@ -177,7 +175,7 @@ class GitHarness {
   static void libgitErrorCheck(int error, const char* msg);
 
  private:
-  fs::path repo_path;
+  std::experimental::filesystem::path repo_path;
   git_repository* repo;
   std::vector<git_oid> commit_ids;
 };

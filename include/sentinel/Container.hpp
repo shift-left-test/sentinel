@@ -32,10 +32,7 @@
 #include <random>
 #include <string>
 #include <vector>
-#include "sentinel/util/os.hpp"
 
-
-namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -319,10 +316,10 @@ Container<T> Container<T>::split(std::size_t first,
 
 template <typename T>
 void Container<T>::save(const std::string& path) {
-  fs::path tmpPath(path);
+  std::experimental::filesystem::path tmpPath(path);
   auto dirname = tmpPath.parent_path();
   if (!dirname.empty()) {
-    fs::create_directories(dirname);
+    std::experimental::filesystem::create_directories(dirname);
   }
   std::ofstream ofs(path);
   for (const auto& data : mData) {
