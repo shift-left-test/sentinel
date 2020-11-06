@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Sangmo Kang
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,55 +22,43 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_RESULT_HPP_
-#define INCLUDE_SENTINEL_RESULT_HPP_
-
-#include <memory>
-#include <string>
-#include <vector>
-#include "sentinel/Logger.hpp"
-#include "sentinel/MutationState.hpp"
+#ifndef INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
+#define INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 
 
 namespace sentinel {
+/**
+ * @brief Result State enumeration
+ */
+enum class MutationState : int {
+  KILLED = 0,
+  ALIVED = 1,
+  RUNTIME_ERROR = 2,
+  BUILD_FAILURE = 3,
+};
 
 /**
- * @brief Result class
+ * @brief change MutationState to String
+ *
+ * @param m MutationState
+ * @return meaning of MutationState
+ *
  */
-class Result {
- public:
-  /**
-   * @brief Default constructor
-   *
-   * @param path to a test result
-   */
-  explicit Result(const std::string& path);
-
-  /**
-   * @brief check if passed testcase doesn't exist
-   *
-   * @return true if number of passed Testcase is 0
-   */
-  bool checkPassedTCEmpty();
-
-  /**
-   * @brief Check mutation's Result State
-   *
-   * @param original result
-   * @param mutated result
-   * @param [out] killingTest
-   * @param [out] errorTest
-   * @return mutation's Result State 
-   */
-  static MutationState compare(const Result& original, const Result& mutated,
-      std::string* killingTest, std::string* errorTest);
-
- private:
-  std::vector<std::string> mPassedTC;
-  std::vector<std::string> mFailedTC;
-  std::shared_ptr<Logger> mLogger;
-};
+inline const char* MutationStateToStr(MutationState m) {
+  switch (m) {
+    case MutationState::KILLED:
+      return "KILLED";
+    case MutationState::ALIVED:
+      return "ALIVED";
+    case MutationState::RUNTIME_ERROR:
+      return "RUNTIME_ERROR";
+    case MutationState::BUILD_FAILURE:
+      return "BUILD_FAILURE";
+    default:
+      return "UNKOWN";
+  }
+}
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_RESULT_HPP_
+#endif  // INCLUDE_SENTINEL_MUTATIONSTATE_HPP_

@@ -28,8 +28,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include "sentinel/MutationState.hpp"
 #include "sentinel/Mutant.hpp"
-
 
 namespace sentinel {
 
@@ -48,24 +48,33 @@ class MutationResult {
    *
    * @param m Mutant class' instance
    * @param killingTest that killed mutant
-   * @param detected or not (True: detected, False: not)
+   * @param errorTest that killed mutant
+   * @param state MutationState
    */
-  MutationResult(const Mutant& m,
-                 const std::string& killingTest, bool detected);
+  MutationResult(const Mutant& m, const std::string& killingTest,
+                 const std::string& errorTest, MutationState state);
 
   /**
    * @brief Return killingTest that killed mutant
    *
+   * @param strongMutation true if strong mutation
    * @return killingTest that killed mutant
    */
-  std::string getKillingTest() const;
+  std::string getKillingTest(bool strongMutation) const;
 
   /**
-   * @brief Return bool value to check if mutant is dead
+   * @brief Return errorTest that occur runtime error when testing
    *
-   * @return bool value to check if mutant is dead
+   * @return errorTest that killed mutant
    */
-  bool getDetected() const;
+  std::string getErrorTest() const;
+
+  /**
+   * @brief Return MutationState
+   *
+   * @return MutationState
+   */
+  MutationState getMutationState() const;
 
   /**
    * @brief Return bool value to check if mutant is dead
@@ -83,9 +92,18 @@ class MutationResult {
    */
   bool compare(const MutationResult& other) const;
 
+  /**
+   * @brief Return bool value to check if mutant is dead
+   *
+   * @param strongMutation true if strong mutation
+   * @return bool value to check if mutant is dead
+   */
+  bool getDetected(bool strongMutation) const;
+
  private:
   std::string mKillingTest;
-  bool mDetected;
+  std::string mErrorTest;
+  MutationState mState;
   Mutant mMutant;
 };
 

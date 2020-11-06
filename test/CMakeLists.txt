@@ -33,7 +33,7 @@ build_test_program(
        GitRepositoryTest.cpp ResultTest.cpp MutantsTest.cpp
        LoggerTest.cpp UniformMutantGeneratorTest.cpp MutationResultsTest.cpp
        MutationFactoryTest.cpp EvaluatorTest.cpp
-       GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp
+       GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp ReportTest.cpp
        ContainerTest.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS}

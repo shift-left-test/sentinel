@@ -38,7 +38,7 @@ namespace sentinel {
 
 Result::Result(const std::string& path) :
     mLogger(Logger::getLogger("Result")) {
-  std::vector<std::string> failedFiles;
+  std::vector<std::string> nonGtestFiles;
   std::string logFormat =
       "This file doesn't follow googletest result format: {}";
 
@@ -50,8 +50,9 @@ Result::Result(const std::string& path) :
         [](unsigned char c) { return std::tolower(c); });
     if (fs::is_regular_file(curPath) && curExt == ".xml") {
       const auto& xmlPath = curPath.string();
-      failedFiles.push_back(xmlPath);
+      nonGtestFiles.push_back(xmlPath);
       std::vector<std::string> tmpPassedTC;
+      std::vector<std::string> tmpFailedTC;
       tinyxml2::XMLDocument doc;
       auto errcode = doc.LoadFile(xmlPath.c_str());
       if (errcode != 0) {
@@ -88,8 +89,7 @@ Result::Result(const std::string& path) :
             break;
           }
 
-          if (std::string(pStatus) == std::string("run")  &&
-              q->FirstChildElement("failure") == nullptr) {
+          if (std::string(pStatus) == std::string("run")) {
             const char* pClassName = q->Attribute("classname");
             const char* pName = q->Attribute("name");
             if (pClassName == nullptr || pName == nullptr) {
@@ -98,17 +98,23 @@ Result::Result(const std::string& path) :
               break;
             }
 
-            std::string className = std::string(pClassName);
-            std::string caseName = std::string(pName);
-            tmpPassedTC.push_back(className.append(".").append(caseName));
+            auto savedName = fmt::format("{0}.{1}", pClassName, pName);
+
+            if (q->FirstChildElement("failure") == nullptr) {
+              tmpPassedTC.push_back(savedName);
+            } else {
+              tmpFailedTC.push_back(savedName);
+            }
           }
         }
       }
       if (allParsed) {
         mPassedTC.insert(
             mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+        mFailedTC.insert(
+            mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
       } else {
-        failedFiles.pop_back();
+        nonGtestFiles.pop_back();
       }
     }
   }
@@ -116,8 +122,9 @@ Result::Result(const std::string& path) :
   logFormat =
       "This file doesn't follow QtTest result format: {}";
   // QtTest result format
-  for (const std::string& xmlPath : failedFiles) {
+  for (const std::string& xmlPath : nonGtestFiles) {
     std::vector<std::string> tmpPassedTC;
+    std::vector<std::string> tmpFailedTC;
     tinyxml2::XMLDocument doc;
     doc.LoadFile(xmlPath.c_str());
 
@@ -141,43 +148,67 @@ Result::Result(const std::string& path) :
         allParsed = false;
         break;
       }
+      const char* pClassName = p->Attribute("name");
+      const char* pName = q->Attribute("name");
+      if (pClassName == nullptr || pName == nullptr) {
+        mLogger->debug(fmt::format(logFormat + "3", xmlPath));
+        allParsed = false;
+        break;
+      }
+
+      auto savedName = fmt::format("{0}.{1}", pClassName, pName);
 
       if (std::string(pResult) == std::string("pass")) {
-        const char* pClassName = p->Attribute("name");
-        const char* pName = q->Attribute("name");
-        if (pClassName == nullptr || pName == nullptr) {
-          mLogger->debug(fmt::format(logFormat + "3", xmlPath));
-          allParsed = false;
-          break;
-        }
-
-        std::string className = std::string(pClassName);
-        std::string caseName = std::string(pName);
-        tmpPassedTC.push_back(className.append(".").append(caseName));
+        tmpPassedTC.push_back(savedName);
+      } else if (std::string(pResult) == std::string("fail")) {
+        tmpFailedTC.push_back(savedName);
       }
     }
     if (allParsed) {
       mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+      mFailedTC.insert(
+          mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
     }
   }
 
   if (!mPassedTC.empty()) {
     std::sort(mPassedTC.begin(), mPassedTC.end());
+    std::sort(mFailedTC.begin(), mFailedTC.end());
   }
 }
 
-std::string Result::kill(const Result& original, const Result& mutated) {
-  std::string ret;
+bool Result::checkPassedTCEmpty() {
+  return mPassedTC.empty();
+}
+
+MutationState Result::compare(const Result& original, const Result& mutated,
+    std::string* killingTest, std::string* errorTest) {
+  killingTest->clear();
+  errorTest->clear();
   for (const std::string &tc : original.mPassedTC) {
     if (std::find(mutated.mPassedTC.begin(),
         mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
-      if (ret.length() != 0) {
-        ret.append(", ");
+      if (std::find(mutated.mFailedTC.begin(),
+          mutated.mFailedTC.end(), tc) == mutated.mFailedTC.end()) {
+        if (!errorTest->empty()) {
+          errorTest->append(", ");
+        }
+        errorTest->append(tc);
+      } else {
+        if (!killingTest->empty()) {
+          killingTest->append(", ");
+        }
+        killingTest->append(tc);
       }
-      ret.append(tc);
     }
   }
-  return ret;
+  if (!errorTest->empty()) {
+    return MutationState::RUNTIME_ERROR;
+  }
+  if (!killingTest->empty()) {
+    return MutationState::KILLED;
+  }
+  return MutationState::ALIVED;
 }
 
 }  // namespace sentinel

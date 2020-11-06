@@ -42,13 +42,15 @@
 namespace sentinel {
 
 HTMLReport::HTMLReport(const MutationResults& results,
-                       const std::string& sourcePath) :
-    Report(results, sourcePath) {
+                       const std::string& sourcePath,
+                       bool strongMutation) :
+    Report(results, sourcePath, strongMutation) {
 }
 
 HTMLReport::HTMLReport(const std::string& resultsPath,
-                       const std::string& sourcePath) :
-    Report(resultsPath, sourcePath) {
+                       const std::string& sourcePath,
+                       bool strongMutation) :
+    Report(resultsPath, sourcePath, strongMutation) {
 }
 
 void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
@@ -180,7 +182,7 @@ void HTMLReport::makeSourceHtml(
   std::size_t maxLineNum = 0;
   for (const MutationResult* mr : *MRs) {
     auto tmpvector = string::split(
-        mr->getKillingTest(), ", ");
+        mr->getKillingTest(mStrongMutation), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {
         uniqueKillingTest.insert(ts);
@@ -231,7 +233,7 @@ void HTMLReport::makeSourceHtml(
       bool killed = false;
       bool survived = false;
       for (const auto& mr : *curLineMrs) {
-        if (mr->getDetected()) {
+        if (mr->getDetected(mStrongMutation)) {
           killed = true;
         } else {
           survived = true;
@@ -255,7 +257,7 @@ void HTMLReport::makeSourceHtml(
       for (const auto& mr : *curLineMrs) {
         count += 1;
         lineExplainVec.emplace_back(count, mr->getMutant().getOperator(),
-                                    mr->getDetected());
+                                    mr->getDetected(mStrongMutation));
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);
@@ -265,8 +267,8 @@ void HTMLReport::makeSourceHtml(
     std::size_t count = 0;
     for (const auto& mr : *t.second) {
       count += 1;
-      shg.pushMutation(t.first, mr->getDetected(), count, mr->getKillingTest(),
-                       mr->getMutant().getOperator());
+      shg.pushMutation(t.first, mr->getDetected(mStrongMutation), count,
+          mr->getKillingTest(mStrongMutation), mr->getMutant().getOperator());
     }
   }
 

@@ -103,22 +103,28 @@ class XMLReportTest : public ::testing::Test {
       "    </mutation>\n</mutations>\n";
 };
 
-TEST_F(XMLReportTest, testMakeXMLReport) {
+TEST_F(XMLReportTest, testMakeXMLReportWithStrongMutation) {
+  MutationResults MRs;
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "", false);
+  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              1, 2, 3, 4, "|");
-  MutationResult MR2(M2, "testAddBit", true);
+  MRs.emplace_back(M2, "testAddBit", "", MutationState::KILLED);
 
-  MutationResults MRs;
-  MRs.push_back(MR1);
-  MRs.push_back(MR2);
-  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  Mutant M3("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+             1, 2, 3, 4, "|");
+  MRs.emplace_back(M3, "testAddBit", "", MutationState::RUNTIME_ERROR);
+
+  Mutant M4("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+             1, 2, 3, 4, "|");
+  MRs.emplace_back(M4, "testAddBit", "", MutationState::BUILD_FAILURE);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult1";
   MRs.save(MRPath);
 
-  XMLReport xmlreport(MRPath, SOURCE_DIR);
+  XMLReport xmlreport(MRPath, SOURCE_DIR, true);
 
   xmlreport.save(OUT_DIR);
 
@@ -133,10 +139,43 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   EXPECT_EQ(mutationXMLContent, EXPECT_MUT_XML_CONTENT);
 }
 
+TEST_F(XMLReportTest, testMakeXMLReportWithWeakMutation) {
+  MutationResults MRs;
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             4, 5, 6, 7, "+");
+  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
+
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+             1, 2, 3, 4, "|");
+  MRs.emplace_back(M2, "testAddBit", "", MutationState::RUNTIME_ERROR);
+
+  Mutant M4("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
+             1, 2, 3, 4, "|");
+  MRs.emplace_back(M4, "testAddBit", "", MutationState::BUILD_FAILURE);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult2";
+  MRs.save(MRPath);
+
+  XMLReport xmlreport(MRPath, SOURCE_DIR, false);
+
+  xmlreport.save(OUT_DIR);
+
+  auto outXMLPath = OUT_DIR / "mutations.xml";
+  EXPECT_TRUE(fs::exists(outXMLPath));
+
+  std::ifstream t(outXMLPath);
+  std::stringstream buffer;
+  buffer << t.rdbuf();
+  std::string mutationXMLContent = buffer.str();
+  t.close();
+  EXPECT_EQ(mutationXMLContent, EXPECT_MUT_XML_CONTENT);
+}
+
+
 TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "", false);
+  MutationResult MR1(M1, "", "", MutationState::ALIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);

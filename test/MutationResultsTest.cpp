@@ -65,7 +65,7 @@ TEST_F(MutationResultsTest, testAdd) {
   MutationResults MRs;
   Mutant M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
   EXPECT_EQ(0, MRs.size());
-  MutationResult MR1(M1, "testAdd", true);
+  MutationResult MR1(M1, "testAdd", "testMinus", MutationState::RUNTIME_ERROR);
   MRs.push_back(MR1);
   EXPECT_EQ(1, MRs.size());
 
@@ -73,6 +73,10 @@ TEST_F(MutationResultsTest, testAdd) {
   EXPECT_EQ(MRs[0].getMutant().getOperator(), "AOR");
   EXPECT_TRUE(fs::equivalent(MR1.getMutant().getPath(), TARGET_FILE));
   EXPECT_EQ(MR1.getMutant().getFirst().line, 0);
+  EXPECT_FALSE(MR1.getDetected(true));
+  EXPECT_TRUE(MR1.getDetected(false));
+  EXPECT_EQ("testAdd", MR1.getKillingTest(true));
+  EXPECT_EQ("testAdd, testMinus", MR1.getKillingTest(false));
 }
 
 TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
@@ -84,11 +88,11 @@ TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResults MRs;
 
   Mutant M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "testAdd", false);
+  MutationResult MR1(M1, "", "", MutationState::ALIVED);
   MRs.push_back(MR1);
 
   Mutant M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
-  MutationResult MR2(M2, "testAddBit", true);
+  MutationResult MR2(M2, "testAddBit", "testAdd", MutationState::RUNTIME_ERROR);
   MRs.push_back(MR2);
 
   auto mrPath = OUT_DIR / "MutationResult";

@@ -28,9 +28,9 @@
 #include <fstream>
 #include <string>
 #include "sentinel/Logger.hpp"
+#include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/string.hpp"
-
 
 namespace fs = std::experimental::filesystem;
 
@@ -98,6 +98,16 @@ class ResultTest : public ::testing::Test {
 <testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
 	<testsuite name="C1" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
 		<testcase name="TC1" status="run" result="completed" time="*" timestamp="*" classname="C1" />
+	</testsuite>
+</testsuites>
+)";
+  std::string TC1_FAIL =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="*" timestamp="*" name="AllTests">
+	<testsuite name="C1" tests="1" failures="0" skipped="0" disabled="0" errors="0" time="*" timestamp="*">
+		<testcase name="TC1" status="run" result="completed" time="*" timestamp="*" classname="C1">
+			<failure message="fail message" type="" />
+    </testcase>
 	</testsuite>
 </testsuites>
 )";
@@ -169,7 +179,13 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
   MAKE_RESULT_XML(MUT_DIR, TC2);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::ALIVED);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithKillMutation) {
@@ -180,7 +196,30 @@ TEST_F(ResultTest, testResultWithKillMutation) {
   MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::KILLED);
+  EXPECT_EQ("C2.TC2", killingTest);
+  EXPECT_EQ("", errorTest);
+}
+
+TEST_F(ResultTest, testResultWithKillMutations) {
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation";
+  fs::create_directories(MUT_DIR);
+
+  MAKE_RESULT_XML(MUT_DIR, TC1_FAIL);
+  MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::KILLED);
+  EXPECT_EQ("C1.TC1, C2.TC2", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
@@ -190,12 +229,15 @@ TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(QT5_RESULT, TC4_QT);
   MAKE_RESULT_XML(MUT_DIR, TC4_QT_FAIL);
-
   Result ori(QT5_RESULT);
   Result mut(MUT_DIR);
 
-  EXPECT_EQ(Result::kill(ori, mut),
-      R"(qmake5-project.MinusTest.testShouldAlsoFail)");
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::KILLED);
+  EXPECT_EQ(R"(qmake5-project.MinusTest.testShouldAlsoFail)", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
@@ -206,7 +248,13 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::ALIVED);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
@@ -217,26 +265,59 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::KILLED);
+  EXPECT_EQ("C2.TC2", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
-TEST_F(ResultTest, testResultWithKKillMutationErrorTC) {
+TEST_F(ResultTest, testResultWithKErrorMutationErrorTC) {
   auto MUT_DIR = BASE / "mut_dir_kill_mutation_error_tc";
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("C2.TC2", errorTest);
 }
 
-TEST_F(ResultTest, testResultWithKKillMutationErrorTCAndAddNewTc) {
+TEST_F(ResultTest, testResultWithKErrorMutationErrorTCandKilledTC) {
+  auto MUT_DIR = BASE / "mut_dir_kill_mutation_error_tc";
+  fs::create_directories(MUT_DIR);
+  MAKE_RESULT_XML(MUT_DIR, TC1_FAIL);
+  Result ori(ORI_DIR);
+  Result mut(MUT_DIR);
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ("C1.TC1", killingTest);
+  EXPECT_EQ("C2.TC2", errorTest);
+}
+
+TEST_F(ResultTest, testResultWithErrorMutationErrorTCAndAddNewTc) {
   auto MUT_DIR = BASE / "mut_dir_kill_mutation_error_tc_and_add_new_tc";
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC3);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "C2.TC2");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("C2.TC2", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithEmptyMutationDir) {
@@ -244,7 +325,13 @@ TEST_F(ResultTest, testResultWithEmptyMutationDir) {
   fs::create_directories(MUT_DIR);
   Result ori(ORI_DIR);
   Result mut(MUT_DIR);
-  EXPECT_EQ(Result::kill(ori, mut), "C1.TC1, C2.TC2");
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
+      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("C1.TC1, C2.TC2", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithWrongXMLFmt) {

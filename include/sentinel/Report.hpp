@@ -45,22 +45,26 @@ class Report {
    *
    * @param results mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
   Report(const MutationResults& results,
-      const std::experimental::filesystem::path& sourcePath);
+      const std::experimental::filesystem::path& sourcePath,
+      bool strongMutation);
 
   /**
    * @brief Default Constructor
    *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
   Report(const std::experimental::filesystem::path& resultsPath,
-      const std::experimental::filesystem::path& sourcePath);
+      const std::experimental::filesystem::path& sourcePath,
+      bool strongMutation);
   /**
    * @brief Default Destructor
    */
@@ -95,6 +99,7 @@ class Report {
    * @brief MutationResults instance
    */
   MutationResults mResults;
+
   /**
    * @brief group MutationReuslt by Directory
    */
@@ -120,9 +125,24 @@ class Report {
   std::size_t totNumberOfDetectedMutation = 0;
 
   /**
+   * @brief total number of Build Failure
+   */
+  std::size_t totNumberOfBuildFailure = 0;
+
+  /**
+   * @brief total number of Runtime Error
+   */
+  std::size_t totNumberOfRuntimeError = 0;
+
+  /**
    * @brief path of source directory
    */
   std::experimental::filesystem::path mSourcePath;
+
+  /**
+   * @brief mStrongMutation true if strongMutation
+   */
+  bool mStrongMutation;
 };
 
 }  // namespace sentinel

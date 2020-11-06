@@ -47,6 +47,8 @@ class Evaluator {
    *
    * @param expectedResultDir Directory Path of Expected Result
    * @param sourcePath Directory Path of Source
+   * @throw InvalidArgumentException
+   *        when expected result doesn't have passed test case
    */
   explicit Evaluator(const std::string& expectedResultDir,
       const std::string& sourcePath);
@@ -56,10 +58,11 @@ class Evaluator {
    *
    * @param mut taget mutable
    * @param ActualResultDir Directory Path of Actural Result
+   * @param buildFail true if build Failure
    * @return MutationResult summary of compare
    */
   MutationResult compare(const Mutant& mut,
-      const std::string& ActualResultDir);
+      const std::string& ActualResultDir, bool buildFail = false);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
@@ -67,11 +70,15 @@ class Evaluator {
    * @param mut taget mutable
    * @param ActualResultDir Directory Path of Actural Result
    * @param evalFilePath File Path of MutationResult
+   * @param buildFail true if build Failure
    * @return MutationResult summary of compare
+   * @throw InvalidArgumentException
+   *        when evalFile's parent's path isn't directory
    */
   MutationResult compareAndSaveMutationResult(const Mutant& mut,
       const std::experimental::filesystem::path& ActualResultDir,
-      const std::experimental::filesystem::path& evalFilePath);
+      const std::experimental::filesystem::path& evalFilePath,
+      bool buildFail = false);
 
   /**
    * @brief Return mutation results

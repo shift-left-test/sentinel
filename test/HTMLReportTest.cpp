@@ -712,20 +712,8 @@ int minus(int a, int b){
 )";
 };
 
-TEST_F(HTMLReportTest, testPrintEmptyReport) {
-  auto MUT_RESULT_DIR = BASE / "MUT_RESLUT_DIR";
-  fs::create_directories(MUT_RESULT_DIR);
-  auto MRPath = MUT_RESULT_DIR / "MutationResult";
-
-  HTMLReport htmlreport(MRPath, SOURCE_DIR);
-  testing::internal::CaptureStdout();
-  htmlreport.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "      0         0        -%"));
-}
-
 TEST_F(HTMLReportTest, testMakeHTMLReport) {
-  auto OUT_DIR = BASE / "OUT_DIR_MAKEHTMLREPORT";
+  auto OUT_DIR = BASE / "OUT_DIR_MAKEHTMLREPORT1";
   fs::create_directories(OUT_DIR);
 
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR";
@@ -756,31 +744,33 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       string::replaceAll(ORI_TARGET3_HTML_CONTENTS,
       "{0}", TARGET_FULL_PATH3.filename());
 
+  MutationResults MRs;
+
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", false);
+  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "|");
-  MutationResult MR2(M2, "testBitwiseOR", true);
+  MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
   Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              3, 12, 3, 13, "&");
-  MutationResult MR3(M3, "testBitwiseAND, testBitwiseOP", true);
+  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
+                     MutationState::KILLED);
 
   Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MutationResult MR4(M4, "", false);
+  MRs.emplace_back(M4, "", "", MutationState::ALIVED);
 
-  MutationResults MRs;
-  MRs.push_back(MR1);
-  MRs.push_back(MR2);
-  MRs.push_back(MR3);
-  MRs.push_back(MR4);
+  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M5, "", "", MutationState::BUILD_FAILURE);
+
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  HTMLReport htmlreport(MRPath, SOURCE_DIR);
+  HTMLReport htmlreport(MRPath, SOURCE_DIR, false);
 
   htmlreport.save(OUT_DIR);
 
@@ -800,14 +790,34 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   readFileAndCompareExpected(OUT_DIR / NESTED_SOURCE_DIR2.filename() /
       (TARGET_FULL_PATH3.filename().string() + ".html"), TARGET3_HTML_CONTENTS);
 
-  testing::internal::CaptureStdout();
-  htmlreport.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "... "));
-  EXPECT_TRUE(string::contains(out, "      0         1        0%"));
-  EXPECT_TRUE(string::contains(out, "      1         1      100%"));
-  EXPECT_TRUE(string::contains(out, "      1         2       50%"));
-  EXPECT_TRUE(string::contains(out, "      2         4       50%"));
+  auto MRPath2 = MUT_RESULT_DIR / "MutationResult2";
+  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M6, "", "", MutationState::RUNTIME_ERROR);
+  MRs.save(MRPath2);
+
+  auto OUT_DIR2 = BASE / "OUT_DIR_MAKEHTMLREPORT2";
+  fs::create_directories(OUT_DIR2);
+
+  HTMLReport htmlreport2(MRPath2, SOURCE_DIR, true);
+
+  htmlreport2.save(OUT_DIR2);
+
+  readFileAndCompareExpected(OUT_DIR2 / "index.html",
+      ROOT_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(
+      OUT_DIR2 / nestedSourceDir / "index.html",
+      NESTED1_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(
+      OUT_DIR2 / NESTED_SOURCE_DIR2.filename() / "index.html",
+      NESTED2_INDEX_HTML_CONTENTS);
+
+  readFileAndCompareExpected(OUT_DIR2 / nestedSourceDir /
+      (TARGET_FULL_PATH.filename().string() + ".html"), TARGET1_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR2 / NESTED_SOURCE_DIR2.filename() /
+      (TARGET_FULL_PATH2.filename().string() + ".html"), TARGET2_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR2 / NESTED_SOURCE_DIR2.filename() /
+      (TARGET_FULL_PATH3.filename().string() + ".html"), TARGET3_HTML_CONTENTS);
 }
 
 TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
@@ -818,7 +828,7 @@ TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", false);
+  MutationResult MR1(M1, "", "", MutationState::ALIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -849,7 +859,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
   fs::copy(TARGET_FULL_PATH, tmpPath);
   Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", false);
+  MutationResult MR1(M1, "", "", MutationState::ALIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -864,7 +874,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   fs::create_directories(OUT_DIR);
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              0, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", false);
+  MutationResult MR1(M1, "", "", MutationState::ALIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -876,7 +886,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   fs::create_directories(OUT_DIR2);
   Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              1000, 12, 1000, 13, "+");
-  MutationResult MR2(M2, "", false);
+  MutationResult MR2(M2, "", "", MutationState::ALIVED);
 
   MutationResults MRs2;
   MRs2.push_back(MR2);

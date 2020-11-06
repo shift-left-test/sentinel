@@ -34,13 +34,13 @@
 namespace sentinel {
 
 XMLReport::XMLReport(const MutationResults& results,
-                     const std::string& sourcePath) :
-    Report(results, sourcePath) {
+                     const std::string& sourcePath, bool strongMutation) :
+    Report(results, sourcePath, strongMutation) {
 }
 
 XMLReport::XMLReport(const std::string& resultsPath,
-                     const std::string& sourcePath) :
-    Report(resultsPath, sourcePath) {
+                     const std::string& sourcePath, bool strongMutation) :
+    Report(resultsPath, sourcePath, strongMutation) {
 }
 
 void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
@@ -64,8 +64,16 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   tinyxml2::XMLElement* pMutations = doc->NewElement("mutations");
 
   for (const auto& r : mResults) {
+    auto currentState = r.getMutationState();
+    if (currentState == MutationState::BUILD_FAILURE) {
+      continue;
+    }
+    if (currentState == MutationState::RUNTIME_ERROR && mStrongMutation) {
+        continue;
+    }
+
     tinyxml2::XMLElement* pMutation = doc->NewElement("mutation");
-    pMutation->SetAttribute("detected", r.getDetected());
+    pMutation->SetAttribute("detected", r.getDetected(mStrongMutation));
 
     addChildToParent(doc, pMutation, "sourceFile",
         r.getMutant().getPath().filename());
@@ -77,7 +85,8 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
     addChildToParent(doc, pMutation, "lineNumber",
         std::to_string(r.getMutant().getFirst().line));
     addChildToParent(doc, pMutation, "mutator", r.getMutant().getOperator());
-    addChildToParent(doc, pMutation, "killingTest", r.getKillingTest());
+    addChildToParent(doc, pMutation, "killingTest",
+        r.getKillingTest(mStrongMutation));
 
     pMutations->InsertEndChild(pMutation);
   }

@@ -42,16 +42,20 @@ class XMLReport : public Report {
    *
    * @param results mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    */
-  XMLReport(const MutationResults& results, const std::string& sourcePath);
+  XMLReport(const MutationResults& results, const std::string& sourcePath,
+      bool strongMutation = true);
 
   /**
    * @brief Default constructor
    *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    */
-  XMLReport(const std::string& resultsPath, const std::string& sourcePath);
+  XMLReport(const std::string& resultsPath, const std::string& sourcePath,
+      bool strongMutation = true);
 
   /**
    * @brief save xml format result to path 

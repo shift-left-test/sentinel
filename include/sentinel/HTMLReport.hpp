@@ -45,16 +45,20 @@ class HTMLReport : public Report {
    *
    * @param results mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    */
-  HTMLReport(const MutationResults& results, const std::string& sourcePath);
+  HTMLReport(const MutationResults& results, const std::string& sourcePath,
+      bool strongMutation = true);
 
   /**
    * @brief Default constructor
    *
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
+   * @param strongMutation true if strong mutation
    */
-  HTMLReport(const std::string& resultsPath, const std::string& sourcePath);
+  HTMLReport(const std::string& resultsPath, const std::string& sourcePath,
+      bool strongMutation = true);
 
   /**
    * @brief save html format result to path

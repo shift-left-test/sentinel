@@ -44,15 +44,32 @@ Evaluator::Evaluator(const std::string& expectedResultDir,
     mExpectedResult(expectedResultDir),
     mLogger(Logger::getLogger("Evaluator")) {
   mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
+  auto checkZero = mExpectedResult.checkPassedTCEmpty();
+  if (checkZero) {
+    throw InvalidArgumentException(fmt::format(
+        "No passed TC in Expected Result({0})", expectedResultDir));
+  }
 }
 
 MutationResult Evaluator::compare(const Mutant& mut,
-    const std::string& ActualResultDir) {
-  Result mActualResult(ActualResultDir);
-  mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
+    const std::string& ActualResultDir, bool buildFail) {
+  std::string killingTC;
+  std::string errorTC;
+  MutationState state;
 
-  std::string killingTC = Result::kill(mExpectedResult, mActualResult);
+  if (buildFail) {
+    state = MutationState::BUILD_FAILURE;
+    mLogger->debug(fmt::format("Build failure - ignore({})", ActualResultDir));
+  } else {
+    Result mActualResult(ActualResultDir);
+    mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
+    state = Result::compare(mExpectedResult, mActualResult,
+        &killingTC, &errorTC);
+  }
+
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
+  mLogger->debug(fmt::format("error TC: {}", errorTC));
+  mLogger->debug(fmt::format("Mutation State: {}", MutationStateToStr(state)));
 
   fs::path relPath;
 
@@ -102,11 +119,10 @@ MutationResult Evaluator::compare(const Mutant& mut,
       fmt::arg("mu", mut.getOperator()),
       fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
       fmt::arg("flen", flen),
-      fmt::arg("status", killingTC.length() != 0 ? "Killed" : "Survived"))
+      fmt::arg("status", MutationStateToStr(state)))
             << std::endl;
 
-  MutationResult ret(mut, killingTC,
-                     killingTC.length() != 0);
+  MutationResult ret(mut, killingTC, errorTC, state);
 
   mMutationResults.push_back(ret);
 
@@ -115,7 +131,8 @@ MutationResult Evaluator::compare(const Mutant& mut,
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
     const std::experimental::filesystem::path& ActualResultDir,
-    const std::experimental::filesystem::path& evalFilePath) {
+    const std::experimental::filesystem::path& evalFilePath,
+    bool buildFail) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {
@@ -126,7 +143,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
     fs::create_directories(outDir);
   }
 
-  MutationResult ret = compare(mut, ActualResultDir);
+  MutationResult ret = compare(mut, ActualResultDir, buildFail);
 
   std::ofstream outFile(evalFilePath.c_str(),
       std::ios::out | std::ios::app);

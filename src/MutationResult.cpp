@@ -37,34 +37,53 @@
 
 namespace sentinel {
 
-MutationResult::MutationResult(const Mutant& m,
-                               const std::string& killingTest,
-                               bool detected) :
-    mKillingTest(killingTest), mDetected(detected),
-    mMutant(m) {
+MutationResult::MutationResult(
+    const Mutant& m, const std::string& killingTest,
+    const std::string& errorTest, MutationState state) :
+    mKillingTest(killingTest), mErrorTest(errorTest),
+    mState(state), mMutant(m) {
 }
 
-std::string MutationResult::getKillingTest() const {
-  return mKillingTest;
+std::string MutationResult::getKillingTest(bool strongMutation) const {
+  if (strongMutation || mErrorTest.empty()) {
+    return mKillingTest;
+  }
+  if (mKillingTest.empty()) {
+    return getErrorTest();
+  }
+  return mKillingTest + ", " + getErrorTest();
 }
 
-bool MutationResult::getDetected() const {
-  return mDetected;
+std::string MutationResult::getErrorTest() const {
+  return mErrorTest;
+}
+
+MutationState MutationResult::getMutationState() const {
+  return mState;
 }
 
 const Mutant& MutationResult::getMutant() const {
   return mMutant;
 }
 
+bool MutationResult::getDetected(bool strongMutation) const {
+  if (strongMutation) {
+    return mState == MutationState::KILLED;
+  }
+  return ((mState == MutationState::KILLED) ||
+      (mState == MutationState::RUNTIME_ERROR));
+}
+
 bool MutationResult::compare(const MutationResult& other) const {
-  return mMutant.compare(other.getMutant()) &&
-      mKillingTest == other.getKillingTest() &&
-      mDetected == other.getDetected();
+  return mMutant.compare(other.mMutant) &&
+      mKillingTest == other.mKillingTest &&
+      mErrorTest == other.mErrorTest &&
+      mState == other.mState;
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
-  out << fmt::format("{}\t{}\t\t", mr.getKillingTest(),
-                     mr.getDetected() ? 1 : 0);
+  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(true),
+      mr.getErrorTest(), static_cast<int>(mr.getMutationState()));
   out << mr.getMutant();
   return out;
 }
@@ -72,12 +91,13 @@ std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
 std::istream& operator>>(std::istream& in, MutationResult &mr) {
   std::string line;
   if (getline(in, line)) {
-    auto sep = string::split(line, "\t\t");
+    auto sep = string::split(line, "\t\t\t");
     auto str = string::split(sep[0], "\t");
     Mutant m;
     std::istringstream iss(sep[1]);
     iss >> m;
-    mr = MutationResult(m, str[0], std::stoi(str[1]) == 1);
+    mr = MutationResult(m, str[0], str[1],
+        static_cast<MutationState>(std::stoi(str[2])));
   }
   return in;
 }
