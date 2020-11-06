@@ -27,7 +27,6 @@
 
 #include <string>
 #include <vector>
-#include <CLI11.hpp>
 #include "sentinel/Command.hpp"
 
 
@@ -41,12 +40,9 @@ class CommandStandAlone : public Command {
   /**
    * @brief constructor
    */
-  explicit CommandStandAlone(CLI::App* app);
+  explicit CommandStandAlone(args::Subparser& parser);
 
-  int run(const std::experimental::filesystem::path& sourceRoot,
-    const std::experimental::filesystem::path& workDir,
-    const std::experimental::filesystem::path& outputDir,
-    bool verbose) override;
+  int run() override;
 
  private:
   void copyTestReportTo(const std::string& from,
@@ -55,15 +51,15 @@ class CommandStandAlone : public Command {
     const std::string& srcRoot);
 
  private:
-  std::string mBuildDir;
-  std::string mTestResultDir;
-  std::string mBuildCmd;
-  std::string mTestCmd;
-  std::vector<std::string> mTestResultFileExts;
-  std::vector<std::string> mExtensions;
-  std::vector<std::string> mExcludes;
-  std::string mScope;
-  int mLimit;
+  args::ValueFlag<std::string> mBuildDir;
+  args::ValueFlag<std::string> mTestResultDir;
+  args::ValueFlag<std::string> mBuildCmd;
+  args::ValueFlag<std::string> mTestCmd;
+  args::ValueFlagList<std::string> mTestResultFileExts;
+  args::ValueFlagList<std::string> mExtensions;
+  args::ValueFlagList<std::string> mExcludes;
+  args::ValueFlag<std::string> mScope;
+  args::ValueFlag<int> mLimit;
 };
 
 }  // namespace sentinel

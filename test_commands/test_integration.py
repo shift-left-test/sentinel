@@ -3,13 +3,12 @@ from subprocess import Popen, PIPE
 
 
 def test_integration(sentinel_env):
-    populate = Popen([sentinel_env.bin, 
+    populate = Popen([sentinel_env.bin, "populate",
         sentinel_env.source_dir,
         "--work-dir",
         sentinel_env.work_dir,
         "--output-dir",
         sentinel_env.output_dir,
-        "populate",
         "--build-dir",
         sentinel_env.build_dir],
         stdout=PIPE, stderr=PIPE)
@@ -24,13 +23,12 @@ def test_integration(sentinel_env):
         mutants = f.readlines()
         for mutant in mutants:
             print("mutant: {}".format(mutant))
-            mutate = Popen([sentinel_env.bin,
+            mutate = Popen([sentinel_env.bin, "mutate",
                 sentinel_env.source_dir,
                 "--work-dir",
                 sentinel_env.work_dir,
                 "--output-dir",
                 sentinel_env.output_dir,
-                "mutate",
                 "--mutant",
                 sentinel_env.mutant],
                 stdout=PIPE, stderr=PIPE)
@@ -46,13 +44,12 @@ def test_integration(sentinel_env):
             test.communicate()
             os.chdir(cwd)
 
-            evaluate = Popen([sentinel_env.bin,
+            evaluate = Popen([sentinel_env.bin, "evaluate",
                 sentinel_env.source_dir,
                 "--work-dir",
                 sentinel_env.work_dir,
                 "--output-dir",
                 sentinel_env.work_dir,
-                "evaluate",
                 "--mutant",
                 sentinel_env.mutant,
                 "--expected",
@@ -65,13 +62,12 @@ def test_integration(sentinel_env):
             outs, errs = evaluate.communicate()
 
     assert os.path.exists(sentinel_env.eval_file)
-    report = Popen([sentinel_env.bin,
+    report = Popen([sentinel_env.bin, "report",
         sentinel_env.source_dir,
         "--work-dir",
         sentinel_env.work_dir,
         "--output-dir",
         sentinel_env.output_dir,
-        "report",
         "--evaluation-file",
         sentinel_env.eval_file],
         stdout=PIPE, stderr=PIPE)

@@ -41,50 +41,52 @@
 namespace sentinel {
 const char * cCommandStandAloneLoggerName = "CommandStandAlone";
 
-CommandStandAlone::CommandStandAlone(CLI::App* app) :
-  mBuildDir("."),
-  mScope("all"),
-  mExtensions{"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h", "c++", "h++",
-    "cu", "cuh"},
-  mLimit(10),
-  mTestResultFileExts{"xml", "XML"} {
-  mSubApp = app->add_subcommand("run",
-    "Run mutation test in standalone mode");
-  mSubApp->add_option("-b,--build-dir", mBuildDir,
-    "Directory where compile_commands.json file exists.", true);
-  mSubApp->add_option("-s,--scope", mScope,
-    "diff scope, one of ['commit', 'all'].", true);
-  mSubApp->add_option("-t,--extension", mExtensions,
-    "Extentions of source file which could be mutated.", true);
-  mSubApp->add_option("-e,--exclude", mExcludes,
-    "exclude file or path");
-  mSubApp->add_option("-l,--limit", mLimit,
-    "Maximum generated mutable count.", true);
-  mSubApp->add_option("--build-command", mBuildCmd,
-    "Shell command to build source")->required();
-  mSubApp->add_option("--test-command", mTestCmd,
-    "Shell command to execute test")->required();
-  mSubApp->add_option("--test-result-dir", mTestResultDir,
-    "Test command output directory")->required();
-  mSubApp->add_option("--test-result-extention", mTestResultFileExts,
-    "Test command output file extensions", true);
+CommandStandAlone::CommandStandAlone(args::Subparser& parser) : Command(parser),
+  mBuildDir(parser, "build_dir",
+    "Directory where compile_commands.json file exists.",
+    {'b', "build-dir"}, "."),
+  mScope(parser, "scope",
+    "Diff scope, one of ['commit', 'all'].",
+    {'s', "scope"}, "all"),
+  mExtensions(parser, "ext",
+    "Extentions of source file which could be mutated.",
+    {'t', "extension"}, {"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h",
+    "c++", "h++", "cu", "cuh"}),
+  mExcludes(parser, "path",
+    "exclude file or path",
+    {'e', "exclude"}),
+  mLimit(parser, "count",
+    "Maximum generated mutable count.",
+    {'l', "limit"}, 10),
+  mBuildCmd(parser, "cmd",
+    "Shell command to build source",
+    {"build-command"}, args::Options::Required),
+  mTestCmd(parser, "cmd",
+    "Shell command to execute test",
+    {"test-command"}, args::Options::Required),
+  mTestResultDir(parser, "path",
+    "Test command output directory",
+    {"test-result-dir"}, args::Options::Required),
+  mTestResultFileExts(parser, "exts",
+    "Test command output file extensions",
+    {"test-result-extention"}, {"xml", "XML"}) {
 }
 
-int CommandStandAlone::run(
-  const std::experimental::filesystem::path& sourceRoot,
-  const std::experimental::filesystem::path& workDir,
-  const std::experimental::filesystem::path& outputDir, bool verbose) {
-  namespace fs = std::experimental::filesystem;
+int CommandStandAlone::run() {
+  namespace fs =  std::experimental::filesystem;
+  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+  fs::path workDir = fs::canonical(mWorkDir.Get());
+  fs::path outputDir = fs::canonical(mOutputDir.Get());
 
   auto logger = Logger::getLogger(cCommandStandAloneLoggerName);
-  logger->info(fmt::format("build dir: {}", mBuildDir));
-  logger->info(fmt::format("build cmd: {}", mBuildCmd));
-  logger->info(fmt::format("test cmd:{}", mTestCmd));
-  logger->info(fmt::format("test result dir: {}", mTestResultDir));
+  logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
+  logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
+  logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
+  logger->info(fmt::format("test result dir: {}", mTestResultDir.Get()));
 
-  mBuildDir = fs::canonical(mBuildDir);
-  fs::create_directories(mTestResultDir);
-  mTestResultDir = fs::canonical(mTestResultDir);
+  fs::path buildDir = fs::canonical(mBuildDir.Get());
+  fs::create_directories(mTestResultDir.Get());
+  fs::path testResultDir = fs::canonical(mTestResultDir.Get());
   // create work directories
   fs::create_directories(workDir);
   fs::create_directories(workDir / "backup");
@@ -98,31 +100,31 @@ int CommandStandAlone::run(
   // restore if previous backup is exists
   restoreBackup(backupDir, sourceRoot);
 
-  ::chdir(mBuildDir.c_str());
+  ::chdir(buildDir.c_str());
   // generate original test result
   // build
-  ::system(mBuildCmd.c_str());
+  ::system(mBuildCmd.Get().c_str());
   // test
-  ::system(mTestCmd.c_str());
-  copyTestReportTo(mTestResultDir, expectedDir, mTestResultFileExts);
+  ::system(mTestCmd.Get().c_str());
+  copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
   // copy test report to expected
 
   // populate
   auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
-                                                        mExtensions,
-                                                        mExcludes);
+                                                        mExtensions.Get(),
+                                                        mExcludes.Get());
 
-  sentinel::SourceLines sourceLines = repo->getSourceLines(mScope);
+  sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-      mBuildDir);
+      buildDir);
 
   sentinel::MutationFactory mutationFactory(generator);
 
   auto mutants = mutationFactory.populate(sourceRoot,
                                            sourceLines,
-                                           mLimit);
-  if (verbose) {
+                                           mLimit.Get());
+  if (mIsVerbose.Get()) {
     for (auto& mutant : mutants) {
       std::stringstream buf;
       buf << mutant;
@@ -136,11 +138,11 @@ int CommandStandAlone::run(
     // mutate
     repo->getSourceTree()->modify(m, backupDir);
     // build
-    int buildExitCode = ::system(mBuildCmd.c_str());
+    int buildExitCode = ::system(mBuildCmd.Get().c_str());
     if (buildExitCode == 0) {
       // test
-      ::system(mTestCmd.c_str());
-      copyTestReportTo(mTestResultDir, actualDir, mTestResultFileExts);
+      ::system(mTestCmd.Get().c_str());
+      copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
     }
     // evaluate
     evaluator.compare(m, actualDir);

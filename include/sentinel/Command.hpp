@@ -25,9 +25,9 @@
 #ifndef INCLUDE_SENTINEL_COMMAND_HPP_
 #define INCLUDE_SENTINEL_COMMAND_HPP_
 
+#include <args/args.hxx>
 #include <experimental/filesystem>
 #include <string>
-#include <CLI11.hpp>
 
 
 namespace sentinel {
@@ -38,38 +38,44 @@ namespace sentinel {
 class Command {
  public:
   /**
+   * @brief constructor
+   */
+  explicit Command(args::Subparser& parser);
+  /**
    * @brief destructor
    */
   virtual ~Command() = default;
 
+ public:
+  /**
+   * @brief initialize execution environment
+   */
+  void init();
+
   /**
    * @brief Execute subcommand.
    * 
-   * @param sourceRoot source root path
-   * @param workDir temorary working path
-   * @param outputDir output save path
-   * @param verbose log verbosity
    * @return exit code
    */
-  virtual int run(const std::experimental::filesystem::path& sourceRoot,
-    const std::experimental::filesystem::path& workDir,
-    const std::experimental::filesystem::path& outputDir,
-    bool verbose) = 0;
-
-  /**
-   * @brief check this command is included at command line
-   * 
-   * @return bool
-   */
-  bool isParsed() {
-    return mSubApp->parsed();
-  }
+  virtual int run() = 0;
 
  protected:
   /**
-   * @brief sub command pointer
+   * @brief source root directory
    */
-  CLI::App* mSubApp;
+  args::Positional<std::string> mSourceRoot;
+  /**
+   * @brief verbose option
+   */
+  args::Flag mIsVerbose;
+  /**
+   * @brief internal working directory
+   */
+  args::ValueFlag<std::string> mWorkDir;
+  /**
+   * @brief output directory
+   */
+  args::ValueFlag<std::string> mOutputDir;
 };
 
 }  // namespace sentinel

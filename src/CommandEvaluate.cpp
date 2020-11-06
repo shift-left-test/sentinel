@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
 #include "sentinel/Evaluator.hpp"
@@ -34,37 +35,40 @@
 namespace sentinel {
 const char * cCommandEvaluateLoggerName = "CommandEvaluate";
 
-CommandEvaluate::CommandEvaluate(CLI::App* app) :
-  mEvalFile("EvaluationResults") {
-  mSubApp = app->add_subcommand("evaluate",
-    "Compare the test result with mutable applied and the test result "
-    "not applied");
-  mSubApp->add_option("-m,--mutant", mMutantStr,
-  "Mutant string")->required();
-  mSubApp->add_option("-e,--expected", mExpectedDir,
-    "Expected result directory")->required();
-  mSubApp->add_option("-a,--actual", mActualDir,
-    "Actual result directory")->required();
-  mSubApp->add_option("--evaluation-file", mEvalFile,
-    "Evaluated output filename(joined with output-dir)", true);
+CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
+  mMutantStr(parser, "mutant",
+    "Mutant string",
+    {'m', "mutant"}, args::Options::Required),
+  mExpectedDir(parser, "expected_dir",
+    "Expected result directory",
+    {'e', "expected"}, args::Options::Required),
+  mActualDir(parser, "actual_dir",
+    "Actual result directory",
+    {'a', "actual"}, args::Options::Required),
+  mEvalFile(parser, "filename",
+    "Evaluated output filename(joined with output-dir)",
+    {"evaluation-file"}, "EvaluationResults") {
 }
 
-int CommandEvaluate::run(const std::experimental::filesystem::path& sourceRoot,
-  const std::experimental::filesystem::path& workDir,
-  const std::experimental::filesystem::path& outputDir, bool verbose) {
+int CommandEvaluate::run() {
+  namespace fs = std::experimental::filesystem;
+  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+  fs::path outputDir = fs::canonical(mOutputDir.Get());
+
   auto logger = Logger::getLogger(cCommandEvaluateLoggerName);
+
   sentinel::Mutant m;
-  std::istringstream iss(mMutantStr);
+  std::istringstream iss(mMutantStr.Get());
   iss >> m;
 
-  if (verbose) {
+  if (mIsVerbose.Get()) {
     logger->info(fmt::format("mutant: {}", mMutantStr));
   }
 
-  sentinel::Evaluator evaluator(mExpectedDir, sourceRoot);
+  sentinel::Evaluator evaluator(mExpectedDir.Get(), sourceRoot);
 
-  evaluator.compareAndSaveMutationResult(m, mActualDir,
-    outputDir / mEvalFile);
+  evaluator.compareAndSaveMutationResult(m, mActualDir.Get(),
+    outputDir / mEvalFile.Get());
 
   return 0;
 }

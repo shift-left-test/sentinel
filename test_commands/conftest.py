@@ -189,7 +189,8 @@ def sentinel_env(request, tmpdir_factory):
     tmppath = tmpdir_factory.mktemp("work")
 
     def cleanup():
-        shutil.rmtree(tmppath)
+        pass
+        #shutil.rmtree(tmppath)
 
     request.addfinalizer(cleanup)
     return SentinelEnv(request.config.getoption("--executable"), tmppath)

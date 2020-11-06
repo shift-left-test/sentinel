@@ -26,40 +26,33 @@
 #include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
-#include "sentinel/GitRepository.hpp"
+#include "sentinel/Command.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutants.hpp"
-#include "sentinel/SourceTree.hpp"
-#include "sentinel/CommandMutate.hpp"
 
 
 namespace sentinel {
-const char * cCommandMutateLoggerName = "CommandMutate";
+const char * cCommandLoggerName = "Command";
 
-CommandMutate::CommandMutate(args::Subparser& parser) : Command(parser),
-  mMutantStr(parser, "mutant",
-    "Mutant string",
-    {'m', "mutant"}, args::Options::Required) {
+Command::Command(args::Subparser& parser) :
+  mSourceRoot(parser, "SOURCE_ROOT",
+    "source root directory. default: .",
+    "."),
+  mIsVerbose(parser, "verbose", "Verbosity", {'v', "verbose"}),
+  mWorkDir(parser, "work_dir",
+    "Sentinel temporary working directory.",
+    {'w', "work-dir"}, "./sentinel_tmp"),
+  mOutputDir(parser, "output_dir",
+    "Directory for saving output.",
+    {'o', "output-dir"}, ".") {
 }
 
-int CommandMutate::run() {
-  namespace fs = std::experimental::filesystem;
-  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
-  fs::path workDir = fs::canonical(mWorkDir.Get());
-
-  auto logger = Logger::getLogger(cCommandMutateLoggerName);
-  sentinel::Mutant m;
-  std::istringstream iss(mMutantStr.Get());
-  iss >> m;
+void Command::init() {
+  namespace fs =  std::experimental::filesystem;
+  fs::create_directories(mWorkDir.Get());
+  fs::create_directories(mOutputDir.Get());
 
   if (mIsVerbose.Get()) {
-    logger->info(fmt::format("mutant: {}", mMutantStr.Get()));
-    logger->info(fmt::format("backup dir: {}", workDir.string()));
+    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }
-
-  sentinel::GitRepository repository(sourceRoot);
-  repository.getSourceTree()->modify(m, workDir);
-
-  return 0;
 }
 }  // namespace sentinel

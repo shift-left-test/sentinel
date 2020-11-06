@@ -27,7 +27,6 @@
 
 #include <string>
 #include <vector>
-#include <CLI11.hpp>
 #include "sentinel/Command.hpp"
 
 
@@ -41,15 +40,12 @@ class CommandReport : public Command {
   /**
    * @brief constructor
    */
-  explicit CommandReport(CLI::App* app);
+  explicit CommandReport(args::Subparser& parser);
 
-  int run(const std::experimental::filesystem::path& sourceRoot,
-    const std::experimental::filesystem::path& workDir,
-    const std::experimental::filesystem::path& outputDir,
-    bool verbose) override;
+  int run() override;
 
  private:
-  std::string mEvalFile;
+  args::ValueFlag<std::string> mEvalFile;
 };
 
 }  // namespace sentinel

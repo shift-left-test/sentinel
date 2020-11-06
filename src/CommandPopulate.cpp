@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -37,61 +38,61 @@
 namespace sentinel {
 const char * cCommandPopulateLoggerName = "CommandPopulate";
 
-CommandPopulate::CommandPopulate(CLI::App* app) :
-  mBuildDir("."),
-  mScope("all"),
-  mExtensions{"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h", "c++", "h++",
-    "cu", "cuh"},
-  mLimit(10),
-  mMutableFilename("mutables.db") {
-  mSubApp = app->add_subcommand("populate",
-    "Identify mutable test targets and application methods in'git' "
-    "and print a list");
-  mSubApp->add_option("-b,--build-dir", mBuildDir,
-    "Directory where compile_commands.json file exists.", true);
-  mSubApp->add_option("-s,--scope", mScope,
-    "Diff scope, one of ['commit', 'all'].", true);
-  mSubApp->add_option("-t,--extension", mExtensions,
-    "Extentions of source file which could be mutated.", true);
-  mSubApp->add_option("-e,--exclude", mExcludes,
-    "exclude file or path");
-  mSubApp->add_option("-l,--limit", mLimit,
-    "Maximum generated mutable count.", true);
-  mSubApp->add_option("--mutants-file-name", mMutableFilename,
-    "Populated result file name which will be created at output-dir.", true);
+CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
+  mBuildDir(parser, "build_dir",
+    "Directory where compile_commands.json file exists.",
+    {'b', "build-dir"}, "."),
+  mScope(parser, "scope",
+    "Diff scope, one of ['commit', 'all'].",
+    {'s', "scope"}, "all"),
+  mExtensions(parser, "ext",
+    "Extentions of source file which could be mutated.",
+    {'t', "extension"}, {"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h",
+    "c++", "h++", "cu", "cuh"}),
+  mExcludes(parser, "path",
+    "exclude file or path",
+    {'e', "exclude"}),
+  mLimit(parser, "count",
+    "Maximum generated mutable count.",
+    {'l', "limit"}, 10),
+  mMutableFilename(parser, "path",
+    "Populated result file name which will be created at output-dir.",
+    {"mutants-file-name"}, "mutables.db") {
 }
 
-int CommandPopulate::run(const std::experimental::filesystem::path& sourceRoot,
-  const std::experimental::filesystem::path& workDir,
-  const std::experimental::filesystem::path& outputDir, bool verbose) {
+int CommandPopulate::run() {
+  namespace fs = std::experimental::filesystem;
+  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+  fs::path outputDir = fs::canonical(mOutputDir.Get());
+
   auto logger = Logger::getLogger(cCommandPopulateLoggerName);
-  if (verbose) {
+  if (mIsVerbose.Get()) {
     logger->info(fmt::format("source root:{}", sourceRoot.string()));
-    for (auto&exclude : mExcludes) {
+    for (auto&exclude : mExcludes.Get()) {
       logger->info(fmt::format("exclude:{}", exclude));
     }
-    for (auto& extension : mExtensions) {
+    for (auto& extension : mExtensions.Get()) {
       logger->info(fmt::format("extension:{}", extension));
     }
-    logger->info(fmt::format("limit:{}", mLimit));
+    logger->info(fmt::format("limit:{}", mLimit.Get()));
   }
   auto repo = std::make_unique<sentinel::GitRepository>(
-    sourceRoot, mExtensions, mExcludes);
-  sentinel::SourceLines sourceLines = repo->getSourceLines(mScope);
+    sourceRoot, mExtensions.Get(), mExcludes.Get());
+  sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   // Shuffle target lines as an attempt to reduce mutant selecting time.
   auto rng = std::default_random_engine{};
   std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
   auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-      mBuildDir);
+      mBuildDir.Get());
 
   sentinel::MutationFactory mutationFactory(generator);
 
   sentinel::Mutants mutants = mutationFactory.populate(sourceRoot,
                                            sourceLines,
-                                           mLimit);
-  if (verbose) {
+                                           mLimit.Get());
+  if (mIsVerbose) {
     for (auto& mutant : mutants) {
       std::stringstream buf;
       buf << mutant;
@@ -99,7 +100,7 @@ int CommandPopulate::run(const std::experimental::filesystem::path& sourceRoot,
     }
   }
 
-  mutants.save(outputDir /mMutableFilename);
+  mutants.save(outputDir / mMutableFilename.Get());
 
   return 0;
 }

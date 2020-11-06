@@ -23,6 +23,7 @@
 */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 #include "sentinel/HTMLReport.hpp"
@@ -35,25 +36,25 @@
 namespace sentinel {
 const char * cCommandReportLoggerName = "CommandReport";
 
-CommandReport::CommandReport(CLI::App* app) {
-  mSubApp = app->add_subcommand("report",
-    "Create a mutation test report based on the'evaluate' result "
-    "and source code");
-  mSubApp->add_option("--evaluation-file", mEvalFile,
-    "Mutation test result file")->required();
+CommandReport::CommandReport(args::Subparser& parser) : Command(parser),
+  mEvalFile(parser, "path",
+    "Mutation test result file",
+    {"evaluation-file"}, args::Options::Required) {
 }
 
-int CommandReport::run(const std::experimental::filesystem::path& sourceRoot,
-  const std::experimental::filesystem::path& workDir,
-  const std::experimental::filesystem::path& outputDir, bool verbose) {
+int CommandReport::run() {
+  namespace fs = std::experimental::filesystem;
+  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+  fs::path outputDir = fs::canonical(mOutputDir.Get());
+
   auto logger = Logger::getLogger(cCommandReportLoggerName);
 
-  logger->info(fmt::format("evaluation-file: {}", mEvalFile));
+  logger->info(fmt::format("evaluation-file: {}", mEvalFile.Get()));
   logger->info(fmt::format("output dir: {}", outputDir.string()));
 
-  sentinel::XMLReport xmlReport(mEvalFile, sourceRoot);
+  sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot);
   xmlReport.save(outputDir);
-  sentinel::HTMLReport htmlReport(mEvalFile, sourceRoot);
+  sentinel::HTMLReport htmlReport(mEvalFile.Get(), sourceRoot);
   htmlReport.save(outputDir);
   htmlReport.printSummary();
 

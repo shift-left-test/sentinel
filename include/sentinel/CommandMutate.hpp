@@ -27,7 +27,6 @@
 
 #include <string>
 #include <vector>
-#include <CLI11.hpp>
 #include "sentinel/Command.hpp"
 
 
@@ -41,15 +40,12 @@ class CommandMutate : public Command {
   /**
    * @brief constructor
    */
-  explicit CommandMutate(CLI::App* app);
+  explicit CommandMutate(args::Subparser& parser);
 
-  int run(const std::experimental::filesystem::path& sourceRoot,
-    const std::experimental::filesystem::path& workDir,
-    const std::experimental::filesystem::path& outputDir,
-    bool verbose) override;
+  int run() override;
 
  private:
-  std::string mMutantStr;
+  args::ValueFlag<std::string> mMutantStr;
 };
 
 }  // namespace sentinel

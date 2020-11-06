@@ -25,10 +25,8 @@
 #ifndef INCLUDE_SENTINEL_COMMANDPOPULATE_HPP_
 #define INCLUDE_SENTINEL_COMMANDPOPULATE_HPP_
 
-
 #include <string>
 #include <vector>
-#include <CLI11.hpp>
 #include "sentinel/Command.hpp"
 
 
@@ -42,20 +40,17 @@ class CommandPopulate : public Command {
   /**
    * @brief constructor
    */
-  explicit CommandPopulate(CLI::App* app);
+  explicit CommandPopulate(args::Subparser& parser);
 
-  int run(const std::experimental::filesystem::path& sourceRoot,
-    const std::experimental::filesystem::path& workDir,
-    const std::experimental::filesystem::path& outputDir,
-    bool verbose) override;
+  int run() override;
 
  private:
-  std::string mBuildDir;
-  std::string mScope;
-  std::vector<std::string> mExtensions;
-  std::vector<std::string> mExcludes;
-  int mLimit;
-  std::string mMutableFilename;
+  args::ValueFlag<std::string> mBuildDir;
+  args::ValueFlag<std::string> mScope;
+  args::ValueFlagList<std::string> mExtensions;
+  args::ValueFlagList<std::string> mExcludes;
+  args::ValueFlag<int> mLimit;
+  args::ValueFlag<std::string> mMutableFilename;
 };
 
 }  // namespace sentinel

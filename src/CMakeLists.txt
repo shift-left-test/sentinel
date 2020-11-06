@@ -44,10 +44,11 @@ build_static_library(
 build_program(
   NAME sentinel
   SRCS main.cpp
+       Command.cpp
        CommandPopulate.cpp
        CommandMutate.cpp
        CommandEvaluate.cpp
        CommandReport.cpp
        CommandStandAlone.cpp
-  LIBS sentinel-core CLI11 ${LLVM_CLANG_LIBS}
+  LIBS sentinel-core args ${LLVM_CLANG_LIBS}
 )

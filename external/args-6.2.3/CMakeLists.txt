@@ -21,6 +21,6 @@
 # SOFTWARE.
 
 build_external_interface_library(
-  NAME CLI11
+  NAME args
   PUBLIC_HEADERS .
 )

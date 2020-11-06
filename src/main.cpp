@@ -22,11 +22,11 @@
   SOFTWARE.
 */
 
+
 #include <experimental/filesystem>
 #include <iostream>
 #include <memory>
 #include <list>
-#include <CLI11.hpp>
 #include "sentinel/Logger.hpp"
 #include "sentinel/CommandPopulate.hpp"
 #include "sentinel/CommandMutate.hpp"
@@ -36,49 +36,69 @@
 
 
 int main(int argc, char** argv) {
-  namespace fs = std::experimental::filesystem;
+  std::unique_ptr<sentinel::Command> mainCommand;
+  args::Group arguments("arguments");
+  args::HelpFlag h(arguments, "help",
+    "Display this help menu. \n"
+    "Use 'sentinal COMMAND --help' to see help for each command.",
+    {'h', "help"});
 
-  CLI::App app("sentinel");
-  app.set_help_all_flag("--help-all", "Expand all help");
+  args::ArgumentParser parser("Mutation Test");
 
-  std::list<std::unique_ptr<sentinel::Command>> commandList;
+  args::Group commands(static_cast<args::Group&>(parser), "commands");
+  args::Command populate(commands, "populate",
+    "Identify mutable test targets and application methods in'git' "
+    "and print a list",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandPopulate>(subParser);
+      subParser.Parse();
+    });
+  args::Command mutate(commands, "mutate",
+    "Apply the selected 'mutable' to the source. "
+    "The original file is backed up in 'work-dir'",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandMutate>(subParser);
+      subParser.Parse();
+    });
+  args::Command evaluate(commands, "evaluate",
+    "Compare the test result with mutable applied and the test result "
+    "not applied",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandEvaluate>(subParser);
+      subParser.Parse();
+    });
+  args::Command report(commands, "report",
+    "Create a mutation test report based on the'evaluate' result "
+    "and source code",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandReport>(subParser);
+      subParser.Parse();
+    });
+  args::Command run(commands, "run",
+    "Run mutation test in standalone mode",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandStandAlone>(subParser);
+      subParser.Parse();
+    });
 
-  CLI::Option* verbose = app.add_flag("-v,--verbose", "Verbosity");
-  std::string work_dir("./sentinel_tmp");
-  app.add_option("-w,--work-dir", work_dir,
-    "Sentinel temporary working directory.", true);
-  std::string output_dir(".");
-  app.add_option("-o,--output-dir", output_dir,
-    "Directory for saving output.", true);
-  std::string source_root(".");
-  app.add_option("source-root", source_root,
-    "source root directory.")->required();
+  args::GlobalOptions globals(parser, arguments);
 
-  commandList.push_back(std::make_unique<sentinel::CommandPopulate>(&app));
-  commandList.push_back(std::make_unique<sentinel::CommandMutate>(&app));
-  commandList.push_back(std::make_unique<sentinel::CommandEvaluate>(&app));
-  commandList.push_back(std::make_unique<sentinel::CommandReport>(&app));
-  commandList.push_back(std::make_unique<sentinel::CommandStandAlone>(&app));
+  try {
+    parser.ParseCLI(argc, argv);
 
-  CLI11_PARSE(app, argc, argv);
-
-  if (verbose != nullptr) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
-  }
-
-  source_root = fs::canonical(source_root);
-  fs::create_directories(work_dir);
-  work_dir = fs::canonical(work_dir);
-  fs::create_directories(output_dir);
-  output_dir = fs::canonical(output_dir);
-
-  for (auto& subcmd : commandList) {
-    if (subcmd->isParsed()) {
-      return subcmd->run(source_root, work_dir, output_dir, verbose != nullptr);
+    if (mainCommand) {
+      mainCommand->init();
+      return mainCommand->run();
     }
+  } catch (args::Help& e) {
+    std::cout << parser;
+  } catch (args::Error& e) {
+    std::cerr << e.what() << std::endl << parser;
+    return 1;
+  } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    return 2;
   }
-
-  std::cout << app.help();
 
   return -1;
 }
