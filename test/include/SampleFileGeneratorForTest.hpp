@@ -44,9 +44,16 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
 
     SAMPLE1_NAME = "sample1.cpp";
     SAMPLE1_PATH = SAMPLE1_DIR / SAMPLE1_NAME;
+
+    SAMPLE1B_NAME = "sample1b.cpp";
+    SAMPLE1B_PATH = SAMPLE1_DIR / SAMPLE1B_NAME;
+
     std::ofstream t(SAMPLE1_PATH);
     t << SAMPLE1_CONTENTS;
     t.close();
+    std::ofstream t2(SAMPLE1B_PATH);
+    t2 << SAMPLE1B_CONTENTS;
+    t2.close();
   }
 
   void TearDown() override {
@@ -114,10 +121,11 @@ int sumOfEvenPositiveNumber(int from, int to) {
   int ret = 0;
   int i = from;
 
-  for (; lessThanOrEqual(i, to); ++i) {
+  while (lessThanOrEqual(i, to)) {
     if ((i & 1) == (1 << 0) && i > 0) {
       ret = ret + i;
     }
+    i++;
   }
 
   return ret;
@@ -136,7 +144,36 @@ int foo(int i, float f) {
   }
 
   return 0;
-}
+})a1s2d3f4";
+  std::string SAMPLE1B_PATH;
+  std::string SAMPLE1B_DIR;
+  std::string SAMPLE1B_NAME;
+  std::string SAMPLE1B_CONTENTS =
+      R"a1s2d3f4(/*
+  MIT License
+
+  Copyright (c) 2020 Loc Duy Phan
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
+#include <stdexcept>
 
 int sdlBlockedCases() {
   for (;;) break;  // NOLINT
@@ -144,6 +181,21 @@ int sdlBlockedCases() {
   while (true) {}
 
   return ({3;});
+
+  int a = 1;
+  int* ptr = &a;
+  delete ptr;
+
+  try {
+    switch (a) {
+      case 1:
+        break;
+      default:
+        break;
+    }
+  } catch (const std::runtime_error& e) {
+    return -1;
+  }
 })a1s2d3f4";
 };
 

@@ -67,11 +67,16 @@ bool UOI::canMutate(clang::Stmt* s) {
     }
 
     if (auto uo = clang::dyn_cast<clang::UnaryOperator>(parent)) {
-      if (uo->getOpcode() == clang::UO_AddrOf) {
+      if (uo->getOpcode() == clang::UO_AddrOf ||
+          uo->isIncrementDecrementOp()) {
         if (uo->getSubExpr()->IgnoreParens() == s) {
           return false;
         }
       }
+    }
+
+    if (clang::isa<clang::ReturnStmt>(parent)) {
+      return false;
     }
 
     parent = getParentStmt(parent);

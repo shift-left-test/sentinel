@@ -24,6 +24,8 @@
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Expr.h>
+#include <clang/AST/ExprCXX.h>
+#include <clang/AST/StmtCXX.h>
 #include <clang/Lex/Lexer.h>
 #include <string>
 #include "sentinel/operators/sdl.hpp"
@@ -39,7 +41,10 @@ bool SDL::canMutate(clang::Stmt* s) {
       clang::isa<clang::ForStmt>(s) ||
       clang::isa<clang::DoStmt>(s) ||
       clang::isa<clang::WhileStmt>(s) ||
-      clang::isa<clang::CompoundStmt>(s)) {
+      clang::isa<clang::CompoundStmt>(s) ||
+      clang::isa<clang::SwitchStmt>(s) ||
+      clang::isa<clang::CXXTryStmt>(s) ||
+      clang::isa<clang::CXXDeleteExpr>(s)) {
     return false;
   }
 
