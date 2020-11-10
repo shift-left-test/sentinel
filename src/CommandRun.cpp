@@ -35,53 +35,53 @@
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/HTMLReport.hpp"
-#include "sentinel/CommandStandAlone.hpp"
+#include "sentinel/CommandRun.hpp"
 
 
 namespace sentinel {
-const char * cCommandStandAloneLoggerName = "CommandStandAlone";
+const char * cCommandRunLoggerName = "CommandRun";
 
-CommandStandAlone::CommandStandAlone(args::Subparser& parser) : Command(parser),
-  mBuildDir(parser, "build_dir",
+CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
+  mBuildDir(parser, "PATH",
     "Directory where compile_commands.json file exists.",
     {'b', "build-dir"}, "."),
-  mScope(parser, "scope",
+  mScope(parser, "SCOPE",
     "Diff scope, one of ['commit', 'all'].",
     {'s', "scope"}, "all"),
-  mExtensions(parser, "ext",
+  mExtensions(parser, "EXTENSION",
     "Extentions of source file which could be mutated.",
     {'t', "extension"}, {"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h",
     "c++", "h++", "cu", "cuh"}),
-  mExcludes(parser, "path",
+  mExcludes(parser, "PATH",
     "exclude file or path",
     {'e', "exclude"}),
-  mLimit(parser, "count",
+  mLimit(parser, "COUNT",
     "Maximum generated mutable count.",
     {'l', "limit"}, 10),
-  mBuildCmd(parser, "cmd",
+  mBuildCmd(parser, "SH_CMD",
     "Shell command to build source",
     {"build-command"}, args::Options::Required),
-  mTestCmd(parser, "cmd",
+  mTestCmd(parser, "SH_CMD",
     "Shell command to execute test",
     {"test-command"}, args::Options::Required),
-  mTestResultDir(parser, "path",
+  mTestResultDir(parser, "PATH",
     "Test command output directory",
     {"test-result-dir"}, args::Options::Required),
-  mTestResultFileExts(parser, "exts",
-    "Test command output file extensions",
+  mTestResultFileExts(parser, "EXTENSION",
+    "Test command output file extensions.",
     {"test-result-extention"}, {"xml", "XML"}),
   mWeakMutation(parser, "weak_mutation",
       R"(If weak-mutation flag is on, regard runtime errors during test as detected mutation)",
       {"weak-mutation"}) {
 }
 
-int CommandStandAlone::run() {
+int CommandRun::run() {
   namespace fs =  std::experimental::filesystem;
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
   fs::path workDir = fs::canonical(mWorkDir.Get());
   fs::path outputDir = fs::canonical(mOutputDir.Get());
 
-  auto logger = Logger::getLogger(cCommandStandAloneLoggerName);
+  auto logger = Logger::getLogger(cCommandRunLoggerName);
   logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
   logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
   logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
@@ -169,7 +169,7 @@ int CommandStandAlone::run() {
   return 0;
 }
 
-void CommandStandAlone::copyTestReportTo(const std::string& from,
+void CommandRun::copyTestReportTo(const std::string& from,
   const std::string& to, const std::vector<std::string>& exts) {
   namespace fs = std::experimental::filesystem;
 
@@ -205,7 +205,7 @@ void CommandStandAlone::copyTestReportTo(const std::string& from,
   }
 }
 
-void CommandStandAlone::restoreBackup(const std::string& backup,
+void CommandRun::restoreBackup(const std::string& backup,
   const std::string& srcRoot) {
   namespace fs = std::experimental::filesystem;
 

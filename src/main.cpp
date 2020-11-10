@@ -32,7 +32,7 @@
 #include "sentinel/CommandMutate.hpp"
 #include "sentinel/CommandEvaluate.hpp"
 #include "sentinel/CommandReport.hpp"
-#include "sentinel/CommandStandAlone.hpp"
+#include "sentinel/CommandRun.hpp"
 
 
 int main(int argc, char** argv) {
@@ -77,13 +77,16 @@ int main(int argc, char** argv) {
   args::Command run(commands, "run",
     "Run mutation test in standalone mode",
     [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandStandAlone>(subParser);
+      mainCommand = std::make_unique<sentinel::CommandRun>(subParser);
       subParser.Parse();
     });
 
   args::GlobalOptions globals(parser, arguments);
 
   try {
+    parser.helpParams.showTerminator = false;
+    parser.helpParams.addDefault = true;
+
     parser.ParseCLI(argc, argv);
 
     if (mainCommand) {

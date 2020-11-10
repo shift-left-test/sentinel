@@ -37,7 +37,7 @@ namespace sentinel {
 const char * cCommandMutateLoggerName = "CommandMutate";
 
 CommandMutate::CommandMutate(args::Subparser& parser) : Command(parser),
-  mMutantStr(parser, "mutant",
+  mMutantStr(parser, "MUTANT",
     "Mutant string",
     {'m', "mutant"}, args::Options::Required) {
 }

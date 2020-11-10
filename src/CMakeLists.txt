@@ -49,6 +49,6 @@ build_program(
        CommandMutate.cpp
        CommandEvaluate.cpp
        CommandReport.cpp
-       CommandStandAlone.cpp
+       CommandRun.cpp
   LIBS sentinel-core args ${LLVM_CLANG_LIBS}
 )

@@ -22,8 +22,8 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_
-#define INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_
+#ifndef INCLUDE_SENTINEL_COMMANDRUN_HPP_
+#define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
 #include <string>
 #include <vector>
@@ -33,14 +33,14 @@
 namespace sentinel {
 
 /**
- * @brief sentinel commandline 'populate' subcommand class
+ * @brief sentinel commandline 'run' subcommand class
  */
-class CommandStandAlone : public Command {
+class CommandRun : public Command {
  public:
   /**
    * @brief constructor
    */
-  explicit CommandStandAlone(args::Subparser& parser);
+  explicit CommandRun(args::Subparser& parser);
 
   int run() override;
 
@@ -65,4 +65,4 @@ class CommandStandAlone : public Command {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_COMMANDSTANDALONE_HPP_
+#endif  // INCLUDE_SENTINEL_COMMANDRUN_HPP_
