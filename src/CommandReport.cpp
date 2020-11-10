@@ -39,7 +39,10 @@ const char * cCommandReportLoggerName = "CommandReport";
 CommandReport::CommandReport(args::Subparser& parser) : Command(parser),
   mEvalFile(parser, "path",
     "Mutation test result file",
-    {"evaluation-file"}, args::Options::Required) {
+    {"evaluation-file"}, args::Options::Required),
+  mWeakMutation(parser, "weak_mutation",
+      R"(If weak-mutation flag is on, regard runtime errors during test as detected mutation)",
+      {"weak-mutation"}) {
 }
 
 int CommandReport::run() {
@@ -52,9 +55,11 @@ int CommandReport::run() {
   logger->info(fmt::format("evaluation-file: {}", mEvalFile.Get()));
   logger->info(fmt::format("output dir: {}", outputDir.string()));
 
-  sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot);
+  sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot,
+      !static_cast<bool>(mWeakMutation));
   xmlReport.save(outputDir);
-  sentinel::HTMLReport htmlReport(mEvalFile.Get(), sourceRoot);
+  sentinel::HTMLReport htmlReport(mEvalFile.Get(), sourceRoot,
+      !static_cast<bool>(mWeakMutation));
   htmlReport.save(outputDir);
   htmlReport.printSummary();
 

@@ -69,7 +69,10 @@ CommandStandAlone::CommandStandAlone(args::Subparser& parser) : Command(parser),
     {"test-result-dir"}, args::Options::Required),
   mTestResultFileExts(parser, "exts",
     "Test command output file extensions",
-    {"test-result-extention"}, {"xml", "XML"}) {
+    {"test-result-extention"}, {"xml", "XML"}),
+  mWeakMutation(parser, "weak_mutation",
+      R"(If weak-mutation flag is on, regard runtime errors during test as detected mutation)",
+      {"weak-mutation"}) {
 }
 
 int CommandStandAlone::run() {
@@ -145,7 +148,7 @@ int CommandStandAlone::run() {
       copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
     }
     // evaluate
-    evaluator.compare(m, actualDir);
+    evaluator.compare(m, actualDir, buildExitCode != 0);
     // restore mutate
     restoreBackup(backupDir, sourceRoot);
   }

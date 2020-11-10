@@ -46,6 +46,7 @@ class CommandReport : public Command {
 
  private:
   args::ValueFlag<std::string> mEvalFile;
+  args::Flag mWeakMutation;
 };
 
 }  // namespace sentinel

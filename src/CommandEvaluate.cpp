@@ -47,7 +47,9 @@ CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
     {'a', "actual"}, args::Options::Required),
   mEvalFile(parser, "filename",
     "Evaluated output filename(joined with output-dir)",
-    {"evaluation-file"}, "EvaluationResults") {
+    {"evaluation-file"}, "EvaluationResults"),
+  mBuildFailure(parser, "build_failure",
+    "If build_failure occurs", {"build-failure"}) {
 }
 
 int CommandEvaluate::run() {
@@ -68,7 +70,7 @@ int CommandEvaluate::run() {
   sentinel::Evaluator evaluator(mExpectedDir.Get(), sourceRoot);
 
   evaluator.compareAndSaveMutationResult(m, mActualDir.Get(),
-    outputDir / mEvalFile.Get());
+    outputDir / mEvalFile.Get(), static_cast<bool>(mBuildFailure));
 
   return 0;
 }

@@ -60,6 +60,7 @@ class CommandStandAlone : public Command {
   args::ValueFlagList<std::string> mExcludes;
   args::ValueFlag<std::string> mScope;
   args::ValueFlag<int> mLimit;
+  args::Flag mWeakMutation;
 };
 
 }  // namespace sentinel
