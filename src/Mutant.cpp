@@ -44,13 +44,13 @@ Mutant::Mutant(const std::string& mutationOperator,
     mPath(std::experimental::filesystem::canonical(path)), mToken(token),
     mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
-  std::size_t pos = qualifiedFuncName.find_last_of("::");
+  std::size_t pos = qualifiedFuncName.find_last_of(':');
   if (pos == std::string::npos) {
     mClass = "";
     mFunction = qualifiedFuncName;
   } else {
     mClass = qualifiedFuncName.substr(0, pos);
-    mFunction = qualifiedFuncName.substr(pos+2);
+    mFunction = qualifiedFuncName.substr(pos+1);
   }
 }
 
