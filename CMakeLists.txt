@@ -40,6 +40,8 @@ endif()
 
 add_all_subdirectories()
 
+install(FILES ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1 DESTINATION man/man1)
+
 build_debian_package(
   MAINTAINER "Sung Gon Kim <sunggon82.kim@lge.com>"
   CONTACT "sunggon82.kim@lge.com"

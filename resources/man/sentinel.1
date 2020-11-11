@@ -1,0 +1,176 @@
+.\" DO NOT MODIFY THIS FILE!
+.TH man 1 "11 Nov 2020" "0.0.1" "sentinel manual"
+.SH NAME
+sentinel \- the mutation testing tool
+.SH SYNOPSIS
+sentinel COMMAND {OPTIONS}
+.SH DESCRIPTION
+sentinel is the mutation testing tool.
+.SH COMMAND
+.SS
+populate
+Identify mutable test targets and application methods in 'git' and print a list
+.SS
+mutate
+Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
+.SS
+evaluate
+Compare the test result with mutable applied and the test result not applied
+.SS
+report
+Create a mutation test report based on the'evaluate' result and source code
+.SS
+run
+Run mutation test in standalone mode
+.SS
+-h, --help
+Display help menu. Use 'sentinal COMMAND --help' to see help for each command.
+.SH OPTIONS
+.SS populate: sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
+Identify mutable test targets and application methods in 'git' and print a list
+.TP
+SOURCE_ROOT_PATH
+source root directory.
+.TP
+-v, --verbose
+Verbosity
+.TP
+-w[PATH], --work-dir=[PATH]
+Sentinel temporary working directory. Default: ./sentinel_tmp
+.TP
+-o[PATH], --output-dir=[PATH]
+Directory for saving output. Default: .
+.TP
+-b[PATH], --build-dir=[PATH]
+Directory where compile_commands.json file exists. Default: .
+.TP
+-s[SCOPE], --scope=[SCOPE]
+Diff scope, one of ['commit', 'all']. Default: all
+.TP
+-t[EXTENSION...],
+.TP
+--extension=[EXTENSION...]
+Extentions of source file which could be mutated.
+.TP
+-e[PATH...], --exclude=[PATH...]
+exclude file or path
+.TP
+-l[COUNT], --limit=[COUNT]
+Maximum generated mutable count. Default: 10
+.TP
+--mutants-file-name=[PATH]
+Populated result file name which will be created at output-dir. Default: mutables.db
+.SS mutate: sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
+Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
+.TP
+SOURCE_ROOT_PATH
+source root directory.
+.TP
+-v, --verbose
+Verbosity
+.TP
+-w[PATH], --work-dir=[PATH]
+Sentinel temporary working directory. Default: ./sentinel_tmp
+.TP
+-o[PATH], --output-dir=[PATH]
+Directory for saving output. Default: .
+.TP
+-m[MUTANT], --mutant=[MUTANT]
+Mutant string
+.SS evaluate: sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
+Compare the test result with mutable applied and the test result not applied
+.TP
+SOURCE_ROOT_PATH
+source root directory.
+.TP
+-v, --verbose
+Verbosity
+.TP
+-w[PATH], --work-dir=[PATH]
+Sentinel temporary working directory. Default: ./sentinel_tmp
+.TP
+-o[PATH], --output-dir=[PATH]
+Directory for saving output. Default: .
+.TP
+-m[mutant], --mutant=[mutant]
+Mutant string
+.TP
+-e[PATH], --expected=[PATH]
+Expected result directory
+.TP
+-a[PATH], --actual=[PATH]
+Actual result directory
+.TP
+--evaluation-file=[FILEPATH]
+Evaluated output filename which will be joined with output-dir. Default: EvaluationResults
+.TP
+--build-failure
+If build_failure occurs
+.SS report: sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
+Create a mutation test report based on the'evaluate' result and source code
+.TP
+SOURCE_ROOT_PATH
+source root directory.
+.TP
+-v, --verbose
+Verbosity
+.TP
+-w[PATH], --work-dir=[PATH]
+Sentinel temporary working directory. Default: ./sentinel_tmp
+.TP
+-o[PATH], --output-dir=[PATH]
+Directory for saving output. Default: .
+.TP
+--evaluation-file=[PATH]
+Mutation test result file
+.TP
+--weak-mutation
+If weak-mutation flag is on, regard runtime errors during test as detected mutation
+.SS run: sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
+Run mutation test in standalone mode
+.TP
+SOURCE_ROOT_PATH
+source root directory.
+.TP
+-v, --verbose
+Verbosity
+.TP
+-w[PATH], --work-dir=[PATH]
+Sentinel temporary working directory. Default: ./sentinel_tmp
+.TP
+-o[PATH], --output-dir=[PATH]
+Directory for saving output. Default: .
+.TP
+-b[PATH], --build-dir=[PATH]
+Directory where compile_commands.json file exists. Default: .
+.TP
+--test-result-dir=[PATH]
+Test command output directory
+.TP
+--build-command=[SH_CMD]
+Shell command to build source
+.TP
+--test-command=[SH_CMD]
+Shell command to execute test
+.TP
+--test-result-extention=[EXTENSION...]
+Test command output file extensions.
+.TP
+-t[EXTENSION...], --extension=[EXTENSION...]
+Extentions of source file which could be mutated.
+.TP
+-e[PATH...], --exclude=[PATH...]
+exclude file or path
+.TP
+-s[SCOPE], --scope=[SCOPE]
+Diff scope, one of ['commit', 'all']. Default: all
+.TP
+-l[COUNT], --limit=[COUNT]
+Maximum generated mutable count. Default: 10
+.TP
+--weak-mutation
+If weak-mutation flag is on, regard runtime errors during test as detected mutation
+.SH REPORTING BUGS
+sentinel issue tracker: <http://mod.lge.com/hub/yocto/addons/sentinel/issues>
+.SH SEE ALSO
+sentinel repository: <http://mod.lge.com/hub/yocto/addons/sentinel>, Mutation Testing Wikipedia: <https://en.wikipedia.org/wiki/Mutation_testing>

@@ -26,7 +26,7 @@ $ ./build.sh
 
       commands
         populate                          Identify mutable test targets and
-                                          application methods in'git' and print
+                                          application methods in 'git' and print
                                           a list
         mutate                            Apply the selected 'mutable' to the
                                           source. The original file is backed up
@@ -48,7 +48,7 @@ $ ./build.sh
 ```bash
   sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
 
-    Identify mutable test targets and application methods in'git' and print a
+    Identify mutable test targets and application methods in 'git' and print a
     list
 
   OPTIONS:
