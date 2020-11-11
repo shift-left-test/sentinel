@@ -51,6 +51,7 @@ class CommandPopulate : public Command {
   args::ValueFlagList<std::string> mExcludes;
   args::ValueFlag<int> mLimit;
   args::ValueFlag<std::string> mMutableFilename;
+  args::ValueFlag<std::string> mGenerator;
 };
 
 }  // namespace sentinel

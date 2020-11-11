@@ -33,6 +33,7 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
+#include "sentinel/RandomMutantGenerator.hpp"
 
 
 namespace sentinel {
@@ -57,7 +58,10 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
     {'l', "limit"}, 10),
   mMutableFilename(parser, "PATH",
     "Populated result file name which will be created at output-dir.",
-    {"mutants-file-name"}, "mutables.db") {
+    {"mutants-file-name"}, "mutables.db"),
+  mGenerator(parser, "gen",
+    "Select mutant generator type, one of ['uniform', 'random'].",
+    {"generator"}, "uniform") {
 }
 
 int CommandPopulate::run() {
@@ -84,14 +88,19 @@ int CommandPopulate::run() {
   auto rng = std::default_random_engine{};
   std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
-  auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-      mBuildDir.Get());
+  std::shared_ptr<MutantGenerator> generator;
+  if (mGenerator.Get() == "uniform") {
+    generator = std::make_shared<sentinel::UniformMutantGenerator>(
+        mBuildDir.Get());
+  } else {
+    generator = std::make_shared<sentinel::RandomMutantGenerator>(
+        mBuildDir.Get());
+  }
 
   sentinel::MutationFactory mutationFactory(generator);
 
-  sentinel::Mutants mutants = mutationFactory.populate(sourceRoot,
-                                           sourceLines,
-                                           mLimit.Get());
+  sentinel::Mutants mutants = mutationFactory.populate(
+      sourceRoot, sourceLines, mLimit.Get());
   if (mIsVerbose) {
     for (auto& mutant : mutants) {
       std::stringstream buf;
