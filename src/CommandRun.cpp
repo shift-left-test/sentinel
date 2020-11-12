@@ -144,6 +144,7 @@ int CommandRun::run() {
     int buildExitCode = ::system(mBuildCmd.Get().c_str());
     if (buildExitCode == 0) {
       // test
+      fs::remove_all(testResultDir);
       ::system(mTestCmd.Get().c_str());
       copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
     }
