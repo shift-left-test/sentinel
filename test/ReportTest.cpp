@@ -60,6 +60,8 @@ class ReportTest : public ::testing::Test {
     makeFile(TARGET_FULL_PATH2);
     TARGET_FULL_PATH3 = NESTED_SOURCE_DIR2 / "target3.cpp";
     makeFile(TARGET_FULL_PATH3);
+    TARGET_FULL_PATH4 = SOURCE_DIR / "target4.cpp";
+    makeFile(TARGET_FULL_PATH4);
   }
 
   void TearDown() override {
@@ -77,6 +79,7 @@ class ReportTest : public ::testing::Test {
   fs::path TARGET_FULL_PATH;
   fs::path TARGET_FULL_PATH2;
   fs::path TARGET_FULL_PATH3;
+  fs::path TARGET_FULL_PATH4;
 };
 
 class ReportForTest : public Report {
@@ -165,6 +168,10 @@ TEST_F(ReportTest, testPrintReportWithWeakMutationAndNoBuildFailure) {
              8, 12, 8, 13, "-");
   MRs.emplace_back(M4, "", "", MutationState::ALIVED);
 
+  Mutant M5("AOR", TARGET_FULL_PATH4, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M5, "", "", MutationState::ALIVED);
+
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
@@ -183,8 +190,9 @@ File                                                 #killed #mutation       cov
 ... R/target1_veryVeryVeryVeryVerylongFilePath.cpp         0         1        0%
 NESTED_DIR2/target2.cpp                                    1         1      100%
 NESTED_DIR2/target3.cpp                                    1         2       50%
+target4.cpp                                                0         1        0%
 ----------------------------------------------------------------------------------
-TOTAL                                                      2         4       50%
+TOTAL                                                      2         5       40%
 ----------------------------------------------------------------------------------
 )a1b2z", out);
 }

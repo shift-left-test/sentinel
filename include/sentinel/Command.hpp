@@ -26,8 +26,8 @@
 #define INCLUDE_SENTINEL_COMMAND_HPP_
 
 #include <experimental/filesystem>
-#include <args/args.hxx>
 #include <string>
+#include <args/args.hxx>
 
 
 namespace sentinel {
@@ -54,7 +54,7 @@ class Command {
 
   /**
    * @brief Execute subcommand.
-   * 
+   *
    * @return exit code
    */
   virtual int run() = 0;

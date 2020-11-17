@@ -70,12 +70,12 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   ofs << cg.str();
   ofs.close();
 
-  makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-                totNumberOfDetectedMutation, true, "", dirPath);
+  makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, true, "",
+                dirPath);
 
   for (const auto& p : groupByDirPath) {
-    makeIndexHtml(&groupByDirPath, &groupByPath, totNumberOfMutation,
-                  totNumberOfDetectedMutation, false, p.first, dirPath);
+    makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, false,
+                  p.first, dirPath);
   }
 
   for (const auto& p : groupByPath) {
@@ -84,14 +84,6 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
 }
 
 void HTMLReport::makeIndexHtml(
-    std::map<std::experimental::filesystem::path,
-    std::tuple<std::vector<const MutationResult*>*,
-    std::size_t, std::size_t, std::size_t>* >*
-    pGroupByDirPath,
-    std::map<std::experimental::filesystem::path,
-    std::tuple<std::vector<const MutationResult*>*,
-    std::size_t, std::size_t>* >*
-    pGroupByPath,
     std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
     bool root, const std::experimental::filesystem::path& currentDirPath,
     const std::experimental::filesystem::path& outputDir) {
@@ -101,13 +93,13 @@ void HTMLReport::makeIndexHtml(
   std::size_t numerator = 0;
   std::size_t denominator = 0;
   if (root) {
-    sizeOfTargetFiles = pGroupByPath->size();
+    sizeOfTargetFiles = groupByPath.size();
     numerator = totNumberOfDetectedMutation;
     denominator = totNumberOfMutation;
   } else {
-    sizeOfTargetFiles = std::get<3>(*(*pGroupByDirPath)[currentDirPath]);
-    numerator = std::get<2>(*(*pGroupByDirPath)[currentDirPath]);
-    denominator = std::get<1>(*(*pGroupByDirPath)[currentDirPath]);
+    sizeOfTargetFiles = std::get<3>(*groupByDirPath[currentDirPath]);
+    numerator = std::get<2>(*groupByDirPath[currentDirPath]);
+    denominator = std::get<1>(*groupByDirPath[currentDirPath]);
   }
   unsigned int cov = 100 * numerator / denominator;
 
@@ -115,16 +107,15 @@ void HTMLReport::makeIndexHtml(
                          cov, numerator, denominator);
 
   if (root) {
-    for (const auto& p : *pGroupByDirPath) {
+    for (const auto& p : groupByDirPath) {
       std::size_t numOfFiles = std::get<3>(*p.second);
       std::size_t subDetected = std::get<2>(*p.second);
       std::size_t subMut = std::get<1>(*p.second);
       unsigned int subCov = 100 * subDetected / subMut;
-
       ihg.pushItemToTable(p.first, subCov, subDetected, subMut, numOfFiles);
     }
   } else {
-    for (const auto& p : *pGroupByPath) {
+    for (const auto& p : groupByPath) {
       std::string curDirname = p.first.parent_path();
       curDirname = string::replaceAll(curDirname, "/", ".");
 
@@ -145,8 +136,8 @@ void HTMLReport::makeIndexHtml(
 
   std::string fileName = "index.html";
   if (!root) {
-    fileName = currentDirPath / "index.html";
-    auto newDir = outputDir / currentDirPath;
+    fileName = "srcDir" / currentDirPath / "index.html";
+    auto newDir = outputDir / "srcDir" / currentDirPath;
     if (fs::exists(newDir)) {
       if (!fs::is_directory(newDir)) {
         throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
@@ -219,7 +210,7 @@ void HTMLReport::makeSourceHtml(
             srcLineByLine.size(), maxLineNum));
   }
 
-  SrcHTMLGenerator shg(srcName);
+  SrcHTMLGenerator shg(srcName, srcPath.parent_path().empty());
 
   for (auto it = srcLineByLine.begin() ; it != srcLineByLine.end() ; ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;
@@ -282,7 +273,7 @@ void HTMLReport::makeSourceHtml(
 
   auto contents = shg.str();
 
-  std::string fileName = outputDir /
+  std::string fileName = outputDir / "srcDir" /
       string::replaceAll(srcPath.parent_path(), "/", ".") /
       fmt::format("{0}.html", srcName);
 

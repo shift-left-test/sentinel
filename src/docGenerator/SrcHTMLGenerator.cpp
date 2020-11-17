@@ -28,8 +28,8 @@
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
-SrcHTMLGenerator::SrcHTMLGenerator(const std::string& srcName) :
-    mSrcName(srcName) {
+SrcHTMLGenerator::SrcHTMLGenerator(const std::string& srcName, bool srcRoot) :
+    mSrcName(srcName), mSrcRoot(srcRoot) {
 }
 
 void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
@@ -94,11 +94,13 @@ std::string SrcHTMLGenerator::str() {
   }
 
   return fmt::format(srcHtmlSkeleton,
+                     fmt::arg("style", mSrcRoot ? "" : "../"),
                      fmt::arg("src_name", mSrcName),
                      fmt::arg("lines", mLines),
                      fmt::arg("mutations", mMutations),
                      fmt::arg("mutator_list", mMutators),
-                     fmt::arg("test_list_guard", testListGuard));
+                     fmt::arg("test_list_guard", testListGuard),
+                     fmt::arg("http", "http://"));
 }
 
 }  // namespace sentinel

@@ -72,8 +72,6 @@ class HTMLReport : public Report {
   /**
    * @brief makeIndexHtml
    *
-   * @param groupByDirPath
-   * @param groupByPath
    * @param totNumberOfMutation
    * @param totNumberOfDetecedMutation
    * @param root index or not
@@ -81,14 +79,6 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeIndexHtml(
-      std::map<std::experimental::filesystem::path,
-      std::tuple<std::vector<const MutationResult*>*,
-                 std::size_t, std::size_t, std::size_t>* >*
-      pGroupByDirPath,
-      std::map<std::experimental::filesystem::path,
-      std::tuple<std::vector<const MutationResult*>*, std::size_t,
-                 std::size_t>* >*
-      pGroupByPath,
       std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
       bool root, const std::experimental::filesystem::path& currentDirPath,
       const std::experimental::filesystem::path& outputDir);

@@ -147,6 +147,7 @@ void Report::printSummary() {
                            "cov", clen);
 
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+
   for (const auto& p : groupByPath) {
     int curCov = -1;
     if (std::get<1>(*p.second) != 0) {
