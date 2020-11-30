@@ -925,11 +925,14 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
              2, 12, 2, 13, "|");
   MRs.emplace_back(M6, "testMultiply", "", MutationState::KILLED);
 
+  Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M7, "", "", MutationState::RUNTIME_ERROR);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  HTMLReport htmlreport(MRPath, SOURCE_DIR, false);
+  HTMLReport htmlreport(MRPath, SOURCE_DIR);
 
   htmlreport.save(OUT_DIR);
 
@@ -956,47 +959,6 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
       (TARGET_FULL_PATH3.filename().string() + ".html"),
       ORI_TARGET3_HTML_CONTENTS);
   readFileAndCompareExpected(OUT_DIR / "srcDir" /
-      (TARGET_FULL_PATH4.filename().string() + ".html"),
-      ORI_TARGET4_HTML_CONTENTS);
-
-  auto MRPath2 = MUT_RESULT_DIR / "MutationResult2";
-  Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
-  MRs.emplace_back(M7, "", "", MutationState::RUNTIME_ERROR);
-  MRs.save(MRPath2);
-
-  auto OUT_DIR2 = BASE / "OUT_DIR_MAKEHTMLREPORT2";
-  fs::create_directories(OUT_DIR2);
-
-  testing::internal::CaptureStdout();
-  HTMLReport htmlreport2(MRPath2, SOURCE_DIR, true);
-  htmlreport2.save(OUT_DIR2);
-  std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_EQ(out2, "");
-
-  readFileAndCompareExpected(OUT_DIR2 / "index.html",
-      ORI_ROOT_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR2 / "srcDir"/ "index.html",
-      ORI_SRCROOT_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(
-      OUT_DIR2 / "srcDir" / nestedSourceDir / "index.html",
-      ORI_NESTED1_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(
-      OUT_DIR2 / "srcDir" / NESTED_SOURCE_DIR2.filename() / "index.html",
-      ORI_NESTED2_INDEX_HTML_CONTENTS);
-
-  readFileAndCompareExpected(OUT_DIR2 / "srcDir" / nestedSourceDir /
-      (TARGET_FULL_PATH.filename().string() + ".html"),
-      ORI_TARGET1_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR2 / "srcDir" /
-      NESTED_SOURCE_DIR2.filename() /
-      (TARGET_FULL_PATH2.filename().string() + ".html"),
-      ORI_TARGET2_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR2 / "srcDir" /
-      NESTED_SOURCE_DIR2.filename() /
-      (TARGET_FULL_PATH3.filename().string() + ".html"),
-      ORI_TARGET3_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR2 / "srcDir" /
       (TARGET_FULL_PATH4.filename().string() + ".html"),
       ORI_TARGET4_HTML_CONTENTS);
 }

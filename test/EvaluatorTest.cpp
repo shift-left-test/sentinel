@@ -167,7 +167,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   EXPECT_TRUE(string::contains(out2, "AOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0)"));
   EXPECT_TRUE(string::contains(out2, "KILLED"));
-  EXPECT_TRUE(result.getDetected(true));
+  EXPECT_TRUE(result.getDetected());
 
 
   MutationResults MRs;
@@ -188,7 +188,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
   EXPECT_TRUE(string::contains(out2, "ALIVED"));
-  EXPECT_FALSE(result.getDetected(true));
+  EXPECT_FALSE(result.getDetected());
 
 
   MutationResults MRs;
@@ -211,7 +211,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
   EXPECT_TRUE(string::contains(out2, "BUILD_FAILURE"));
-  EXPECT_FALSE(result.getDetected(true));
+  EXPECT_FALSE(result.getDetected());
 
 
   MutationResults MRs;
@@ -235,7 +235,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
   EXPECT_TRUE(string::contains(out2, "RUNTIME_ERROR"));
-  EXPECT_FALSE(result.getDetected(true));
+  EXPECT_FALSE(result.getDetected());
 
 
   MutationResults MRs;

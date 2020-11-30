@@ -97,7 +97,7 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   fs::create_directories(MUT_RESULT_DIR);
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
 
-  ReportForTest report(MRPath, SOURCE_DIR, true);
+  ReportForTest report(MRPath, SOURCE_DIR);
   testing::internal::CaptureStdout();
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
@@ -125,7 +125,7 @@ TOTAL                                                      0         0        -%
 
   MRs.save(MRPath);
 
-  ReportForTest report2(MRPath, SOURCE_DIR, true);
+  ReportForTest report2(MRPath, SOURCE_DIR);
   testing::internal::CaptureStdout();
   report2.printSummary();
   std::string out2 = testing::internal::GetCapturedStdout();
@@ -145,7 +145,7 @@ Runtime Error                                                        1
 )a1b2z", out2);
 }
 
-TEST_F(ReportTest, testPrintReportWithWeakMutationAndNoBuildFailure) {
+TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_1";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -162,7 +162,7 @@ TEST_F(ReportTest, testPrintReportWithWeakMutationAndNoBuildFailure) {
   Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              3, 12, 3, 13, "&");
   MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::RUNTIME_ERROR);
+                     MutationState::KILLED);
 
   Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
@@ -175,7 +175,7 @@ TEST_F(ReportTest, testPrintReportWithWeakMutationAndNoBuildFailure) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR, false);
+  ReportForTest report(MRPath, SOURCE_DIR);
 
   testing::internal::CaptureStdout();
   report.printSummary();
@@ -197,57 +197,7 @@ TOTAL                                                      2         5       40%
 )a1b2z", out);
 }
 
-TEST_F(ReportTest, testPrintReportWithWeakMutationAndBuildFailure) {
-  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_2";
-  fs::create_directories(MUT_RESULT_DIR);
-
-  MutationResults MRs;
-
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
-  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
-
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "|");
-  MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
-
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "&");
-  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::RUNTIME_ERROR);
-
-  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
-  MRs.emplace_back(M5, "", "", MutationState::BUILD_FAILURE);
-
-  auto MRPath = MUT_RESULT_DIR / "MutationResult";
-  MRs.save(MRPath);
-
-  ReportForTest report(MRPath, SOURCE_DIR, false);
-
-  testing::internal::CaptureStdout();
-  report.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(!string::contains(out, R"(Runtime Error)"));
-  EXPECT_EQ(
-      R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
-----------------------------------------------------------------------------------
-File                                                 #killed #mutation       cov
-----------------------------------------------------------------------------------
-... R/target1_veryVeryVeryVeryVerylongFilePath.cpp         0         1        0%
-NESTED_DIR2/target2.cpp                                    1         1      100%
-NESTED_DIR2/target3.cpp                                    1         1      100%
-----------------------------------------------------------------------------------
-TOTAL                                                      2         3       66%
-----------------------------------------------------------------------------------
-Ignored Mutation
-Build Failure                                                        1          
-----------------------------------------------------------------------------------
-)a1b2z", out);
-}
-
-TEST_F(ReportTest, testPrintReportWithStrongMutationAndNoBuildFailure) {
+TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndNoBuildFailure) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_3";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -273,7 +223,7 @@ TEST_F(ReportTest, testPrintReportWithStrongMutationAndNoBuildFailure) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR, true);
+  ReportForTest report(MRPath, SOURCE_DIR);
 
   testing::internal::CaptureStdout();
   report.printSummary();
@@ -297,7 +247,7 @@ Runtime Error                                                        1
 )a1b2z", out);
 }
 
-TEST_F(ReportTest, testPrintReportWithStrongMutationAndBuildFailure) {
+TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailure) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_4";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -323,7 +273,7 @@ TEST_F(ReportTest, testPrintReportWithStrongMutationAndBuildFailure) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR, true);
+  ReportForTest report(MRPath, SOURCE_DIR);
 
   testing::internal::CaptureStdout();
   report.printSummary();

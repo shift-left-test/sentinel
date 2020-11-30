@@ -44,14 +44,8 @@ MutationResult::MutationResult(
     mState(state), mMutant(m) {
 }
 
-std::string MutationResult::getKillingTest(bool strongMutation) const {
-  if (strongMutation || mErrorTest.empty()) {
-    return mKillingTest;
-  }
-  if (mKillingTest.empty()) {
-    return getErrorTest();
-  }
-  return mKillingTest + ", " + getErrorTest();
+std::string MutationResult::getKillingTest() const {
+  return mKillingTest;
 }
 
 std::string MutationResult::getErrorTest() const {
@@ -66,12 +60,8 @@ const Mutant& MutationResult::getMutant() const {
   return mMutant;
 }
 
-bool MutationResult::getDetected(bool strongMutation) const {
-  if (strongMutation) {
-    return mState == MutationState::KILLED;
-  }
-  return ((mState == MutationState::KILLED) ||
-      (mState == MutationState::RUNTIME_ERROR));
+bool MutationResult::getDetected() const {
+  return mState == MutationState::KILLED;
 }
 
 bool MutationResult::compare(const MutationResult& other) const {
@@ -82,7 +72,7 @@ bool MutationResult::compare(const MutationResult& other) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
-  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(true),
+  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(),
       mr.getErrorTest(), static_cast<int>(mr.getMutationState()));
   out << mr.getMutant();
   return out;

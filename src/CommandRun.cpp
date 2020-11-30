@@ -69,10 +69,7 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
     {"test-result-dir"}, args::Options::Required),
   mTestResultFileExts(parser, "EXTENSION",
     "Test command output file extensions.",
-    {"test-result-extention"}, {"xml", "XML"}),
-  mWeakMutation(parser, "weak_mutation",
-      R"(If weak-mutation flag is on, regard runtime errors during test as detected mutation)",
-      {"weak-mutation"}) {
+    {"test-result-extention"}, {"xml", "XML"}) {
 }
 
 int CommandRun::run() {
@@ -158,13 +155,10 @@ int CommandRun::run() {
   //                        (source file restore was completed already.)
 
   // report
-  sentinel::XMLReport xmlReport(evaluator.getMutationResults(),
-    sourceRoot);
+  sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
   xmlReport.save(outputDir);
-  sentinel::HTMLReport htmlReport(evaluator.getMutationResults(),
-    sourceRoot);
+  sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
   htmlReport.save(outputDir);
-
   htmlReport.printSummary();
 
   return 0;

@@ -57,10 +57,9 @@ class MutationResult {
   /**
    * @brief Return killingTest that killed mutant
    *
-   * @param strongMutation true if strong mutation
    * @return killingTest that killed mutant
    */
-  std::string getKillingTest(bool strongMutation) const;
+  std::string getKillingTest() const;
 
   /**
    * @brief Return errorTest that occur runtime error when testing
@@ -95,10 +94,9 @@ class MutationResult {
   /**
    * @brief Return bool value to check if mutant is dead
    *
-   * @param strongMutation true if strong mutation
    * @return bool value to check if mutant is dead
    */
-  bool getDetected(bool strongMutation) const;
+  bool getDetected() const;
 
  private:
   std::string mKillingTest;

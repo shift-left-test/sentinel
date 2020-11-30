@@ -73,10 +73,8 @@ TEST_F(MutationResultsTest, testAdd) {
   EXPECT_EQ(MRs[0].getMutant().getOperator(), "AOR");
   EXPECT_TRUE(fs::equivalent(MR1.getMutant().getPath(), TARGET_FILE));
   EXPECT_EQ(MR1.getMutant().getFirst().line, 0);
-  EXPECT_FALSE(MR1.getDetected(true));
-  EXPECT_TRUE(MR1.getDetected(false));
-  EXPECT_EQ("testAdd", MR1.getKillingTest(true));
-  EXPECT_EQ("testAdd, testMinus", MR1.getKillingTest(false));
+  EXPECT_FALSE(MR1.getDetected());
+  EXPECT_EQ("testAdd", MR1.getKillingTest());
 }
 
 TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {

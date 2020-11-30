@@ -41,17 +41,14 @@ namespace fs = std::experimental::filesystem;
 namespace sentinel {
 
 Report::Report(const MutationResults& results,
-    const std::experimental::filesystem::path& sourcePath,
-    bool strongMutation) :
-    mSourcePath(sourcePath), mResults(results),
-    mStrongMutation(strongMutation) {
+    const std::experimental::filesystem::path& sourcePath) :
+    mSourcePath(sourcePath), mResults(results) {
   generateReport();
 }
 
 Report::Report(const std::experimental::filesystem::path& resultsPath,
-    const std::experimental::filesystem::path& sourcePath,
-    bool strongMutation) :
-    mSourcePath(sourcePath), mStrongMutation(strongMutation) {
+    const std::experimental::filesystem::path& sourcePath) :
+    mSourcePath(sourcePath) {
   mResults.load(resultsPath);
 
   generateReport();
@@ -84,9 +81,7 @@ void Report::generateReport() {
     }
     if (currentState == MutationState::RUNTIME_ERROR) {
       totNumberOfRuntimeError++;
-      if (mStrongMutation) {
-        continue;
-      }
+      continue;
     }
     totNumberOfMutation++;
 
@@ -114,7 +109,7 @@ void Report::generateReport() {
     std::get<0>(*groupByPath[mrPath])->push_back(&mr);
     std::get<1>(*groupByPath[mrPath]) += 1;
 
-    if (mr.getDetected(mStrongMutation)) {
+    if (mr.getDetected()) {
       std::get<2>(*groupByDirPath[curDirname]) += 1;
       std::get<2>(*groupByPath[mrPath]) += 1;
       totNumberOfDetectedMutation += 1;
@@ -182,22 +177,18 @@ void Report::printSummary() {
                            std::to_string(finalCov) : std::string("-")) + "%",
                            clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  if ((mStrongMutation &&
-      (totNumberOfBuildFailure + totNumberOfRuntimeError) != 0) ||
-      (!mStrongMutation && totNumberOfBuildFailure != 0)) {
+  if ((totNumberOfBuildFailure + totNumberOfRuntimeError) != 0) {
     std::cout << fmt::format("Ignored Mutation\n");
     std::cout << fmt::format(defFormat,
                              "Build Failure", flen,
                              "", klen,
                              totNumberOfBuildFailure, mlen,
                              "", clen);
-    if (mStrongMutation) {
-      std::cout << fmt::format(defFormat,
-                               "Runtime Error", flen,
-                               "", klen,
-                               totNumberOfRuntimeError, mlen,
-                               "", clen);
-    }
+    std::cout << fmt::format(defFormat,
+                             "Runtime Error", flen,
+                             "", klen,
+                             totNumberOfRuntimeError, mlen,
+                             "", clen);
     std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   }
 }

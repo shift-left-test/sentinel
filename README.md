@@ -131,9 +131,6 @@ $ ./build.sh
       -o[PATH], --output-dir=[PATH]     Directory for saving output.
                                         Default: .
       --evaluation-file=[PATH]          Mutation test result file
-      --weak-mutation                   If weak-mutation flag is on, regard
-                                        runtime errors during test as detected
-                                        mutation
 ```
 
 ### run
@@ -166,9 +163,6 @@ $ ./build.sh
                                         Default: all
       -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
                                         Default: 10
-      --weak-mutation                   If weak-mutation flag is on, regard
-                                        runtime errors during test as detected
-                                        mutation
 ```
 
 
