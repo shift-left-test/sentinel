@@ -968,6 +968,15 @@ TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
                InvalidArgumentException);
 }
 
+TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
+  MutationResults MRs;
+  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
+  htmlreport.save(OUT_DIR);
+  EXPECT_FALSE(fs::exists(OUT_DIR));
+  EXPECT_FALSE(fs::exists(OUT_DIR / "index.html"));
+}
+
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");

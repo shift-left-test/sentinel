@@ -54,6 +54,10 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
 void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
 
+  if (totNumberOfMutation == 0) {
+    return;
+  }
+
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",

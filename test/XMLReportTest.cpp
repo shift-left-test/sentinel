@@ -155,4 +155,13 @@ TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
   fs::remove_all("unknown");
 }
 
+TEST_F(XMLReportTest, testMakeXMLReportWhenEmptyMutationResult) {
+  MutationResults MRs;
+  XMLReport xmlreport(MRs, SOURCE_DIR);
+  auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
+  xmlreport.save(OUT_DIR);
+  EXPECT_FALSE(fs::exists(OUT_DIR));
+  EXPECT_FALSE(fs::exists(OUT_DIR / "mutations.xml"));
+}
+
 }  // namespace sentinel
