@@ -80,27 +80,33 @@ class XMLReportTest : public ::testing::Test {
   fs::path SOURCE_DIR;
   fs::path TARGET_FULL_PATH;
   fs::path TARGET_FULL_PATH2;
-  std::string EXPECT_MUT_XML_CONTENT = ""
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      "<mutations>\n"
-      "    <mutation detected=\"false\">\n"
-      "        <sourceFile>{0}</sourceFile>\n"
-      "        <sourceFilePath>{1}</sourceFilePath>\n"
-      "        <mutatedClass></mutatedClass>\n"
-      "        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>\n"
-      "        <lineNumber>4</lineNumber>\n"
-      "        <mutator>AOR</mutator>\n"
-      "        <killingTest></killingTest>\n"
-      "    </mutation>\n"
-      "    <mutation detected=\"true\">\n"
-      "        <sourceFile>{2}</sourceFile>\n"
-      "        <sourceFilePath>{3}</sourceFilePath>\n"
-      "        <mutatedClass></mutatedClass>\n"
-      "        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>\n"
-      "        <lineNumber>1</lineNumber>\n"
-      "        <mutator>BOR</mutator>\n"
-      "        <killingTest>testAddBit</killingTest>\n"
-      "    </mutation>\n</mutations>\n";
+  std::string EXPECT_MUT_XML_CONTENT =
+      R"a1b2(<?xml version="1.0" encoding="UTF-8"?>
+<mutations>
+    <mutation detected="false">
+        <sourceFile>{0}</sourceFile>
+        <sourceFilePath>{1}</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>4</lineNumber>
+        <mutator>AOR</mutator>
+        <killingTest></killingTest>
+    </mutation>
+    <mutation detected="true">
+        <sourceFile>{2}</sourceFile>
+        <sourceFilePath>{3}</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>1</lineNumber>
+        <mutator>BOR</mutator>
+        <killingTest>testAddBit</killingTest>
+    </mutation>
+</mutations>
+)a1b2";
+  std::string EXPECT_EMPTY_MUT_XML_CONTENT =
+      R"c3d4(<?xml version="1.0" encoding="UTF-8"?>
+<mutations/>
+)c3d4";
 };
 
 TEST_F(XMLReportTest, testMakeXMLReport) {
@@ -160,8 +166,16 @@ TEST_F(XMLReportTest, testMakeXMLReportWhenEmptyMutationResult) {
   XMLReport xmlreport(MRs, SOURCE_DIR);
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   xmlreport.save(OUT_DIR);
-  EXPECT_FALSE(fs::exists(OUT_DIR));
-  EXPECT_FALSE(fs::exists(OUT_DIR / "mutations.xml"));
+
+  auto outXMLPath = OUT_DIR / "mutations.xml";
+  EXPECT_TRUE(fs::exists(outXMLPath));
+
+  std::ifstream t(outXMLPath);
+  std::stringstream buffer;
+  buffer << t.rdbuf();
+  std::string mutationXMLContent = buffer.str();
+  t.close();
+  EXPECT_EQ(EXPECT_EMPTY_MUT_XML_CONTENT, mutationXMLContent);
 }
 
 }  // namespace sentinel

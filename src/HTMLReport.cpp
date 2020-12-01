@@ -31,6 +31,7 @@
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/docGenerator/CSSGenerator.hpp"
+#include "sentinel/docGenerator/EmptyIndexHTMLGenerator.hpp"
 #include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
 #include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
 #include "sentinel/HTMLReport.hpp"
@@ -54,10 +55,6 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
 void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
 
-  if (totNumberOfMutation == 0) {
-    return;
-  }
-
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",
@@ -71,6 +68,13 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   CSSGenerator cg;
   ofs << cg.str();
   ofs.close();
+
+  if (totNumberOfMutation == 0) {
+    std::ofstream ofs2(dirPath / "index.html", std::ofstream::out);
+    ofs2 << EmptyIndexHTMLGenerator().str();
+    ofs2.close();
+    return;
+  }
 
   makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, true, "",
                 dirPath);
