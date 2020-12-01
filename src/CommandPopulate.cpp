@@ -67,7 +67,7 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
 int CommandPopulate::run() {
   namespace fs = std::experimental::filesystem;
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
-  std::string outputDirStr = "";
+  std::string outputDirStr;
   if (mOutputDir.Get().empty()) {
     outputDirStr = ".";
   } else {

@@ -153,7 +153,7 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
 
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "|");
@@ -166,11 +166,11 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
 
   Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MRs.emplace_back(M4, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M4, "", "", MutationState::SURVIVED);
 
   Mutant M5("AOR", TARGET_FULL_PATH4, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MRs.emplace_back(M5, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
@@ -205,7 +205,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndNoBuildFailure) {
 
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "|");
@@ -218,7 +218,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndNoBuildFailure) {
 
   Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MRs.emplace_back(M5, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
@@ -268,7 +268,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailure) {
 
   Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
-  MRs.emplace_back(M5, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);

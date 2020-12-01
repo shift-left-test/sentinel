@@ -171,8 +171,8 @@ class ResultTest : public ::testing::Test {
 )asdf";
 };
 
-TEST_F(ResultTest, testResultWithAliveMutation) {
-  auto MUT_DIR = BASE / "mut_dir_alive_mutation";
+TEST_F(ResultTest, testResultWithSurvivedMutation) {
+  auto MUT_DIR = BASE / "mut_dir_survived_mutation";
   fs::create_directories(MUT_DIR);
 
   MAKE_RESULT_XML(MUT_DIR, TC1);
@@ -183,7 +183,7 @@ TEST_F(ResultTest, testResultWithAliveMutation) {
   std::string killingTest;
   std::string errorTest;
   EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::ALIVED);
+      MutationState::SURVIVED);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -240,8 +240,8 @@ TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
   EXPECT_EQ("", errorTest);
 }
 
-TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
-  auto MUT_DIR = BASE / "mut_dir_alive_mutation_add_new_tc";
+TEST_F(ResultTest, testResultWithSurvivedMutationAddNewTC) {
+  auto MUT_DIR = BASE / "mut_dir_survived_mutation_add_new_tc";
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, TC1);
   MAKE_RESULT_XML(MUT_DIR, TC2);
@@ -252,7 +252,7 @@ TEST_F(ResultTest, testResultWithAliveMutationAddNewTC) {
   std::string killingTest;
   std::string errorTest;
   EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::ALIVED);
+      MutationState::SURVIVED);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("", errorTest);
 }

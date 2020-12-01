@@ -37,15 +37,18 @@ void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
                                 std::size_t numCurLineMrs,
                                 const std::string& curCode,
                                 const std::vector<
-                                std::tuple<int, std::string, bool>>& explain) {
+                                std::tuple<int, std::string, std::string,
+                                std::string, bool>>& explain) {
   std::string lineExplain;
   for (const auto& curExplain : explain) {
     lineExplain += fmt::format(lineExplainContent,
                 fmt::arg("count", std::get<0>(curExplain)),
                 fmt::arg("operator", std::get<1>(curExplain)),
+                fmt::arg("original_code", std::get<2>(curExplain)),
+                fmt::arg("mutated_code", std::get<3>(curExplain)),
                 fmt::arg("killed_or_not",
-                         std::get<2>(curExplain) ?
-                         "KILLED" : "NO_COVERAGE"));
+                         std::get<4>(curExplain) ?
+                         "KILLED" : "SURVIVED"));
   }
   mLines += fmt::format(lineContent,
               fmt::arg("cur_lineNum", curLineNum),
@@ -66,7 +69,7 @@ void SrcHTMLGenerator::pushMutation(std::size_t curLineNum,
                             fmt::arg("cur_lineNum", curLineNum),
                             fmt::arg("src_name", mSrcName),
                             fmt::arg("killed_or_not", killed ?
-                                     "KILLED" : "NO_COVERAGE"),
+                                     "KILLED" : "SURVIVED"),
                             fmt::arg("count", count),
                             fmt::arg("cur_killing_test",
                                      curKillingTest.empty() ?

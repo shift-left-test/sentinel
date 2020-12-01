@@ -107,7 +107,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   MutationResults MRs;
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
-  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
              1, 2, 3, 4, "|");
@@ -142,7 +142,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
 TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "", "", MutationState::ALIVED);
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);

@@ -98,12 +98,13 @@ MutationResult Evaluator::compare(const Mutant& mut,
 
   std::size_t flen = 60;
   std::string mutLoc = fmt::format(
-      "{path} ({sl}:{sc}-{el}:{ec})",
+      "{path} ({sl}:{sc}-{el}:{ec} -> {mc})",
       fmt::arg("path", relPath.string()),
       fmt::arg("sl", mut.getFirst().line),
       fmt::arg("sc", mut.getFirst().column),
       fmt::arg("el", mut.getLast().line),
-      fmt::arg("ec", mut.getLast().column));
+      fmt::arg("ec", mut.getLast().column),
+      fmt::arg("mc", mut.getToken().empty() ? "DELETE STMT": mut.getToken()));
 
   int filePos = mutLoc.size() - flen;
   std::string skipStr;

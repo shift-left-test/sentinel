@@ -416,7 +416,15 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2">1</a>
                         <span>
-                            <b>1. AOR -&gt; NO_COVERAGE</b>
+                            <b>1. AOR -&gt; SURVIVED</b>
+                            <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>  return a + b;</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>  return a - b;</pre></b>
+                            <br/>
                             <br/>
                         </span>
                     </span>
@@ -456,7 +464,7 @@ int minus(int a, int b){
                 <td/>
                 <td>
                     <a name="group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2"/>
-                    <a class="NO_COVERAGE">
+                    <a class="SURVIVED">
                         <span class="pop">1.<span><b>1 </b>
                                 <br/>
                                 <b>Location: line num 2</b>
@@ -464,7 +472,7 @@ int minus(int a, int b){
                                 <b>Killed by : none</b>
                             </span>
                         </span>
-                        <span>AOR -&gt; NO_COVERAGE</span>
+                        <span>AOR -&gt; SURVIVED</span>
                     </a>
                 </td>
             </tr>
@@ -512,6 +520,14 @@ int minus(int a, int b){
                         <a href="#group.sentinel.report.html.SourceFile@target2.cpp_2">1</a>
                         <span>
                             <b>1. BOR -&gt; KILLED</b>
+                            <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>  return a | b;</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>  return a & b;</pre></b>
+                            <br/>
                             <br/>
                         </span>
                     </span>
@@ -625,6 +641,14 @@ int minus(int a, int b){
                         <span>
                             <b>1. BOR -&gt; KILLED</b>
                             <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>  return a & b;</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>  return a | b;</pre></b>
+                            <br/>
+                            <br/>
                         </span>
                     </span>
                 </td>
@@ -700,7 +724,15 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target3.cpp_8">1</a>
                         <span>
-                            <b>1. AOR -&gt; NO_COVERAGE</b>
+                            <b>1. AOR -&gt; SURVIVED</b>
+                            <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>  return a - b;</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>  return a + b;</pre></b>
+                            <br/>
                             <br/>
                         </span>
                     </span>
@@ -759,7 +791,7 @@ int minus(int a, int b){
                 <td/>
                 <td>
                     <a name="group.sentinel.report.html.SourceFile@target3.cpp_8"/>
-                    <a class="NO_COVERAGE">
+                    <a class="SURVIVED">
                         <span class="pop">1.<span><b>1 </b>
                                 <br/>
                                 <b>Location: line num 8</b>
@@ -767,7 +799,7 @@ int minus(int a, int b){
                                 <b>Killed by : none</b>
                             </span>
                         </span>
-                        <span>AOR -&gt; NO_COVERAGE</span>
+                        <span>AOR -&gt; SURVIVED</span>
                     </a>
                 </td>
             </tr>
@@ -819,6 +851,14 @@ int minus(int a, int b){
                         <a href="#group.sentinel.report.html.SourceFile@target4.cpp_2">1</a>
                         <span>
                             <b>1. AOR -&gt; KILLED</b>
+                            <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>  return a * b;</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>  return a / b;</pre></b>
+                            <br/>
                             <br/>
                         </span>
                     </span>
@@ -901,28 +941,28 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   MutationResults MRs;
 
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
-  MRs.emplace_back(M1, "", "", MutationState::ALIVED);
+             2, 12, 2, 13, "-");
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "|");
+             2, 12, 2, 13, "&");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
   Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "&");
+             3, 12, 3, 13, "|");
   MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
                      MutationState::KILLED);
 
   Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
-  MRs.emplace_back(M4, "", "", MutationState::ALIVED);
+             8, 12, 8, 13, "+");
+  MRs.emplace_back(M4, "", "", MutationState::SURVIVED);
 
   Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::BUILD_FAILURE);
 
   Mutant M6("AOR", TARGET_FULL_PATH4, "multiply",
-             2, 12, 2, 13, "|");
+             2, 12, 2, 13, "/");
   MRs.emplace_back(M6, "testMultiply", "", MutationState::KILLED);
 
   Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
@@ -980,7 +1020,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", "", MutationState::ALIVED);
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -1011,7 +1051,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
   fs::copy(TARGET_FULL_PATH, tmpPath);
   Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
              2, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", "", MutationState::ALIVED);
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -1026,7 +1066,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   fs::create_directories(OUT_DIR);
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              0, 12, 2, 13, "+");
-  MutationResult MR1(M1, "", "", MutationState::ALIVED);
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
@@ -1038,7 +1078,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   fs::create_directories(OUT_DIR2);
   Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
              1000, 12, 1000, 13, "+");
-  MutationResult MR2(M2, "", "", MutationState::ALIVED);
+  MutationResult MR2(M2, "", "", MutationState::SURVIVED);
 
   MutationResults MRs2;
   MRs2.push_back(MR2);

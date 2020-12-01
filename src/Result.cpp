@@ -208,7 +208,7 @@ MutationState Result::compare(const Result& original, const Result& mutated,
   if (!killingTest->empty()) {
     return MutationState::KILLED;
   }
-  return MutationState::ALIVED;
+  return MutationState::SURVIVED;
 }
 
 }  // namespace sentinel

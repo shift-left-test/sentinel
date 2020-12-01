@@ -86,7 +86,7 @@ TEST_F(MutationResultsTest, testSaveAndLoad) {
   MutationResults MRs;
 
   Mutant M1("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
-  MutationResult MR1(M1, "", "", MutationState::ALIVED);
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
   MRs.push_back(MR1);
 
   Mutant M2("BOR", TARGET_FILE, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");

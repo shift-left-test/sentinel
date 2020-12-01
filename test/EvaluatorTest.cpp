@@ -66,10 +66,10 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     MAKE_RESULT_XML(MUT_DIR, TC1);
     MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
 
-    MUT_DIR_ALIVE = BASE / "MUT_DIR_ALIVE";
-    fs::create_directories(MUT_DIR_ALIVE);
-    MAKE_RESULT_XML(MUT_DIR_ALIVE, TC1);
-    MAKE_RESULT_XML(MUT_DIR_ALIVE, TC2);
+    MUT_DIR_SURVIVED = BASE / "MUT_DIR_SURVIVED";
+    fs::create_directories(MUT_DIR_SURVIVED);
+    MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC1);
+    MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC2);
 
     mutable1 = new Mutant("AOR", SAMPLE1_PATH,
                      "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
@@ -105,7 +105,7 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
   std::string ORI_DIR_FAIL;
   fs::path OUT_DIR;
   std::string MUT_DIR;
-  std::string MUT_DIR_ALIVE;
+  std::string MUT_DIR_SURVIVED;
   std::string TC1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
     " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
@@ -165,10 +165,9 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
     MUT_DIR, mrPath, false);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "AOR : "));
-  EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0)"));
+  EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0 -> +)"));
   EXPECT_TRUE(string::contains(out2, "KILLED"));
   EXPECT_TRUE(result.getDetected());
-
 
   MutationResults MRs;
   MRs.load(mrPath);
@@ -177,19 +176,18 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   fs::remove(mrPath);
 }
 
-TEST_F(EvaluatorTest, testEvaluatorWithAlivededMutation) {
+TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
   testing::internal::CaptureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
-    MUT_DIR_ALIVE, mrPath, false);
+    MUT_DIR_SURVIVED, mrPath, false);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
-  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
-  EXPECT_TRUE(string::contains(out2, "ALIVED"));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
+  EXPECT_TRUE(string::contains(out2, "SURVIVED"));
   EXPECT_FALSE(result.getDetected());
-
 
   MutationResults MRs;
   MRs.load(mrPath);
@@ -209,10 +207,9 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
     emptyPath, mrPath, true);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
-  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "BUILD_FAILURE"));
   EXPECT_FALSE(result.getDetected());
-
 
   MutationResults MRs;
   MRs.load(mrPath);
@@ -233,10 +230,9 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
     emptyPath, mrPath, false);
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
-  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1)"));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "RUNTIME_ERROR"));
   EXPECT_FALSE(result.getDetected());
-
 
   MutationResults MRs;
   MRs.load(mrPath);

@@ -243,14 +243,38 @@ void HTMLReport::makeSourceHtml(
     size_t numCurLineMrs = curLineMrs != nullptr ?
         curLineMrs->size() : 0;
 
-    std::vector<std::tuple<int, std::string, bool>> lineExplainVec;
+    std::vector<std::tuple<int, std::string, std::string, std::string, bool>>
+        lineExplainVec;
 
     if (curLineMrs != nullptr) {
       std::size_t count = 0;
       for (const auto& mr : *curLineMrs) {
         count += 1;
+        std::string oriCode;
+        std::string mutatedCodeHead;
+        std::string mutatedCodeTail;
+        auto first = mr->getMutant().getFirst();
+        auto last = mr->getMutant().getLast();
+        for (int i = first.line ; i <= last.line ; i++) {
+          std::string curLineContent = srcLineByLine[i - 1];
+          if (!oriCode.empty()) {
+            oriCode += "\n";
+          }
+          if (i == first.line) {
+            mutatedCodeHead = curLineContent.substr(0, first.column - 1);
+          }
+          if (i == last.line) {
+            mutatedCodeTail = curLineContent.substr(
+                last.column - 1, std::string::npos);
+          }
+          oriCode.append(curLineContent);
+        }
+        std::string mutatedCode;
+        mutatedCode.append(mutatedCodeHead);
+        mutatedCode.append(mr->getMutant().getToken());
+        mutatedCode.append(mutatedCodeTail);
         lineExplainVec.emplace_back(count, mr->getMutant().getOperator(),
-                                    mr->getDetected());
+                                    oriCode, mutatedCode, mr->getDetected());
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);

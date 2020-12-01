@@ -32,7 +32,7 @@ namespace sentinel {
  */
 enum class MutationState : int {
   KILLED = 0,
-  ALIVED = 1,
+  SURVIVED = 1,
   RUNTIME_ERROR = 2,
   BUILD_FAILURE = 3,
 };
@@ -48,8 +48,8 @@ inline const char* MutationStateToStr(MutationState m) {
   switch (m) {
     case MutationState::KILLED:
       return "KILLED";
-    case MutationState::ALIVED:
-      return "ALIVED";
+    case MutationState::SURVIVED:
+      return "SURVIVED";
     case MutationState::RUNTIME_ERROR:
       return "RUNTIME_ERROR";
     case MutationState::BUILD_FAILURE:

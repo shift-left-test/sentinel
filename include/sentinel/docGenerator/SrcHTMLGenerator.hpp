@@ -59,7 +59,8 @@ class SrcHTMLGenerator : public DOCGenerator {
                 const std::string& curClass,
                 std::size_t numCurLineMrs,
                 const std::string& curCode,
-                const std::vector<std::tuple<int, std::string, bool>>& explain);
+                const std::vector<std::tuple<int, std::string,
+                std::string, std::string, bool>>& explain);
 
   /**
    * @brief push a mutation 
@@ -123,6 +124,14 @@ class SrcHTMLGenerator : public DOCGenerator {
 
   std::string lineExplainContent =
       R"(                            <b>{count}. {operator} -&gt; {killed_or_not}</b>
+                            <br/>
+                            <b>Original Code</b>
+                            <br/>
+                            <b><pre>{original_code}</pre></b>
+                            <br/>
+                            <b>Mutated Code</b>
+                            <b><pre>{mutated_code}</pre></b>
+                            <br/>
                             <br/>
 )";
 
