@@ -76,7 +76,16 @@ int CommandRun::run() {
   namespace fs =  std::experimental::filesystem;
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
   fs::path workDir = fs::canonical(mWorkDir.Get());
-  fs::path outputDir = fs::canonical(mOutputDir.Get());
+  bool emptyOutputDir = false;
+  std::string outputDirStr;
+  if (mOutputDir.Get().empty()) {
+    outputDirStr = ".";
+    emptyOutputDir = true;
+  } else {
+    outputDirStr = mOutputDir.Get();
+  }
+  fs::create_directories(outputDirStr);
+  fs::path outputDir = fs::canonical(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandRunLoggerName);
   logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
@@ -155,11 +164,16 @@ int CommandRun::run() {
   //                        (source file restore was completed already.)
 
   // report
-  sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
-  xmlReport.save(outputDir);
-  sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
-  htmlReport.save(outputDir);
-  htmlReport.printSummary();
+  if (!emptyOutputDir) {
+    sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
+    xmlReport.save(outputDir);
+    sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
+    htmlReport.save(outputDir);
+    htmlReport.printSummary();
+  } else {
+    sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
+    xmlReport.printSummary();
+  }
 
   return 0;
 }

@@ -129,7 +129,8 @@ $ ./build.sh
       -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
                                         Default: ./sentinel_tmp
       -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        Default: .
+                                        If output-dir is not given,
+                                        pass generating output file.
       --evaluation-file=[PATH]          Mutation test result file
 ```
 
@@ -146,7 +147,8 @@ $ ./build.sh
       -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
                                         Default: ./sentinel_tmp
       -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        Default: .
+                                        If output-dir is not given,
+                                        pass generating output file.
       -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
                                         file exists.
                                         Default: .

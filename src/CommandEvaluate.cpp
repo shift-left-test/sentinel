@@ -55,7 +55,14 @@ CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
 int CommandEvaluate::run() {
   namespace fs = std::experimental::filesystem;
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
-  fs::path outputDir = fs::canonical(mOutputDir.Get());
+  std::string outputDirStr;
+  if (mOutputDir.Get().empty()) {
+    outputDirStr = ".";
+  } else {
+    outputDirStr = mOutputDir.Get();
+  }
+  fs::create_directories(outputDirStr);
+  fs::path outputDir = fs::canonical(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandEvaluateLoggerName);
 

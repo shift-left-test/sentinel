@@ -45,19 +45,25 @@ CommandReport::CommandReport(args::Subparser& parser) : Command(parser),
 int CommandReport::run() {
   namespace fs = std::experimental::filesystem;
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
-  fs::path outputDir = fs::canonical(mOutputDir.Get());
 
   auto logger = Logger::getLogger(cCommandReportLoggerName);
 
   logger->info(fmt::format("evaluation-file: {}", mEvalFile.Get()));
-  logger->info(fmt::format("output dir: {}", outputDir.string()));
 
-  sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot);
-  xmlReport.save(outputDir);
-  sentinel::HTMLReport htmlReport(mEvalFile.Get(), sourceRoot);
-  htmlReport.save(outputDir);
-  htmlReport.printSummary();
-
+  if (mOutputDir.Get().empty()) {
+    logger->info("Output dir is not given. Pass generating Report file.");
+    sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot);
+    xmlReport.printSummary();
+  } else {
+    fs::create_directories(mOutputDir.Get());
+    fs::path outputDir = fs::canonical(mOutputDir.Get());
+    logger->info(fmt::format("output dir: {}", outputDir.string()));
+    sentinel::XMLReport xmlReport(mEvalFile.Get(), sourceRoot);
+    xmlReport.save(outputDir);
+    sentinel::HTMLReport htmlReport(mEvalFile.Get(), sourceRoot);
+    htmlReport.save(outputDir);
+    htmlReport.printSummary();
+  }
   return 0;
 }
 }  // namespace sentinel

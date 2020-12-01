@@ -43,13 +43,12 @@ Command::Command(args::Subparser& parser) :
     {'w', "work-dir"}, "./sentinel_tmp"),
   mOutputDir(parser, "PATH",
     "Directory for saving output.",
-    {'o', "output-dir"}, ".") {
+    {'o', "output-dir"}, "") {
 }
 
 void Command::init() {
   namespace fs =  std::experimental::filesystem;
   fs::create_directories(mWorkDir.Get());
-  fs::create_directories(mOutputDir.Get());
 
   if (mIsVerbose.Get()) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
