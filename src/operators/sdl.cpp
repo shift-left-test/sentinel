@@ -44,7 +44,8 @@ bool SDL::canMutate(clang::Stmt* s) {
       clang::isa<clang::CompoundStmt>(s) ||
       clang::isa<clang::SwitchStmt>(s) ||
       clang::isa<clang::CXXTryStmt>(s) ||
-      clang::isa<clang::CXXDeleteExpr>(s)) {
+      clang::isa<clang::CXXDeleteExpr>(s) ||
+      clang::isa<clang::ReturnStmt>(s)) {
     return false;
   }
 

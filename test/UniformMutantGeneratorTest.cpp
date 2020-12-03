@@ -157,12 +157,6 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
         Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 61, 5, 61, 8, ""));
     allMutants->push_back(
-        Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                64, 3, 64, 13, ""));
-    allMutants->push_back(
-        Mutant("SDL", TARGET_FILE1, "getIntArraySize",
-                68, 3, 68, 37, ""));
-    allMutants->push_back(
         Mutant("AOR", TARGET_FILE1, "getIntArraySize",
                 68, 24, 68, 25, "+"));
     allMutants->push_back(
@@ -177,9 +171,6 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
     allMutants->push_back(
         Mutant("UOI", TARGET_FILE1, "foo",
                 75, 7, 75, 8, "(!(b))"));
-    allMutants->push_back(
-        Mutant("SDL", TARGET_FILE1, "foo",
-                76, 5, 76, 35, ""));
     allMutants->push_back(
         Mutant("UOI", TARGET_FILE1, "foo",
                 76, 12, 76, 35, "((*(ptr + int(VAR_I + f)))++)"));
@@ -207,9 +198,6 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE2, "sdlBlockedCases",
                 28, 12, 28, 17, ""));
-    allMutants->push_back(
-        Mutant("SDL", TARGET_FILE2, "sdlBlockedCases",
-                32, 3, 32, 16, ""));
     allMutants->push_back(
         Mutant("UOI", TARGET_FILE2, "sdlBlockedCases",
                 39, 13, 39, 14, "((a)++)"));
@@ -241,10 +229,9 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   UniformMutantGenerator generator{".."};
   Mutants mutables = generator.populate(*sourceLines, 100);
 
-  std::vector<std::size_t> lines = {58, 59, 61, 64, 68, 73, 75,
-                                    76, 28, 29, 30, 32, 36, 38, 39};
+  std::vector<std::size_t> lines = {58, 59, 61, 68, 75, 76, 28, 39};
 
-  ASSERT_EQ(mutables.size(), 10);
+  ASSERT_EQ(mutables.size(), 8);
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2.compare(e1); }));
@@ -261,8 +248,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   UniformMutantGenerator generator{".."};
   Mutants mutables = generator.populate(*sourceLines, 3);
 
-  std::vector<std::size_t> lines = {58, 59, 61, 64, 68, 73, 75,
-                                    76, 28, 29, 30, 32, 36, 38, 39};
+  std::vector<std::size_t> lines = {58, 59, 61, 68, 75, 76, 28, 39};
 
   ASSERT_EQ(mutables.size(), 3);
   for (const auto& e1 : mutables) {
