@@ -57,6 +57,15 @@ class SourceLine {
   }
 
   /**
+   * @brief < operator overloading for std::find algorithm
+   *
+   * @param other other SourceLine instance
+   */
+  bool operator <(const SourceLine& other) const {
+    return this->mLineNumber < other.mLineNumber;
+  }
+
+  /**
    * @brief Return path to file
    */
   std::experimental::filesystem::path getPath() const {

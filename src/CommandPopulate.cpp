@@ -34,6 +34,7 @@
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
+#include "sentinel/WeightedMutantGenerator.hpp"
 
 
 namespace sentinel {
@@ -60,7 +61,7 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
     "Populated result file name which will be created at output-dir.",
     {"mutants-file-name"}, "mutables.db"),
   mGenerator(parser, "gen",
-    "Select mutant generator type, one of ['uniform', 'random'].",
+    "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
     {"generator"}, "uniform") {
 }
 
@@ -100,8 +101,18 @@ int CommandPopulate::run() {
     generator = std::make_shared<sentinel::UniformMutantGenerator>(
         mBuildDir.Get());
   } else {
-    generator = std::make_shared<sentinel::RandomMutantGenerator>(
-        mBuildDir.Get());
+    if (mGenerator.Get() == "random") {
+      generator = std::make_shared<sentinel::RandomMutantGenerator>(
+          mBuildDir.Get());
+    } else {
+      if (mGenerator.Get() == "weighted") {
+        generator = std::make_shared<sentinel::WeightedMutantGenerator>(
+            mBuildDir.Get());
+      } else {
+        throw InvalidArgumentException(fmt::format(
+            "Invalid value for generator option: {0}", mGenerator.Get()));
+      }
+    }
   }
 
   sentinel::MutationFactory mutationFactory(generator);
