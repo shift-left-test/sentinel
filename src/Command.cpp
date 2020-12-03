@@ -47,9 +47,6 @@ Command::Command(args::Subparser& parser) :
 }
 
 void Command::init() {
-  namespace fs =  std::experimental::filesystem;
-  fs::create_directories(mWorkDir.Get());
-
   if (mIsVerbose.Get()) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
   }

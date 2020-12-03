@@ -44,8 +44,9 @@ CommandMutate::CommandMutate(args::Subparser& parser) : Command(parser),
 
 int CommandMutate::run() {
   namespace fs = std::experimental::filesystem;
-  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+  fs::create_directories(mWorkDir.Get());
   fs::path workDir = fs::canonical(mWorkDir.Get());
+  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
 
   auto logger = Logger::getLogger(cCommandMutateLoggerName);
   sentinel::Mutant m;

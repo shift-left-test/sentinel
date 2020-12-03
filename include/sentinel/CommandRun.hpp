@@ -46,9 +46,11 @@ class CommandRun : public Command {
 
  private:
   void copyTestReportTo(const std::string& from,
-    const std::string& to, const std::vector<std::string>& exts);
+      const std::string& to, const std::vector<std::string>& exts);
   void restoreBackup(const std::string& backup,
-    const std::string& srcRoot);
+      const std::string& srcRoot);
+  std::string preProcessWorkDir(const std::string& target, bool* targetExists,
+      bool isFilledDir);
 
  private:
   args::ValueFlag<std::string> mBuildDir;

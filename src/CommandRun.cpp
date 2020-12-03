@@ -74,116 +74,144 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
 
 int CommandRun::run() {
   namespace fs =  std::experimental::filesystem;
-  fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
-  fs::path workDir = fs::canonical(mWorkDir.Get());
-  bool emptyOutputDir = false;
-  std::string outputDirStr;
-  if (mOutputDir.Get().empty()) {
-    outputDirStr = ".";
-    emptyOutputDir = true;
-  } else {
-    outputDirStr = mOutputDir.Get();
-  }
-  fs::create_directories(outputDirStr);
-  fs::path outputDir = fs::canonical(outputDirStr);
+  bool workDirExists = true;
+  bool backupDirExists = true;
+  bool expectedDirExists = true;
+  bool actualDirExists = true;
 
-  auto logger = Logger::getLogger(cCommandRunLoggerName);
-  logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
-  logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
-  logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
-  logger->info(fmt::format("test result dir: {}", mTestResultDir.Get()));
-
-  if (!fs::exists(mTestResultDir.Get())) {
-    throw InvalidArgumentException(fmt::format(
-        "The test result path does not exist : {0}",
-        mTestResultDir.Get()));
-  }
-
-  if (!fs::is_directory(mTestResultDir.Get())) {
-    throw InvalidArgumentException(fmt::format(
-        "The given test result path is not a directory: {0}",
-        mTestResultDir.Get()));
-  }
-
-  fs::path buildDir = fs::canonical(mBuildDir.Get());
-  fs::path testResultDir = fs::canonical(mTestResultDir.Get());
-  // create work directories
-  fs::create_directories(workDir);
-  fs::create_directories(workDir / "backup");
-  fs::create_directories(workDir / "expected");
-  fs::create_directories(workDir / "actual");
-
-  std::string backupDir = fs::canonical(workDir / "backup");
-  std::string expectedDir = fs::canonical(workDir / "expected");
-  std::string actualDir = fs::canonical(workDir / "actual");
-
-  // restore if previous backup is exists
-  restoreBackup(backupDir, sourceRoot);
-
-  ::chdir(buildDir.c_str());
-  // generate original test result
-  // build
-  ::system(mBuildCmd.Get().c_str());
-  // test
-  ::system(mTestCmd.Get().c_str());
-  copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
-  // copy test report to expected
-
-  // populate
-  auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
-                                                        mExtensions.Get(),
-                                                        mExcludes.Get());
-
-  sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
-
-  auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-      buildDir);
-
-  sentinel::MutationFactory mutationFactory(generator);
-
-  auto mutants = mutationFactory.populate(sourceRoot,
-                                           sourceLines,
-                                           mLimit.Get());
-  if (mIsVerbose.Get()) {
-    for (auto& mutant : mutants) {
-      std::stringstream buf;
-      buf << mutant;
-      logger->info(fmt::format("mutant: {}", buf.str()));
+  try {
+    if (!fs::exists(mWorkDir.Get())) {
+      workDirExists = false;
+      fs::create_directories(mWorkDir.Get());
     }
-  }
+    fs::path workDir = fs::canonical(mWorkDir.Get());
+    fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
 
-  sentinel::Evaluator evaluator(expectedDir, sourceRoot);
-
-  for (auto& m : mutants) {
-    // mutate
-    repo->getSourceTree()->modify(m, backupDir);
-    // build
-    int buildExitCode = ::system(mBuildCmd.Get().c_str());
-    if (buildExitCode == 0) {
-      // test
-      fs::remove_all(testResultDir);
-      ::system(mTestCmd.Get().c_str());
-      copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
+    bool emptyOutputDir = false;
+    std::string outputDirStr;
+    if (mOutputDir.Get().empty()) {
+      outputDirStr = ".";
+      emptyOutputDir = true;
+    } else {
+      outputDirStr = mOutputDir.Get();
     }
-    // evaluate
-    evaluator.compare(m, actualDir, buildExitCode != 0);
-    // restore mutate
+    fs::create_directories(outputDirStr);
+    fs::path outputDir = fs::canonical(outputDirStr);
+
+    auto logger = Logger::getLogger(cCommandRunLoggerName);
+    logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
+    logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
+    logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
+    logger->info(fmt::format("test result dir: {}", mTestResultDir.Get()));
+
+    if (!fs::exists(mTestResultDir.Get())) {
+      throw InvalidArgumentException(fmt::format(
+          "The test result path does not exist : {0}",
+          mTestResultDir.Get()));
+    }
+
+    if (!fs::is_directory(mTestResultDir.Get())) {
+      throw InvalidArgumentException(fmt::format(
+          "The given test result path is not a directory: {0}",
+          mTestResultDir.Get()));
+    }
+
+    fs::path buildDir = fs::canonical(mBuildDir.Get());
+    fs::path testResultDir = fs::canonical(mTestResultDir.Get());
+    // create work directories
+
+    std::string backupDir = preProcessWorkDir(
+        (workDir / "backup").string(), &backupDirExists, true);
+    std::string expectedDir = preProcessWorkDir(
+        (workDir / "actual").string(), &actualDirExists, false);
+    std::string actualDir = preProcessWorkDir(
+        (workDir / "expected").string(), &expectedDirExists, false);
+
+    // restore if previous backup is exists
     restoreBackup(backupDir, sourceRoot);
-  }
 
-  // TODO(daeseong.seong) : consider rebuilding with original source!!!
-  //                        (source file restore was completed already.)
+    ::chdir(buildDir.c_str());
+    // generate original test result
+    // build
+    ::system(mBuildCmd.Get().c_str());
+    // test
+    ::system(mTestCmd.Get().c_str());
+    copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
+    // copy test report to expected
 
-  // report
-  if (!emptyOutputDir) {
-    sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
-    xmlReport.save(outputDir);
-    sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
-    htmlReport.save(outputDir);
-    htmlReport.printSummary();
-  } else {
-    sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
-    xmlReport.printSummary();
+    // populate
+    auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
+                                                          mExtensions.Get(),
+                                                          mExcludes.Get());
+
+    sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
+
+    auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
+        buildDir);
+
+    sentinel::MutationFactory mutationFactory(generator);
+
+    auto mutants = mutationFactory.populate(sourceRoot,
+                                             sourceLines,
+                                             mLimit.Get());
+    if (mIsVerbose.Get()) {
+      for (auto& mutant : mutants) {
+        std::stringstream buf;
+        buf << mutant;
+        logger->info(fmt::format("mutant: {}", buf.str()));
+      }
+    }
+
+    sentinel::Evaluator evaluator(expectedDir, sourceRoot);
+
+    for (auto& m : mutants) {
+      // mutate
+      repo->getSourceTree()->modify(m, backupDir);
+      // build
+      int buildExitCode = ::system(mBuildCmd.Get().c_str());
+      if (buildExitCode == 0) {
+        // test
+        fs::remove_all(testResultDir);
+        ::system(mTestCmd.Get().c_str());
+        copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
+      }
+      // evaluate
+      evaluator.compare(m, actualDir, buildExitCode != 0);
+      // restore mutate
+      restoreBackup(backupDir, sourceRoot);
+    }
+
+    // TODO(daeseong.seong) : consider rebuilding with original source!!!
+    //                        (source file restore was completed already.)
+
+    // report
+    if (!emptyOutputDir) {
+      sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
+      xmlReport.save(outputDir);
+      sentinel::HTMLReport htmlReport(evaluator.getMutationResults(),
+          sourceRoot);
+      htmlReport.save(outputDir);
+      htmlReport.printSummary();
+    } else {
+      sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
+      xmlReport.printSummary();
+    }
+  } catch(...) {
+    fs::path workDir = mWorkDir.Get();
+    if (!workDirExists) {
+      fs::remove_all(workDir);
+    } else {
+      if (!backupDirExists) {
+        fs::remove_all(workDir / "backup");
+      }
+      if (!expectedDirExists) {
+        fs::remove_all(workDir / "expected");
+      }
+      if (!actualDirExists) {
+        fs::remove_all(workDir / "actual");
+      }
+    }
+    throw;
   }
 
   return 0;
@@ -237,5 +265,26 @@ void CommandRun::restoreBackup(const std::string& backup,
       fs::remove_all(backupFile);
     }
   }
+}
+
+std::string CommandRun::preProcessWorkDir(const std::string& target,
+    bool* targetExists, bool isFilledDir) {
+  namespace fs =  std::experimental::filesystem;
+  if (!fs::exists(target)) {
+    *targetExists = false;
+    fs::create_directories(target);
+  } else {
+    if (!fs::is_directory(target)) {
+      throw InvalidArgumentException(fmt::format(
+            "{0} must be directory.",
+            target));
+    }
+    if (!isFilledDir && !fs::is_empty(target)) {
+      throw InvalidArgumentException(fmt::format(
+            "{0} must be empty.",
+            target));
+    }
+  }
+  return fs::canonical(target).string();
 }
 }  // namespace sentinel
