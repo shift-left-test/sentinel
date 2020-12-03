@@ -93,8 +93,19 @@ int CommandRun::run() {
   logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
   logger->info(fmt::format("test result dir: {}", mTestResultDir.Get()));
 
+  if (!fs::exists(mTestResultDir.Get())) {
+    throw InvalidArgumentException(fmt::format(
+        "The test result path does not exist : {0}",
+        mTestResultDir.Get()));
+  }
+
+  if (!fs::is_directory(mTestResultDir.Get())) {
+    throw InvalidArgumentException(fmt::format(
+        "The given test result path is not a directory: {0}",
+        mTestResultDir.Get()));
+  }
+
   fs::path buildDir = fs::canonical(mBuildDir.Get());
-  fs::create_directories(mTestResultDir.Get());
   fs::path testResultDir = fs::canonical(mTestResultDir.Get());
   // create work directories
   fs::create_directories(workDir);
