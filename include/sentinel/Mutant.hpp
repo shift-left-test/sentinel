@@ -160,6 +160,13 @@ class Mutant {
    */
   std::string getToken() const;
 
+  /**
+   * @brief Return information of Mutant
+   *
+   * @return information of Mutant
+   */
+  std::string str() const;
+
  private:
   std::string mOperator;
   std::experimental::filesystem::path mPath;

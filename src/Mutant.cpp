@@ -98,16 +98,15 @@ std::string Mutant::getToken() const {
   return mToken;
 }
 
+std::string Mutant::str() const {
+  return fmt::format("{},{},{},{},{},{},{},{}", getOperator(),
+      getPath().string(), getQualifiedFunction(),
+      getFirst().line, getFirst().column, getLast().line, getLast().column,
+      getToken());
+}
+
 std::ostream& operator<<(std::ostream& out, const Mutant& m) {
-  out << fmt::format("{},{},{},{},{},{},{},{}",
-                     m.getOperator(),
-                     m.getPath().string(),
-                     m.getQualifiedFunction(),
-                     m.getFirst().line,
-                     m.getFirst().column,
-                     m.getLast().line,
-                     m.getLast().column,
-                     m.getToken());
+  out << m.str();
   return out;
 }
 

@@ -156,9 +156,7 @@ int CommandRun::run() {
                                              mLimit.Get());
     if (mIsVerbose.Get()) {
       for (auto& mutant : mutants) {
-        std::stringstream buf;
-        buf << mutant;
-        logger->info(fmt::format("mutant: {}", buf.str()));
+        logger->info(fmt::format("mutant: {}", mutant.str()));
       }
     }
 

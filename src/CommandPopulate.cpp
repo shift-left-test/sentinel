@@ -121,9 +121,7 @@ int CommandPopulate::run() {
       sourceRoot, sourceLines, mLimit.Get());
   if (mIsVerbose) {
     for (auto& mutant : mutants) {
-      std::stringstream buf;
-      buf << mutant;
-      logger->info(fmt::format("mutant: {}", buf.str()));
+      logger->info(fmt::format("mutant: {}", mutant.str()));
     }
   }
 
