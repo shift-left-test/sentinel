@@ -218,12 +218,12 @@ void CommandRun::restoreBackup(const std::string& backup,
   const std::string& srcRoot) {
   namespace fs = std::experimental::filesystem;
 
-  for (const auto& dirent : fs::recursive_directory_iterator(backup)) {
+  for (const auto& dirent : fs::directory_iterator(backup)) {
     const auto& backupFile = dirent.path();
-    if (fs::is_regular_file(backupFile)) {
-      // TODO(daeseong.seong): keep relative directory of backupFile
-      fs::copy(backupFile, srcRoot, fs::copy_options::overwrite_existing);
-      fs::remove(backupFile);
+    if (fs::is_regular_file(backupFile) || fs::is_directory(backupFile)) {
+      fs::copy(backupFile, srcRoot / backupFile.filename(),
+          fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+      fs::remove_all(backupFile);
     }
   }
 }
