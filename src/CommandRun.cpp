@@ -25,7 +25,9 @@
 #include <fmt/core.h>
 #include <unistd.h>
 #include <experimental/filesystem>
+#include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <map>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
@@ -39,7 +41,33 @@
 
 
 namespace sentinel {
-const char * cCommandRunLoggerName = "CommandRun";
+static const char * cCommandRunLoggerName = "CommandRun";
+static bool workDirExists = true;
+static bool backupDirExists = true;
+static bool expectedDirExists = true;
+static bool actualDirExists = true;
+static std::experimental::filesystem::path workDirForSH;
+
+static void signalHandler(int signum) {
+  namespace fs = std::experimental::filesystem;
+  if (!workDirExists) {
+    fs::remove_all(workDirForSH);
+  } else {
+    if (!backupDirExists) {
+      fs::remove_all(workDirForSH / "backup");
+    }
+    if (!expectedDirExists) {
+      fs::remove_all(workDirForSH / "expected");
+    }
+    if (!actualDirExists) {
+      fs::remove_all(workDirForSH / "actual");
+    }
+  }
+  if (signum != SIGUSR1) {
+    std::cout << "Receive " << strsignal(signum) << std::endl;
+    std::exit(signum);
+  }
+}
 
 CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mBuildDir(parser, "PATH",
@@ -73,11 +101,16 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
 }
 
 int CommandRun::run() {
-  namespace fs =  std::experimental::filesystem;
-  bool workDirExists = true;
-  bool backupDirExists = true;
-  bool expectedDirExists = true;
-  bool actualDirExists = true;
+  namespace fs = std::experimental::filesystem;
+  workDirForSH = fs::current_path() / mWorkDir.Get();
+
+  std::signal(SIGABRT, signalHandler);
+  std::signal(SIGINT, signalHandler);
+  std::signal(SIGFPE, signalHandler);
+  std::signal(SIGILL, signalHandler);
+  std::signal(SIGSEGV, signalHandler);
+  std::signal(SIGTERM, signalHandler);
+  std::signal(SIGUSR1, signalHandler);
 
   try {
     if (!fs::exists(mWorkDir.Get())) {
@@ -195,20 +228,7 @@ int CommandRun::run() {
       xmlReport.printSummary();
     }
   } catch(...) {
-    fs::path workDir = mWorkDir.Get();
-    if (!workDirExists) {
-      fs::remove_all(workDir);
-    } else {
-      if (!backupDirExists) {
-        fs::remove_all(workDir / "backup");
-      }
-      if (!expectedDirExists) {
-        fs::remove_all(workDir / "expected");
-      }
-      if (!actualDirExists) {
-        fs::remove_all(workDir / "actual");
-      }
-    }
+    std::raise(SIGUSR1);
     throw;
   }
 
