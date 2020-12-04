@@ -29,6 +29,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
@@ -132,6 +133,7 @@ int CommandRun::run() {
     fs::path outputDir = fs::canonical(outputDirStr);
 
     auto logger = Logger::getLogger(cCommandRunLoggerName);
+    logger->info(fmt::format("{0:-^{1}}", "", 50));
     logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
     logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
     logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
@@ -151,7 +153,6 @@ int CommandRun::run() {
 
     fs::path buildDir = fs::canonical(mBuildDir.Get());
     fs::path testResultDir = fs::canonical(mTestResultDir.Get());
-    // create work directories
 
     std::string backupDir = preProcessWorkDir(
         (workDir / "backup").string(), &backupDirExists, true);
@@ -160,24 +161,42 @@ int CommandRun::run() {
     std::string actualDir = preProcessWorkDir(
         (workDir / "expected").string(), &expectedDirExists, false);
 
+    logger->info(fmt::format("backup dir: {}", backupDir));
+    logger->info(fmt::format("expected test result dir: {}", expectedDir));
+    logger->info(fmt::format("actual test result dir: {}", actualDir));
+    logger->info(fmt::format("{0:-^{1}}", "", 50));
+
     // restore if previous backup is exists
     restoreBackup(backupDir, sourceRoot);
 
+    // generate orignal test result
     ::chdir(buildDir.c_str());
-    // generate original test result
+
     // build
+    logger->info("Building original source code ...");
+    logger->info(fmt::format("build dir: {}", buildDir.c_str()));
+    logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
     ::system(mBuildCmd.Get().c_str());
+    logger->info(fmt::format("{0:-^{1}}", "", 50));
+
     // test
+    logger->info("Running tests ...");
+    logger->info(fmt::format("test cmd: {}", mTestCmd.Get()));
     ::system(mTestCmd.Get().c_str());
-    copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
+    logger->info(fmt::format("{0:-^{1}}", "", 50));
+
     // copy test report to expected
+    copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
 
     // populate
+    logger->info("Populating mutants ...");
     auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
                                                           mExtensions.Get(),
                                                           mExcludes.Get());
 
     sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
+    auto rng = std::default_random_engine{};
+    std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
     auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
         buildDir);
@@ -192,24 +211,44 @@ int CommandRun::run() {
         logger->info(fmt::format("mutant: {}", mutant.str()));
       }
     }
+    logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     sentinel::Evaluator evaluator(expectedDir, sourceRoot);
+    int mutantId = 1;
 
     for (auto& m : mutants) {
       // mutate
+      std::stringstream buf;
+      buf << m;
+      logger->info(fmt::format("Creating mutant #{0} : {1}",
+                               std::to_string(mutantId), buf.str()));
       repo->getSourceTree()->modify(m, backupDir);
+      logger->info(fmt::format("{0:-^{1}}", "", 50));
+
       // build
+      logger->info(fmt::format("Building mutant #{} ...", mutantId));
       int buildExitCode = ::system(mBuildCmd.Get().c_str());
       if (buildExitCode == 0) {
         // test
+        logger->info("Building SUCCESS. Testing ...");
         fs::remove_all(testResultDir);
         ::system(mTestCmd.Get().c_str());
         copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
+      } else {
+        logger->info("Building FAIL.");
       }
+      logger->info(fmt::format("{0:-^{1}}", "", 50));
+
       // evaluate
+      logger->info("Evaluating mutant test results ...");
       evaluator.compare(m, actualDir, buildExitCode != 0);
+      logger->info(fmt::format("{0:-^{1}}", "", 50));
+
       // restore mutate
+      logger->info("Restoring source code ...");
       restoreBackup(backupDir, sourceRoot);
+      logger->info(fmt::format("{0:-^{1}}", "", 50));
+      mutantId++;
     }
 
     // TODO(daeseong.seong) : consider rebuilding with original source!!!
