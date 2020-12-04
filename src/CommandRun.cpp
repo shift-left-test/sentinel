@@ -151,6 +151,12 @@ int CommandRun::run() {
           mTestResultDir.Get()));
     }
 
+    if (!fs::is_empty(mTestResultDir.Get())) {
+      throw InvalidArgumentException(fmt::format(
+          "The given test result path is not empty: {0}",
+          mTestResultDir.Get()));
+    }
+
     fs::path buildDir = fs::canonical(mBuildDir.Get());
     fs::path testResultDir = fs::canonical(mTestResultDir.Get());
 
