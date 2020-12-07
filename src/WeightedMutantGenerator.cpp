@@ -115,7 +115,15 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines,
 
     // Randomly select one mutant.
     std::shuffle(std::begin(temp), std::end(temp), rng);
-    temp_storage.push_back(temp[0]);
+    // find first element of temp that is not in temp_storage
+    auto itr = std::find_if(temp.begin(), temp.end(),
+        [&](const Mutant& a) {
+           return std::find(temp_storage.begin(), temp_storage.end(), a) ==
+               temp_storage.end();
+        });
+    if (itr != temp.end()) {
+      temp_storage.push_back(*itr);
+    }
 
     // Break if maximum number of mutants is reached.
     if (temp_storage.size() == maxMutants) {

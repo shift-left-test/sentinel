@@ -54,7 +54,7 @@ Mutant::Mutant(const std::string& mutationOperator,
   }
 }
 
-bool Mutant::compare(const Mutant& other) const {
+bool Mutant::operator==(const Mutant& other) const {
   namespace fs = std::experimental::filesystem;
 
   return mOperator == other.getOperator() &&

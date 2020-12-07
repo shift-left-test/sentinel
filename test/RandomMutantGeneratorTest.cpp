@@ -198,11 +198,11 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator{".."};
   int maxMutants = allMutants->size();
   Mutants mutables = generator.populate(*sourceLines, maxMutants);
-  // ASSERT_EQ(mutables.size(), maxMutants);
+  ASSERT_EQ(mutables.size(), maxMutants);
 
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
   }
 }
 
@@ -213,7 +213,7 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   ASSERT_EQ(mutables.size(), 3);
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
   }
 }
 

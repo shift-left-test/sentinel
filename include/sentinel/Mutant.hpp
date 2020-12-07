@@ -94,12 +94,12 @@ class Mutant {
           const std::string& token);
 
   /**
-   * @brief compare this Mutant with another.
+   * @brief == operator overloading
    *
    * @param other Mutant
    * @return True if Mutants are same. False otherwise
    */
-  bool compare(const Mutant& other) const;
+  bool operator==(const Mutant& other) const;
 
   /**
    * @brief Return the mutation operator creating this mutable.

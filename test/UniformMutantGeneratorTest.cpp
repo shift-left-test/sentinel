@@ -234,7 +234,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   ASSERT_EQ(mutables.size(), 8);
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
 
     // Check each selected line is unique
     std::size_t lineNum = e1.getFirst().line;
@@ -253,7 +253,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   ASSERT_EQ(mutables.size(), 3);
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
 
     // Check each selected line is unique
     std::size_t lineNum = e1.getFirst().line;

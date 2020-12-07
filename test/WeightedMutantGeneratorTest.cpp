@@ -230,9 +230,9 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
 
-    // Check each selected line is unique
+    // Check each selected  line is unique
     std::size_t lineNum = e1.getFirst().line;
     auto pos = std::find(lines.begin(), lines.end(), lineNum);
     EXPECT_NE(pos, lines.end());
@@ -251,7 +251,7 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
   for (const auto& e1 : mutables) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
-        [e1](const auto& e2) { return e2.compare(e1); }));
+        [e1](const auto& e2) { return e2 == e1; }));
 
     // Check each selected line is unique
     std::size_t lineNum = e1.getFirst().line;

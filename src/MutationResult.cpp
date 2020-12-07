@@ -65,7 +65,7 @@ bool MutationResult::getDetected() const {
 }
 
 bool MutationResult::compare(const MutationResult& other) const {
-  return mMutant.compare(other.mMutant) &&
+  return mMutant == other.mMutant &&
       mKillingTest == other.mKillingTest &&
       mErrorTest == other.mErrorTest &&
       mState == other.mState;
