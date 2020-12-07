@@ -34,11 +34,12 @@
 namespace sentinel {
 
 bool SDL::canMutate(clang::Stmt* s) {
-  // Declarations, null, compound statements are not mutated
+  // Declarations, null, complex  statements are not mutated
   if (clang::isa<clang::DeclStmt>(s) ||
       clang::isa<clang::NullStmt>(s) ||
       clang::isa<clang::IfStmt>(s) ||
       clang::isa<clang::ForStmt>(s) ||
+      clang::isa<clang::CXXForRangeStmt>(s) ||
       clang::isa<clang::DoStmt>(s) ||
       clang::isa<clang::WhileStmt>(s) ||
       clang::isa<clang::CompoundStmt>(s) ||
