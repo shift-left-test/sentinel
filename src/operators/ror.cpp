@@ -54,7 +54,15 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
     std::string path = mSrcMgr.getFilename(opStartLoc);
     std::string func = getContainingFunctionQualifiedName(s);
 
+    bool operandIsNull =
+        getExprType(bo->getLHS()->IgnoreImpCasts())->isNullPtrType() ||
+        getExprType(bo->getRHS()->IgnoreImpCasts())->isNullPtrType();
+
     for (const auto& mutatedToken : mRelationalOperators) {
+      if (operandIsNull && mutatedToken != "==" && mutatedToken != "!=") {
+        continue;
+      }
+
       if (mutatedToken != token) {
         mutables->emplace_back(
             mName, path, func,

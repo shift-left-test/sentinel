@@ -34,7 +34,9 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
+#include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
+#include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/HTMLReport.hpp"
@@ -97,7 +99,10 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
     {"test-result-dir"}, args::Options::Required),
   mTestResultFileExts(parser, "EXTENSION",
     "Test command output file extensions.",
-    {"test-result-extention"}, {"xml", "XML"}) {
+    {"test-result-extention"}, {"xml", "XML"}),
+  mGenerator(parser, "gen",
+    "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
+    {"generator"}, "uniform") {
 }
 
 int CommandRun::run() {
@@ -203,8 +208,26 @@ int CommandRun::run() {
     auto rng = std::default_random_engine{};
     std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
-    auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-        buildDir);
+    // auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
+    //     buildDir);
+    std::shared_ptr<MutantGenerator> generator;
+    if (mGenerator.Get() == "uniform") {
+      generator = std::make_shared<sentinel::UniformMutantGenerator>(
+          mBuildDir.Get());
+    } else {
+      if (mGenerator.Get() == "random") {
+        generator = std::make_shared<sentinel::RandomMutantGenerator>(
+            mBuildDir.Get());
+      } else {
+        if (mGenerator.Get() == "weighted") {
+          generator = std::make_shared<sentinel::WeightedMutantGenerator>(
+              mBuildDir.Get());
+        } else {
+          throw InvalidArgumentException(fmt::format(
+              "Invalid value for generator option: {0}", mGenerator.Get()));
+        }
+      }
+    }
 
     sentinel::MutationFactory mutationFactory(generator);
 

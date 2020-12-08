@@ -57,6 +57,7 @@ class CommandRun : public Command {
   args::ValueFlag<std::string> mTestResultDir;
   args::ValueFlag<std::string> mBuildCmd;
   args::ValueFlag<std::string> mTestCmd;
+  args::ValueFlag<std::string> mGenerator;
   args::ValueFlagList<std::string> mTestResultFileExts;
   args::ValueFlagList<std::string> mExtensions;
   args::ValueFlagList<std::string> mExcludes;
