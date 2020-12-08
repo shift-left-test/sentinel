@@ -49,8 +49,7 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
     {'s', "scope"}, "all"),
   mExtensions(parser, "EXTENSION",
     "Extentions of source file which could be mutated.",
-    {'t', "extension"}, {"cxx", "hxx", "cpp", "hpp", "cc", "hh", "c", "h",
-    "c++", "h++", "cu", "cuh"}),
+    {'t', "extension"}, {"cxx", "cpp", "cc", "c", "c++", "cu"}),
   mExcludes(parser, "PATH",
     "exclude file or path",
     {'e', "exclude"}),
@@ -92,7 +91,7 @@ int CommandPopulate::run() {
     sourceRoot, mExtensions.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
-  // Shuffle target lines as an attempt to reduce mutant selecting time.
+  // Shuffle target lines to reduce mutant selecting time.
   auto rng = std::default_random_engine{};
   std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 

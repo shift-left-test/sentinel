@@ -25,6 +25,7 @@
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
+#include <fmt/core.h>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -33,12 +34,15 @@
 #include <random>
 #include <vector>
 #include "sentinel/Mutants.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 
 namespace sentinel {
+
+static const char * cLoggerName = "UniformMutantGenerator";
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
                                          std::size_t maxMutants) {
@@ -67,14 +71,16 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
+  auto logger = Logger::getLogger(cLoggerName);
   for (const auto& file : targetLines) {
+    logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
     tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
         "-ferror-limit=0"));
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
   }
 
-  // Select one Mutant on each target line
+  // Randomly select one Mutant on each target  line
   Mutants temp_storage;
   auto rng = std::default_random_engine{};
 
