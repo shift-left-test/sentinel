@@ -128,7 +128,7 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
                 58, 32, 58, 33, "((i)--)"));
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                59, 7, 59, 20, ""));
+                59, 7, 59, 21, "{}"));
     allMutants->push_back(
         Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 59, 17, 59, 18, "%"));
@@ -155,7 +155,7 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
                 59, 19, 59, 20, "((i)--)"));
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                61, 5, 61, 8, ""));
+                61, 5, 61, 9, "{}"));
     allMutants->push_back(
         Mutant("AOR", TARGET_FILE1, "getIntArraySize",
                 68, 24, 68, 25, "+"));
@@ -191,7 +191,7 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
                 76, 32, 76, 33, "((f)--)"));
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE2, "sdlBlockedCases",
-                28, 12, 28, 17, ""));
+                28, 12, 28, 18, "{}"));
     allMutants->push_back(
         Mutant("UOI", TARGET_FILE2, "sdlBlockedCases",
                 39, 13, 39, 14, "((a)++)"));

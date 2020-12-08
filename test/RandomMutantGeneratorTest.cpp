@@ -120,7 +120,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
                 58, 32, 58, 33, "((i)--)"));
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                59, 7, 59, 20, ""));
+                59, 7, 59, 21, "{}"));
     allMutants->push_back(
         Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 59, 17, 59, 18, "%"));
@@ -147,7 +147,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
                 59, 19, 59, 20, "((i)--)"));
     allMutants->push_back(
         Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                61, 5, 61, 8, ""));
+                61, 5, 61, 9, "{}"));
     allMutants->push_back(
         Mutant("AOR", TARGET_FILE1, "getIntArraySize",
                 68, 24, 68, 25, "+"));

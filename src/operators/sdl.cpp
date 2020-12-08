@@ -106,9 +106,28 @@ bool SDL::canMutate(clang::Stmt* s) {
 }
 
 void SDL::populate(clang::Stmt* s, Mutants* mutables) {
-  clang::SourceLocation stmtStartLoc = s->getBeginLoc();
-  clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
+  auto stmtStartLoc = s->getBeginLoc();
+  auto stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+
+  // A temporary solution to get the location after semicolon.
+  // Tried Lexer::findLocAfterToken and Lexer::findNextToken
+  // but they both do not work.
+  auto semiLoc = stmtEndLoc;
+  auto c = mSrcMgr.getCharacterData(semiLoc);
+  while (true) {
+    if (*c == ';') {
+      stmtEndLoc = semiLoc.getLocWithOffset(1);
+      break;
+    }
+
+    if (*c == '\n' || *c == EOF) {
+      break;
+    }
+
+    semiLoc = semiLoc.getLocWithOffset(1);
+    c = mSrcMgr.getCharacterData(semiLoc);
+  }
 
   if (isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     std::string path = mSrcMgr.getFilename(stmtStartLoc);
@@ -120,7 +139,7 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "");
+        "{}");
   }
 }
 

@@ -212,16 +212,15 @@ int CommandRun::run() {
     //     buildDir);
     std::shared_ptr<MutantGenerator> generator;
     if (mGenerator.Get() == "uniform") {
-      generator = std::make_shared<sentinel::UniformMutantGenerator>(
-          mBuildDir.Get());
+      generator = std::make_shared<sentinel::UniformMutantGenerator>(buildDir);
     } else {
       if (mGenerator.Get() == "random") {
         generator = std::make_shared<sentinel::RandomMutantGenerator>(
-            mBuildDir.Get());
+            buildDir);
       } else {
         if (mGenerator.Get() == "weighted") {
           generator = std::make_shared<sentinel::WeightedMutantGenerator>(
-              mBuildDir.Get());
+              buildDir);
         } else {
           throw InvalidArgumentException(fmt::format(
               "Invalid value for generator option: {0}", mGenerator.Get()));
