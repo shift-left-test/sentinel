@@ -50,6 +50,8 @@ void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
                          std::get<4>(curExplain) ?
                          "KILLED" : "SURVIVED"));
   }
+  std::string rCode = string::replaceAll(curCode, "<", "&lt;");
+  rCode = string::replaceAll(rCode, ">", "&gt;");
   mLines += fmt::format(lineContent,
               fmt::arg("cur_lineNum", curLineNum),
               fmt::arg("src_name", mSrcName),
@@ -57,7 +59,7 @@ void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
               fmt::arg("num_cur_line_mrs", numCurLineMrs == 0 ?
                                            "" : std::to_string(numCurLineMrs)),
               fmt::arg("line_explain", lineExplain),
-              fmt::arg("cur_code", curCode));
+              fmt::arg("cur_code", rCode));
 }
 
 void SrcHTMLGenerator::pushMutation(std::size_t curLineNum,

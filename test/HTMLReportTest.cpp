@@ -92,7 +92,8 @@ class HTMLReportTest : public ::testing::Test {
   fs::path NESTED_SOURCE_DIR2;
   fs::path TARGET_FULL_PATH;
   std::string TARGET_CONTENT =
-      R"(int add(int a, int b) {
+      R"(#include <iostream>
+int add(int a, int b) {
   return a + b;
 })";
   fs::path TARGET_FULL_PATH2;
@@ -406,15 +407,30 @@ int minus(int a, int b){
                 </td>
                 <td class="">
                     <span class="">
-                        <pre>int add(int a, int b) {</pre>
+                        <pre>#include &lt;iostream&gt;</pre>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="na">2<a name="sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2"/></td>
+                <td class="">
+                    <span class="pop">
+                        <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2"></a>
+                        <span>
+                        </span>
+                    </span>
+                </td>
+                <td class="">
+                    <span class="">
+                        <pre>int add(int a, int b) {</pre>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="na">3<a name="sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3"/></td>
                 <td class="survived">
                     <span class="pop">
-                        <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2">1</a>
+                        <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3">1</a>
                         <span>
                             <b>1. AOR -&gt; SURVIVED</b>
                             <br/>
@@ -436,10 +452,10 @@ int minus(int a, int b){
                 </td>
             </tr>
             <tr>
-                <td class="na">3<a name="sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3"/></td>
+                <td class="na">4<a name="sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_4"/></td>
                 <td class="">
                     <span class="pop">
-                        <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3"></a>
+                        <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_4"></a>
                         <span>
                         </span>
                     </span>
@@ -459,15 +475,15 @@ int minus(int a, int b){
             </tr>
             <tr>
                 <td>
-                    <a href="#sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2">2</a>
+                    <a href="#sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3">3</a>
                 </td>
                 <td/>
                 <td>
-                    <a name="group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_2"/>
+                    <a name="group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3"/>
                     <a class="SURVIVED">
                         <span class="pop">1.<span><b>1 </b>
                                 <br/>
-                                <b>Location: line num 2</b>
+                                <b>Location: line num 3</b>
                                 <br/>
                                 <b>Killed by : none</b>
                             </span>
@@ -957,7 +973,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   MutationResults MRs;
 
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "-");
+             3, 12, 3, 13, "-");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
   Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
@@ -1046,7 +1062,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
 
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+             3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1077,7 +1093,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
   tmpPath.concat("_tmpPath");
   fs::copy(TARGET_FULL_PATH, tmpPath);
   Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+             3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
