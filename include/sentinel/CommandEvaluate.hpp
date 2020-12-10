@@ -49,7 +49,7 @@ class CommandEvaluate : public Command {
   args::ValueFlag<std::string> mExpectedDir;
   args::ValueFlag<std::string> mActualDir;
   args::ValueFlag<std::string> mEvalFile;
-  args::Flag mBuildFailure;
+  args::ValueFlag<std::string> mTestState;
 };
 
 }  // namespace sentinel

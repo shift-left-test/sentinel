@@ -31,6 +31,7 @@
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -41,8 +42,8 @@
 #include "sentinel/operators/bor.hpp"
 #include "sentinel/operators/lcr.hpp"
 #include "sentinel/operators/ror.hpp"
-#include "sentinel/operators/sor.hpp"
 #include "sentinel/operators/sdl.hpp"
+#include "sentinel/operators/sor.hpp"
 #include "sentinel/operators/uoi.hpp"
 #include "sentinel/SourceLines.hpp"
 

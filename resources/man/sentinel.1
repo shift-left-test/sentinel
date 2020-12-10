@@ -104,8 +104,8 @@ Actual result directory
 --evaluation-file=[FILEPATH]
 Evaluated output filename which will be joined with output-dir. Default: EvaluationResults
 .TP
---build-failure
-If build_failure occurs
+--test-state=[TEST_STUATE]
+Select the state of the test to be evaluated, one of ['success', 'build_failure', 'timeout']. Default: success
 .SS report: sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
 Create a mutation test report based on the'evaluate' result and source code
 .TP
@@ -164,6 +164,9 @@ Diff scope, one of ['commit', 'all']. Default: all
 .TP
 -l[COUNT], --limit=[COUNT]
 Maximum generated mutable count. Default: 10
+.TP
+--timeout=[TIME_SEC]
+Time limit (sec) for test-command. If 0, there is no time limit. Default: 3600
 .SH REPORTING BUGS
 sentinel issue tracker: <http://mod.lge.com/hub/yocto/addons/sentinel/issues>
 .SH SEE ALSO

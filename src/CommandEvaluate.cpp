@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include "sentinel/Evaluator.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/CommandEvaluate.hpp"
@@ -48,12 +49,20 @@ CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
   mEvalFile(parser, "FILENAME",
     "Evaluated output file name which will be joined with output-dir.",
     {"evaluation-file"}, "EvaluationResults"),
-  mBuildFailure(parser, "build_failure",
-    "If build_failure occurs", {"build-failure"}) {
+  mTestState(parser, "TEST_STATE",
+    R"asdf(Select the state of the test to be evaluated, one of ['success', 'build_failure', 'timeout'].)asdf",
+    {"test-state"}, "success") {
 }
 
 int CommandEvaluate::run() {
   namespace fs = std::experimental::filesystem;
+
+  if (mTestState.Get() != "build_failure" && mTestState.Get() != "timeout"
+      && mTestState.Get() != "success") {
+      throw InvalidArgumentException(fmt::format(
+          "Invalid value for test-state option: {0}", mTestState.Get()));
+  }
+
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
   std::string outputDirStr;
   if (mOutputDir.Get().empty()) {
@@ -77,7 +86,7 @@ int CommandEvaluate::run() {
   sentinel::Evaluator evaluator(mExpectedDir.Get(), sourceRoot);
 
   evaluator.compareAndSaveMutationResult(m, mActualDir.Get(),
-    outputDir / mEvalFile.Get(), static_cast<bool>(mBuildFailure));
+    outputDir / mEvalFile.Get(), mTestState.Get());
 
   return 0;
 }

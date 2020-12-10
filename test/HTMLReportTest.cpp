@@ -985,6 +985,10 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
              8, 12, 8, 13, "-");
   MRs.emplace_back(M7, "", "", MutationState::RUNTIME_ERROR);
 
+  Mutant M8("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M8, "", "", MutationState::TIMEOUT);
+
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 

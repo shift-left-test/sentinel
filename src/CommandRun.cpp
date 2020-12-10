@@ -24,8 +24,9 @@
 
 #include <fmt/core.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <experimental/filesystem>
-#include <csignal>
+#include <exception>
 #include <cstdlib>
 #include <cstring>
 #include <map>
@@ -36,6 +37,8 @@
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
+#include "sentinel/util/signal.hpp"
+#include "sentinel/util/Subprocess.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/XMLReport.hpp"
@@ -66,6 +69,7 @@ static void signalHandler(int signum) {
       fs::remove_all(workDirForSH / "actual");
     }
   }
+  std::cout.flush();
   if (signum != SIGUSR1) {
     std::cout << "Receive " << strsignal(signum) << std::endl;
     std::exit(signum);
@@ -102,28 +106,34 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
     {"test-result-extention"}, {"xml", "XML"}),
   mGenerator(parser, "gen",
     "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
-    {"generator"}, "uniform") {
+    {"generator"}, "uniform"),
+  mTimeLimit(parser, "TIME_SEC",
+    "Time limit (sec) for test-command. If 0, there is no time limit.",
+    {"timeout"}, 3600) {
 }
 
 int CommandRun::run() {
   namespace fs = std::experimental::filesystem;
   workDirForSH = fs::current_path() / mWorkDir.Get();
 
-  std::signal(SIGABRT, signalHandler);
-  std::signal(SIGINT, signalHandler);
-  std::signal(SIGFPE, signalHandler);
-  std::signal(SIGILL, signalHandler);
-  std::signal(SIGSEGV, signalHandler);
-  std::signal(SIGTERM, signalHandler);
-  std::signal(SIGUSR1, signalHandler);
+  signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
+      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1}, signalHandler);
 
   try {
+    // Directory setting
+    fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+
     if (!fs::exists(mWorkDir.Get())) {
       workDirExists = false;
       fs::create_directories(mWorkDir.Get());
     }
     fs::path workDir = fs::canonical(mWorkDir.Get());
-    fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
+    std::string backupDir = preProcessWorkDir(
+        (workDir / "backup").string(), &backupDirExists, true);
+    std::string expectedDir = preProcessWorkDir(
+        (workDir / "actual").string(), &actualDirExists, false);
+    std::string actualDir = preProcessWorkDir(
+        (workDir / "expected").string(), &expectedDirExists, false);
 
     bool emptyOutputDir = false;
     std::string outputDirStr;
@@ -133,9 +143,26 @@ int CommandRun::run() {
     } else {
       outputDirStr = mOutputDir.Get();
     }
-    fs::create_directories(outputDirStr);
-    fs::path outputDir = fs::canonical(outputDirStr);
+    fs::path outputDir = fs::absolute(outputDirStr);
 
+    if (fs::exists(mTestResultDir.Get())) {
+      if (!fs::is_directory(mTestResultDir.Get())) {
+        throw InvalidArgumentException(fmt::format(
+              "The given test result path is not a directory: {0}",
+              mTestResultDir.Get()));
+      }
+
+      if (!fs::is_empty(mTestResultDir.Get())) {
+        throw InvalidArgumentException(fmt::format(
+              "The given test result path is not empty: {0}",
+              mTestResultDir.Get()));
+      }
+    }
+    fs::path testResultDir = fs::absolute(mTestResultDir.Get());
+
+    fs::path buildDir = fs::canonical(mBuildDir.Get());
+
+    // log parsed parameter
     auto logger = Logger::getLogger(cCommandRunLoggerName);
     logger->info(fmt::format("{0:-^{1}}", "", 50));
     logger->info(fmt::format("build dir: {}", mBuildDir.Get()));
@@ -143,33 +170,6 @@ int CommandRun::run() {
     logger->info(fmt::format("test cmd:{}", mTestCmd.Get()));
     logger->info(fmt::format("test result dir: {}", mTestResultDir.Get()));
 
-    if (!fs::exists(mTestResultDir.Get())) {
-      throw InvalidArgumentException(fmt::format(
-          "The test result path does not exist : {0}",
-          mTestResultDir.Get()));
-    }
-
-    if (!fs::is_directory(mTestResultDir.Get())) {
-      throw InvalidArgumentException(fmt::format(
-          "The given test result path is not a directory: {0}",
-          mTestResultDir.Get()));
-    }
-
-    if (!fs::is_empty(mTestResultDir.Get())) {
-      throw InvalidArgumentException(fmt::format(
-          "The given test result path is not empty: {0}",
-          mTestResultDir.Get()));
-    }
-
-    fs::path buildDir = fs::canonical(mBuildDir.Get());
-    fs::path testResultDir = fs::canonical(mTestResultDir.Get());
-
-    std::string backupDir = preProcessWorkDir(
-        (workDir / "backup").string(), &backupDirExists, true);
-    std::string expectedDir = preProcessWorkDir(
-        (workDir / "actual").string(), &actualDirExists, false);
-    std::string actualDir = preProcessWorkDir(
-        (workDir / "expected").string(), &expectedDirExists, false);
 
     logger->info(fmt::format("backup dir: {}", backupDir));
     logger->info(fmt::format("expected test result dir: {}", expectedDir));
@@ -180,20 +180,35 @@ int CommandRun::run() {
     restoreBackup(backupDir, sourceRoot);
 
     // generate orignal test result
-    ::chdir(buildDir.c_str());
+    if (::chdir(buildDir.c_str()) != 0) {
+      throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
+            buildDir.c_str(), std::strerror(errno)));
+    }
 
     // build
     logger->info("Building original source code ...");
     logger->info(fmt::format("build dir: {}", buildDir.c_str()));
     logger->info(fmt::format("build cmd: {}", mBuildCmd.Get()));
-    ::system(mBuildCmd.Get().c_str());
+    Subprocess(mBuildCmd.Get()).execute();
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // test
     logger->info("Running tests ...");
     logger->info(fmt::format("test cmd: {}", mTestCmd.Get()));
-    ::system(mTestCmd.Get().c_str());
+    Subprocess firstTestProc(mTestCmd.Get(), mTimeLimit.Get());
+    firstTestProc.execute();
+    if (firstTestProc.isTimedOut()) {
+      throw std::runtime_error(
+          "Timeout occurs when excuting test cmd for original source code.");
+    }
     logger->info(fmt::format("{0:-^{1}}", "", 50));
+
+    if (!fs::exists(testResultDir)) {
+      throw InvalidArgumentException(fmt::format(
+          "The test result path does not exist : {0}",
+          mTestResultDir.Get()));
+    }
+    testResultDir = fs::canonical(testResultDir);
 
     // copy test report to expected
     copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
@@ -228,6 +243,8 @@ int CommandRun::run() {
       }
     }
 
+    logger->info(fmt::format("generator: {}", mGenerator.Get()));
+
     sentinel::MutationFactory mutationFactory(generator);
 
     auto mutants = mutationFactory.populate(sourceRoot,
@@ -254,21 +271,41 @@ int CommandRun::run() {
 
       // build
       logger->info(fmt::format("Building mutant #{} ...", mutantId));
-      int buildExitCode = ::system(mBuildCmd.Get().c_str());
-      if (buildExitCode == 0) {
+      Subprocess buildProc(mBuildCmd.Get());
+      buildProc.execute();
+      bool buildSucess = buildProc.isSuccessfulExit();
+      std::string testState = "success";
+      if (buildSucess) {
         // test
         logger->info("Building SUCCESS. Testing ...");
+        if (mTimeLimit.Get() != 0) {
+          logger->info(fmt::format("Time limit for testing ({}sec)",
+                mTimeLimit.Get()));
+        } else {
+          logger->info(fmt::format("There is no time limit for testing",
+                mTimeLimit.Get()));
+        }
         fs::remove_all(testResultDir);
-        ::system(mTestCmd.Get().c_str());
-        copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
+
+        Subprocess proc(mTestCmd.Get(), mTimeLimit.Get());
+        proc.execute();
+        bool testTimeout = proc.isTimedOut();
+        if (testTimeout) {
+          testState = "timeout";
+          logger->info("Timeout when executing test command.");
+          fs::remove_all(actualDir);
+        } else {
+          copyTestReportTo(testResultDir, actualDir, mTestResultFileExts.Get());
+        }
       } else {
+        testState = "build_failure";
         logger->info("Building FAIL.");
       }
       logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // evaluate
       logger->info("Evaluating mutant test results ...");
-      evaluator.compare(m, actualDir, buildExitCode != 0);
+      evaluator.compare(m, actualDir, testState);
       logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // restore mutate
@@ -282,14 +319,21 @@ int CommandRun::run() {
     //                        (source file restore was completed already.)
 
     // report
+
+    fs::create_directories(outputDir);
+    outputDir = fs::canonical(outputDir);
+
     if (!emptyOutputDir) {
+      logger->info(fmt::format("Writting Report to {}", outputDir.string()));
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.save(outputDir);
       sentinel::HTMLReport htmlReport(evaluator.getMutationResults(),
           sourceRoot);
       htmlReport.save(outputDir);
+      logger->info("Print Summary Report");
       htmlReport.printSummary();
     } else {
+      logger->info("Print Summary Report");
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
     }
@@ -298,6 +342,7 @@ int CommandRun::run() {
     throw;
   }
 
+  std::raise(SIGUSR1);
   return 0;
 }
 
@@ -371,4 +416,5 @@ std::string CommandRun::preProcessWorkDir(const std::string& target,
   }
   return fs::canonical(target).string();
 }
+
 }  // namespace sentinel

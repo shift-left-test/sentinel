@@ -83,6 +83,10 @@ void Report::generateReport() {
       totNumberOfRuntimeError++;
       continue;
     }
+    if (currentState == MutationState::TIMEOUT) {
+      totNumberOfTimeout++;
+      continue;
+    }
     totNumberOfMutation++;
 
     fs::path mrPath = getRelativePath(mr.getMutant().getPath(),
@@ -188,6 +192,11 @@ void Report::printSummary() {
                              "Runtime Error", flen,
                              "", klen,
                              totNumberOfRuntimeError, mlen,
+                             "", clen);
+    std::cout << fmt::format(defFormat,
+                             "Timeout", flen,
+                             "", klen,
+                             totNumberOfTimeout, mlen,
                              "", clen);
     std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   }

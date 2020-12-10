@@ -35,6 +35,7 @@ enum class MutationState : int {
   SURVIVED = 1,
   RUNTIME_ERROR = 2,
   BUILD_FAILURE = 3,
+  TIMEOUT = 4
 };
 
 /**
@@ -54,6 +55,8 @@ inline const char* MutationStateToStr(MutationState m) {
       return "RUNTIME_ERROR";
     case MutationState::BUILD_FAILURE:
       return "BUILD_FAILURE";
+    case MutationState::TIMEOUT:
+      return "TIMEOUT";
     default:
       return "UNKOWN";
   }

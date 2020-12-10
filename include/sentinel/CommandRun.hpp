@@ -25,6 +25,7 @@
 #ifndef INCLUDE_SENTINEL_COMMANDRUN_HPP_
 #define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
+#include <cstddef>
 #include <string>
 #include <vector>
 #include "sentinel/Command.hpp"
@@ -47,10 +48,11 @@ class CommandRun : public Command {
  private:
   void copyTestReportTo(const std::string& from,
       const std::string& to, const std::vector<std::string>& exts);
-  void restoreBackup(const std::string& backup,
-      const std::string& srcRoot);
+  void restoreBackup(const std::string& backup, const std::string& srcRoot);
   std::string preProcessWorkDir(const std::string& target, bool* targetExists,
       bool isFilledDir);
+  int executeCmdWithTimeOut(const std::string& cmd, std::size_t sec = 0,
+      bool* occurTimeout = nullptr);
 
  private:
   args::ValueFlag<std::string> mBuildDir;
@@ -63,6 +65,7 @@ class CommandRun : public Command {
   args::ValueFlagList<std::string> mExcludes;
   args::ValueFlag<std::string> mScope;
   args::ValueFlag<int> mLimit;
+  args::ValueFlag<std::size_t> mTimeLimit;
 };
 
 }  // namespace sentinel

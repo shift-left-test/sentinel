@@ -141,17 +141,19 @@ TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
   auto mrPath = OUT_DIR / "MutationResult";
   EXPECT_NO_THROW(Evaluator(ORI_DIR,
       SAMPLE_BASE).compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath,
-      false));
+      "success"));
 
   auto mrPathForException = SAMPLE1_PATH / "MutationResult";
   EXPECT_THROW(Evaluator(ORI_DIR, SAMPLE_BASE).compareAndSaveMutationResult(
-      *mutable1, MUT_DIR, mrPathForException, false), InvalidArgumentException);
+      *mutable1, MUT_DIR, mrPathForException, "success"),
+      InvalidArgumentException);
 }
 
 TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
   auto emptyPath = BASE / "EMPTY_DIR";
   fs::create_directories(emptyPath);
-  EXPECT_THROW(Evaluator(emptyPath, SAMPLE_BASE), InvalidArgumentException);
+  EXPECT_THROW(Evaluator(emptyPath, SAMPLE_BASE),
+      InvalidArgumentException);
 
   EXPECT_THROW(Evaluator(ORI_DIR_FAIL, SAMPLE_BASE), InvalidArgumentException);
 }
@@ -162,7 +164,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   testing::internal::CaptureStdout();
   auto mrPath = OUT_DIR / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable1,
-    MUT_DIR, mrPath, false);
+    MUT_DIR, mrPath, "success");
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "AOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0 -> +)"));
@@ -182,7 +184,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
   testing::internal::CaptureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
-    MUT_DIR_SURVIVED, mrPath, false);
+    MUT_DIR_SURVIVED, mrPath, "success");
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
@@ -204,7 +206,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
-    emptyPath, mrPath, true);
+    emptyPath, mrPath, "build_failure");
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
@@ -227,11 +229,34 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
-    emptyPath, mrPath, false);
+    emptyPath, mrPath, "success");
   std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "RUNTIME_ERROR"));
+  EXPECT_FALSE(result.getDetected());
+
+  MutationResults MRs;
+  MRs.load(mrPath);
+  auto mr = MRs[0];
+  EXPECT_TRUE(mr.compare(result));
+  fs::remove(mrPath);
+  fs::remove(emptyPath);
+}
+
+TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+
+  testing::internal::CaptureStdout();
+  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
+  auto emptyPath = OUT_DIR / "emptyDir";
+  fs::create_directories(emptyPath);
+  auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
+    emptyPath, mrPath, "timeout");
+  std::string out2 = testing::internal::GetCapturedStdout();
+  EXPECT_TRUE(string::contains(out2, "BOR : "));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
+  EXPECT_TRUE(string::contains(out2, "TIMEOUT"));
   EXPECT_FALSE(result.getDetected());
 
   MutationResults MRs;

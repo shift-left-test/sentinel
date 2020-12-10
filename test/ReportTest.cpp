@@ -123,6 +123,10 @@ TOTAL                                                      0         0        -%
              2, 12, 2, 13, "+");
   MRs.emplace_back(M2, "", "", MutationState::RUNTIME_ERROR);
 
+  Mutant M3("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
+             2, 12, 2, 13, "+");
+  MRs.emplace_back(M3, "", "", MutationState::TIMEOUT);
+
   MRs.save(MRPath);
 
   ReportForTest report2(MRPath, SOURCE_DIR);
@@ -141,6 +145,7 @@ TOTAL                                                      0         0        -%
 Ignored Mutation
 Build Failure                                                        1          
 Runtime Error                                                        1          
+Timeout                                                              1          
 ----------------------------------------------------------------------------------
 )a1b2z", out2);
 }
@@ -197,7 +202,7 @@ TOTAL                                                      2         5       40%
 )a1b2z", out);
 }
 
-TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndNoBuildFailure) {
+TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_3";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -219,6 +224,10 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndNoBuildFailure) {
   Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
+
+  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M6, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
@@ -243,11 +252,12 @@ TOTAL                                                      1         3       33%
 Ignored Mutation
 Build Failure                                                        0          
 Runtime Error                                                        1          
+Timeout                                                              1          
 ----------------------------------------------------------------------------------
 )a1b2z", out);
 }
 
-TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailure) {
+TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_4";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -269,6 +279,10 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailure) {
   Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
              8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
+
+  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
+             8, 12, 8, 13, "-");
+  MRs.emplace_back(M6, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
@@ -292,6 +306,7 @@ TOTAL                                                      1         2       50%
 Ignored Mutation
 Build Failure                                                        1          
 Runtime Error                                                        1          
+Timeout                                                              1          
 ----------------------------------------------------------------------------------
 )a1b2z", out);
 }

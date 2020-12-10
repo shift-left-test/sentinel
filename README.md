@@ -113,7 +113,10 @@ $ ./build.sh
       --evaluation-file=[FILEPATH]      Evaluated output filename which will be
                                         joined with output-dir.
                                         Default: EvaluationResults
-      --build-failure                   If build_failure occurs
+      --test-state=[TEST_STATE]         Select the state of the test to be
+                                        evaluated, one of ['success',
+                                        'build_failure', 'timeout'].
+                                        Default: success
 ```
 
 ### report
@@ -165,6 +168,9 @@ $ ./build.sh
                                         Default: all
       -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
                                         Default: 10
+      --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
+                                        there is no time limit.
+                                        Default: 3600
 ```
 
 

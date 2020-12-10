@@ -131,6 +131,11 @@ class Report {
   std::size_t totNumberOfRuntimeError = 0;
 
   /**
+   * @brief total number of Time Out
+   */
+  std::size_t totNumberOfTimeout = 0;
+
+  /**
    * @brief path of source directory
    */
   std::experimental::filesystem::path mSourcePath;

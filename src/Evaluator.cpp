@@ -52,19 +52,25 @@ Evaluator::Evaluator(const std::string& expectedResultDir,
 }
 
 MutationResult Evaluator::compare(const Mutant& mut,
-    const std::string& ActualResultDir, bool buildFail) {
+    const std::string& ActualResultDir, const std::string& testState) {
   std::string killingTC;
   std::string errorTC;
   MutationState state;
 
-  if (buildFail) {
+  if (testState == "build_failure") {
     state = MutationState::BUILD_FAILURE;
     mLogger->debug(fmt::format("Build failure - ignore({})", ActualResultDir));
-  } else {
+  } else if (testState == "timeout") {
+    state = MutationState::TIMEOUT;
+    mLogger->debug(fmt::format("Timeout - ignore({})", ActualResultDir));
+  } else if (testState == "success") {
     Result mActualResult(ActualResultDir);
     mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
     state = Result::compare(mExpectedResult, mActualResult,
         &killingTC, &errorTC);
+  } else {
+      throw InvalidArgumentException(fmt::format(
+          "Invalid value for testState : {0}", testState));
   }
 
   mLogger->debug(fmt::format("killing TC: {}", killingTC));
@@ -94,7 +100,6 @@ MutationResult Evaluator::compare(const Mutant& mut,
       relPath /= *it_p;
     }
   }
-
 
   std::size_t flen = 60;
   std::string mutLoc = fmt::format(
@@ -133,7 +138,7 @@ MutationResult Evaluator::compare(const Mutant& mut,
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
     const std::experimental::filesystem::path& ActualResultDir,
     const std::experimental::filesystem::path& evalFilePath,
-    bool buildFail) {
+    const std::string& testState) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {
@@ -144,7 +149,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
     fs::create_directories(outDir);
   }
 
-  MutationResult ret = compare(mut, ActualResultDir, buildFail);
+  MutationResult ret = compare(mut, ActualResultDir, testState);
 
   std::ofstream outFile(evalFilePath.c_str(),
       std::ios::out | std::ios::app);
