@@ -62,6 +62,12 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator <(const SourceLine& other) const {
+    if (this->mPath.string() < other.mPath.string()) {
+      return true;
+    }
+    if (this->mPath.string() > other.mPath.string()) {
+      return false;
+    }
     return this->mLineNumber < other.mLineNumber;
   }
 

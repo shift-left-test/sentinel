@@ -42,7 +42,7 @@
 
 namespace sentinel {
 
-static const char * cLoggerName = "UniformMutantGenerator";
+static const char * cUniformGeneratorLoggerName = "UniformMutantGenerator";
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
                                          std::size_t maxMutants) {
@@ -71,7 +71,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
-  auto logger = Logger::getLogger(cLoggerName);
+  auto logger = Logger::getLogger(cUniformGeneratorLoggerName);
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);

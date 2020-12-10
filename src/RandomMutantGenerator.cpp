@@ -25,6 +25,7 @@
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
+#include <fmt/core.h>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -32,6 +33,7 @@
 #include <map>
 #include <random>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
@@ -39,6 +41,8 @@
 
 
 namespace sentinel {
+
+static const char * cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
                                          std::size_t maxMutants) {
@@ -67,7 +71,9 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
+  auto logger = Logger::getLogger(cRandomGeneratorLoggerName);
   for (const auto& file : targetLines) {
+    logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
     tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
         "-ferror-limit=0"));
