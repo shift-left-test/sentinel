@@ -43,7 +43,7 @@ Evaluator::Evaluator(const std::string& expectedResultDir,
     const std::string& sourcePath) : mSourcePath(sourcePath),
     mExpectedResult(expectedResultDir),
     mLogger(Logger::getLogger("Evaluator")) {
-  mLogger->debug(fmt::format("Load Expected Result: {}", expectedResultDir));
+  mLogger->info(fmt::format("Load Expected Result: {}", expectedResultDir));
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
     throw InvalidArgumentException(fmt::format(
@@ -59,23 +59,23 @@ MutationResult Evaluator::compare(const Mutant& mut,
 
   if (testState == "build_failure") {
     state = MutationState::BUILD_FAILURE;
-    mLogger->debug(fmt::format("Build failure - ignore({})", ActualResultDir));
+    mLogger->info(fmt::format("Build failure - ignore({})", ActualResultDir));
   } else if (testState == "timeout") {
     state = MutationState::TIMEOUT;
-    mLogger->debug(fmt::format("Timeout - ignore({})", ActualResultDir));
+    mLogger->info(fmt::format("Timeout - ignore({})", ActualResultDir));
   } else if (testState == "success") {
     Result mActualResult(ActualResultDir);
-    mLogger->debug(fmt::format("Load Actual Result: {}", ActualResultDir));
+    mLogger->info(fmt::format("Load Actual Result: {}", ActualResultDir));
     state = Result::compare(mExpectedResult, mActualResult,
         &killingTC, &errorTC);
   } else {
       throw InvalidArgumentException(fmt::format(
           "Invalid value for testState : {0}", testState));
   }
-
-  mLogger->debug(fmt::format("killing TC: {}", killingTC));
-  mLogger->debug(fmt::format("error TC: {}", errorTC));
-  mLogger->debug(fmt::format("Mutation State: {}", MutationStateToStr(state)));
+  mLogger->info(fmt::format("Mutant: {}", mut.str()));
+  mLogger->info(fmt::format("killing TC: {}", killingTC));
+  mLogger->info(fmt::format("error TC: {}", errorTC));
+  mLogger->info(fmt::format("Mutation State: {}", MutationStateToStr(state)));
 
   fs::path relPath;
 
@@ -156,7 +156,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
   outFile << ret << std::endl;
   outFile.close();
 
-  mLogger->debug(fmt::format("Save MutationResult: {}", outDir.string()));
+  mLogger->info(fmt::format("Save MutationResult: {}", outDir.string()));
 
   return ret;
 }

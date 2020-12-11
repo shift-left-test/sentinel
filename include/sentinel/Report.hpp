@@ -30,6 +30,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
 
 
@@ -139,6 +140,11 @@ class Report {
    * @brief path of source directory
    */
   std::experimental::filesystem::path mSourcePath;
+
+  /**
+   * @brief Report's logger
+   */
+  std::shared_ptr<Logger> mLogger;
 };
 
 }  // namespace sentinel

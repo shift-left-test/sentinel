@@ -42,14 +42,16 @@ namespace sentinel {
 
 Report::Report(const MutationResults& results,
     const std::experimental::filesystem::path& sourcePath) :
-    mSourcePath(sourcePath), mResults(results) {
+    mSourcePath(sourcePath), mResults(results),
+    mLogger(Logger::getLogger("Report")) {
   generateReport();
 }
 
 Report::Report(const std::experimental::filesystem::path& resultsPath,
     const std::experimental::filesystem::path& sourcePath) :
-    mSourcePath(sourcePath) {
+    mSourcePath(sourcePath), mLogger(Logger::getLogger("Report")) {
   mResults.load(resultsPath);
+  mLogger->info(fmt::format("Load MutationResults: {}", resultsPath.string()));
 
   generateReport();
 }
@@ -135,6 +137,18 @@ void Report::printSummary() {
   std::size_t klen = 10;
   std::size_t clen = 10;
   std::size_t maxlen = flen + mlen + klen + clen + 2;
+
+  int cnt = 0;
+  mLogger->info(fmt::format("# of MutationResults: {}", mResults.size()));
+  for (const MutationResult& mr : mResults) {
+    mLogger->info(fmt::format("MutationResult #{}", ++cnt));
+    mLogger->info(fmt::format("  Mutant: {}", mr.getMutant().str()));
+    mLogger->info(fmt::format("  killing TC: {}", mr.getKillingTest()));
+    mLogger->info(fmt::format("  error TC: {}", mr.getErrorTest()));
+    mLogger->info(fmt::format("  Mutation State: {}",
+          MutationStateToStr(mr.getMutationState())));
+  }
+
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format("{0:^{1}}\n", "Mutation Coverage Report", maxlen);

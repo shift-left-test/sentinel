@@ -45,7 +45,7 @@ XMLReport::XMLReport(const std::string& resultsPath,
 
 void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
-
+  mLogger->info("Make XML Report");
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
       throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})",
@@ -91,6 +91,7 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
 
   doc->InsertEndChild(pMutations);
   doc->SaveFile(xmlPath.c_str());
+  mLogger->info(fmt::format("Save to {}", xmlPath.string()));
   delete doc;
 }
 

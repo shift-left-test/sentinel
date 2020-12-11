@@ -54,6 +54,7 @@ HTMLReport::HTMLReport(const std::string& resultsPath,
 
 void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
+  mLogger->info("Make HTML Report");
 
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
@@ -156,6 +157,7 @@ void HTMLReport::makeIndexHtml(
   std::ofstream ofs(outputDir / fileName, std::ofstream::out);
   ofs << contents;
   ofs.close();
+  mLogger->info(fmt::format("Save to {}", (outputDir / fileName).string()));
 }
 
 void HTMLReport::makeSourceHtml(
@@ -312,6 +314,7 @@ void HTMLReport::makeSourceHtml(
   ofs << contents;
   ofs.close();
 
+  mLogger->info(fmt::format("Save to {}", fileName));
   for (const auto& t : groupByLine) {
     delete t.second;
   }
