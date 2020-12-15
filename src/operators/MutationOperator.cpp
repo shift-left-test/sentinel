@@ -33,7 +33,7 @@
 
 namespace sentinel {
 
-std::string MutationOperator::convertStmtToString(clang::Stmt* s) {
+std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
       s->getEndLoc(), 0, mContext->getSourceManager(),
@@ -68,7 +68,6 @@ const clang::Type* MutationOperator::getExprType(clang::Expr* e) {
 
 bool MutationOperator::isDeclRefExpr(clang::Stmt* s) {
   if (auto dre = clang::dyn_cast<clang::DeclRefExpr>(s)) {
-    // An Enum value is not a declaration reference
     return !clang::isa<clang::EnumConstantDecl>(dre->getDecl());
   }
 

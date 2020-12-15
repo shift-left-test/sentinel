@@ -23,7 +23,9 @@
 */
 
 #include <clang/AST/Expr.h>
+#include <clang/AST/ExprCXX.h>
 #include <clang/Lex/Lexer.h>
+#include <iostream>
 #include <string>
 #include "sentinel/operators/uoi.hpp"
 
@@ -53,9 +55,11 @@ bool UOI::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  // UOI should not be applied to variable reference expression that is
-  // left hand side of assignment expression, or
-  // operand of address-of operator (&).
+  // UOI should not be applied to variable reference expression that is:
+  // 1. left hand side of assignment expression, or
+  // 2. operand of address-of operator (&), or
+  // 3. in return statment, or
+  // 4. inside lambda capture
   const clang::Stmt* parent = getParentStmt(s);
   while (parent != nullptr) {
     if (auto bo = clang::dyn_cast<clang::BinaryOperator>(parent)) {
@@ -77,6 +81,15 @@ bool UOI::canMutate(clang::Stmt* s) {
 
     if (clang::isa<clang::ReturnStmt>(parent)) {
       return false;
+    }
+
+    if (auto le = clang::dyn_cast<clang::LambdaExpr>(parent)) {
+      clang::SourceRange range = le->getIntroducerRange();
+      clang::SourceLocation varLoc = e->getBeginLoc();
+      if (varLoc.getRawEncoding() >= range.getBegin().getRawEncoding() &&
+          varLoc.getRawEncoding() <= range.getEnd().getRawEncoding()) {
+        return false;
+      }
     }
 
     parent = getParentStmt(parent);

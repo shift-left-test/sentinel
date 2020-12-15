@@ -144,6 +144,13 @@ int foo(int i, float f) {
   }
 
   return 0;
+}
+
+void blockUOIInLambdaCapture() {
+  int a = 1;
+  auto foo = [a] (int x) {
+    return x;
+  };
 })a1s2d3f4";
   std::string SAMPLE1B_PATH;
   std::string SAMPLE1B_DIR;

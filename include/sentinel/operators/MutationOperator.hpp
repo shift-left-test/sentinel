@@ -85,10 +85,10 @@ class MutationOperator {
   /**
    * @brief Return the code representing given AST node.
    *
-   * @param s target AST node
+   * @param s target AST node.
    * @return code string representing s
    */
-  std::string convertStmtToString(clang::Stmt* s);
+  std::string convertStmtToString(const clang::Stmt* s);
 
   /**
    * @brief Return the parent AST node of given node.

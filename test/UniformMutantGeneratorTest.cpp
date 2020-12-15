@@ -45,6 +45,7 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
     sourceLines->push_back(SourceLine(TARGET_FILE1, 73));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 75));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 76));
+    sourceLines->push_back(SourceLine(TARGET_FILE1, 84));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 28));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 29));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 30));
@@ -236,7 +237,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
-    // Check each selected line is unique
+    // Check each selected line is unique.
     std::size_t lineNum = e1.getFirst().line;
     auto pos = std::find(lines.begin(), lines.end(), lineNum);
     EXPECT_NE(pos, lines.end());
@@ -255,7 +256,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
-    // Check each selected line is unique
+    // Check each selected line is unique.
     std::size_t lineNum = e1.getFirst().line;
     auto pos = std::find(lines.begin(), lines.end(), lineNum);
     EXPECT_NE(pos, lines.end());
