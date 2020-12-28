@@ -46,6 +46,7 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     sourceLines->push_back(SourceLine(TARGET_FILE1, 73));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 75));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 76));
+    sourceLines->push_back(SourceLine(TARGET_FILE1, 100));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 28));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 29));
     sourceLines->push_back(SourceLine(TARGET_FILE2, 30));

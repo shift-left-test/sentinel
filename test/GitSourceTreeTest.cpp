@@ -94,7 +94,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
 TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   // If position does not exist, no changes should be made.
   Mutant nonexistLinePosition{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
-                               100, 200, 300, 400, "||"};
+                               10000, 200, 300, 400, "||"};
   GitSourceTree tree(BASE_DIR);
 
   fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";

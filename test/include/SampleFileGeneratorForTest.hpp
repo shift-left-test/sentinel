@@ -151,6 +151,21 @@ void blockUOIInLambdaCapture() {
   auto foo = [a] (int x) {
     return x;
   };
+}
+
+class Book {
+public:
+  Book() {}
+  int num_pages;
+};
+
+Book temporaryBook() {
+  return Book();
+}
+
+int blockUOIForMaterializedTemporaryExpr() {
+  int ret = temporaryBook().num_pages;
+  return ret;
 })a1s2d3f4";
   std::string SAMPLE1B_PATH;
   std::string SAMPLE1B_DIR;

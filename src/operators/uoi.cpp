@@ -55,7 +55,17 @@ bool UOI::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  // UOI should not be applied to variable reference expression that is:
+  // UOI must not be applied to expression that is temporary object.
+  // Ex: foo().member
+  //     foo() is a function returning a structure-type temporary object.
+  //     Member of temporary object cannot be incremented.
+  if (auto me = clang::dyn_cast<clang::MemberExpr>(e)) {
+    if (clang::isa<clang::MaterializeTemporaryExpr>(me->getBase())) {
+      return false;
+    }
+  }
+
+  // UOI must not be applied to variable reference expression that is:
   // 1. left hand side of assignment expression, or
   // 2. operand of address-of operator (&), or
   // 3. in return statment, or

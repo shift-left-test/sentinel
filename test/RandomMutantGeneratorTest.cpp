@@ -45,6 +45,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
     sourceLines->push_back(SourceLine(TARGET_FILE1, 73));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 75));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 76));
+    sourceLines->push_back(SourceLine(TARGET_FILE1, 100));
 
     allMutants = new Mutants();
     allMutants->push_back(
