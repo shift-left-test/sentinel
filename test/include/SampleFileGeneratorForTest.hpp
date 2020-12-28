@@ -99,17 +99,17 @@ inline bool lessThanOrEqual(int a, int b) {
   return a <= b;
 }
 
-// Return surface area of a rectangular
-int rectangularSurfaceArea(const int h, const float l, double w) {
-  // LCR ROR UOI test
-  // SBR test: if, return
-  if (IS_NEGATIVE(h) || IS_NEGATIVE(l) || w < 0)
-    return INVALID_RECT_SIDE_ERR
+enum Days {
+  Sunday, Monday, Tuesday,
+  Wednesday, Thursday, Friday, Saturday
+};
 
-  // Comment test: middle of code
-  // AOR test: basic mutation + modulo mutation test
-  // UOI test: no const variable mutation
-  return 2 * (l * h + w * h/*+ l * l*/+ w * l);
+bool isWeekend(Days d) {
+  if (d > Friday) {
+    return true;
+  }
+
+  return false;
 }
 
 // Pointer operation test

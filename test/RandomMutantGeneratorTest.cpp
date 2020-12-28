@@ -36,6 +36,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
     SampleFileGeneratorForTest::SetUp();
     TARGET_FILE1 = SAMPLE1_PATH;
     sourceLines = new SourceLines();
+    sourceLines->push_back(SourceLine(TARGET_FILE1, 41));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 58));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 59));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 61));
@@ -46,6 +47,27 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
     sourceLines->push_back(SourceLine(TARGET_FILE1, 76));
 
     allMutants = new Mutants();
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, ">="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "<"));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "<="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "=="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "!="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 7, 41, 17, "0"));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 7, 41, 17, "1"));
     allMutants->push_back(
         Mutant("LCR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 29, 58, 31, "||"));
@@ -197,7 +219,7 @@ TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator{".."};
   int maxMutants = allMutants->size();
-  Mutants mutables = generator.populate(*sourceLines, maxMutants);
+  Mutants mutables = generator.populate(*sourceLines, maxMutants*2);
   ASSERT_EQ(mutables.size(), maxMutants);
 
   for (const auto& e1 : mutables) {

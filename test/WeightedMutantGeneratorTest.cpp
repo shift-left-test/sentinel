@@ -37,6 +37,7 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     TARGET_FILE1 = SAMPLE1_PATH;
     TARGET_FILE2 = SAMPLE1B_PATH;
     sourceLines = new SourceLines();
+    sourceLines->push_back(SourceLine(TARGET_FILE1, 41));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 58));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 59));
     sourceLines->push_back(SourceLine(TARGET_FILE1, 61));
@@ -54,6 +55,27 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     sourceLines->push_back(SourceLine(TARGET_FILE2, 39));
 
     allMutants = new Mutants();
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, ">="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "<"));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "<="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "=="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 9, 41, 10, "!="));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 7, 41, 17, "0"));
+    allMutants->push_back(
+        Mutant("ROR", TARGET_FILE1, "isWeekend",
+                41, 7, 41, 17, "1"));
     allMutants->push_back(
         Mutant("LCR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 29, 58, 31, "||"));
@@ -223,9 +245,9 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   WeightedMutantGenerator generator{".."};
   Mutants mutables = generator.populate(*sourceLines, 100);
 
-  std::vector<std::size_t> lines = {58, 59, 61, 68, 75, 76, 28, 39};
+  std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
-  ASSERT_EQ(mutables.size(), 8);
+  ASSERT_EQ(mutables.size(), 9);
   EXPECT_EQ(mutables[0].getFirst().line, 59);
 
   for (const auto& e1 : mutables) {

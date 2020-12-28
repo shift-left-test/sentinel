@@ -68,6 +68,10 @@ const clang::Type* MutationOperator::getExprType(clang::Expr* e) {
 
 bool MutationOperator::isDeclRefExpr(clang::Stmt* s) {
   if (auto dre = clang::dyn_cast<clang::DeclRefExpr>(s)) {
+    auto type = getExprType(dre);
+    if (type->isEnumeralType()) {
+      return false;
+    }
     return !clang::isa<clang::EnumConstantDecl>(dre->getDecl());
   }
 
