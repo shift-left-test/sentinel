@@ -208,7 +208,20 @@ int CommandRun::run() {
           "The test result path does not exist : {0}",
           mTestResultDir.Get()));
     }
+
     testResultDir = fs::canonical(testResultDir);
+
+    if (!fs::is_directory(testResultDir)) {
+      throw InvalidArgumentException(fmt::format(
+            "The test result path is not a directory: {0}",
+            testResultDir.c_str()));
+    }
+
+    if (fs::is_empty(testResultDir)) {
+      throw InvalidArgumentException(fmt::format(
+            "The test result path is empty: {0}",
+            testResultDir.c_str()));
+    }
 
     // copy test report to expected
     copyTestReportTo(testResultDir, expectedDir, mTestResultFileExts.Get());
@@ -353,30 +366,33 @@ void CommandRun::copyTestReportTo(const std::string& from,
   fs::remove_all(to);
   fs::create_directories(to);
 
-  for (const auto& dirent : fs::recursive_directory_iterator(from)) {
-    const auto& curPath = dirent.path();
-    std::string curExt = curPath.extension().string();
-    std::transform(curExt.begin(), curExt.end(), curExt.begin(),
-        [](unsigned char c) { return std::tolower(c); });
-    if (fs::is_regular_file(curPath)) {
-      bool copyFlag = false;
-      if (exts.empty()) {
-        copyFlag = true;
-      } else {
-        for (const auto& t : exts) {
-          std::string tmp("." + t);
-          std::transform(tmp.begin(), tmp.end(), tmp.begin(),
-              [](unsigned char c) { return std::tolower(c); });
-          if (tmp == curExt) {
-            copyFlag = true;
-            break;
+
+  if (fs::exists(from) && fs::is_directory(from)) {
+    for (const auto& dirent : fs::recursive_directory_iterator(from)) {
+      const auto& curPath = dirent.path();
+      std::string curExt = curPath.extension().string();
+      std::transform(curExt.begin(), curExt.end(), curExt.begin(),
+          [](unsigned char c) { return std::tolower(c); });
+      if (fs::is_regular_file(curPath)) {
+        bool copyFlag = false;
+        if (exts.empty()) {
+          copyFlag = true;
+        } else {
+          for (const auto& t : exts) {
+            std::string tmp("." + t);
+            std::transform(tmp.begin(), tmp.end(), tmp.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+            if (tmp == curExt) {
+              copyFlag = true;
+              break;
+            }
           }
         }
-      }
 
-      if (copyFlag) {
-        // TODO(daeseong.seong): keep relative directory of backupFile
-        fs::copy(curPath, to);
+        if (copyFlag) {
+          // TODO(daeseong.seong): keep relative directory of backupFile
+          fs::copy(curPath, to);
+        }
       }
     }
   }
