@@ -109,7 +109,7 @@ SaContainer::SaContainer(std::vector<int> signums) {
       [](int signum) -> std::tuple<int, struct sigaction*> {
         struct sigaction* sa = new struct sigaction;
         getSigaction(signum, sa);
-        return {signum, sa};
+        return std::make_tuple(signum, sa);
       });
 }
 
