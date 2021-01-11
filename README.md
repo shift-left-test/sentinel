@@ -73,6 +73,9 @@ $ ./build.sh
       --mutants-file-name=[PATH]        Populated result file name which will be
                                         created at output-dir.
                                         Default: mutables.db
+      --generator=[gen]                 Select mutant generator type, one of
+                                        ['uniform', 'random', 'weighted'].
+                                        Default: uniform
 ```
 
 ### mutate
@@ -158,6 +161,9 @@ $ ./build.sh
       --test-result-dir=[PATH]          Test command output directory
       --build-command=[SH_CMD]          Shell command to build source
       --test-command=[SH_CMD]           Shell command to execute test
+      --generator=[gen]                 Select mutant generator type, one of
+                                        ['uniform', 'random', 'weighted'].
+                                        Default: uniform
       --test-result-extention=[EXTENSION...]
                                         Test command output file extensions.
       -t[EXTENSION...],
@@ -170,7 +176,12 @@ $ ./build.sh
                                         Default: 10
       --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
                                         there is no time limit.
-                                        Default: 3600
+                                        Default: 300
+      --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
+                                        running after timeout. If 0, SIGKILL
+                                        is not sent. This option has no meaning
+                                        when timeout is set 0.
+                                        Default: 60
 ```
 
 

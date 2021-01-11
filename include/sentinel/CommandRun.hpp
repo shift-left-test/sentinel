@@ -66,6 +66,7 @@ class CommandRun : public Command {
   args::ValueFlag<std::string> mScope;
   args::ValueFlag<int> mLimit;
   args::ValueFlag<std::size_t> mTimeLimit;
+  args::ValueFlag<std::size_t> mKillAfter;
 };
 
 }  // namespace sentinel

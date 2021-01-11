@@ -60,6 +60,9 @@ Maximum generated mutable count. Default: 10
 .TP
 --mutants-file-name=[PATH]
 Populated result file name which will be created at output-dir. Default: mutables.db
+.TP
+--generator=[gen]
+Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default: uniform
 .SS mutate: sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
 Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
 .TP
@@ -150,6 +153,9 @@ Shell command to build source
 --test-command=[SH_CMD]
 Shell command to execute test
 .TP
+--generator=[gen]
+Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default: uniform
+.TP
 --test-result-extention=[EXTENSION...]
 Test command output file extensions.
 .TP
@@ -166,7 +172,10 @@ Diff scope, one of ['commit', 'all']. Default: all
 Maximum generated mutable count. Default: 10
 .TP
 --timeout=[TIME_SEC]
-Time limit (sec) for test-command. If 0, there is no time limit. Default: 3600
+Time limit (sec) for test-command. If 0, there is no time limit. Default: 300
+.TP
+--kill-after=[TIME_SEC]
+Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0. Default: 60
 .SH REPORTING BUGS
 sentinel issue tracker: <http://mod.lge.com/hub/yocto/addons/sentinel/issues>
 .SH SEE ALSO

@@ -34,7 +34,7 @@ build_static_library(
        Report.cpp XMLReport.cpp HTMLReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
-       operators/MutationOperator.cpp
+       operators/MutationOperator.cpp util/Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
