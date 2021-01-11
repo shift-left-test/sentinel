@@ -171,8 +171,7 @@ int CommandRun::run() {
     auto logger = Logger::getLogger(cCommandRunLoggerName);
     logger->info(fmt::format("{0:-^{1}}", "", 50));
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
-    logger->info(fmt::format("Build dir: {}",
-          fs::canonical(mBuildDir.Get()).string()));
+    logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Build cmd: {}", mBuildCmd.Get()));
 
     logger->info(fmt::format("Test cmd:{}", mTestCmd.Get()));
@@ -190,10 +189,10 @@ int CommandRun::run() {
     logger->info(fmt::format("Generator: {}", mGenerator.Get()));
     logger->info(fmt::format("Max generated mutable: {}", mLimit.Get()));
 
-    logger->info(fmt::format("work dir: {}", workDir.string()));
-    logger->info(fmt::format("backup dir: {}", backupDir));
-    logger->info(fmt::format("expected test result dir: {}", expectedDir));
-    logger->info(fmt::format("actual test result dir: {}", actualDir));
+    logger->info(fmt::format("Work dir: {}", workDir.string()));
+    logger->info(fmt::format("Backup dir: {}", backupDir));
+    logger->info(fmt::format("Expected test result dir: {}", expectedDir));
+    logger->info(fmt::format("Actual test result dir: {}", actualDir));
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // restore if previous backup is exists
@@ -208,16 +207,14 @@ int CommandRun::run() {
     // build
     logger->info("Building original source code ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
-    logger->info(fmt::format("Build dir: {}",
-          fs::canonical(mBuildDir.Get()).string()));
+    logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Build cmd: {}", mBuildCmd.Get()));
     Subprocess(mBuildCmd.Get()).execute();
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // test
     logger->info("Running tests ...");
-    logger->info(fmt::format("Build dir: {}",
-          fs::canonical(mBuildDir.Get()).string()));
+    logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Test cmd: {}", mTestCmd.Get()));
     logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
     logger->info(fmt::format("Test result extension: {}",
@@ -320,8 +317,7 @@ int CommandRun::run() {
 
       // build
       logger->info(fmt::format("Building mutant #{} ...", mutantId));
-      logger->info(fmt::format("Build dir: {}",
-            fs::canonical(mBuildDir.Get()).string()));
+      logger->info(fmt::format("Build dir: {}", buildDir.string()));
       logger->info(fmt::format("Build cmd: {}", mBuildCmd.Get()));
       Subprocess buildProc(mBuildCmd.Get());
       buildProc.execute();
@@ -332,8 +328,7 @@ int CommandRun::run() {
         logger->info("Building SUCCESS. Testing ...");
         fs::remove_all(testResultDir);
 
-        logger->info(fmt::format("Build dir: {}",
-            fs::canonical(mBuildDir.Get()).string()));
+        logger->info(fmt::format("Build dir: {}", buildDir.string()));
         logger->info(fmt::format("Test cmd:{}", mTestCmd.Get()));
         logger->info(fmt::format("Test result dir: {}",
               testResultDir.string()));
