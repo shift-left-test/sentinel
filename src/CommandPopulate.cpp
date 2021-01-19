@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <random>
 #include "sentinel/CommandPopulate.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
@@ -59,9 +60,12 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
   mMutableFilename(parser, "PATH",
     "Populated result file name which will be created at output-dir.",
     {"mutants-file-name"}, "mutables.db"),
-  mGenerator(parser, "gen",
+  mGenerator(parser, "GEN",
     "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
-    {"generator"}, "uniform") {
+    {"generator"}, "uniform"),
+  mSeed(parser, "SEED",
+    "Select random seed.",
+    {"seed"}, std::random_device {}()) {
 }
 
 int CommandPopulate::run() {
@@ -86,14 +90,16 @@ int CommandPopulate::run() {
       logger->info(fmt::format("extension:{}", extension));
     }
     logger->info(fmt::format("limit:{}", mLimit.Get()));
+    logger->info(fmt::format("generator:{}", mGenerator.Get()));
+    logger->info(fmt::format("random seed:{}", mSeed.Get()));
   }
   auto repo = std::make_unique<sentinel::GitRepository>(
     sourceRoot, mExtensions.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   // Shuffle target lines to reduce mutant selecting time.
-  auto rng = std::default_random_engine{};
-  std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
+  std::shuffle(std::begin(sourceLines), std::end(sourceLines),
+               std::mt19937(mSeed.Get()));
 
   std::shared_ptr<MutantGenerator> generator;
   if (mGenerator.Get() == "uniform") {
@@ -117,7 +123,7 @@ int CommandPopulate::run() {
   sentinel::MutationFactory mutationFactory(generator);
 
   sentinel::Mutants mutants = mutationFactory.populate(
-      sourceRoot, sourceLines, mLimit.Get());
+      sourceRoot, sourceLines, mLimit.Get(), mSeed.Get());
   if (mIsVerbose) {
     for (auto& mutant : mutants) {
       logger->info(fmt::format("mutant: {}", mutant.str()));

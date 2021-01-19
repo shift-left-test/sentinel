@@ -245,18 +245,18 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
 TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
   // UniformMutantGenerator generator{SAMPLE1_DIR};
   UniformMutantGenerator generator{"."};
-  EXPECT_THROW(Mutants mutables = generator.populate(*sourceLines, 100),
+  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100),
                IOException);
 }
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   UniformMutantGenerator generator{".."};
-  Mutants mutables = generator.populate(*sourceLines, 100);
+  Mutants mutants = generator.populate(*sourceLines, 100);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
-  ASSERT_EQ(mutables.size(), 9);
-  for (const auto& e1 : mutables) {
+  ASSERT_EQ(mutants.size(), 9);
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
@@ -270,12 +270,12 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   UniformMutantGenerator generator{".."};
-  Mutants mutables = generator.populate(*sourceLines, 3);
+  Mutants mutants = generator.populate(*sourceLines, 3);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
-  ASSERT_EQ(mutables.size(), 3);
-  for (const auto& e1 : mutables) {
+  ASSERT_EQ(mutants.size(), 3);
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
@@ -285,6 +285,32 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
     EXPECT_NE(pos, lines.end());
     lines.erase(pos);
   }
+}
+
+TEST_F(UniformMutantGeneratorTest, testRandomWithoutSeedWork) {
+  UniformMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3);
+
+  UniformMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] != mutants2[0] || mutants1[1] != mutants2[1] ||
+              mutants1[2] != mutants2[2]);
+}
+
+TEST_F(UniformMutantGeneratorTest, testRandomWithSeedWork) {
+  UniformMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+
+  UniformMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] &&
+              mutants1[2] == mutants2[2]);
 }
 
 }  // namespace sentinel

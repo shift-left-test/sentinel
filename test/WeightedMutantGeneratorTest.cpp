@@ -238,20 +238,20 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
 TEST_F(WeightedMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
   // WeightedMutantGenerator generator{SAMPLE1_DIR};
   WeightedMutantGenerator generator{"."};
-  EXPECT_THROW(Mutants mutables = generator.populate(*sourceLines, 100),
+  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100),
                IOException);
 }
 
 TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   WeightedMutantGenerator generator{".."};
-  Mutants mutables = generator.populate(*sourceLines, 100);
+  Mutants mutants = generator.populate(*sourceLines, 100);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
-  ASSERT_EQ(mutables.size(), 9);
-  EXPECT_EQ(mutables[0].getFirst().line, 59);
+  ASSERT_EQ(mutants.size(), 9);
+  EXPECT_EQ(mutants[0].getFirst().line, 59);
 
-  for (const auto& e1 : mutables) {
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
@@ -265,14 +265,14 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
 TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   WeightedMutantGenerator generator{".."};
-  Mutants mutables = generator.populate(*sourceLines, 4);
+  Mutants mutants = generator.populate(*sourceLines, 4);
 
   std::vector<std::size_t> lines = {32, 38, 39, 58, 59, 61, 76};
 
-  ASSERT_EQ(mutables.size(), 4);
-  EXPECT_EQ(mutables[0].getFirst().line, 59);
+  ASSERT_EQ(mutants.size(), 4);
+  EXPECT_EQ(mutants[0].getFirst().line, 59);
 
-  for (const auto& e1 : mutables) {
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
 
@@ -282,6 +282,32 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
     EXPECT_NE(pos, lines.end());
     lines.erase(pos);
   }
+}
+
+TEST_F(WeightedMutantGeneratorTest, testRandomWithoutSeedWork) {
+  WeightedMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3);
+
+  WeightedMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] != mutants2[0] || mutants1[1] != mutants2[1] ||
+              mutants1[2] != mutants2[2]);
+}
+
+TEST_F(WeightedMutantGeneratorTest, testRandomWithSeedWork) {
+  WeightedMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+
+  WeightedMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] &&
+              mutants1[2] == mutants2[2]);
 }
 
 }  // namespace sentinel

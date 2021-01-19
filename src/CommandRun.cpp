@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <random>
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
@@ -113,7 +114,10 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
     {"timeout"}, 300),
   mKillAfter(parser, "TIME_SEC",
     R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
-    {"kill-after"}, 60) {
+    {"kill-after"}, 60),
+  mSeed(parser, "SEED",
+    "Select random seed.",
+    {"seed"}, std::random_device {}()) {
 }
 
 int CommandRun::run() {
@@ -188,6 +192,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Diff scope: {}", mScope.Get()));
     logger->info(fmt::format("Generator: {}", mGenerator.Get()));
     logger->info(fmt::format("Max generated mutable: {}", mLimit.Get()));
+    logger->info(fmt::format("Random seed: {}", mSeed.Get()));
 
     logger->info(fmt::format("Work dir: {}", workDir.string()));
     logger->info(fmt::format("Backup dir: {}", backupDir));
@@ -265,11 +270,10 @@ int CommandRun::run() {
 
     logger->info(fmt::format("Diff scope: {}", mScope.Get()));
     sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
-    auto rng = std::default_random_engine{};
-    std::shuffle(std::begin(sourceLines), std::end(sourceLines), rng);
 
-    // auto generator = std::make_shared<sentinel::UniformMutantGenerator>(
-    //     buildDir);
+    std::shuffle(std::begin(sourceLines), std::end(sourceLines),
+                 std::mt19937(mSeed.Get()));
+
     std::shared_ptr<MutantGenerator> generator;
     if (mGenerator.Get() == "uniform") {
       generator = std::make_shared<sentinel::UniformMutantGenerator>(buildDir);
@@ -293,9 +297,8 @@ int CommandRun::run() {
     sentinel::MutationFactory mutationFactory(generator);
 
     logger->info(fmt::format("Max generated mutable: {}", mLimit.Get()));
-    auto mutants = mutationFactory.populate(sourceRoot,
-                                             sourceLines,
-                                             mLimit.Get());
+    auto mutants = mutationFactory.populate(sourceRoot, sourceLines,
+                                            mLimit.Get(), mSeed.Get());
     if (mIsVerbose.Get()) {
       for (auto& mutant : mutants) {
         logger->info(fmt::format("mutant: {}", mutant.str()));

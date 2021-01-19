@@ -45,7 +45,13 @@ namespace sentinel {
 static const char * cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
-                                         std::size_t maxMutants) {
+                                        std::size_t maxMutants) {
+  return populate(sourceLines, maxMutants, std::random_device {}());
+}
+
+Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
+                                        std::size_t maxMutants,
+                                        unsigned randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;
@@ -72,6 +78,8 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
   }
 
   auto logger = Logger::getLogger(cRandomGeneratorLoggerName);
+  logger->info(fmt::format("random seed: {}", randomSeed));
+
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
@@ -84,7 +92,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
     return Mutants(mutables.begin(), mutables.end());
   }
 
-  mutables.shuffle();
+  mutables.shuffle(randomSeed);
   return Mutants(mutables.begin(), mutables.begin() + maxMutants);
 }
 

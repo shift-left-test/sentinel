@@ -65,6 +65,10 @@ class RandomMutantGenerator : public MutantGenerator {
   Mutants populate(const SourceLines& sourceLines,
                     std::size_t maxMutants) override;
 
+  Mutants populate(const SourceLines& sourceLines,
+                   std::size_t maxMutants,
+                   unsigned randomSeed) override;
+
  private:
   std::string mDbPath;
 

@@ -102,6 +102,14 @@ class Mutant {
   bool operator==(const Mutant& other) const;
 
   /**
+   * @brief != operator overloading
+   *
+   * @param other Mutant
+   * @return True if Mutants are different. False otherwise
+   */
+  bool operator!=(const Mutant& other) const;
+
+  /**
    * @brief Return the mutation operator creating this mutable.
    *
    * @return mutation operator

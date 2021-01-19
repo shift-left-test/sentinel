@@ -66,6 +66,10 @@ bool Mutant::operator==(const Mutant& other) const {
       mToken == other.getToken();
 }
 
+bool Mutant::operator!=(const Mutant& other) const {
+  return !(*this == other);
+}
+
 std::string Mutant::getOperator() const {
   return mOperator;
 }

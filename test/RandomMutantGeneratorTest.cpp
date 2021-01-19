@@ -213,17 +213,17 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
 
 TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
   RandomMutantGenerator generator{"."};
-  EXPECT_THROW(Mutants mutables = generator.populate(*sourceLines, 100),
+  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100),
                IOException);
 }
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator{".."};
   int maxMutants = allMutants->size();
-  Mutants mutables = generator.populate(*sourceLines, maxMutants*2);
-  ASSERT_EQ(mutables.size(), maxMutants);
+  Mutants mutants = generator.populate(*sourceLines, maxMutants*2);
+  ASSERT_EQ(mutants.size(), maxMutants);
 
-  for (const auto& e1 : mutables) {
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
   }
@@ -231,13 +231,39 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   RandomMutantGenerator generator{".."};
-  Mutants mutables = generator.populate(*sourceLines, 3);
+  Mutants mutants = generator.populate(*sourceLines, 3);
 
-  ASSERT_EQ(mutables.size(), 3);
-  for (const auto& e1 : mutables) {
+  ASSERT_EQ(mutants.size(), 3);
+  for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(),
         [e1](const auto& e2) { return e2 == e1; }));
   }
+}
+
+TEST_F(RandomMutantGeneratorTest, testRandomWithoutSeedWork) {
+  RandomMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3);
+
+  RandomMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] != mutants2[0] || mutants1[1] != mutants2[1] ||
+              mutants1[2] != mutants2[2]);
+}
+
+TEST_F(RandomMutantGeneratorTest, testRandomWithSeedWork) {
+  RandomMutantGenerator generator1{".."};
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+
+  RandomMutantGenerator generator2{".."};
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
+
+  ASSERT_EQ(mutants1.size(), 3);
+  ASSERT_EQ(mutants2.size(), 3);
+  EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] &&
+              mutants1[2] == mutants2[2]);
 }
 
 }  // namespace sentinel

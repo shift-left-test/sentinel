@@ -67,6 +67,7 @@ class CommandRun : public Command {
   args::ValueFlag<int> mLimit;
   args::ValueFlag<std::size_t> mTimeLimit;
   args::ValueFlag<std::size_t> mKillAfter;
+  args::ValueFlag<unsigned> mSeed;
 };
 
 }  // namespace sentinel

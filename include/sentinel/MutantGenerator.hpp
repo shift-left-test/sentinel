@@ -42,10 +42,22 @@ class MutantGenerator {
    *
    * @param sourceLines list of target source lines
    * @param maxMutants limit number of generated mutables
+   * @param randomSeed random seed
    * @return mutables
    */
   virtual Mutants populate(const SourceLines& sourceLines,
-                            std::size_t maxMutants) = 0;
+                           std::size_t maxMutants,
+                           unsigned randomSeed) = 0;
+
+  /**
+   * @brief Populate mutables from the given source line
+   *
+   * @param sourceLines list of target source lines
+   * @param maxMutants limit number of generated mutables
+   * @return mutables
+   */
+  virtual Mutants populate(const SourceLines& sourceLines,
+                           std::size_t maxMutants) = 0;
 };
 
 }  // namespace sentinel

@@ -177,6 +177,11 @@ class Container {
   void shuffle();
 
   /**
+   * @brief Shuffle the elements
+   */
+  void shuffle(unsigned randomSeed);
+
+  /**
    * @brief Clear the elements
    */
   void clear() noexcept;
@@ -300,6 +305,12 @@ template <typename T>
 void Container<T>::shuffle() {
   std::shuffle(mData.begin(), mData.end(),
                std::mt19937 { std::random_device {}() });
+}
+
+template <typename T>
+void Container<T>::shuffle(unsigned randomSeed) {
+  std::shuffle(mData.begin(), mData.end(),
+               std::mt19937 { randomSeed } );
 }
 
 template <typename T>

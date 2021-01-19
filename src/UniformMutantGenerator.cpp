@@ -46,6 +46,12 @@ static const char * cUniformGeneratorLoggerName = "UniformMutantGenerator";
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
                                          std::size_t maxMutants) {
+  return populate(sourceLines, maxMutants, std::random_device {}());
+}
+
+Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
+                                         std::size_t maxMutants,
+                                         unsigned randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;
@@ -72,6 +78,8 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
   }
 
   auto logger = Logger::getLogger(cUniformGeneratorLoggerName);
+  logger->info(fmt::format("random seed: {}", randomSeed));
+
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
@@ -82,8 +90,6 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
 
   // Randomly select one Mutant on each target  line
   Mutants temp_storage;
-  auto rng = std::default_random_engine{};
-
   for (const auto& line : sourceLines) {
     std::vector<Mutant> temp;
     auto pred = [&](const auto& m) {
@@ -99,7 +105,8 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
       continue;
     }
 
-    std::shuffle(std::begin(temp), std::end(temp), rng);
+    std::shuffle(std::begin(temp), std::end(temp),
+                 std::mt19937(randomSeed));
     // find first element of temp that is not in temp_storage
     auto it = std::find_if(temp.begin(), temp.end(),
         [&](const Mutant& a) {

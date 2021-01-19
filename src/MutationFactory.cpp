@@ -27,6 +27,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <random>
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/Mutants.hpp"
@@ -42,13 +43,16 @@ MutationFactory::MutationFactory(
 }
 
 Mutants MutationFactory::populate(const std::string& gitPath,
-                                   const SourceLines& sourceLines,
-                                   std::size_t maxMutants) {
+                                  const SourceLines& sourceLines,
+                                  std::size_t maxMutants,
+                                  unsigned randomSeed) {
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger("populate");
-  Mutants mutables = mGenerator->populate(sourceLines, maxMutants);
+  logger->info(fmt::format("random seed: {}", randomSeed));
+  Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
+  // Count number of mutants generated in each file
   std::map<std::string, std::size_t> groupByPath;
   for (const auto& m : mutables) {
     std::string path = m.getPath();
@@ -61,6 +65,7 @@ Mutants MutationFactory::populate(const std::string& gitPath,
     }
   }
 
+  // Printing summary
   std::size_t flen = 50;
   std::size_t mlen = 10;
   std::size_t maxlen = flen + mlen + 2;
@@ -101,6 +106,12 @@ Mutants MutationFactory::populate(const std::string& gitPath,
                            mutables.size()));
 
   return mutables;
+}
+
+Mutants MutationFactory::populate(const std::string& gitPath,
+                                  const SourceLines& sourceLines,
+                                  std::size_t maxMutants) {
+  return populate(gitPath, sourceLines, maxMutants, std::random_device {}());
 }
 
 }  // namespace sentinel
