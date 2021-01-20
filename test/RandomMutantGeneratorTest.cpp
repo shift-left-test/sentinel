@@ -240,12 +240,12 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   }
 }
 
-TEST_F(RandomMutantGeneratorTest, testRandomWithoutSeedWork) {
+TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   RandomMutantGenerator generator1{".."};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3);
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
   RandomMutantGenerator generator2{".."};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3);
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, 3);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -253,7 +253,7 @@ TEST_F(RandomMutantGeneratorTest, testRandomWithoutSeedWork) {
               mutants1[2] != mutants2[2]);
 }
 
-TEST_F(RandomMutantGeneratorTest, testRandomWithSeedWork) {
+TEST_F(RandomMutantGeneratorTest, testRandomWithSameSeedWorks) {
   RandomMutantGenerator generator1{".."};
   Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
