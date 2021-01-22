@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Sangmo Kang
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,22 @@
   SOFTWARE.
 */
 
+#ifndef INCLUDE_SENTINEL_MAINCLI_HPP_
+#define INCLUDE_SENTINEL_MAINCLI_HPP_
 
-#include "sentinel/MainCLI.hpp"
 
+namespace sentinel {
 
-int main(int argc, char** argv) {
-  if (argc > 1) {
-    return sentinel::MainCLI(argc, argv);
-  }
-  if (argc == 1) {
-    // TODO(loc.phan) : call main of GUI
-    return sentinel::MainCLI(argc, argv);
-  }
+/**
+ * @brief main function of CLI 
+ *
+ * @param argc number of arguments
+ * @param argv arguments
+ *
+ * @return exit code
+ */
+int MainCLI(int argc, char** argv);
 
-  return -1;
-}
+}  // namespace sentinel
 
+#endif  // INCLUDE_SENTINEL_MAINCLI_HPP_

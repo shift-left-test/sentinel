@@ -63,6 +63,9 @@ Populated result file name which will be created at output-dir. Default: mutable
 .TP
 --generator=[gen]
 Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default: uniform
+.TP
+--seed=[SEED]
+Select random seed. Default: 1942447250
 .SS mutate: sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
 Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
 .TP
@@ -176,6 +179,9 @@ Time limit (sec) for test-command. If 0, there is no time limit. Default: 300
 .TP
 --kill-after=[TIME_SEC]
 Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0. Default: 60
+.TP
+--seed=[SEED]
+Select random seed. Default: 1942447250
 .SH REPORTING BUGS
 sentinel issue tracker: <http://mod.lge.com/hub/yocto/addons/sentinel/issues>
 .SH SEE ALSO

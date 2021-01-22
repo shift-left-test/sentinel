@@ -76,6 +76,8 @@ $ ./build.sh
       --generator=[gen]                 Select mutant generator type, one of
                                         ['uniform', 'random', 'weighted'].
                                         Default: uniform
+      --seed=[SEED]                     Select random seed.
+                                        Default: 1942447250
 ```
 
 ### mutate
@@ -182,6 +184,8 @@ $ ./build.sh
                                         is not sent. This option has no meaning
                                         when timeout is set 0.
                                         Default: 60
+      --seed=[SEED]                     Select random seed.
+                                        Default: 1942447250
 ```
 
 

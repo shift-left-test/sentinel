@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2020 Sangmo Kang
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,18 @@
 */
 
 
-#include "sentinel/MainCLI.hpp"
-
+#include <gtest/gtest.h>
+#include "sentinel/util/Subprocess.hpp"
 
 int main(int argc, char** argv) {
-  if (argc > 1) {
-    return sentinel::MainCLI(argc, argv);
-  }
-  if (argc == 1) {
-    // TODO(loc.phan) : call main of GUI
-    return sentinel::MainCLI(argc, argv);
+  testing::InitGoogleTest(&argc, argv);
+
+  // check that cmake is installed.
+  sentinel::Subprocess checkCmake("cmake --help");
+  checkCmake.execute();
+  if (!checkCmake.isSuccessfulExit()) {
+    ::testing::GTEST_FLAG(filter) += ":-MainCLITest*";
   }
 
-  return -1;
+  return RUN_ALL_TESTS();
 }
-

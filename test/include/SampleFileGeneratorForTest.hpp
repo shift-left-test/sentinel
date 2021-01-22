@@ -48,7 +48,7 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
     SAMPLE1B_NAME = "sample1b.cpp";
     SAMPLE1B_PATH = SAMPLE1_DIR / SAMPLE1B_NAME;
 
-    std::ofstream t(SAMPLE1_PATH);
+    std::ofstream t(SAMPLE1_PATH.string());
     t << SAMPLE1_CONTENTS;
     t.close();
     std::ofstream t2(SAMPLE1B_PATH);

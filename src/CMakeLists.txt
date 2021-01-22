@@ -36,20 +36,16 @@ build_static_library(
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp util/Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
+       Command.cpp CommandPopulate.cpp CommandMutate.cpp CommandEvaluate.cpp
+       CommandReport.cpp CommandRun.cpp MainCLI.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
-  LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs
+  LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs args
   NO_INSTALL
 )
 
 build_program(
   NAME sentinel
   SRCS main.cpp
-       Command.cpp
-       CommandPopulate.cpp
-       CommandMutate.cpp
-       CommandEvaluate.cpp
-       CommandReport.cpp
-       CommandRun.cpp
-  LIBS sentinel-core args ${LLVM_CLANG_LIBS}
+  LIBS sentinel-core ${LLVM_CLANG_LIBS}
 )

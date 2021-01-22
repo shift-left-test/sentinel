@@ -195,7 +195,8 @@ void Report::printSummary() {
                            std::to_string(finalCov) : std::string("-")) + "%",
                            clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  if ((totNumberOfBuildFailure + totNumberOfRuntimeError) != 0) {
+  if ((totNumberOfBuildFailure + totNumberOfRuntimeError +
+        totNumberOfTimeout) != 0) {
     std::cout << fmt::format("Ignored Mutation\n");
     std::cout << fmt::format(defFormat,
                              "Build Failure", flen,

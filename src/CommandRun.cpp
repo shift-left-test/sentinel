@@ -204,17 +204,18 @@ int CommandRun::run() {
     restoreBackup(backupDir, sourceRoot);
 
     // generate orignal test result
-    if (::chdir(buildDir.c_str()) != 0) {
+    if (access(buildDir.c_str(), X_OK) != 0) {
       throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
             buildDir.c_str(), std::strerror(errno)));
     }
+    auto cmdPrefix = fmt::format("cd {} && ", buildDir.string());
 
     // build
     logger->info("Building original source code ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Build cmd: {}", mBuildCmd.Get()));
-    Subprocess(mBuildCmd.Get()).execute();
+    Subprocess(cmdPrefix + mBuildCmd.Get()).execute();
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // test
@@ -227,7 +228,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Time limit for test: {}s", mTimeLimit.Get()));
     logger->info(fmt::format("Kill after time limit: {}s", mKillAfter.Get()));
     fs::remove_all(testResultDir);
-    Subprocess firstTestProc(mTestCmd.Get(), mTimeLimit.Get(),
+    Subprocess firstTestProc(cmdPrefix + mTestCmd.Get(), mTimeLimit.Get(),
         mKillAfter.Get());
     firstTestProc.execute();
     if (firstTestProc.isTimedOut()) {
@@ -322,7 +323,7 @@ int CommandRun::run() {
       logger->info(fmt::format("Building mutant #{} ...", mutantId));
       logger->info(fmt::format("Build dir: {}", buildDir.string()));
       logger->info(fmt::format("Build cmd: {}", mBuildCmd.Get()));
-      Subprocess buildProc(mBuildCmd.Get());
+      Subprocess buildProc(cmdPrefix + mBuildCmd.Get());
       buildProc.execute();
       bool buildSucess = buildProc.isSuccessfulExit();
       std::string testState = "success";
@@ -340,7 +341,8 @@ int CommandRun::run() {
         logger->info(fmt::format("Time limit for test: {}s", mTimeLimit.Get()));
         logger->info(fmt::format("Kill after time limit: {}s",
               mKillAfter.Get()));
-        Subprocess proc(mTestCmd.Get(), mTimeLimit.Get(), mKillAfter.Get());
+        Subprocess proc(cmdPrefix + mTestCmd.Get(),
+            mTimeLimit.Get(), mKillAfter.Get());
         proc.execute();
         bool testTimeout = proc.isTimedOut();
         if (testTimeout) {
