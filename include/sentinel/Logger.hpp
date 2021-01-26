@@ -71,7 +71,7 @@ class Logger {
    *
    * @param level of the logging
    */
-  static void setLevel(Logger::Level level);
+  static void setDefaultLevel(Logger::Level level);
 
   /**
    * @brief Log a debug message
@@ -100,6 +100,13 @@ class Logger {
    * @param message to log
    */
   void error(const std::string& message);
+
+  /**
+   * @brief update Logger's level using defaultLevel
+   *
+   * @param level of the Logger
+   */
+  void setLevel(Logger::Level level);
 
  private:
   /**

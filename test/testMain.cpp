@@ -29,11 +29,10 @@
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
 
-  // check that cmake is installed.
-  sentinel::Subprocess checkCmake("cmake --help");
+  sentinel::Subprocess checkCmake("cmake --help > /dev/null 2>&1");
   checkCmake.execute();
   if (!checkCmake.isSuccessfulExit()) {
-    ::testing::GTEST_FLAG(filter) += ":-MainCLITest*";
+    ::testing::GTEST_FLAG(filter) += ":-MainCLITest.testCommandRun";
   }
 
   return RUN_ALL_TESTS();

@@ -35,14 +35,18 @@ class LoggerTest : public ::testing::Test {
   void SetUp() override {
     off = Logger::getLogger("off");
 
-    Logger::setLevel(Logger::Level::DEBUG);
+    Logger::setDefaultLevel(Logger::Level::DEBUG);
     debug = Logger::getLogger("debug");
 
-    Logger::setLevel(Logger::Level::ALL);
+    Logger::setDefaultLevel(Logger::Level::ALL);
     all = Logger::getLogger("all");
 
-    Logger::setLevel(Logger::Level::INFO);
+    Logger::setDefaultLevel(Logger::Level::INFO);
     logger = Logger::getLogger("logger");
+  }
+
+  void TearDown() override {
+    Logger::setDefaultLevel(Logger::Level::OFF);
   }
 
   void captureStdout() {
@@ -160,12 +164,12 @@ TEST_F(LoggerTest, testSetLevelChangesGlobalLogLevel) {
   logger->debug("1");
   EXPECT_STREQ("", capturedStdout().c_str());
 
-  Logger::setLevel(Logger::Level::DEBUG);
-  logger = Logger::getLogger("another");
+  Logger::setDefaultLevel(Logger::Level::DEBUG);
+  logger = Logger::getLogger("another2");
 
   captureStdout();
   logger->debug("1");
-  EXPECT_STREQ("another [DEBUG] 1\n", capturedStdout().c_str());
+  EXPECT_STREQ("another2 [DEBUG] 1\n", capturedStdout().c_str());
 }
 
 }  // namespace sentinel

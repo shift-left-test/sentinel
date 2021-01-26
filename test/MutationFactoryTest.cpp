@@ -42,7 +42,7 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
       SAMPLE1_PATH, 59));
 
   std::shared_ptr<MutantGenerator> generator =
-      std::make_shared<UniformMutantGenerator>("..");
+      std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
   MutationFactory factory(generator);
 
   testing::internal::CaptureStdout();

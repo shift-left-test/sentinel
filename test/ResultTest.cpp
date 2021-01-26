@@ -80,7 +80,8 @@ class ResultTest : public ::testing::Test {
     }
 
     MAKE_RESULT_XML(MUT_DIR, XMLContents);
-    Logger::setLevel(Logger::Level::DEBUG);
+    Logger::setDefaultLevel(Logger::Level::DEBUG);
+    Logger::getLogger("Result")->setLevel(Logger::Level::DEBUG);
     testing::internal::CaptureStdout();
     auto mut = new Result(MUT_DIR);
     std::string out = testing::internal::GetCapturedStdout();
@@ -89,6 +90,8 @@ class ResultTest : public ::testing::Test {
 
     fs::remove_all(MUT_DIR);
     delete mut;
+    Logger::setDefaultLevel(Logger::Level::OFF);
+    Logger::getLogger("Result")->setLevel(Logger::Level::OFF);
   }
 
   fs::path BASE;
@@ -339,13 +342,17 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
 
-  Logger::setLevel(Logger::Level::DEBUG);
+  Logger::setDefaultLevel(Logger::Level::DEBUG);
+  Logger::getLogger("Result")->setLevel(Logger::Level::DEBUG);
+
   testing::internal::CaptureStdout();
   auto mut = new Result(MUT_DIR);
   std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out,
       "XML_ERROR_PARSING:"));
   delete mut;
+  Logger::setDefaultLevel(Logger::Level::OFF);
+  Logger::getLogger("Result")->setLevel(Logger::Level::OFF);
 }
 
 TEST_F(ResultTest, testResultWithWrongResultFmt) {

@@ -310,7 +310,7 @@ void Container<T>::shuffle() {
 template <typename T>
 void Container<T>::shuffle(unsigned randomSeed) {
   std::shuffle(mData.begin(), mData.end(),
-               std::mt19937 { randomSeed } );
+               std::mt19937 { randomSeed });
 }
 
 template <typename T>

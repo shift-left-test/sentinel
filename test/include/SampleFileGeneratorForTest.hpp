@@ -25,6 +25,8 @@
 #ifndef TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
 #define TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
 
+
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
@@ -48,16 +50,24 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
     SAMPLE1B_NAME = "sample1b.cpp";
     SAMPLE1B_PATH = SAMPLE1_DIR / SAMPLE1B_NAME;
 
-    std::ofstream t(SAMPLE1_PATH.string());
-    t << SAMPLE1_CONTENTS;
-    t.close();
-    std::ofstream t2(SAMPLE1B_PATH);
-    t2 << SAMPLE1B_CONTENTS;
-    t2.close();
+    SAMPLECOMCOMJSON_NAME = "compile_commands.json";
+    SAMPLECOMCOMJSON_PATH = SAMPLE1_DIR / SAMPLECOMCOMJSON_NAME;
+
+    writeFile(SAMPLE1_PATH, SAMPLE1_CONTENTS);
+    writeFile(SAMPLE1B_PATH, SAMPLE1B_CONTENTS);
+    writeFile(SAMPLECOMCOMJSON_PATH, fmt::format(SAMPLECOMCOMJSON_CONTENTS,
+          SAMPLE1_DIR.string()));
   }
 
   void TearDown() override {
     std::experimental::filesystem::remove_all(SAMPLE_BASE);
+  }
+
+  void writeFile(const std::experimental::filesystem::path& p,
+      const std::string& c) {
+    std::ofstream t(p.string());
+    t << c;
+    t.close();
   }
 
   std::experimental::filesystem::path SAMPLE_BASE;
@@ -167,8 +177,7 @@ int blockUOIForMaterializedTemporaryExpr() {
   int ret = temporaryBook().num_pages;
   return ret;
 })a1s2d3f4";
-  std::string SAMPLE1B_PATH;
-  std::string SAMPLE1B_DIR;
+  std::experimental::filesystem::path SAMPLE1B_PATH;
   std::string SAMPLE1B_NAME;
   std::string SAMPLE1B_CONTENTS =
       R"a1s2d3f4(/*
@@ -219,6 +228,21 @@ int sdlBlockedCases() {
     return -1;
   }
 })a1s2d3f4";
+  std::experimental::filesystem::path SAMPLECOMCOMJSON_PATH;
+  std::string SAMPLECOMCOMJSON_NAME;
+  std::string SAMPLECOMCOMJSON_CONTENTS =
+      R"a1b3([
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample1.dir/sample1.cpp.o -c {0}/sample1.cpp",
+  "file": "{0}/sample1.cpp"
+}},
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample1b.dir/sample1b.cpp.o -c {0}/sample1b.cpp",
+  "file": "{0}/sample1b.cpp"
+}}
+])a1b3";
 };
 
 }  // namespace sentinel

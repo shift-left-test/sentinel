@@ -46,7 +46,7 @@ class MainCLITest : public ::testing::Test {
     addArg("./sentinel");
 
     namespace fs = std::experimental::filesystem;
-    SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR";
+    SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR_MAIN_CLI";
     fs::remove_all(SAMPLE_BASE);
     SAMPLE_DIR = SAMPLE_BASE / "sample";
     fs::create_directories(SAMPLE_DIR);
@@ -59,7 +59,16 @@ class MainCLITest : public ::testing::Test {
 
     SAMPLE_CMAKELISTS_PATH = SAMPLE_DIR / SAMPLE_CMAKELISTS_NAME;
     writeFile(SAMPLE_CMAKELISTS_PATH, SAMPLE_CMAKELISTS_CONTENTS);
+  }
 
+  void TearDown() override {
+    for (auto p : argVector) {
+      delete p;
+    }
+    std::experimental::filesystem::remove_all(SAMPLE_BASE);
+  }
+
+  void makeGitRepo() {
     git_oid commitId, treeId;
     git_repository *repo = nullptr;
     git_index* idx = nullptr;
@@ -82,16 +91,6 @@ class MainCLITest : public ::testing::Test {
     git_index_free(idx);
     git_repository_free(repo);
     git_libgit2_shutdown();
-
-    Subprocess(fmt::format("cd {} && cmake .", SAMPLE_DIR.string())).execute();
-    EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
-  }
-
-  void TearDown() override {
-    for (auto p : argVector) {
-      delete p;
-    }
-    std::experimental::filesystem::remove_all(SAMPLE_BASE);
   }
 
   void addArg(const char* arg) {
@@ -200,6 +199,28 @@ add_test(
 )
 )a1f4";
 
+  std::experimental::filesystem::path SAMPLE_COMCOMJSON_PATH;
+  std::string SAMPLE_COMCOMJSON_NAME = "compile_commands.json";
+  std::string SAMPLE_COMCOMJSON_CONTENTS =
+      R"a1f4z([
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample.dir/sample.cpp.o -c {0}/sample.cpp",
+  "file": "{0}/sample.cpp"
+}},
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample_test.dir/sample.cpp.o -c {0}/sample.cpp",
+  "file": "{0}/sample.cpp"
+}},
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample_test.dir/test_main.cpp.o -c {0}/test_main.cpp",
+  "file": "{0}/test_main.cpp"
+}}
+]
+)a1f4z";
+
   std::string MUTATION_POPULATION_REPORT =
       R"a1f4(--------------------------------------------------------------
                    Mutant Population Report                   
@@ -241,7 +262,7 @@ Timeout                                                              3
 <testsuites tests="1" failures="1" disabled="0" errors="0" timestamp="2021-01-21T02:55:01" time="0" name="AllTests">
   <testsuite name="SampleTest" tests="1" failures="1" disabled="0" errors="0" time="0">
     <testcase name="testSumOfEvenPositiveNumber" status="run" time="0" classname="SampleTest">
-      <failure message="{}:7&#x0A;      Expected: sumOfEvenPositiveNumber(2, 10)&#x0A;      Which is: 0&#x0A;To be equal to: 24" type=""><![CDATA[/tmp/SENTINEL_SAMPLE_DIR/sample/test_main.cpp:7
+      <failure message="{0}:7&#x0A;      Expected: sumOfEvenPositiveNumber(2, 10)&#x0A;      Which is: 0&#x0A;To be equal to: 24" type=""><![CDATA[{1}/test_main.cpp:7
       Expected: sumOfEvenPositiveNumber(2, 10)
       Which is: 0
 To be equal to: 24]]></failure>
@@ -279,55 +300,13 @@ TEST_F(MainCLITest, testHelpOption) {
       "-h, --help                        Display this help menu."));
 }
 
-TEST_F(MainCLITest, testCommandRun) {
-  namespace fs = std::experimental::filesystem;
-
-  // make timelimit
-  auto start = std::chrono::steady_clock::now();
-  Subprocess(fmt::format("cd {} && make all test",
-        SAMPLE_DIR.string())).execute();
-  auto end = std::chrono::steady_clock::now();
-  auto diff = end - start;
-  auto timelimit = static_cast<int>(
-      std::chrono::duration<double, std::milli>(diff).count() * 3 / 1000.0);
-  if (timelimit < 1) {
-    timelimit = 1;
-  }
-  Subprocess(fmt::format("cd {} && make clean",
-        SAMPLE_DIR.string())).execute();
-
-  addArg("run");
-  addArg(SAMPLE_DIR.c_str());
-  addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
-  addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
-  addArg(fmt::format("--test-result-dir={}",
-         (SAMPLE_DIR / "testresult").string()).c_str());
-  addArg(fmt::format("--build-command={}", "make").c_str());
-  addArg(fmt::format("--test-command={}",
-        R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
-  addArg("-sall");
-  addArg("-l10");
-  addArg(fmt::format("--timeout={}", timelimit).c_str());
-  addArg("--seed=0");
-  addArg("--generator=random");
-  addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
-
-  captureStdout();
-  sentinel::MainCLI(getArgc(), getArgv());
-  auto out = capturedStdout();
-  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
-  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT));
-  EXPECT_TRUE(sentinel::string::contains(out,
-        R"(UOI : sample.cpp (11:13-11:16 -> ((ret)--))....................... SURVIVED)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(UOI : sample.cpp (9:26-9:27 -> ((i)--))........................... TIMEOUT)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(LCR : sample.cpp (10:9-10:37 -> 1)................................ KILLED)"));
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT));
-}
-
 TEST_F(MainCLITest, testCommandPopulate) {
+  makeGitRepo();
+
+  SAMPLE_COMCOMJSON_PATH = SAMPLE_DIR / SAMPLE_COMCOMJSON_NAME;
+  writeFile(SAMPLE_COMCOMJSON_PATH,
+      fmt::format(SAMPLE_COMCOMJSON_CONTENTS, SAMPLE_DIR.string()));
+
   addArg("populate");
   addArg(SAMPLE_DIR.c_str());
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "work").string()).c_str());
@@ -393,7 +372,7 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   fs::create_directories(ACTUAL_PATH);
   writeFile(EXPECTED_PATH / "sample_test.xml", EXPECTED_RESULT);
   writeFile(ACTUAL_PATH / "sample_test.xml", fmt::format(ACTUAL_RESULT,
-        SAMPLE_TEST_PATH.string()));
+        SAMPLE_TEST_PATH.string(), SAMPLE_DIR.string()));
 
   addArg("evaluate");
   addArg(fmt::format("-o{}", (SAMPLE_BASE / "out").string()).c_str());
@@ -409,7 +388,7 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
   EXPECT_TRUE(sentinel::string::contains(out,
-        R"a5h7(ROR : ... SENTINEL_SAMPLE_DIR/sample/sample.cpp (10:32-10:37 -> 0) KILLED)a5h7"));
+        "sample.cpp (10:32-10:37 -> 0) KILLED"));
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   auto evaluationResults = readFile(SAMPLE_BASE/ "out" / "EvaluationResults");
@@ -438,6 +417,59 @@ TEST_F(MainCLITest, testCommandReport) {
   EXPECT_EQ("", err);
   EXPECT_TRUE(fs::exists(SAMPLE_BASE / "out" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_BASE / "out" / "index.html"));
+}
+
+TEST_F(MainCLITest, testCommandRun) {
+  namespace fs = std::experimental::filesystem;
+
+  makeGitRepo();
+
+  Subprocess(fmt::format("cd {} && cmake .", SAMPLE_DIR.string())).execute();
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
+
+  // make timelimit
+  auto start = std::chrono::steady_clock::now();
+  Subprocess(fmt::format("cd {} && make all test",
+        SAMPLE_DIR.string())).execute();
+  auto end = std::chrono::steady_clock::now();
+  auto diff = end - start;
+  auto timelimit = static_cast<int>(
+      std::chrono::duration<double, std::milli>(diff).count() * 3 / 1000.0);
+  if (timelimit < 1) {
+    timelimit = 1;
+  }
+  Subprocess(fmt::format("cd {} && make clean",
+        SAMPLE_DIR.string())).execute();
+
+  addArg("run");
+  addArg(SAMPLE_DIR.c_str());
+  addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
+  addArg(fmt::format("--test-result-dir={}",
+         (SAMPLE_DIR / "testresult").string()).c_str());
+  addArg(fmt::format("--build-command={}", "make").c_str());
+  addArg(fmt::format("--test-command={}",
+        R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
+  addArg("-sall");
+  addArg("-l10");
+  addArg(fmt::format("--timeout={}", timelimit).c_str());
+  addArg("--seed=0");
+  addArg("--generator=random");
+  addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT));
+  EXPECT_TRUE(sentinel::string::contains(out,
+        R"(UOI : sample.cpp (11:13-11:16 -> ((ret)--))....................... SURVIVED)"));
+  EXPECT_TRUE(sentinel::string::contains(out,
+      R"(UOI : sample.cpp (9:26-9:27 -> ((i)--))........................... TIMEOUT)"));
+  EXPECT_TRUE(sentinel::string::contains(out,
+      R"(LCR : sample.cpp (10:9-10:37 -> 1)................................ KILLED)"));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT));
 }
 
 }  // namespace sentinel

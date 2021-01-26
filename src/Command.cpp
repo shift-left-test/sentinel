@@ -38,17 +38,15 @@ Command::Command(args::Subparser& parser) :
     "source root directory.",
     "."),
   mIsVerbose(parser, "verbose", "Verbosity", {'v', "verbose"}),
-  mWorkDir(parser, "PATH",
-    "Sentinel temporary working directory.",
+  mWorkDir(parser, "PATH", "Sentinel temporary working directory.",
     {'w', "work-dir"}, "./sentinel_tmp"),
-  mOutputDir(parser, "PATH",
-    "Directory for saving output.",
+  mOutputDir(parser, "PATH", "Directory for saving output.",
     {'o', "output-dir"}, "") {
 }
 
 void Command::init() {
   if (mIsVerbose.Get()) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::INFO);
+    sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::INFO);
   }
 }
 }  // namespace sentinel

@@ -212,13 +212,13 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
-  RandomMutantGenerator generator{"."};
+  RandomMutantGenerator generator{SAMPLE_BASE};
   EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100),
                IOException);
 }
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
-  RandomMutantGenerator generator{".."};
+  RandomMutantGenerator generator{SAMPLE1_DIR};
   int maxMutants = allMutants->size();
   Mutants mutants = generator.populate(*sourceLines, maxMutants*2);
   ASSERT_EQ(mutants.size(), maxMutants);
@@ -230,7 +230,7 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 }
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
-  RandomMutantGenerator generator{".."};
+  RandomMutantGenerator generator{SAMPLE1_DIR};
   Mutants mutants = generator.populate(*sourceLines, 3);
 
   ASSERT_EQ(mutants.size(), 3);
@@ -241,10 +241,10 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 }
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
-  RandomMutantGenerator generator1{".."};
+  RandomMutantGenerator generator1{SAMPLE1_DIR};
   Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
-  RandomMutantGenerator generator2{".."};
+  RandomMutantGenerator generator2{SAMPLE1_DIR};
   Mutants mutants2 = generator2.populate(*sourceLines, 3, 3);
 
   ASSERT_EQ(mutants1.size(), 3);
@@ -254,10 +254,10 @@ TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 }
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithSameSeedWorks) {
-  RandomMutantGenerator generator1{".."};
+  RandomMutantGenerator generator1{SAMPLE1_DIR};
   Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
-  RandomMutantGenerator generator2{".."};
+  RandomMutantGenerator generator2{SAMPLE1_DIR};
   Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
 
   ASSERT_EQ(mutants1.size(), 3);

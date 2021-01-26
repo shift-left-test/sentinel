@@ -50,7 +50,7 @@ std::shared_ptr<Logger> Logger::getLogger(const std::string& name,
   return loggers.at(name);
 }
 
-void Logger::setLevel(Logger::Level level) {
+void Logger::setDefaultLevel(Logger::Level level) {
   defaultLevel = level;
 }
 
@@ -116,6 +116,10 @@ void Logger::error(const std::string& message) {
   if (isAllowed(level)) {
     std::cerr << format(level, message) << std::endl;
   }
+}
+
+void Logger::setLevel(Logger::Level level) {
+  mLevel = level;
 }
 
 }  // namespace sentinel
