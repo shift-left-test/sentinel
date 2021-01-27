@@ -29,6 +29,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include "CaptureHelper.hpp"
 #include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Evaluator.hpp"
@@ -78,6 +79,8 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     fs::copy(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
     mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH,
                      "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
+
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
@@ -94,6 +97,14 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     tmpfile.open(tmp.c_str());
     tmpfile << fileContent.c_str();
     tmpfile.close();
+  }
+
+  void captureStdout() {
+    mStdoutCapture->capture();
+  }
+
+  std::string capturedStdout() {
+    return mStdoutCapture->release();
   }
 
   Mutant* mutable1 = nullptr;
@@ -135,6 +146,9 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     "\t\t</testcase>\n"
     "\t</testsuite>\n"
     "</testsuites>\n";
+
+ private:
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
@@ -161,11 +175,11 @@ TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mrPath = OUT_DIR / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable1,
     MUT_DIR, mrPath, "success");
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_TRUE(string::contains(out2, "AOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (0:0-0:0 -> +)"));
   EXPECT_TRUE(string::contains(out2, "KILLED"));
@@ -181,11 +195,11 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
 TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     MUT_DIR_SURVIVED, mrPath, "success");
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "SURVIVED"));
@@ -201,13 +215,13 @@ TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
 TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     emptyPath, mrPath, "build_failure");
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "BUILD_FAILURE"));
@@ -224,13 +238,13 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     emptyPath, mrPath, "success");
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "RUNTIME_ERROR"));
@@ -247,13 +261,13 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
 TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
     emptyPath, mrPath, "timeout");
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_TRUE(string::contains(out2, "BOR : "));
   EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
   EXPECT_TRUE(string::contains(out2, "TIMEOUT"));

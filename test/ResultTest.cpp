@@ -26,7 +26,9 @@
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
+#include "CaptureHelper.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"
@@ -47,10 +49,20 @@ class ResultTest : public ::testing::Test {
     fs::create_directories(ORI_DIR);
     MAKE_RESULT_XML(ORI_DIR, TC1);
     MAKE_RESULT_XML(ORI_DIR, TC2);
+
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
     fs::remove_all(BASE);
+  }
+
+  void captureStdout() {
+    mStdoutCapture->capture();
+  }
+
+  std::string capturedStdout() {
+    return mStdoutCapture->release();
   }
 
   void MAKE_RESULT_XML(const fs::path& dirPath,
@@ -82,9 +94,9 @@ class ResultTest : public ::testing::Test {
     MAKE_RESULT_XML(MUT_DIR, XMLContents);
     Logger::setDefaultLevel(Logger::Level::DEBUG);
     Logger::getLogger("Result")->setLevel(Logger::Level::DEBUG);
-    testing::internal::CaptureStdout();
+    captureStdout();
     auto mut = new Result(MUT_DIR);
-    std::string out = testing::internal::GetCapturedStdout();
+    std::string out = capturedStdout();
     EXPECT_TRUE(string::contains(out,
         "This file doesn't follow googletest result format:"));
 
@@ -172,6 +184,9 @@ class ResultTest : public ::testing::Test {
   <system-err/>
 </testsuite>
 )asdf";
+
+ private:
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
 
 TEST_F(ResultTest, testResultWithSurvivedMutation) {
@@ -345,9 +360,9 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   Logger::setDefaultLevel(Logger::Level::DEBUG);
   Logger::getLogger("Result")->setLevel(Logger::Level::DEBUG);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   auto mut = new Result(MUT_DIR);
-  std::string out = testing::internal::GetCapturedStdout();
+  std::string out = capturedStdout();
   EXPECT_TRUE(string::contains(out,
       "XML_ERROR_PARSING:"));
   delete mut;

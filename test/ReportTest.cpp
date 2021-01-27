@@ -26,9 +26,11 @@
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <memory>
 #include <regex>
 #include <string>
 #include <sstream>
+#include "CaptureHelper.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Report.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -62,6 +64,8 @@ class ReportTest : public ::testing::Test {
     makeFile(TARGET_FULL_PATH3);
     TARGET_FULL_PATH4 = SOURCE_DIR / "target4.cpp";
     makeFile(TARGET_FULL_PATH4);
+
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
@@ -72,6 +76,14 @@ class ReportTest : public ::testing::Test {
     std::ofstream(path).close();
   }
 
+  void captureStdout() {
+    mStdoutCapture->capture();
+  }
+
+  std::string capturedStdout() {
+    return mStdoutCapture->release();
+  }
+
   fs::path BASE;
   fs::path SOURCE_DIR;
   fs::path NESTED_SOURCE_DIR;
@@ -80,6 +92,9 @@ class ReportTest : public ::testing::Test {
   fs::path TARGET_FULL_PATH2;
   fs::path TARGET_FULL_PATH3;
   fs::path TARGET_FULL_PATH4;
+
+ private:
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
 
 class ReportForTest : public Report {
@@ -98,9 +113,9 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
 
   ReportForTest report(MRPath, SOURCE_DIR);
-  testing::internal::CaptureStdout();
+  captureStdout();
   report.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
+  std::string out = capturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
@@ -130,9 +145,9 @@ TOTAL                                                      0         0        -%
   MRs.save(MRPath);
 
   ReportForTest report2(MRPath, SOURCE_DIR);
-  testing::internal::CaptureStdout();
+  captureStdout();
   report2.printSummary();
-  std::string out2 = testing::internal::GetCapturedStdout();
+  std::string out2 = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
                              Mutation Coverage Report                             
@@ -182,9 +197,9 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
 
   ReportForTest report(MRPath, SOURCE_DIR);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   report.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
+  std::string out = capturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
@@ -234,9 +249,9 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
 
   ReportForTest report(MRPath, SOURCE_DIR);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   report.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
+  std::string out = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
                              Mutation Coverage Report                             
@@ -289,9 +304,9 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
 
   ReportForTest report(MRPath, SOURCE_DIR);
 
-  testing::internal::CaptureStdout();
+  captureStdout();
   report.printSummary();
-  std::string out = testing::internal::GetCapturedStdout();
+  std::string out = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
                              Mutation Coverage Report                             

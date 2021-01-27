@@ -30,9 +30,11 @@
 #include <chrono>
 #include <cstring>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <sstream>
 #include <vector>
+#include "CaptureHelper.hpp"
 #include "sentinel/MainCLI.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
@@ -59,6 +61,9 @@ class MainCLITest : public ::testing::Test {
 
     SAMPLE_CMAKELISTS_PATH = SAMPLE_DIR / SAMPLE_CMAKELISTS_NAME;
     writeFile(SAMPLE_CMAKELISTS_PATH, SAMPLE_CMAKELISTS_CONTENTS);
+
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
+    mStderrCapture = CaptureHelper::getStderrCapture();
   }
 
   void TearDown() override {
@@ -108,19 +113,19 @@ class MainCLITest : public ::testing::Test {
   }
 
   void captureStdout() {
-    testing::internal::CaptureStdout();
+    mStdoutCapture->capture();
   }
 
   std::string capturedStdout() {
-    return testing::internal::GetCapturedStdout();
+    return mStdoutCapture->release();
   }
 
   void captureStderr() {
-    testing::internal::CaptureStderr();
+    mStderrCapture->capture();
   }
 
   std::string capturedStderr() {
-    return testing::internal::GetCapturedStderr();
+    return mStderrCapture->release();
   }
 
   void writeFile(const std::experimental::filesystem::path& p,
@@ -221,7 +226,7 @@ add_test(
 ]
 )a1f4z";
 
-  std::string MUTATION_POPULATION_REPORT =
+  std::string MUTATION_POPULATION_REPORT1 =
       R"a1f4(--------------------------------------------------------------
                    Mutant Population Report                   
 --------------------------------------------------------------
@@ -232,7 +237,18 @@ sample.cpp                                                10
 TOTAL                                                     10
 --------------------------------------------------------------)a1f4";
 
-  std::string MUTATION_COVERAGE_REPORT =
+  std::string MUTATION_POPULATION_REPORT2 =
+      R"a1f4(--------------------------------------------------------------
+                   Mutant Population Report                   
+--------------------------------------------------------------
+File                                               #mutation
+--------------------------------------------------------------
+sample.cpp                                                 3
+--------------------------------------------------------------
+TOTAL                                                      3
+--------------------------------------------------------------)a1f4";
+
+  std::string MUTATION_COVERAGE_REPORT1 =
       R"a1f4(----------------------------------------------------------------------------------
                              Mutation Coverage Report                             
 ----------------------------------------------------------------------------------
@@ -247,6 +263,22 @@ Build Failure                                                        0
 Runtime Error                                                        0          
 Timeout                                                              3          
 ----------------------------------------------------------------------------------)a1f4";
+
+  std::string MUTATION_COVERAGE_REPORT2 =
+     R"a1f4z0(----------------------------------------------------------------------------------
+                             Mutation Coverage Report                             
+----------------------------------------------------------------------------------
+File                                                 #killed #mutation       cov
+----------------------------------------------------------------------------------
+sample.cpp                                                 1         2       50%
+----------------------------------------------------------------------------------
+TOTAL                                                      1         2       50%
+----------------------------------------------------------------------------------
+Ignored Mutation
+Build Failure                                                        0          
+Runtime Error                                                        0          
+Timeout                                                              1          
+----------------------------------------------------------------------------------)a1f4z0";
 
   std::string EXPECTED_RESULT =
       R"a1d3(<?xml version="1.0" encoding="UTF-8"?>
@@ -285,6 +317,8 @@ SampleTest.testSumOfEvenPositiveNumber		0			ROR,{0},sumOfEvenPositiveNumber,10,3
 
  private:
   std::vector<char*> argVector;
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
+  std::shared_ptr<CaptureHelper> mStderrCapture;
 };
 
 TEST_F(MainCLITest, testHelpOption) {
@@ -322,7 +356,7 @@ TEST_F(MainCLITest, testCommandPopulate) {
   captureStderr();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT1));
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   auto mdbContent = readFile(SAMPLE_DIR / "work" / "m.db");
@@ -412,7 +446,7 @@ TEST_F(MainCLITest, testCommandReport) {
   captureStderr();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT1));
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   EXPECT_TRUE(fs::exists(SAMPLE_BASE / "out" / "mutations.xml"));
@@ -428,18 +462,21 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
 
   // make timelimit
+  Subprocess(fmt::format("cd {} && make all",
+        SAMPLE_DIR.string())).execute();
   auto start = std::chrono::steady_clock::now();
-  Subprocess(fmt::format("cd {} && make all test",
+  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
         SAMPLE_DIR.string())).execute();
   auto end = std::chrono::steady_clock::now();
   auto diff = end - start;
   auto timelimit = static_cast<int>(
-      std::chrono::duration<double, std::milli>(diff).count() * 3 / 1000.0);
+      std::chrono::duration<double, std::milli>(diff).count() * 1.5 / 1000.0);
   if (timelimit < 1) {
     timelimit = 1;
   }
   Subprocess(fmt::format("cd {} && make clean",
         SAMPLE_DIR.string())).execute();
+  fs::remove_all(SAMPLE_DIR / "testresult");
 
   addArg("run");
   addArg(SAMPLE_DIR.c_str());
@@ -451,7 +488,7 @@ TEST_F(MainCLITest, testCommandRun) {
   addArg(fmt::format("--test-command={}",
         R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
   addArg("-sall");
-  addArg("-l10");
+  addArg("-l3");
   addArg(fmt::format("--timeout={}", timelimit).c_str());
   addArg("--seed=0");
   addArg("--generator=random");
@@ -460,16 +497,17 @@ TEST_F(MainCLITest, testCommandRun) {
   captureStdout();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
+
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
   EXPECT_TRUE(sentinel::string::contains(out,
-        R"(UOI : sample.cpp (11:13-11:16 -> ((ret)--))....................... SURVIVED)"));
+        R"(SOR : sample.cpp (10:23-10:25 -> >>).............................. SURVIVED)"));
   EXPECT_TRUE(sentinel::string::contains(out,
-      R"(UOI : sample.cpp (9:26-9:27 -> ((i)--))........................... TIMEOUT)"));
+      R"(ROR : sample.cpp (10:17-10:19 -> <=).............................. KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(out,
-      R"(LCR : sample.cpp (10:9-10:37 -> 1)................................ KILLED)"));
-  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT));
+      R"(UOI : sample.cpp (9:29-9:31 -> ((to)++)).......................... TIMEOUT)"));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 
 }  // namespace sentinel

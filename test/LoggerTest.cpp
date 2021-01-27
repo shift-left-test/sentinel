@@ -24,6 +24,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include "CaptureHelper.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
@@ -43,6 +44,9 @@ class LoggerTest : public ::testing::Test {
 
     Logger::setDefaultLevel(Logger::Level::INFO);
     logger = Logger::getLogger("logger");
+
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
+    mStderrCapture = CaptureHelper::getStderrCapture();
   }
 
   void TearDown() override {
@@ -50,25 +54,29 @@ class LoggerTest : public ::testing::Test {
   }
 
   void captureStdout() {
-    testing::internal::CaptureStdout();
+    mStdoutCapture->capture();
   }
 
   std::string capturedStdout() {
-    return testing::internal::GetCapturedStdout();
+    return mStdoutCapture->release();
   }
 
   void captureStderr() {
-    testing::internal::CaptureStderr();
+    mStderrCapture->capture();
   }
 
   std::string capturedStderr() {
-    return testing::internal::GetCapturedStderr();
+    return mStderrCapture->release();
   }
 
   std::shared_ptr<Logger> off;
   std::shared_ptr<Logger> debug;
   std::shared_ptr<Logger> all;
   std::shared_ptr<Logger> logger;
+
+ private:
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
+  std::shared_ptr<CaptureHelper> mStderrCapture;
 };
 
 TEST_F(LoggerTest, testInfoWithInitialLevel) {
