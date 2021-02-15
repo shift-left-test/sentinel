@@ -53,11 +53,19 @@ Subprocess::Subprocess(const std::string& cmd, std::size_t sec,
 }
 
 int Subprocess::execute() {
+  // Check for existence of /bin/sh
   if (access("/bin/sh", X_OK) != 0) {
     throw std::runtime_error("/bin/sh is not excutable file.");
   }
   if (mCmd.empty()) {
     return -1;
+  }
+
+  // Open pipe
+  int pfd[2];
+  if (pipe(static_cast<int*>(pfd)) != 0) {
+    throw std::runtime_error(fmt::format("fail open pipe (cause: {})",
+          std::strerror(errno)));
   }
 
   // Backup below signals' handler temporally
@@ -74,6 +82,12 @@ int Subprocess::execute() {
   auto pid = fork();
 
   if (pid == 0) {
+    // Redirect stdout and stderr to pipe
+    close(pfd[0]);
+    dup2(pfd[1], STDOUT_FILENO);
+    dup2(pfd[1], STDERR_FILENO);
+    close(pfd[1]);
+
     // When timeout occurs during test cmd, Sentinel send SIGTERM
     // to child process' group members. For that, child process must be
     // process group leader.
@@ -87,6 +101,9 @@ int Subprocess::execute() {
           mCmd, std::strerror(errno)) << std::endl;
     exit(1);
   } else if (pid > 0) {
+    // Close unused pipe
+    close(pfd[1]);
+
     // set global variable
     Subprocess::childPid = pid;
     Subprocess::timedOut = false;
@@ -131,23 +148,24 @@ int Subprocess::execute() {
               tmpMsg, strsignal(termSignal)) << std::endl;
         });
 
-    // Temporally Block whole signal except usingSignals during waitpid.
-    sigset_t block;
-    sigfillset(&block);
-    for (auto curSig : usingSignals) {
-      sigdelset(&block, curSig);
-    }
-
     // Alarm setting
     alarm(mSec);
 
+    const int MAXBUFSZ = 100;
+    char buffer[MAXBUFSZ];
+
     while (waitpid(pid, &status, WNOHANG) == 0) {
-      // Suspend until signals contained in usingSignals is received.
-      sigsuspend(&block);
+      auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
+      if (nb > 0) {
+        std::cout << std::string(static_cast<char*>(buffer), nb);
+      }
     }
 
     // Alarm cancel
     alarm(0);
+
+    // Close pipe
+    close(pfd[0]);
 
     mStatus = status;
     if (Subprocess::timedOut && WIFSIGNALED(status) &&
@@ -174,6 +192,8 @@ int Subprocess::execute() {
     return status;
   } else {
     delete sc;
+    close(pfd[0]);
+    close(pfd[1]);
     throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})",
           mCmd, std::strerror(errno)));
   }
