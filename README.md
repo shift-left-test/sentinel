@@ -177,8 +177,11 @@ $ ./build.sh
       -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
                                         Default: 10
       --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
-                                        there is no time limit.
-                                        Default: 300
+                                        there is no time limit. If auto, time
+                                        limit is automatically set using the
+                                        test execution time of the original
+                                        code.
+                                        Default: auto
       --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
                                         running after timeout. If 0, SIGKILL
                                         is not sent. This option has no meaning

@@ -27,7 +27,6 @@
 #include <git2.h>
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
-#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -464,16 +463,8 @@ TEST_F(MainCLITest, testCommandRun) {
   // make timelimit
   Subprocess(fmt::format("cd {} && make all",
         SAMPLE_DIR.string())).execute();
-  auto start = std::chrono::steady_clock::now();
   Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
         SAMPLE_DIR.string())).execute();
-  auto end = std::chrono::steady_clock::now();
-  auto diff = end - start;
-  auto timelimit = static_cast<int>(
-      std::chrono::duration<double, std::milli>(diff).count() * 1.5 / 1000.0);
-  if (timelimit < 1) {
-    timelimit = 1;
-  }
   Subprocess(fmt::format("cd {} && make clean",
         SAMPLE_DIR.string())).execute();
   fs::remove_all(SAMPLE_DIR / "testresult");
@@ -489,7 +480,7 @@ TEST_F(MainCLITest, testCommandRun) {
         R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
   addArg("-sall");
   addArg("-l3");
-  addArg(fmt::format("--timeout={}", timelimit).c_str());
+  addArg("--timeout=auto");
   addArg("--seed=0");
   addArg("--generator=random");
   addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
@@ -497,7 +488,6 @@ TEST_F(MainCLITest, testCommandRun) {
   captureStdout();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
-
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));

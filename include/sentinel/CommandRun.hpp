@@ -53,6 +53,8 @@ class CommandRun : public Command {
       bool isFilledDir);
   int executeCmdWithTimeOut(const std::string& cmd, std::size_t sec = 0,
       bool* occurTimeout = nullptr);
+  template<typename T>
+  T strToInt(const std::string& target);
 
  private:
   args::ValueFlag<std::string> mBuildDir;
@@ -65,8 +67,8 @@ class CommandRun : public Command {
   args::ValueFlagList<std::string> mExcludes;
   args::ValueFlag<std::string> mScope;
   args::ValueFlag<int> mLimit;
-  args::ValueFlag<std::size_t> mTimeLimit;
-  args::ValueFlag<std::size_t> mKillAfter;
+  args::ValueFlag<std::string> mTimeLimitStr;
+  args::ValueFlag<std::string> mKillAfterStr;
   args::ValueFlag<unsigned> mSeed;
 };
 

@@ -26,12 +26,15 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <experimental/filesystem>
-#include <exception>
+#include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <map>
 #include <random>
 #include <string>
+#include <sstream>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
@@ -39,6 +42,7 @@
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/util/signal.hpp"
+#include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/Evaluator.hpp"
@@ -109,12 +113,12 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mGenerator(parser, "gen",
     "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
     {"generator"}, "uniform"),
-  mTimeLimit(parser, "TIME_SEC",
-    "Time limit (sec) for test-command. If 0, there is no time limit.",
-    {"timeout"}, 300),
-  mKillAfter(parser, "TIME_SEC",
+  mTimeLimitStr(parser, "TIME_SEC",
+    R"a1s2(Time limit (sec) for test-command. If 0, there is no time limit. If auto, time limit is automatically set using the test execution time of the original code.)a1s2",
+    {"timeout"}, "auto"),
+  mKillAfterStr(parser, "TIME_SEC",
     R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
-    {"kill-after"}, 60),
+    {"kill-after"}, "60"),
   mSeed(parser, "SEED",
     "Select random seed.",
     {"seed"}, std::random_device {}()) {
@@ -171,6 +175,26 @@ int CommandRun::run() {
 
     fs::path buildDir = fs::canonical(mBuildDir.Get());
 
+    size_t mTimeLimit = 0;
+    if (mTimeLimitStr.Get() != "auto") {
+      try {
+        mTimeLimit = strToInt<size_t>(mTimeLimitStr.Get());
+      } catch(...) {
+        throw InvalidArgumentException(fmt::format(
+              R"a1s2(Failed to read timeout option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
+              mTimeLimitStr.Get()));
+      }
+    }
+
+    size_t mKillAfter = 0;
+    try {
+      mKillAfter = strToInt<size_t>(mKillAfterStr.Get());
+    } catch(...) {
+      throw InvalidArgumentException(fmt::format(
+            R"a1s2(Failed to read kill-after option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
+            mKillAfterStr.Get()));
+    }
+
     // log parsed parameter
     auto logger = Logger::getLogger(cCommandRunLoggerName);
     logger->info(fmt::format("{0:-^{1}}", "", 50));
@@ -182,8 +206,9 @@ int CommandRun::run() {
     logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
     logger->info(fmt::format("Test result extension: {}",
           sentinel::string::join(", ", mTestResultFileExts.Get())));
-    logger->info(fmt::format("Time limit for test: {}s", mTimeLimit.Get()));
-    logger->info(fmt::format("Kill after time limit: {}s", mKillAfter.Get()));
+    logger->info(fmt::format("Time limit for test: {}(s)",
+          mTimeLimitStr.Get()));
+    logger->info(fmt::format("Kill after time limit: {}(s)", mKillAfter));
 
     logger->info(fmt::format("Extentions of source: {}",
           sentinel::string::join(", ", mExtensions.Get())));
@@ -225,12 +250,29 @@ int CommandRun::run() {
     logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
     logger->info(fmt::format("Test result extension: {}",
           sentinel::string::join(", ", mTestResultFileExts.Get())));
-    logger->info(fmt::format("Time limit for test: {}s", mTimeLimit.Get()));
-    logger->info(fmt::format("Kill after time limit: {}s", mKillAfter.Get()));
+    logger->info(fmt::format("Time limit for test: {}(s)",
+          mTimeLimitStr.Get()));
+    logger->info(fmt::format("Kill after time limit: {}(s)", mKillAfter));
     fs::remove_all(testResultDir);
-    Subprocess firstTestProc(cmdPrefix + mTestCmd.Get(), mTimeLimit.Get(),
-        mKillAfter.Get());
+
+    Subprocess firstTestProc(cmdPrefix + mTestCmd.Get(), mTimeLimit,
+        mKillAfter);
+
+    auto start = std::chrono::steady_clock::now();
     firstTestProc.execute();
+    if (mTimeLimitStr.Get() == "auto") {
+      auto end = std::chrono::steady_clock::now();
+      auto diff = end - start;
+      auto diffSecs = std::chrono::duration<double>(diff).count();
+      if (diffSecs < 1.0) {
+        mTimeLimit = 1;
+      } else {
+        mTimeLimit = static_cast<size_t>(ceil(diffSecs * 1.1));
+      }
+      logger->info(fmt::format("Time limit for test is set to {}(s)",
+            mTimeLimit));
+    }
+
     if (firstTestProc.isTimedOut()) {
       throw std::runtime_error(
           "Timeout occurs when excuting test cmd for original source code.");
@@ -338,11 +380,11 @@ int CommandRun::run() {
               testResultDir.string()));
         logger->info(fmt::format("Test result extension: {}",
               sentinel::string::join(", ", mTestResultFileExts.Get())));
-        logger->info(fmt::format("Time limit for test: {}s", mTimeLimit.Get()));
-        logger->info(fmt::format("Kill after time limit: {}s",
-              mKillAfter.Get()));
+        logger->info(fmt::format("Time limit for test: {}(s)", mTimeLimit));
+        logger->info(fmt::format("Kill after time limit: {}(s)",
+              mKillAfter));
         Subprocess proc(cmdPrefix + mTestCmd.Get(),
-            mTimeLimit.Get(), mKillAfter.Get());
+            mTimeLimit, mKillAfter);
         proc.execute();
         bool testTimeout = proc.isTimedOut();
         if (testTimeout) {
@@ -475,6 +517,21 @@ std::string CommandRun::preProcessWorkDir(const std::string& target,
     }
   }
   return fs::canonical(target).string();
+}
+
+template<typename T>
+T CommandRun::strToInt(const std::string& target) {
+  std::string str = string::trim(target);
+  if (str.at(0) == '+') {
+    str = str.replace(0, 1, "");
+  }
+  T ret;
+  std::stringstream ss(str);
+  ss >> ret;
+  if (std::to_string(ret) != str) {
+    throw InvalidArgumentException("Can't convert " + str);
+  }
+  return ret;
 }
 
 }  // namespace sentinel
