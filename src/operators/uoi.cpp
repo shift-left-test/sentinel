@@ -113,11 +113,12 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+
   if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 
-  std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
   std::string stmtStr = convertStmtToString(e);
 

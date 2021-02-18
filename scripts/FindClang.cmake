@@ -20,7 +20,9 @@
 # Warrior: 8.0 (8.0.1)
 # Zeus: 9.0 (9.0.1)
 # Dunfell: 10.0 (10.0.1)
+# Gatesgarth: 11.0 (11.0.1)
 set(llvm_config_names llvm-config
+                      llvm-config-11.0 llvm-config110 llvm-config-11
                       llvm-config-10.0 llvm-config100 llvm-config-10
                       llvm-config-9.0 llvm-config90 llvm-config-9
                       llvm-config-8.0 llvm-config80 llvm-config-8

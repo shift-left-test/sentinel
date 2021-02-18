@@ -36,13 +36,12 @@ bool AOR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mArithmeticOperators.find(bo->getOpcodeStr()) != \
+  return mArithmeticOperators.find(std::string(bo->getOpcodeStr())) != \
          mArithmeticOperators.end();
 }
 
 void AOR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
-
   std::string token{bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
   clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(
@@ -51,7 +50,7 @@ void AOR::populate(clang::Stmt* s, Mutants* mutables) {
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string path{mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mArithmeticOperators) {

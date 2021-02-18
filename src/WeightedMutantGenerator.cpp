@@ -22,6 +22,10 @@
   SOFTWARE.
 */
 
+#include <clang/AST/ASTContext.h>
+#if LLVM_VERSION_MAJOR >= 11
+#include <clang/AST/ParentMapContext.h>
+#endif
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
@@ -53,7 +57,6 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines,
                                           std::size_t maxMutants,
                                           unsigned randomSeed) {
   Mutants mutables;
-
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \
       clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath,

@@ -115,6 +115,7 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   // but they both do not work.
   auto semiLoc = stmtEndLoc;
   auto c = mSrcMgr.getCharacterData(semiLoc);
+
   while (true) {
     if (*c == ';') {
       stmtEndLoc = semiLoc.getLocWithOffset(1);
@@ -130,7 +131,7 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   }
 
   if (isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
-    std::string path = mSrcMgr.getFilename(stmtStartLoc);
+    std::string path{mSrcMgr.getFilename(stmtStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     mutables->emplace_back(

@@ -35,7 +35,7 @@ bool ROR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mRelationalOperators.find(bo->getOpcodeStr()) != \
+  return mRelationalOperators.find(std::string(bo->getOpcodeStr())) != \
          mRelationalOperators.end();
 }
 
@@ -51,9 +51,8 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string path{mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
-
     bool operandIsNull =
         getExprType(bo->getLHS()->IgnoreImpCasts())->isNullPtrType() ||
         getExprType(bo->getRHS()->IgnoreImpCasts())->isNullPtrType();
@@ -83,7 +82,7 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
     return;
   }
 
-  std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
 
   mutables->emplace_back(

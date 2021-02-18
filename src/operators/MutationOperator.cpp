@@ -23,6 +23,9 @@
 */
 
 #include <clang/AST/ASTContext.h>
+#if LLVM_VERSION_MAJOR >= 11
+#include <clang/AST/ParentMapContext.h>
+#endif
 #include <clang/AST/Expr.h>
 #include <clang/AST/Stmt.h>
 #include <clang/AST/Type.h>
@@ -91,6 +94,7 @@ std::string MutationOperator::getContainingFunctionQualifiedName(
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
   auto parents = mContext->getParents(*s);
+
   while (true) {
     if (stmt != nullptr) {
       parents = mContext->getParents(*stmt);

@@ -35,7 +35,7 @@ bool LCR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mLogicalOperators.find(bo->getOpcodeStr()) != \
+  return mLogicalOperators.find(std::string(bo->getOpcodeStr())) != \
          mLogicalOperators.end();
 }
 
@@ -50,7 +50,7 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
       mSrcMgr.getExpansionLineNumber(opStartLoc),
       mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path = mSrcMgr.getFilename(opStartLoc);
+    std::string path{mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mLogicalOperators) {
@@ -70,11 +70,12 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
       bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+
   if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 
-  std::string path = mSrcMgr.getFilename(stmtStartLoc);
+  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
   mutables->emplace_back(
       mName, path, func,
