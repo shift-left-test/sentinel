@@ -76,7 +76,7 @@ static void signalHandler(int signum) {
   }
   std::cout.flush();
   if (signum != SIGUSR1) {
-    std::cout <<
+    std::cerr <<
       fmt::format("Receive a signal({}).", strsignal(signum)) << std::endl;
     std::exit(EXIT_FAILURE);
   }

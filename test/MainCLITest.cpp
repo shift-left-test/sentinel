@@ -227,7 +227,7 @@ add_test(
 
   std::string MUTATION_POPULATION_REPORT1 =
       R"a1f4(--------------------------------------------------------------
-                   Mutant Population Report                   
+                   Mutant Population Report
 --------------------------------------------------------------
 File                                               #mutation
 --------------------------------------------------------------
@@ -238,7 +238,7 @@ TOTAL                                                     10
 
   std::string MUTATION_POPULATION_REPORT2 =
       R"a1f4(--------------------------------------------------------------
-                   Mutant Population Report                   
+                   Mutant Population Report
 --------------------------------------------------------------
 File                                               #mutation
 --------------------------------------------------------------
@@ -249,7 +249,7 @@ TOTAL                                                      3
 
   std::string MUTATION_COVERAGE_REPORT1 =
       R"a1f4(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -258,14 +258,14 @@ sample.cpp                                                 4         7       57%
 TOTAL                                                      4         7       57%
 ----------------------------------------------------------------------------------
 Ignored Mutation
-Build Failure                                                        0          
-Runtime Error                                                        0          
-Timeout                                                              3          
+Build Failure                                                        0
+Runtime Error                                                        0
+Timeout                                                              3
 ----------------------------------------------------------------------------------)a1f4";
 
   std::string MUTATION_COVERAGE_REPORT2 =
      R"a1f4z0(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -274,9 +274,9 @@ sample.cpp                                                 1         2       50%
 TOTAL                                                      1         2       50%
 ----------------------------------------------------------------------------------
 Ignored Mutation
-Build Failure                                                        0          
-Runtime Error                                                        0          
-Timeout                                                              1          
+Build Failure                                                        0
+Runtime Error                                                        0
+Timeout                                                              1
 ----------------------------------------------------------------------------------)a1f4z0";
 
   std::string EXPECTED_RESULT =

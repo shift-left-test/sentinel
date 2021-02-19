@@ -33,6 +33,7 @@
 #include "sentinel/Mutants.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SourceLines.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -71,7 +72,9 @@ Mutants MutationFactory::populate(const std::string& gitPath,
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen);
+  std::cout << string::rtrim(fmt::format("{0:^{1}}\n",
+                                         "Mutant Population Report", maxlen))
+            << std::endl;
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "File", flen,

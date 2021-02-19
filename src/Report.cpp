@@ -151,7 +151,9 @@ void Report::printSummary() {
 
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format("{0:^{1}}\n", "Mutation Coverage Report", maxlen);
+  std::cout << string::rtrim(fmt::format("{0:^{1}}",
+                                         "Mutation Coverage Report", maxlen))
+            << std::endl;
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat,
                            "File", flen,
@@ -198,21 +200,24 @@ void Report::printSummary() {
   if ((totNumberOfBuildFailure + totNumberOfRuntimeError +
         totNumberOfTimeout) != 0) {
     std::cout << fmt::format("Ignored Mutation\n");
-    std::cout << fmt::format(defFormat,
-                             "Build Failure", flen,
-                             "", klen,
-                             totNumberOfBuildFailure, mlen,
-                             "", clen);
-    std::cout << fmt::format(defFormat,
-                             "Runtime Error", flen,
-                             "", klen,
-                             totNumberOfRuntimeError, mlen,
-                             "", clen);
-    std::cout << fmt::format(defFormat,
-                             "Timeout", flen,
-                             "", klen,
-                             totNumberOfTimeout, mlen,
-                             "", clen);
+    std::cout << string::rtrim(fmt::format(defFormat,
+                                           "Build Failure", flen,
+                                            "", klen,
+                                            totNumberOfBuildFailure, mlen,
+                                            "", clen))
+              << std::endl;
+    std::cout << string::rtrim(fmt::format(defFormat,
+                                           "Runtime Error", flen,
+                                           "", klen,
+                                           totNumberOfRuntimeError, mlen,
+                                           "", clen))
+              << std::endl;
+    std::cout << string::rtrim(fmt::format(defFormat,
+                                           "Timeout", flen,
+                                           "", klen,
+                                           totNumberOfTimeout, mlen,
+                                           "", clen))
+              << std::endl;
     std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   }
 }

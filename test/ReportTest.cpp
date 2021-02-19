@@ -119,7 +119,7 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ TOTAL                                                      0         0        -%
   std::string out2 = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -158,9 +158,9 @@ File                                                 #killed #mutation       cov
 TOTAL                                                      0         0        -%
 ----------------------------------------------------------------------------------
 Ignored Mutation
-Build Failure                                                        1          
-Runtime Error                                                        1          
-Timeout                                                              1          
+Build Failure                                                        1
+Runtime Error                                                        1
+Timeout                                                              1
 ----------------------------------------------------------------------------------
 )a1b2z", out2);
 }
@@ -203,7 +203,7 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
   std::string out = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -265,9 +265,9 @@ NESTED_DIR2/target3.cpp                                    0         1        0%
 TOTAL                                                      1         3       33%
 ----------------------------------------------------------------------------------
 Ignored Mutation
-Build Failure                                                        0          
-Runtime Error                                                        1          
-Timeout                                                              1          
+Build Failure                                                        0
+Runtime Error                                                        1
+Timeout                                                              1
 ----------------------------------------------------------------------------------
 )a1b2z", out);
 }
@@ -309,7 +309,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   std::string out = capturedStdout();
   EXPECT_EQ(
       R"a1b2z(----------------------------------------------------------------------------------
-                             Mutation Coverage Report                             
+                             Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
@@ -319,9 +319,9 @@ NESTED_DIR2/target3.cpp                                    0         1        0%
 TOTAL                                                      1         2       50%
 ----------------------------------------------------------------------------------
 Ignored Mutation
-Build Failure                                                        1          
-Runtime Error                                                        1          
-Timeout                                                              1          
+Build Failure                                                        1
+Runtime Error                                                        1
+Timeout                                                              1
 ----------------------------------------------------------------------------------
 )a1b2z", out);
 }
