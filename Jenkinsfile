@@ -44,6 +44,25 @@ pipeline {
                 }
             }
         }
+        stage('clang-dev-11') {
+            agent {
+                docker { image 'cart.lge.com/swte/clang-dev:11' }
+            }
+            steps {
+                cleanWs disableDeferredWipeout: true
+                git branch: "${env.gitlabSourceBranch}", url: 'http://mod.lge.com/hub/yocto/addons/sentinel.git'
+                withEnv(['GTEST_OUTPUT=xml:result/']) {
+                    sh './build.sh'
+                    sh 'gcovr --xml coverage.xml'
+                }
+            }
+            post {
+                success {
+                    junit 'test/result/*.xml'
+                    cobertura coberturaReportFile: 'coverage.xml'
+                }
+            }
+        }
     }
     post {
         failure {
