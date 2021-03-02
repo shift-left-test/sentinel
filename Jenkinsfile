@@ -71,5 +71,8 @@ pipeline {
         success {
             updateGitlabCommitStatus name: 'build', state: 'success'
         }
+	aborted {
+	    updateGitlabCommitStatus name: "jenkins", state: "canceled"
+	}
     }
 }
