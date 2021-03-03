@@ -1,11 +1,6 @@
 pipeline {
     agent none
     stages {
-        stage('Setup') {
-            steps {
-                updateGitlabCommitStatus name: 'build', state: 'pending'
-            }
-        }
         stage('clang-dev-9') {
             agent {
                 docker { image 'cart.lge.com/swte/clang-dev:9' }
@@ -61,15 +56,5 @@ pipeline {
             }
         }
     }
-    post {
-        failure {
-            updateGitlabCommitStatus name: 'build', state: 'failed'
-        }
-        success {
-            updateGitlabCommitStatus name: 'build', state: 'success'
-        }
-	aborted {
-	    updateGitlabCommitStatus name: "jenkins", state: "canceled"
-	}
-    }
 }
+
