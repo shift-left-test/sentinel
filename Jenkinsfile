@@ -10,13 +10,12 @@ pipeline {
             agent {
                 docker { image 'cart.lge.com/swte/clang-dev:9' }
             }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
             steps {
-                cleanWs disableDeferredWipeout: true
-                git branch: "${env.gitlabSourceBranch}", url: 'http://mod.lge.com/hub/yocto/addons/sentinel.git'
-                withEnv(['GTEST_OUTPUT=xml:result/']) {
-                    sh './build.sh'
-                    sh 'gcovr --xml coverage.xml'
-                }
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
             }
             post {
                 success {
@@ -29,13 +28,12 @@ pipeline {
             agent {
                 docker { image 'cart.lge.com/swte/clang-dev:10' }
             }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
             steps {
-                cleanWs disableDeferredWipeout: true
-                git branch: "${env.gitlabSourceBranch}", url: 'http://mod.lge.com/hub/yocto/addons/sentinel.git'
-                withEnv(['GTEST_OUTPUT=xml:result/']) {
-                    sh './build.sh'
-                    sh 'gcovr --xml coverage.xml'
-                }
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
             }
             post {
                 success {
@@ -48,13 +46,12 @@ pipeline {
             agent {
                 docker { image 'cart.lge.com/swte/clang-dev:11' }
             }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
             steps {
-                cleanWs disableDeferredWipeout: true
-                git branch: "${env.gitlabSourceBranch}", url: 'http://mod.lge.com/hub/yocto/addons/sentinel.git'
-                withEnv(['GTEST_OUTPUT=xml:result/']) {
-                    sh './build.sh'
-                    sh 'gcovr --xml coverage.xml'
-                }
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
             }
             post {
                 success {
