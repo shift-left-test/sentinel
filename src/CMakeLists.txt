@@ -22,6 +22,9 @@
 
 find_package(LibGit2 REQUIRED)
 find_package(Clang REQUIRED)
+find_package(Curses REQUIRED)
+find_library(FORM_LIBRARY form)
+find_library(PANEL_LIBRARY panel)
 link_directories(${LLVM_LIBRARY_DIRS})
 
 build_static_library(
@@ -37,10 +40,11 @@ build_static_library(
        operators/MutationOperator.cpp util/Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
        Command.cpp CommandPopulate.cpp CommandMutate.cpp CommandEvaluate.cpp
-       CommandReport.cpp CommandRun.cpp MainCLI.cpp
+       CommandReport.cpp CommandRun.cpp MainCLI.cpp ncstream/NcWindowStreambuf.cpp
+       CommandGui.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
-  PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
-  LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs args
+  PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS} ${CURSES_INCLUDE_DIR}
+  LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs args ${FORM_LIBRARY} ${PANEL_LIBRARY} ${CURSES_LIBRARIES}
   NO_INSTALL
 )
 

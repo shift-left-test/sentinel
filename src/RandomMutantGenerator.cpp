@@ -26,6 +26,7 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <fmt/core.h>
+#include <term.h>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -35,6 +36,7 @@
 #include <vector>
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
+#include "sentinel/ncstream/term.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
@@ -85,7 +87,22 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
     clang::tooling::ClangTool tool(*compileDb, file.first);
     tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
         "-ferror-limit=0"));
+
+    // Save the current TERMINAL object (created by ncurses::initscr)
+    // and set the current TERMINAL pointer to nullptr (might be error-prone)
+    // before running ClangTool::run.
+    //
+    // LLVM contains a bug which delete the TERMINAL object, causing
+    // segmentation fault when used together with ncurses.
+    // Refer to the following link for more details:
+    //  - http://www.brendangregg.com/blog/2016-08-09/gdb-example-ncurses.html
+    //
+    // LLVM code (release/10.x) which delete TERMINAL object is in
+    // llvm-project/llvm/lib/Support/Unix/Process.inc::terminalHasColors::360
+    term = set_curterm(nullptr);
     tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
+    set_curterm(term);
+    term = nullptr;
   }
 
   if (mutables.size() <= maxMutants) {

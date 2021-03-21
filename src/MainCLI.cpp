@@ -32,6 +32,7 @@
 #include "sentinel/CommandEvaluate.hpp"
 #include "sentinel/CommandReport.hpp"
 #include "sentinel/CommandRun.hpp"
+#include "sentinel/CommandGui.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MainCLI.hpp"
 
@@ -80,6 +81,12 @@ int MainCLI(int argc, char** argv) {
     "Run mutation test in standalone mode",
     [&](args::Subparser& subParser) {
       mainCommand = std::make_unique<sentinel::CommandRun>(subParser);
+      subParser.Parse();
+    });
+  args::Command gui(commands, "gui",
+    "Run sentinel in GUI mode",
+    [&](args::Subparser& subParser) {
+      mainCommand = std::make_unique<sentinel::CommandGui>(subParser);
       subParser.Parse();
     });
 

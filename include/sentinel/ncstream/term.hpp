@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2021 Loc Duy Phan
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,16 @@
 */
 
 
-#include "sentinel/MainCLI.hpp"
+#ifndef INCLUDE_SENTINEL_NCSTREAM_TERM_HPP_
+#define INCLUDE_SENTINEL_NCSTREAM_TERM_HPP_
 
+#include <term.h>
 
-int main(int argc, char** argv) {
-  if (argc > 1) {
-    return sentinel::MainCLI(argc, argv);
-  }
+namespace sentinel {
 
-  if (argc == 1) {
-    // TODO(loc.phan) : call main of GUI
-    return sentinel::MainCLI(argc, argv);
-  }
+extern TERMINAL* term;
 
-  return -1;
-}
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_NCSTREAM_TERM_HPP_
 

@@ -25,6 +25,8 @@
 #ifndef INCLUDE_SENTINEL_UTIL_STRING_HPP_
 #define INCLUDE_SENTINEL_UTIL_STRING_HPP_
 
+#include <fmt/core.h>
+#include <fmt/format.h>
 #include <cctype>
 #include <cstddef>
 #include <algorithm>
@@ -32,13 +34,14 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "sentinel/exceptions/InvalidArgumentException.hpp" 
 
 
 namespace sentinel {
 namespace string {
 
 /**
- * @brief Check if a string starts with the given keyword
+ * @brief Check if a string starts with the given keyword.
  *
  * @param haystack base string
  * @param needle keyword
@@ -261,6 +264,37 @@ inline std::string replaceAll(std::string target,
     pos += newSubString.length();
   }
   return target;
+}
+
+/**
+ * @brief convert boolean to string
+ *
+ * @param b boolean value
+ * @return string value of b
+ */
+inline const char* boolToString(bool b) {
+  return b ? "true" : "false";
+}
+
+/**
+ * @brief convert string to boolean
+ *
+ * @param s target string
+ * @return boolean value of string
+ * @throw InvalidArgumentException
+ */
+inline bool stringToBool(const std::string& s) {
+  std::string temp = s;
+  if (temp == "true") {
+    return true;
+  }
+
+  if (temp == "false") {
+    return false;
+  }
+
+  throw InvalidArgumentException(
+      fmt::format("Input value is not a boolean (true or false): \"{}\". temp = {}", s, temp));
 }
 
 }  // namespace string

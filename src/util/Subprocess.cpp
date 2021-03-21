@@ -57,6 +57,7 @@ int Subprocess::execute() {
   if (access("/bin/sh", X_OK) != 0) {
     throw std::runtime_error("/bin/sh is not excutable file.");
   }
+
   if (mCmd.empty()) {
     return -1;
   }
