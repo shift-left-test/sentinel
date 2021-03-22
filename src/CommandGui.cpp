@@ -56,7 +56,6 @@ const int MINLINES = 24;
 const int MINCOLS = 80;
 static const char* cCommandGuiLoggerName = "CommandGui";
 const int configWinHeight = 15;
-const int helpWinWidth = 50;
 const int advancedWinWidth = 100;
 const int advancedWinHeight = 15;
 static const char* guiHelp = R"a1b2z(F5: Start  F1: Exit  F3: Toggle Advanced Options  CtrlC: Force Stop)a1b2z";
@@ -275,6 +274,7 @@ void CommandGui::initGui() {
             titleWinWidth/2-strlen(guiHelp)/2, guiHelp);
 
   // Create configuration window
+  int helpWinWidth = COLS / 8 * 3;
   int configWinWidth = titleWinWidth - 2 - helpWinWidth;
   configWinInfo = WindowInfo(configWinHeight, configWinWidth,
                              2, helpWinWidth+1);
