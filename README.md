@@ -1,8 +1,18 @@
 # sentinel
 
-[![Build Status](http://10.178.85.91:8080/buildStatus/icon?job=sentinel)](http://10.178.85.91:8080/job/sentinel/)
+[![Build Status](http://10.178.85.91:8080/buildStatus/icon?job=sentinel%2Fmaster)](http://10.178.85.91:8080/job/sentinel/job/master/)
 
 > The mutation testing tool for the meta-shift project
+
+
+## How to install sentinel
+
+
+```bash
+$ sudo sh -c "echo 'deb [trusted=true] http://cart.lge.com/swte-debian bionic main' >> /etc/apt/sources.list"
+$ sudo apt-get update
+$ sudo apt-get install -y sentinel
+```
 
 
 ## How to run tests
@@ -37,6 +47,7 @@ $ ./build.sh
         report                            Create a mutation test report based on
                                           the'evaluate' result and source code
         run                               Run mutation test in standalone mode
+        gui                               Run sentinel in GUI mode
       arguments
         -h, --help                        Display this help menu.
                                           Use 'sentinal COMMAND --help' to see
