@@ -65,13 +65,20 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
 
   for (const auto& r : mResults) {
     auto currentState = r.getMutationState();
+    bool skip = false;
     if (currentState == MutationState::BUILD_FAILURE ||
-        currentState == MutationState::RUNTIME_ERROR) {
-        continue;
+        currentState == MutationState::RUNTIME_ERROR ||
+        currentState == MutationState::TIMEOUT) {
+        skip = true;
     }
 
+
     tinyxml2::XMLElement* pMutation = doc->NewElement("mutation");
-    pMutation->SetAttribute("detected", r.getDetected());
+    if (skip) {
+      pMutation->SetAttribute("detected", "skip");
+    } else {
+      pMutation->SetAttribute("detected", r.getDetected());
+    }
 
     addChildToParent(doc, pMutation, "sourceFile",
         r.getMutant().getPath().filename());
@@ -83,8 +90,12 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
     addChildToParent(doc, pMutation, "lineNumber",
         std::to_string(r.getMutant().getFirst().line));
     addChildToParent(doc, pMutation, "mutator", r.getMutant().getOperator());
-    addChildToParent(doc, pMutation, "killingTest",
-        r.getKillingTest());
+    if (skip) {
+      addChildToParent(doc, pMutation, "killingTest", "");
+    } else {
+      addChildToParent(doc, pMutation, "killingTest",
+          r.getKillingTest());
+    }
 
     pMutations->InsertEndChild(pMutation);
   }

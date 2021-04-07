@@ -103,6 +103,47 @@ class XMLReportTest : public ::testing::Test {
     </mutation>
 </mutations>
 )a1b2";
+  std::string EXPECT_SKIP_MUT_XML_CONTENT =
+      R"a1b2(<?xml version="1.0" encoding="UTF-8"?>
+<mutations>
+    <mutation detected="false">
+        <sourceFile>file1.cpp</sourceFile>
+        <sourceFilePath>file1.cpp</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>4</lineNumber>
+        <mutator>AOR</mutator>
+        <killingTest></killingTest>
+    </mutation>
+    <mutation detected="true">
+        <sourceFile>file2.cpp</sourceFile>
+        <sourceFilePath>NESTED_DIR/file2.cpp</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>1</lineNumber>
+        <mutator>BOR</mutator>
+        <killingTest>testAddBit</killingTest>
+    </mutation>
+    <mutation detected="skip">
+        <sourceFile>file2.cpp</sourceFile>
+        <sourceFilePath>NESTED_DIR/file2.cpp</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>1</lineNumber>
+        <mutator>BOR</mutator>
+        <killingTest></killingTest>
+    </mutation>
+    <mutation detected="skip">
+        <sourceFile>file2.cpp</sourceFile>
+        <sourceFilePath>NESTED_DIR/file2.cpp</sourceFilePath>
+        <mutatedClass></mutatedClass>
+        <mutatedMethod>sumOfEvenPositiveNumber</mutatedMethod>
+        <lineNumber>1</lineNumber>
+        <mutator>BOR</mutator>
+        <killingTest></killingTest>
+    </mutation>
+</mutations>
+)a1b2";
   std::string EXPECT_EMPTY_MUT_XML_CONTENT =
       R"c3d4(<?xml version="1.0" encoding="UTF-8"?>
 <mutations/>
@@ -142,7 +183,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   buffer << t.rdbuf();
   std::string mutationXMLContent = buffer.str();
   t.close();
-  EXPECT_EQ(mutationXMLContent, EXPECT_MUT_XML_CONTENT);
+  EXPECT_EQ(mutationXMLContent, EXPECT_SKIP_MUT_XML_CONTENT);
 }
 
 TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
