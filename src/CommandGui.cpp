@@ -78,6 +78,13 @@ TERMINAL* term = nullptr;
 
 static void guiSignalHandler(int signum) {
   namespace fs = std::experimental::filesystem;
+
+  fs::path backupDir = workDirForSH / "backup";
+  if (fs::exists(backupDir)) {
+    if (fs::is_directory(backupDir)) {
+      CommandRun::restoreBackup(backupDir, sourceRootForSH);
+    }
+  }
   if (!workDirExists) {
     fs::remove_all(workDirForSH);
   } else {

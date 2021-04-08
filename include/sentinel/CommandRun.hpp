@@ -39,6 +39,8 @@ extern bool backupDirExists;
 extern bool expectedDirExists;
 extern bool actualDirExists;
 extern std::experimental::filesystem::path workDirForSH;
+extern std::experimental::filesystem::path sourceRootForSH;
+
 
 /**
  * @brief sentinel commandline 'run' subcommand class.
@@ -51,6 +53,15 @@ class CommandRun : public Command {
   explicit CommandRun(args::Subparser& parser);
 
   int run() override;
+
+  /**
+   * @brief restore changed file by copying file from backup folder
+   *        to source folder
+   *
+   * @param backup location
+   * @param srcRoot source location
+   */
+  static void restoreBackup(const std::string& backup, const std::string& srcRoot);
 
  protected:
   /**
@@ -67,15 +78,6 @@ class CommandRun : public Command {
    */
   void copyTestReportTo(const std::string& from,
       const std::string& to, const std::vector<std::string>& exts);
-
-  /**
-   * @brief restore changed file by copying file from backup folder
-   *        to source folder
-   *
-   * @param backup location
-   * @param srcRoot source location
-   */
-  void restoreBackup(const std::string& backup, const std::string& srcRoot);
 
   /**
    * @brief preprocess working directory

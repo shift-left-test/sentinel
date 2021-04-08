@@ -60,10 +60,18 @@ bool backupDirExists = true;
 bool expectedDirExists = true;
 bool actualDirExists = true;
 std::experimental::filesystem::path workDirForSH;
+std::experimental::filesystem::path sourceRootForSH;
 static bool stopRun = false;
 
 static void signalHandler(int signum) {
   namespace fs = std::experimental::filesystem;
+
+  fs::path backupDir = workDirForSH / "backup";
+  if (fs::exists(backupDir)) {
+    if (fs::is_directory(backupDir)) {
+      CommandRun::restoreBackup(backupDir, sourceRootForSH);
+    }
+  }
   if (!workDirExists) {
     fs::remove_all(workDirForSH);
   } else {
@@ -145,6 +153,7 @@ int CommandRun::run() {
     std::string outputDirStr = getOutputDir();
     std::string testResultDirStr = getTestResultDir();
     fs::path sourceRoot = fs::canonical(sourceRootStr);
+    sourceRootForSH = fs::canonical(sourceRootStr);
 
     if (!fs::exists(workDirStr)) {
       workDirExists = false;
