@@ -243,13 +243,14 @@ int CommandRun::run() {
     // log parsed parameter
     auto logger = Logger::getLogger(cCommandRunLoggerName);
     logger->info(fmt::format("{0:-^{1}}", "", 50));
-    logger->info(fmt::format("Source root: {}", sourceRoot.string()));
-    logger->info(fmt::format("Build dir: {}", buildDir.string()));
-    logger->info(fmt::format("Build cmd: {}", buildCmd));
+    logger->info(fmt::format("Source root: \"{}\"", sourceRoot.string()));
+    logger->info(fmt::format("Build dir: \"{}\"", buildDir.string()));
+    logger->info(fmt::format("Build cmd: \"{}\"", buildCmd));
 
-    logger->info(fmt::format("Test cmd:{}", testCmd));
-    logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
-    logger->info(fmt::format("Test result extension: {}",
+    logger->info(fmt::format("Test cmd: \"{}\"", testCmd));
+    logger->info(fmt::format("Test result dir: \"{}\"",
+                             testResultDir.string()));
+    logger->info(fmt::format("Test result extension: \"{}\"",
           sentinel::string::join(", ", testResultFileExts)));
     logger->info(fmt::format("Time limit for test: {}s",
                              std::to_string(mTimeLimit)));
@@ -266,10 +267,10 @@ int CommandRun::run() {
     logger->info(fmt::format("Random seed: {}",
                              std::to_string(randomSeed)));
 
-    logger->info(fmt::format("Work dir: {}", workDir.string()));
-    logger->info(fmt::format("Backup dir: {}", backupDir));
-    logger->info(fmt::format("Expected test result dir: {}", expectedDir));
-    logger->info(fmt::format("Actual test result dir: {}", actualDir));
+    logger->info(fmt::format("Work dir: \"{}\"", workDir.string()));
+    logger->info(fmt::format("Backup dir: \"{}\"", backupDir));
+    logger->info(fmt::format("Expected test result dir: \"{}\"", expectedDir));
+    logger->info(fmt::format("Actual test result dir: \"{}\"", actualDir));
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // restore if previous backup is exists
@@ -280,13 +281,13 @@ int CommandRun::run() {
       throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
             buildDir.c_str(), std::strerror(errno)));
     }
-    auto cmdPrefix = fmt::format("cd {} && ", buildDir.string());
+    auto cmdPrefix = fmt::format("cd \"{}\" && ", buildDir.string());
 
     // build
     logger->info("Building original source code ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Build dir: {}", buildDir.string()));
-    logger->info(fmt::format("Build cmd: {}", buildCmd));
+    logger->info(fmt::format("Build cmd: {}", cmdPrefix+buildCmd));
     Subprocess(cmdPrefix + buildCmd).execute();
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 

@@ -39,6 +39,16 @@
 namespace sentinel {
 
 /**
+ * @brief FieldAttrs struct stores length of field value
+ */
+typedef struct {
+  /**
+   * brief field value length
+   */
+  int length;
+} FieldAttrs;
+
+/**
  * @brief sentinel commandline 'gui' subcommand class
  */
 class CommandGui : public CommandRun {
@@ -105,6 +115,22 @@ class CommandGui : public CommandRun {
    * @param form of fields
    */
   void selectPrevField(FORM* form);
+
+  /**
+   * @brief update field value length
+   *
+   * @param form target form
+   * @param action REQ_DEL_CHAR or REQ_DEL_PREV or any non-special character.
+   */
+  void updateFieldValueLength(FORM* form, int action);
+
+  /**
+   * @brief return the idx-th field value of form as a string
+   *
+   * @param field target field
+   * @return field value string
+   */
+  std::string getFieldValueString(FIELD* field);
 
  protected:
   /**
@@ -223,6 +249,8 @@ class CommandGui : public CommandRun {
   WindowInfo helpWinInfo;
   WindowInfo helpPadInfo;
   WindowInfo advancedWinInfo;
+  WindowInfo exitWinInfo;
+  WindowInfo startWinInfo;
 
   WINDOW* titleWin;
   WINDOW* outputPad;
@@ -232,8 +260,12 @@ class CommandGui : public CommandRun {
   WINDOW* helpWin;
   WINDOW* helpPad;
   WINDOW* advancedWin;
+  WINDOW* exitWin;
+  WINDOW* startWin;
   PANEL* titlePanel;
   PANEL* advancedPanel;
+  PANEL* exitPanel;
+  PANEL* startPanel;
 
   std::vector<FIELD*> basicFields;
   std::vector<FIELD*> advancedFields;

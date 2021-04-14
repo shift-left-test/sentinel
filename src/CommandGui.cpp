@@ -58,7 +58,11 @@ static const char* cCommandGuiLoggerName = "CommandGui";
 const int configWinHeight = 15;
 const int advancedWinWidth = 100;
 const int advancedWinHeight = 15;
-static const char* guiHelp = R"a1b2z(F5: Start  F1: Exit  F3: Toggle Advanced Options  CtrlC: Force Stop)a1b2z";
+const int promptWinHeight = 5;
+const int promptWinWidth = 50;
+static const char* guiHelp = R"a1b2z(F5: Start  ESC: Exit  F3: Toggle Advanced Options  Ctrl-C: Force Stop)a1b2z";
+static const char* exitPrompt = "Are you sure you want to exit? [y/N]";
+static const char* startPrompt ="Do you want to start mutation testing? [y/N]";
 std::vector<const char*> verboseValues = {
     "<    true    >",
     "<    false   >",
@@ -117,46 +121,56 @@ CommandGui::CommandGui(args::Subparser& parser) :
     outputPad(nullptr), basicForm(nullptr), helpWin(nullptr),
     basicFields(34, nullptr), advancedFields(22, nullptr),
     outputScroll(nullptr), advancedForm(nullptr),
-    advancedWin(nullptr), advancedPanel(nullptr), titlePanel(nullptr),
+    advancedWin(nullptr), exitWin(nullptr), startWin(nullptr),
+    exitPanel(nullptr), advancedPanel(nullptr), titlePanel(nullptr),
+    startPanel(nullptr),
     outputPadCurrSize(1), outputPadCurrPos(0), outputPadScrollBufferSize(20000),
     currConfigPage(1), numBasicConfigPages(1), configScrollbarSize(1),
     CommandRun(parser) {
   basicOptions.push_back(std::vector<std::string>{
       "Source Root Path:",
-      R"asdf(Source Root Directory
+      R"asdf(Source Root Path
+
 This directory should be an existing git directory (has .git folder) containing target source files for mutation testing.)asdf",
       mSourceRoot.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Build Directory:",
       R"asdf(Build Directory
+
 This directory must contain compile_commands.json, which is the compilation database of the target project.
 The build and test command shall be executed from this directory.)asdf",
       mBuildDir.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Output Directory:",
       R"asdf(Output Directory
-Directory contains html files showing mutation testing detailed results.)asdf",
+
+Directory contains html files showing mutation testing detailed results.
+If output directory is not given, by default, no output files are generated.)asdf",
       mOutputDir.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Test Result Directory:",
-      R"asdf(Test Command Output Directory
+      R"asdf(Test Result Directory
+
 Directory contains the test output files generated after test command execution.
 The directory must be empty before starting mutation testing.)asdf",
       mTestResultDir.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Build Command:",
       R"asdf(Build Command
+
 Shell command to build the target project from given build directory.)asdf",
       mBuildCmd.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Test Command:",
       R"asdf(Test Command
+
 Shell command to execute test cases from given build directory.)asdf",
       mTestCmd.Get()});
 
   advancedOptions.push_back(std::vector<std::string>{
       "Working Directory:",
       R"asdf(Working Directory
+
 Sentinel temporary working directory contains:
 - test execution results of original program
 - test execution results of mutated program
@@ -165,52 +179,62 @@ Sentinel temporary working directory contains:
   advancedOptions.push_back(std::vector<std::string>{
       "Test Result Extensions:",
       R"asdf(Test Result Extensions
+
 SENTINEL currently can only handle Gtest xml format test result files.)asdf",
       string::join(",", mTestResultFileExts.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Target File Extensions:",
       R"asdf(Target File Extensions
+
 Extentions of source files to be mutated.
 SENTINEL currently support C/C++.)asdf",
       string::join(",", mExtensions.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Excluded File/Path:",
-      R"asdf(Excluded Paths
+      R"asdf(Excluded File/Path
+
 Files/paths excluded from mutation testing.
 It is recommended not to mutate test files and third party, external source files.)asdf",
       string::join(",", mExcludes.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Mutant Limit:",
       R"asdf(Mutant Limit
+
 Maximum number of mutants to be generated.)asdf",
       std::to_string(mLimit.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Test Timeout:",
       R"asdf(Test Timeout
+
 Time limit (in seconds) for test execution of the mutated program.
 By default, the time limit is automatically set to be the same as that of the original program.)asdf",
       mTimeLimitStr.Get()});
   advancedOptions.push_back(std::vector<std::string>{
       "Send SIGKILL After:",
-      R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
+      R"asdf(Send SIGKILL After:
+
+Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
       mKillAfterStr.Get()});
   advancedOptions.push_back(std::vector<std::string>{
       "Random Seed:",
       R"asdf(Random Seed
+
 Used for debugging, experiments.)asdf",
       std::to_string(mSeed.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Mutant Generator:",
       R"asdf(Mutant Generator
+
 - uniform: target lines are randomly selected, and 1 mutant (if any) is randomly generated on each line until number of generated mutants reaches limit.
 - weighted: similar to uniform generator, but target lines are selected based on statement depth. Deeper stmt are selected first.
 - random: mutants are selected randomly.)asdf", "<   uniform  >"});
   advancedOptions.push_back(std::vector<std::string>{
       "Scope:", R"asdf(Scope
+
 - all: all files in the source root path are targeted, except for new, unstaged files.
 - commit: only source lines that are changed in the latest commit are targeted.)asdf", "<     all    >"});
   advancedOptions.push_back(std::vector<std::string>{
-      "Verbose:", R"asdf(Verbosity)asdf", "<    true    >"});
+      "Verbose:", R"asdf(Verbose)asdf", "<    true    >"});
 }
 
 void CommandGui::setSignalHandler() {
@@ -268,7 +292,7 @@ void CommandGui::initGui() {
 
   init_pair(0, COLOR_WHITE, COLOR_BLACK);
   init_pair(1, COLOR_WHITE, COLOR_WHITE);
-  init_pair(2, COLOR_WHITE, COLOR_BLUE);
+  init_pair(2, COLOR_BLACK, COLOR_WHITE);
 
   // Create SENTINEL title window
   int titleWinHeight = LINES;
@@ -321,7 +345,13 @@ void CommandGui::initGui() {
     field_opts_on(basicFields[i], O_EDIT);
     field_opts_off(basicFields[i], O_STATIC);
     field_opts_off(basicFields[i], O_AUTOSKIP);
+    field_opts_off(basicFields[i], O_BLANK);
     set_field_buffer(basicFields[i], 0, basicOptions[i/2][2].c_str());
+
+    // Attach to each field a structure to keep track of its value's length
+    auto ptr = static_cast<FieldAttrs*>(calloc(1, sizeof(FieldAttrs)));  // NOLINT
+    ptr->length = basicOptions[i/2][2].length();
+    set_field_userptr(basicFields[i], static_cast<void*>(ptr));
   }
   set_field_back(basicFields[0], A_STANDOUT);
 
@@ -347,7 +377,13 @@ void CommandGui::initGui() {
     field_opts_on(advancedFields[i], O_EDIT);
     field_opts_off(advancedFields[i], O_AUTOSKIP);
     field_opts_off(advancedFields[i], O_STATIC);
+    field_opts_off(advancedFields[i], O_BLANK);
     set_field_buffer(advancedFields[i], 0, advancedOptions[i/2][2].c_str());
+
+    // Attach to each field a structure to keep track of its value's length
+    auto ptr = static_cast<FieldAttrs*>(calloc(1, sizeof(FieldAttrs)));  // NOLINT
+    ptr->length = advancedOptions[i/2][2].length();
+    set_field_userptr(advancedFields[i], static_cast<void*>(ptr));
   }
   set_field_back(advancedFields[0], A_STANDOUT);
 
@@ -433,13 +469,40 @@ void CommandGui::initGui() {
                       advancedWinInfo.width-4, 2, 1));
   post_form(advancedForm);
 
+  // create exit prompt window
+  exitWinInfo = WindowInfo(
+      promptWinHeight, promptWinWidth,
+      LINES/2-promptWinHeight/2, COLS/2-promptWinWidth/2);
+  exitWin = newwin(
+      exitWinInfo.height, exitWinInfo.width,
+      exitWinInfo.minY, exitWinInfo.minX);
+  box(exitWin, 0, 0);
+  mvwprintw(exitWin, 2, exitWinInfo.width/2-strlen(exitPrompt)/2, exitPrompt);
+  wbkgd(exitWin, COLOR_PAIR(2));
+
+  // create start prompt window
+  startWinInfo = WindowInfo(
+      promptWinHeight, promptWinWidth,
+      LINES/2-promptWinHeight/2, COLS/2-promptWinWidth/2);
+  startWin = newwin(
+      startWinInfo.height, startWinInfo.width,
+      startWinInfo.minY, startWinInfo.minX);
+  box(startWin, 0, 0);
+  mvwprintw(startWin, 2,
+            startWinInfo.width/2-strlen(startPrompt)/2, startPrompt);
+  wbkgd(startWin, COLOR_PAIR(2));
+
   // refresh all windows
   refresh();
   wrefresh(configWin);
 
   titlePanel = new_panel(titleWin);
   advancedPanel = new_panel(advancedWin);
+  exitPanel = new_panel(exitWin);
+  startPanel = new_panel(startWin);
   hide_panel(advancedPanel);
+  hide_panel(exitPanel);
+  hide_panel(startPanel);
   update_panels();
   doupdate();
 }
@@ -450,14 +513,43 @@ void CommandGui::handleUserInteraction() {
   auto logger = Logger::getLogger(cCommandGuiLoggerName);
   logger->setLevel(Logger::Level::INFO);
 
-  int ch;
   MEVENT event;
   bool fillConfig = true;
   bool advancedWinOn = false;
+  bool confirmExit = false;
+  bool confirmStart = false;
+  bool done = false;
 
-  while ((ch = getch()) != KEY_F(1)) {
+  while (!done) {
+    int ch = getch();
+
     switch (ch) {
+      case 27:  // ESCAPE
+        if (confirmStart) {
+          break;
+        }
+
+        if (confirmExit) {
+          hide_panel(exitPanel);
+          update_panels();
+          doupdate();
+          curs_set(1);
+          confirmExit = false;
+          refreshOutputWin();
+        } else {
+          show_panel(exitPanel);
+          update_panels();
+          doupdate();
+          curs_set(0);
+          confirmExit = true;
+        }
+        // done = true;
+        break;
       case '\t':
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           selectNextField(advancedForm);
           break;
@@ -468,6 +560,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_DOWN:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           selectNextField(advancedForm);
           break;
@@ -483,6 +579,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_UP:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           selectPrevField(advancedForm);
           break;
@@ -498,6 +598,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_NPAGE:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           break;
         }
@@ -510,6 +614,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_PPAGE:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           break;
         }
@@ -522,6 +630,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_LEFT:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           int currFieldIdx = field_index(current_field(advancedForm));
           if (currFieldIdx >= 17 && currFieldIdx <= 21) {
@@ -537,6 +649,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_RIGHT:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           int currFieldIdx = field_index(current_field(advancedForm));
           if (currFieldIdx >= 17 && currFieldIdx <= 21) {
@@ -554,15 +670,23 @@ void CommandGui::handleUserInteraction() {
       case KEY_BACKSPACE:
       case 127:
       case '\b':
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           int cursorX, cursorY;
           getyx(advancedWin, cursorY, cursorX);
           if (cursorX > 26) {
             // Scroll back (in case field too long), delete a char
             if (form_driver(advancedForm, REQ_SCR_BCHAR) == E_OK) {
-              form_driver(advancedForm, REQ_DEL_CHAR);
+              if (form_driver(advancedForm, REQ_DEL_CHAR) == E_OK) {
+                updateFieldValueLength(advancedForm, REQ_DEL_CHAR);
+              }
             } else {
-              form_driver(advancedForm, REQ_DEL_PREV);
+              if (form_driver(advancedForm, REQ_DEL_PREV) == E_OK) {
+                updateFieldValueLength(advancedForm, REQ_DEL_PREV);
+              }
             }
           }
           break;
@@ -574,14 +698,22 @@ void CommandGui::handleUserInteraction() {
           if (cursorX > 26) {
             // Scroll back (in case field too long), delete a char
             if (form_driver(basicForm, REQ_SCR_BCHAR) == E_OK) {
-              form_driver(basicForm, REQ_DEL_CHAR);
+              if (form_driver(basicForm, REQ_DEL_CHAR) == E_OK) {
+                updateFieldValueLength(basicForm, REQ_DEL_CHAR);
+              }
             } else {
-              form_driver(basicForm, REQ_DEL_PREV);
+              if (form_driver(basicForm, REQ_DEL_PREV) == E_OK) {
+                updateFieldValueLength(basicForm, REQ_DEL_PREV);
+              }
             }
           }
         }
         break;
       case KEY_HOME:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           form_driver(advancedForm, REQ_BEG_FIELD);
           break;
@@ -595,6 +727,10 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_END:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           form_driver(advancedForm, REQ_END_FIELD);
           break;
@@ -609,16 +745,28 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_DC:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
-          form_driver(advancedForm, REQ_DEL_CHAR);
+          if (form_driver(advancedForm, REQ_DEL_CHAR) == E_OK) {
+            updateFieldValueLength(advancedForm, REQ_DEL_CHAR);
+          }
           break;
         }
 
         if (fillConfig) {
-          form_driver(basicForm, REQ_DEL_CHAR);
+          if (form_driver(basicForm, REQ_DEL_CHAR) == E_OK) {
+            updateFieldValueLength(basicForm, REQ_DEL_CHAR);
+          }
         }
         break;
       case KEY_F(3):
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         // Toggle Advanced option window
         if (advancedWinOn) {
           advancedWinOn = false;
@@ -638,37 +786,22 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       case KEY_F(5):
-        // Suggestion: add a confirm prompt window when user wants to start.
-
-        // Start mutation testing
-        // reset output pad
-        wclear(outputPad);
-        outputPadCurrPos = 0;
-        outputPadCurrSize = 1;
-        fillConfig = false;
-
-        // Refresh the form to include newly filled field.
-        // Without this, field value is not updated with click start
-        form_driver(basicForm, REQ_VALIDATION);
-        form_driver(advancedForm, REQ_VALIDATION);
-        wrefresh(outputPad);
-
-        try {
-          // Change logging default level based on option
-          if (getVerbose()) {
-            sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::INFO);
-          } else {
-            sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::OFF);
-          }
-
-          CommandRun::run();
-        } catch(const std::exception& ex) {
-          logger->error(fmt::format("Error occurred: {0}", ex.what()));
-        } catch (...) {
-          logger->error("Unknown Exception.");
+        if (confirmExit || confirmStart) {
+          break;
         }
+
+        show_panel(startPanel);
+        update_panels();
+        doupdate();
+        curs_set(0);
+        confirmStart = true;
+
         break;
       case KEY_MOUSE:
+        if (confirmExit || confirmStart) {
+          break;
+        }
+
         if (advancedWinOn) {
           break;
         }
@@ -695,13 +828,86 @@ void CommandGui::handleUserInteraction() {
         }
         break;
       default:
+        if (confirmExit) {
+          if (ch == 'y') {
+            done = true;
+          }
+
+          if (ch == 'n' || ch == 'N') {
+            hide_panel(exitPanel);
+            update_panels();
+            doupdate();
+            curs_set(1);
+            refreshOutputWin();
+            confirmExit = false;
+          }
+
+          break;
+        }
+
+        if (confirmStart) {
+          if (ch == 'y') {
+            // hide prompt window
+            hide_panel(startPanel);
+            update_panels();
+            doupdate();
+            curs_set(1);
+            confirmStart = false;
+
+            // reset output pad
+            wclear(outputPad);
+            outputPadCurrPos = 0;
+            outputPadCurrSize = 1;
+            fillConfig = false;
+
+            // Refresh the form to include newly filled field.
+            // Without this, field value is not updated with click start
+            form_driver(basicForm, REQ_VALIDATION);
+            form_driver(advancedForm, REQ_VALIDATION);
+            wrefresh(outputPad);
+
+            try {
+              // Change logging default level based on option
+              if (getVerbose()) {
+                sentinel::Logger::setDefaultLevel(
+                    sentinel::Logger::Level::INFO);
+              } else {
+                sentinel::Logger::setDefaultLevel(
+                    sentinel::Logger::Level::OFF);
+              }
+
+              CommandRun::run();
+            } catch(const std::exception& ex) {
+              logger->error(fmt::format("Error occurred: {0}", ex.what()));
+            } catch (...) {
+              logger->error("Unknown Exception.");
+            }
+          }
+
+          if (ch == 'n' || ch == 'N') {
+            // hide prompt window
+            hide_panel(startPanel);
+            update_panels();
+            doupdate();
+            curs_set(1);
+            refreshOutputWin();
+            confirmStart = false;
+          }
+
+          break;
+        }
+
         if (advancedWinOn) {
-          form_driver(advancedForm, ch);
+          if (form_driver(advancedForm, ch) == E_OK) {
+            updateFieldValueLength(advancedForm, ch);
+          }
           break;
         }
 
         if (fillConfig) {
-          form_driver(basicForm, ch);
+          if (form_driver(basicForm, ch) == E_OK) {
+            updateFieldValueLength(basicForm, ch);
+          }
         }
         break;
     }
@@ -717,7 +923,46 @@ void CommandGui::handleUserInteraction() {
   }
 }
 
+void CommandGui::updateFieldValueLength(FORM* form, int action) {
+  auto ptr = static_cast<FieldAttrs*>(field_userptr(current_field(form)));
+  int curLen = ptr->length;
+  int curPos = form->curcol;
+
+  // Assuming the function is only called for delete, and normal character.
+  if (action == REQ_DEL_CHAR || action == REQ_DEL_PREV) {
+    // If the cursor lies at a position less than original field value length
+    // after a successful delete action happens, then the successful action
+    // deleted an user-input character and field value length is decreased.
+    // Example: a b c d e _ _ _
+    //          0 1 2 3 4 5 6 7
+    // Field value length was 5. If cursor is at index 5 or larger after
+    // deletion, no user input was deleted regardless of DELETE or BACKSPACE.
+    // If cursor is at index 4 after char 'e' was deleted,
+    // length should be decreased.
+    if (curPos < curLen) {
+      ptr->length = curLen - 1;
+      set_field_userptr(current_field(form), static_cast<void*>(ptr));
+    }
+  } else {
+    // Example: a b c d e _ _ _
+    //          0 1 2 3 4 5 6 7
+    // Field value length was 5.
+    // If char 'f' was added at some position from 0 to 4, the cursor will
+    // end up at index from 1 to 5, and length is increased by 1.
+    // If char 'f' was added at some position >= 5, the cursor position will
+    // be larger than 5 after addition, and the new length of the field value
+    // is the index of the new cursor position.
+    if (curPos <= curLen) {
+      ptr->length = curLen + 1;
+    } else {
+      ptr->length = curPos;
+    }
+    set_field_userptr(current_field(form), static_cast<void*>(ptr));
+  }
+}
+
 void CommandGui::quitGui() {
+  // Free all ncurses objects
   unpost_form(basicForm);
   for (auto& field : basicFields) {
     free_field(field);
@@ -735,6 +980,8 @@ void CommandGui::quitGui() {
   delwin(outputPad);
   delwin(outputWin);
   delwin(advancedWin);
+  delwin(exitWin);
+  delwin(startWin);
   endwin();
 }
 
@@ -826,65 +1073,68 @@ void CommandGui::refreshHelpWin(FORM* form) {
   wrefresh(form_win(form));
 }
 
+std::string CommandGui::getFieldValueString(FIELD* field) {
+  std::string value = std::string(field_buffer(field, 0));
+  int len = static_cast<FieldAttrs*>(field_userptr(field))->length;
+  return value.substr(0, len);
+}
+
 std::string CommandGui::getSourceRoot() {
-  return string::trim(std::string(field_buffer(basicFields[1], 0)));
+  return getFieldValueString(basicFields[1]);
 }
 
 std::string CommandGui::getBuildDir() {
-  return string::trim(std::string(field_buffer(basicFields[3], 0)));
+  return getFieldValueString(basicFields[3]);
 }
 
 std::string CommandGui::getOutputDir() {
-  return string::trim(std::string(field_buffer(basicFields[5], 0)));
+  return getFieldValueString(basicFields[5]);
 }
 
 std::string CommandGui::getTestResultDir() {
-  return string::trim(std::string(field_buffer(basicFields[7], 0)));
+  return getFieldValueString(basicFields[7]);
 }
 
 std::string CommandGui::getBuildCmd() {
-  return string::trim(std::string(field_buffer(basicFields[9], 0)));
+  return getFieldValueString(basicFields[9]);
 }
 
 std::string CommandGui::getTestCmd() {
-  return string::trim(std::string(field_buffer(basicFields[11], 0)));
+  return getFieldValueString(basicFields[11]);
 }
 
 std::string CommandGui::getWorkDir() {
-  return string::trim(std::string(field_buffer(advancedFields[1], 0)));
+  return getFieldValueString(advancedFields[1]);
 }
 
 std::vector<std::string> CommandGui::getTestResultFileExts() {
-  return string::split(
-      string::trim(std::string(field_buffer(advancedFields[3], 0))), ',');
+  return string::split(getFieldValueString(advancedFields[3]), ',');
 }
 
 std::vector<std::string> CommandGui::getTargetFileExts() {
-  return string::split(
-      string::trim(std::string(field_buffer(advancedFields[5], 0))), ',');
+  return string::split(getFieldValueString(advancedFields[5]), ',');
 }
 
 std::vector<std::string> CommandGui::getExcludePaths() {
-  return string::split(
-      string::trim(std::string(field_buffer(advancedFields[7], 0))), ',');
+  return string::split(getFieldValueString(advancedFields[7]), ',');
 }
 
 int CommandGui::getMutantLimit() {
   return std::stoul(
-      string::trim(std::string(field_buffer(advancedFields[9], 0))));
+      string::trim(getFieldValueString(advancedFields[9])));
 }
 
 std::string CommandGui::getTestTimeLimit() {
-  return  string::trim(std::string(field_buffer(advancedFields[11], 0)));
+  return  string::trim(getFieldValueString(advancedFields[11]));
 }
 
 std::string CommandGui::getKillAfter() {
-  return string::trim(std::string(field_buffer(advancedFields[13], 0)));
+  return string::trim(getFieldValueString(advancedFields[13]));
 }
 
 unsigned CommandGui::getSeed() {
   return std::stoul(
-      string::trim(std::string(field_buffer(advancedFields[15], 0))));
+      string::trim(getFieldValueString(advancedFields[15])));
 }
 
 std::string CommandGui::getGenerator() {
