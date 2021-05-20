@@ -212,6 +212,26 @@ TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
   fs::remove(mrPath);
 }
 
+TEST_F(EvaluatorTest, testEvaluatorWithUncoveredMutation) {
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+
+  captureStdout();
+  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
+  auto result = mEvaluator.compareAndSaveMutationResult(*mutable2,
+    MUT_DIR_SURVIVED, mrPath, "uncovered");
+  std::string out2 = capturedStdout();
+  EXPECT_TRUE(string::contains(out2, "BOR : "));
+  EXPECT_TRUE(string::contains(out2, ".cpp (1:1-1:1 -> |)"));
+  EXPECT_TRUE(string::contains(out2, "SURVIVED"));
+  EXPECT_FALSE(result.getDetected());
+
+  MutationResults MRs;
+  MRs.load(mrPath);
+  auto mr = MRs[0];
+  EXPECT_TRUE(mr.compare(result));
+  fs::remove(mrPath);
+}
+
 TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 

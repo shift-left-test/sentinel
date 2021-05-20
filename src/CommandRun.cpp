@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <term.h>
 #include <experimental/filesystem>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
@@ -36,6 +37,7 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include "sentinel/CoverageInfo.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
@@ -121,6 +123,9 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mTestResultFileExts(parser, "EXTENSION",
     "Test command output file extensions.",
     {"test-result-extension"}, {"xml", "XML"}),
+  mCoverageFiles(parser, "COV.INFO",
+    "lcov-format coverage result file",
+    {"coverage"}),
   mGenerator(parser, "gen",
     "Mutant generator type, one of ['uniform', 'random', 'weighted'].",
     {"generator"}, "uniform"),
@@ -216,6 +221,7 @@ int CommandRun::run() {
     std::string killAfter = getKillAfter();
     std::vector<std::string> targetFileExts = getTargetFileExts();
     std::vector<std::string> excludePaths = getExcludePaths();
+    std::vector<std::string> coverageFiles = getCoverageFiles();
     std::string scope = getScope();
     std::string generatorStr = getGenerator();
     int randomSeed = getSeed();
@@ -260,6 +266,8 @@ int CommandRun::run() {
           sentinel::string::join(", ", targetFileExts)));
     logger->info(fmt::format("Exclude path: {}",
           sentinel::string::join(", ", excludePaths)));
+    logger->info(fmt::format("Coverage files: {}",
+          sentinel::string::join(", ", coverageFiles)));
     logger->info(fmt::format("Diff scope: {}", scope));
     logger->info(fmt::format("Generator: {}", generatorStr));
     logger->info(fmt::format("Max generated mutable: {}",
@@ -346,7 +354,7 @@ int CommandRun::run() {
     // copy test report to expected
     copyTestReportTo(testResultDir, expectedDir, testResultFileExts);
 
-    // populate
+    // populate mutants
     logger->info("Populating mutants ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Extentions of source: {}",
@@ -386,6 +394,8 @@ int CommandRun::run() {
     auto mutants = mutationFactory.populate(sourceRoot, sourceLines,
                                             mutantLimit, randomSeed);
 
+    // Build and execute each selected mutant
+    CoverageInfo cov(coverageFiles);
     for (auto& mutant : mutants) {
       logger->info(fmt::format("mutant: {}", mutant.str()));
     }
@@ -395,6 +405,16 @@ int CommandRun::run() {
     int mutantId = 1;
 
     for (auto& m : mutants) {
+      // Check if mutant is on a covered line
+      if (!coverageFiles.empty()) {
+        if (!cov.cover(m.getPath().string(), m.getFirst().line)) {
+          evaluator.compare(m, actualDir, "uncovered");
+          logger->info(fmt::format("{0:-^{1}}", "", 50));
+          mutantId++;
+          continue;
+        }
+      }
+
       // mutate
       std::stringstream buf;
       buf << m;
@@ -409,8 +429,8 @@ int CommandRun::run() {
       logger->info(fmt::format("Build cmd: {}", buildCmd));
       Subprocess buildProc(cmdPrefix + buildCmd);
       buildProc.execute();
-      bool buildSucess = buildProc.isSuccessfulExit();
       std::string testState = "success";
+      bool buildSucess = buildProc.isSuccessfulExit();
       if (buildSucess) {
         // test
         logger->info("Building SUCCESS. Testing ...");
@@ -616,6 +636,10 @@ std::vector<std::string> CommandRun::getTargetFileExts() {
 
 std::vector<std::string> CommandRun::getExcludePaths() {
   return mExcludes.Get();
+}
+
+std::vector<std::string> CommandRun::getCoverageFiles() {
+  return mCoverageFiles.Get();
 }
 
 std::string CommandRun::getScope() {

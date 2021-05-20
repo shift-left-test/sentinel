@@ -171,6 +171,9 @@ Extentions of source file which could be mutated.
 -e[PATH...], --exclude=[PATH...]
 exclude file or path
 .TP
+--coverage=[COV.INFO...]
+lcov-format coverage result file
+.TP
 -s[SCOPE], --scope=[SCOPE]
 Diff scope, one of ['commit', 'all']. Default: all
 .TP
@@ -184,7 +187,7 @@ Time limit (sec) for test-command. If 0, there is no time limit. If auto, time l
 Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0. Default: 60
 .TP
 --seed=[SEED]
-Select random seed. Default: 1942447250
+Select random seed. Default: random
 .SS gui: sentinel gui
 Run sentinel in GUI mode
 .SH REPORTING BUGS

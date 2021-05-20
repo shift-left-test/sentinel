@@ -41,7 +41,7 @@ build_static_library(
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
        Command.cpp CommandPopulate.cpp CommandMutate.cpp CommandEvaluate.cpp
        CommandReport.cpp CommandRun.cpp MainCLI.cpp ncstream/NcWindowStreambuf.cpp
-       CommandGui.cpp
+       CommandGui.cpp CoverageInfo.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS} ${CURSES_INCLUDE_DIR}
   LIBS tinyxml2 fmt ${LIBGIT2_LIBRARIES} stdc++fs args ${FORM_LIBRARY} ${PANEL_LIBRARY} ${CURSES_LIBRARIES}

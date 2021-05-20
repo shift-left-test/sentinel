@@ -166,6 +166,12 @@ class CommandRun : public Command {
   virtual std::vector<std::string> getExcludePaths();
 
   /**
+   * @brief get coverage files
+   * @return list of coverage files
+   */
+  virtual std::vector<std::string> getCoverageFiles();
+
+  /**
    * @brief get mutation scope
    * @return mutation scope
    */
@@ -241,6 +247,11 @@ class CommandRun : public Command {
    * @brief paths excluded from mutation
    */
   args::ValueFlagList<std::string> mExcludes;
+
+  /**
+   * @brief list of coverage files
+   */
+  args::ValueFlagList<std::string> mCoverageFiles;
 
   /**
    * @brief mutation scope

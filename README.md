@@ -166,26 +166,26 @@ $ ./build.sh
       -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
                                         Default: ./sentinel_tmp
       -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        If output-dir is not given,
-                                        pass generating output file.
       -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
                                         file exists.
                                         Default: .
       --test-result-dir=[PATH]          Test command output directory
       --build-command=[SH_CMD]          Shell command to build source
       --test-command=[SH_CMD]           Shell command to execute test
-      --generator=[gen]                 Select mutant generator type, one of
+      --generator=[gen]                 Mutant generator type, one of
                                         ['uniform', 'random', 'weighted'].
                                         Default: uniform
-      --test-result-extention=[EXTENSION...]
+      --test-result-extension=[EXTENSION...]
                                         Test command output file extensions.
       -t[EXTENSION...],
-      --extension=[EXTENSION...]        Extentions of source file which could be
+      --extension=[EXTENSION...]        Extentions of source files to be
                                         mutated.
-      -e[PATH...], --exclude=[PATH...]  exclude file or path
+      -e[PATH...], --exclude=[PATH...]  Exclude file or path
+      --coverage=[COV.INFO...]          lcov-format coverage result file
       -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
                                         Default: all
-      -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
+      -l[COUNT], --limit=[COUNT]        Maximum number of mutants to be
+                                        generated
                                         Default: 10
       --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
                                         there is no time limit. If auto, time
@@ -194,12 +194,12 @@ $ ./build.sh
                                         code.
                                         Default: auto
       --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
-                                        running after timeout. If 0, SIGKILL
-                                        is not sent. This option has no meaning
+                                        running after timeout. If 0, SIGKILL is
+                                        not sent. This option has no meaning
                                         when timeout is set 0.
                                         Default: 60
       --seed=[SEED]                     Select random seed.
-                                        Default: 1942447250
+                                        Default: random
 ```
 
 

@@ -63,6 +63,9 @@ MutationResult Evaluator::compare(const Mutant& mut,
   } else if (testState == "timeout") {
     state = MutationState::TIMEOUT;
     mLogger->info(fmt::format("Timeout - ignore({})", ActualResultDir));
+  } else if (testState == "uncovered") {
+    state = MutationState::SURVIVED;
+    mLogger->info("Mutated code line uncovered by test cases - ignore");
   } else if (testState == "success") {
     Result mActualResult(ActualResultDir);
     mLogger->info(fmt::format("Load Actual Result: {}", ActualResultDir));

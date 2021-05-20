@@ -53,10 +53,15 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
     SAMPLECOMCOMJSON_NAME = "compile_commands.json";
     SAMPLECOMCOMJSON_PATH = SAMPLE1_DIR / SAMPLECOMCOMJSON_NAME;
 
+    SAMPLECOVERAGE_NAME = "coverage.info";
+    SAMPLECOVERAGE_PATH = SAMPLE1_DIR / SAMPLECOVERAGE_NAME;
+
     writeFile(SAMPLE1_PATH, SAMPLE1_CONTENTS);
     writeFile(SAMPLE1B_PATH, SAMPLE1B_CONTENTS);
     writeFile(SAMPLECOMCOMJSON_PATH, fmt::format(SAMPLECOMCOMJSON_CONTENTS,
           SAMPLE1_DIR.string()));
+    writeFile(SAMPLECOVERAGE_PATH, fmt::format(SAMPLECOVERAGE_CONTENTS,
+                                               SAMPLE1_PATH.string()));
   }
 
   void TearDown() override {
@@ -243,6 +248,25 @@ int sdlBlockedCases() {
   "file": "{0}/sample1b.cpp"
 }}
 ])a1b3";
+
+  std::experimental::filesystem::path SAMPLECOVERAGE_PATH;
+  std::string SAMPLECOVERAGE_NAME;
+  std::string SAMPLECOVERAGE_CONTENTS =
+      R"a1b3(TN:
+SF:{0}
+FN:33,_ZN18CDiag_Monitor_NodeD0Ev
+FN:33,_ZN18CDiag_Monitor_NodeD2Ev
+FNDA:0,_ZN18CDiag_Monitor_NodeD0Ev
+FNDA:1,_ZN18CDiag_Monitor_NodeD2Ev
+FNF:2
+FNH:1
+DA:33,2
+DA:35,1
+DA:39,0
+DA:40,0
+LF:3
+LH:1
+end_of_record)a1b3";
 };
 
 }  // namespace sentinel

@@ -32,7 +32,7 @@ build_test_program(
   SRCS testMain.cpp GitHarnessTest.cpp StringTest.cpp ExceptionTest.cpp
        GitRepositoryTest.cpp ResultTest.cpp MutantsTest.cpp
        LoggerTest.cpp UniformMutantGeneratorTest.cpp MutationResultsTest.cpp
-       MutationFactoryTest.cpp EvaluatorTest.cpp
+       MutationFactoryTest.cpp EvaluatorTest.cpp CoverageInfoTest.cpp
        GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp ReportTest.cpp
        ContainerTest.cpp RandomMutantGeneratorTest.cpp
        WeightedMutantGeneratorTest.cpp MainCLITest.cpp

@@ -54,6 +54,28 @@ namespace sentinel {
 
 const int MINLINES = 24;
 const int MINCOLS = 80;
+
+enum option_idx {
+  SRC_ROOT_OPT = 1,
+  BUILD_DIR_OPT = 3,
+  OUTPUT_DIR_OPT = 5,
+  TESTRESULT_DIR_OPT = 7,
+  BUILD_CMD_OPT = 9,
+  TEST_CMD_OPT = 11,
+  WORK_DIR_OPT = 1,
+  TEST_RESULT_FILE_EXT_OPT = 3,
+  TARGET_FILE_EXT_OPT = 5,
+  EXCLUDE_PATHS_OPT = 7,
+  COVERAGE_FILES_OPT = 9,
+  MUTANT_LIMIT_OPT = 11,
+  TESTTIME_LIMIT_OPT = 13,
+  KILL_AFTER_OPT = 15,
+  RANDOM_SEED_OPT = 17,
+  GENERATOR_OPT = 19,
+  SCOPE_OPT = 21,
+  VERBOSE_OPT = 23
+};
+
 static const char* cCommandGuiLoggerName = "CommandGui";
 const int configWinHeight = 15;
 const int advancedWinWidth = 100;
@@ -119,7 +141,7 @@ static void guiSignalHandler(int signum) {
 CommandGui::CommandGui(args::Subparser& parser) :
     titleWin(nullptr), configWin(nullptr), outputWin(nullptr), helpPad(nullptr),
     outputPad(nullptr), basicForm(nullptr), helpWin(nullptr),
-    basicFields(34, nullptr), advancedFields(22, nullptr),
+    basicFields(34, nullptr), advancedFields(24, nullptr),
     outputScroll(nullptr), advancedForm(nullptr),
     advancedWin(nullptr), exitWin(nullptr), startWin(nullptr),
     exitPanel(nullptr), advancedPanel(nullptr), titlePanel(nullptr),
@@ -196,6 +218,12 @@ SENTINEL currently support C/C++.)asdf",
 Files/paths excluded from mutation testing.
 It is recommended not to mutate test files and third party, external source files.)asdf",
       string::join(",", mExcludes.Get())});
+  advancedOptions.push_back(std::vector<std::string>{
+      "Coverage Files:",
+      R"asdf(Coverage Files
+
+List of lcov-format coverage files used to speed up mutant execution step by instantly mark mutant on uncovered code line as SURVIVED.)asdf",
+      string::join(",", mCoverageFiles.Get())});
   advancedOptions.push_back(std::vector<std::string>{
       "Mutant Limit:",
       R"asdf(Mutant Limit
@@ -300,20 +328,20 @@ void CommandGui::initGui() {
   titleWinInfo = WindowInfo(titleWinHeight, titleWinWidth, 0, 0);
   titleWin = newwin(titleWinHeight, titleWinWidth, 0, 0);
   box(titleWin, 0, 0);
-  mvwprintw(titleWin, 1, titleWinWidth/2-4, "SENTINEL");
-  mvwprintw(titleWin, titleWinInfo.maxY-1,
-            titleWinWidth/2-strlen(guiHelp)/2, guiHelp);
+  mvwprintw(titleWin, 1, titleWinWidth / 2 - 4, "SENTINEL");
+  mvwprintw(titleWin, titleWinInfo.maxY - 1,
+            titleWinWidth / 2 - strlen(guiHelp) / 2, guiHelp);
 
   // Create configuration window
   int helpWinWidth = COLS / 8 * 3;
   int configWinWidth = titleWinWidth - 2 - helpWinWidth;
   configWinInfo = WindowInfo(configWinHeight, configWinWidth,
-                             2, helpWinWidth+1);
+                             2, helpWinWidth + 1);
   configWin = subwin(
       titleWin, configWinInfo.height, configWinInfo.width,
       configWinInfo.minY, configWinInfo.minX);
   box(configWin, 0, 0);
-  mvwprintw(configWin, 0, configWinInfo.width/2-6, "Basic Options");
+  mvwprintw(configWin, 0, configWinInfo.width / 2 - 6, "Basic Options");
 
   // Create basic configuration fields
   int currY = 0;
@@ -321,15 +349,15 @@ void CommandGui::initGui() {
   int labelWidth = 24;
   int numBasicOptions = basicOptions.size();
 
-  for (int i = 0; i < numBasicOptions*2; i++, currY += 2) {
-    basicFields[i] = new_field(1, basicOptions[i/2][0].length(),
+  for (int i = 0; i < numBasicOptions * 2; i++, currY += 2) {
+    basicFields[i] = new_field(1, basicOptions[i / 2][0].length(),
                                currY, currX, 0, 0);
     field_opts_on(basicFields[i], O_VISIBLE);
     field_opts_off(basicFields[i], O_EDIT);
     field_opts_off(basicFields[i], O_ACTIVE);
-    set_field_buffer(basicFields[i], 0, basicOptions[i/2][0].c_str());
+    set_field_buffer(basicFields[i], 0, basicOptions[i / 2][0].c_str());
 
-    if (currY >= configWinHeight-3) {
+    if (currY >= configWinHeight - 3) {
       currY = 0;
       set_new_page(basicFields[i], TRUE);
       move_field(basicFields[i], currY, currX);
@@ -337,7 +365,7 @@ void CommandGui::initGui() {
     }
 
     ++i;
-    basicFields[i] = new_field(1, configWinWidth-2-labelWidth-4,
+    basicFields[i] = new_field(1, configWinWidth - 2 - labelWidth - 4,
                                currY, currX+labelWidth, 0, 0);
     set_field_back(basicFields[i], A_UNDERLINE);
     field_opts_on(basicFields[i], O_VISIBLE);
@@ -346,11 +374,11 @@ void CommandGui::initGui() {
     field_opts_off(basicFields[i], O_STATIC);
     field_opts_off(basicFields[i], O_AUTOSKIP);
     field_opts_off(basicFields[i], O_BLANK);
-    set_field_buffer(basicFields[i], 0, basicOptions[i/2][2].c_str());
+    set_field_buffer(basicFields[i], 0, basicOptions[i / 2][2].c_str());
 
     // Attach to each field a structure to keep track of its value's length
     auto ptr = static_cast<FieldAttrs*>(calloc(1, sizeof(FieldAttrs)));  // NOLINT
-    ptr->length = basicOptions[i/2][2].length();
+    ptr->length = basicOptions[i / 2][2].length();
     set_field_userptr(basicFields[i], static_cast<void*>(ptr));
   }
   set_field_back(basicFields[0], A_STANDOUT);
@@ -360,17 +388,24 @@ void CommandGui::initGui() {
   currX = 1;
   int numAdvancedOptions = advancedOptions.size();
 
-  for (int i = 0; i < numAdvancedOptions*2; i++, currY += 1) {
-    advancedFields[i] = new_field(1, advancedOptions[i/2][0].length(),
+  for (int i = 0; i < numAdvancedOptions * 2; i++, currY += 1) {
+    advancedFields[i] = new_field(1, advancedOptions[i / 2][0].length(),
                                   currY, currX, 0, 0);
     field_opts_on(advancedFields[i], O_VISIBLE);
     field_opts_off(advancedFields[i], O_EDIT);
     field_opts_off(advancedFields[i], O_ACTIVE);
-    set_field_buffer(advancedFields[i], 0, advancedOptions[i/2][0].c_str());
+    set_field_buffer(advancedFields[i], 0, advancedOptions[i / 2][0].c_str());
+
+    // Move to next page from option GENERATOR
+    if (i + 1 == GENERATOR_OPT) {
+      currY = 0;
+      set_new_page(advancedFields[i], TRUE);
+      move_field(advancedFields[i], currY, currX);
+    }
 
     ++i;
-    advancedFields[i] = new_field(1, configWinWidth-2-labelWidth-4,
-                                  currY, currX+labelWidth, 0, 0);
+    advancedFields[i] = new_field(1, configWinWidth - 2 - labelWidth - 4,
+                                  currY, currX + labelWidth, 0, 0);
     set_field_back(advancedFields[i], A_UNDERLINE);
     field_opts_on(advancedFields[i], O_VISIBLE);
     field_opts_on(advancedFields[i], O_ACTIVE);
@@ -378,31 +413,35 @@ void CommandGui::initGui() {
     field_opts_off(advancedFields[i], O_AUTOSKIP);
     field_opts_off(advancedFields[i], O_STATIC);
     field_opts_off(advancedFields[i], O_BLANK);
-    set_field_buffer(advancedFields[i], 0, advancedOptions[i/2][2].c_str());
+    set_field_buffer(advancedFields[i], 0, advancedOptions[i / 2][2].c_str());
 
     // Attach to each field a structure to keep track of its value's length
     auto ptr = static_cast<FieldAttrs*>(calloc(1, sizeof(FieldAttrs)));  // NOLINT
-    ptr->length = advancedOptions[i/2][2].length();
+    ptr->length = advancedOptions[i / 2][2].length();
     set_field_userptr(advancedFields[i], static_cast<void*>(ptr));
   }
   set_field_back(advancedFields[0], A_STANDOUT);
 
-  set_field_back(advancedFields[17], A_NORMAL);
-  set_field_back(advancedFields[19], A_NORMAL);
-  set_field_back(advancedFields[21], A_NORMAL);
-  field_opts_off(advancedFields[17], O_EDIT);
-  field_opts_off(advancedFields[19], O_EDIT);
-  field_opts_off(advancedFields[21], O_EDIT);
-  set_field_type(advancedFields[17], TYPE_ENUM, generatorValues.data(), 0, 1);
-  set_field_type(advancedFields[19], TYPE_ENUM, scopeValues.data(), 0, 1);
-  set_field_type(advancedFields[21], TYPE_ENUM, verboseValues.data(), 0, 1);
+  set_field_back(advancedFields[GENERATOR_OPT], A_NORMAL);
+  set_field_back(advancedFields[SCOPE_OPT], A_NORMAL);
+  set_field_back(advancedFields[VERBOSE_OPT], A_NORMAL);
+  field_opts_off(advancedFields[GENERATOR_OPT], O_EDIT);
+  field_opts_off(advancedFields[SCOPE_OPT], O_EDIT);
+  field_opts_off(advancedFields[VERBOSE_OPT], O_EDIT);
+  set_field_type(advancedFields[GENERATOR_OPT], TYPE_ENUM,
+                 generatorValues.data(), 0, 1);
+  set_field_type(advancedFields[SCOPE_OPT], TYPE_ENUM,
+                 scopeValues.data(), 0, 1);
+  set_field_type(advancedFields[VERBOSE_OPT], TYPE_ENUM,
+                 verboseValues.data(), 0, 1);
 
   // Set up basic form
   basicForm = new_form(basicFields.data());
   advancedForm = new_form(advancedFields.data());
   set_form_win(basicForm, configWin);
   set_form_sub(basicForm,
-               derwin(configWin, configWinHeight-3, configWinWidth-4, 2, 1));
+               derwin(configWin, configWinHeight - 3,
+               configWinWidth - 4, 2, 1));
   post_form(basicForm);
 
   // Create help window
@@ -412,10 +451,10 @@ void CommandGui::initGui() {
       titleWin, helpWinInfo.height, helpWinInfo.width,
       helpWinInfo.minY, helpWinInfo.minX);
   box(helpWin, 0, 0);
-  mvwprintw(helpWin, 0, helpWinInfo.width/2-2, "Help");
+  mvwprintw(helpWin, 0, helpWinInfo.width / 2 - 2, "Help");
 
   // Create an inner window to print help messages
-  helpPadInfo = WindowInfo(helpWinHeight-3, helpWinWidth-4, 2, 2);
+  helpPadInfo = WindowInfo(helpWinHeight - 3, helpWinWidth - 4, 2, 2);
   helpPad = derwin(
       helpWin, helpPadInfo.height, helpPadInfo.width,
       helpPadInfo.minY, helpPadInfo.minX);
@@ -425,12 +464,12 @@ void CommandGui::initGui() {
   int outputWinHeight = LINES - configWinInfo.minY - configWinInfo.height - 2;
   int outputWinWidth = titleWinWidth - 2;
   outputWinInfo = WindowInfo(outputWinHeight, outputWinWidth,
-                             configWinInfo.minY+configWinInfo.height, 1);
+                             configWinInfo.minY + configWinInfo.height, 1);
   outputWin = subwin(
       titleWin, outputWinInfo.height, outputWinInfo.width,
       outputWinInfo.minY, outputWinInfo.minX);
   box(outputWin, 0, 0);
-  mvwprintw(outputWin, 0, outputWinWidth/2-3, "Output");
+  mvwprintw(outputWin, 0, outputWinWidth / 2 - 3, "Output");
 
   // Create output pad inside outputWin to print
   int outputPadHeight = outputWinHeight - 2;
@@ -438,15 +477,15 @@ void CommandGui::initGui() {
 
   // outputPadInfo stores the area in which the pad is shown
   outputPadInfo = WindowInfo(outputPadHeight, outputPadWidth,
-                             outputWinInfo.minY+1, 4);
+                             outputWinInfo.minY + 1, 4);
   outputPad = newpad(outputPadScrollBufferSize, outputPadWidth);
   scrollok(outputPad, true);
 
   // Create scrollbar for output window
-  mvwaddch(outputWin, 1, outputWinInfo.width-3, '^');
-  mvwaddch(outputWin, outputWinInfo.height-2, outputWinInfo.width-3, 'v');
+  mvwaddch(outputWin, 1, outputWinInfo.width - 3, '^');
+  mvwaddch(outputWin, outputWinInfo.height - 2, outputWinInfo.width - 3, 'v');
   outputScrollInfo = WindowInfo(
-      outputPadHeight-2, 1, outputPadInfo.minY+1, outputPadInfo.maxX+2);
+      outputPadHeight - 2, 1, outputPadInfo.minY + 1, outputPadInfo.maxX + 2);
   outputScroll = subwin(
       outputWin, outputScrollInfo.height, outputScrollInfo.width,
       outputScrollInfo.minY, outputScrollInfo.minX);
@@ -460,36 +499,40 @@ void CommandGui::initGui() {
       advancedWinInfo.height, advancedWinInfo.width,
       advancedWinInfo.minY, advancedWinInfo.minX);
   box(advancedWin, 0, 0);
-  mvwprintw(advancedWin, 0, advancedWinInfo.width/2-7, "Advanced Options");
+  mvwprintw(advancedWin, 0, advancedWinInfo.width / 2 - 7, "Advanced Options");
+  mvwprintw(advancedWin, advancedWinInfo.height - 2,
+            advancedWinInfo.width / 2 - 5, "Page 1 / 2");
 
   // create advanced config window to contain the form
   set_form_win(advancedForm, advancedWin);
   set_form_sub(advancedForm,
-               derwin(advancedWin, advancedWinInfo.height-3,
-                      advancedWinInfo.width-4, 2, 1));
+               derwin(advancedWin, advancedWinInfo.height - 4,
+                      advancedWinInfo.width - 4, 2, 1));
   post_form(advancedForm);
 
   // create exit prompt window
   exitWinInfo = WindowInfo(
       promptWinHeight, promptWinWidth,
-      LINES/2-promptWinHeight/2, COLS/2-promptWinWidth/2);
+      LINES / 2 - promptWinHeight / 2, COLS / 2 - promptWinWidth / 2);
   exitWin = newwin(
       exitWinInfo.height, exitWinInfo.width,
       exitWinInfo.minY, exitWinInfo.minX);
   box(exitWin, 0, 0);
-  mvwprintw(exitWin, 2, exitWinInfo.width/2-strlen(exitPrompt)/2, exitPrompt);
+  mvwprintw(exitWin, 2,
+            exitWinInfo.width / 2 - strlen(exitPrompt) / 2, exitPrompt);
   wbkgd(exitWin, COLOR_PAIR(2));
 
   // create start prompt window
   startWinInfo = WindowInfo(
       promptWinHeight, promptWinWidth,
-      LINES/2-promptWinHeight/2, COLS/2-promptWinWidth/2);
+      LINES / 2 - promptWinHeight / 2, COLS / 2 - promptWinWidth / 2);
   startWin = newwin(
       startWinInfo.height, startWinInfo.width,
       startWinInfo.minY, startWinInfo.minX);
   box(startWin, 0, 0);
   mvwprintw(startWin, 2,
-            startWinInfo.width/2-strlen(startPrompt)/2, startPrompt);
+            startWinInfo.width / 2 - strlen(startPrompt) / 2,
+            startPrompt);
   wbkgd(startWin, COLOR_PAIR(2));
 
   // refresh all windows
@@ -603,13 +646,14 @@ void CommandGui::handleUserInteraction() {
         }
 
         if (advancedWinOn) {
+          moveNextPage(advancedForm);
           break;
         }
 
         if (fillConfig) {
         } else {
           outputPadCurrPos = std::min(
-              outputPadCurrSize-1, outputPadCurrPos+outputPadInfo.height);
+              outputPadCurrSize - 1, outputPadCurrPos+outputPadInfo.height);
           refreshOutputWin();
         }
         break;
@@ -619,6 +663,7 @@ void CommandGui::handleUserInteraction() {
         }
 
         if (advancedWinOn) {
+          movePrevPage(advancedForm);
           break;
         }
 
@@ -636,7 +681,7 @@ void CommandGui::handleUserInteraction() {
 
         if (advancedWinOn) {
           int currFieldIdx = field_index(current_field(advancedForm));
-          if (currFieldIdx >= 17 && currFieldIdx <= 21) {
+          if (currFieldIdx >= 19) {
             form_driver(advancedForm, REQ_PREV_CHOICE);
           } else {
             form_driver(advancedForm, REQ_PREV_CHAR);
@@ -655,7 +700,7 @@ void CommandGui::handleUserInteraction() {
 
         if (advancedWinOn) {
           int currFieldIdx = field_index(current_field(advancedForm));
-          if (currFieldIdx >= 17 && currFieldIdx <= 21) {
+          if (currFieldIdx >= GENERATOR_OPT) {
             form_driver(advancedForm, REQ_NEXT_CHOICE);
           } else {
             form_driver(advancedForm, REQ_NEXT_CHAR);
@@ -816,7 +861,7 @@ void CommandGui::handleUserInteraction() {
                      outputPadInfo.minY, outputPadInfo.minX,
                      outputPadInfo.maxY, outputPadInfo.maxX);
             // Show cursor at end of output pad
-            if (outputPadCurrPos >= outputPadCurrSize-outputPadInfo.height) {
+            if (outputPadCurrPos >= outputPadCurrSize - outputPadInfo.height) {
               curs_set(1);
             }
             fillConfig = false;
@@ -986,7 +1031,7 @@ void CommandGui::quitGui() {
 }
 
 void CommandGui::selectNextField(FORM* form) {
-  int currFieldLabelIdx = field_index(current_field(form))-1;
+  int currFieldLabelIdx = field_index(current_field(form)) - 1;
   std::vector<FIELD*>* fields = nullptr;
 
   if (form == basicForm) {
@@ -999,13 +1044,21 @@ void CommandGui::selectNextField(FORM* form) {
   form_driver(form, REQ_NEXT_FIELD);
   form_driver(form, REQ_END_LINE);
 
-  currFieldLabelIdx = field_index(current_field(form))-1;
-  set_field_back(fields->at(currFieldLabelIdx), A_STANDOUT);
+  int newFieldLabelIdx = field_index(current_field(form)) - 1;
+
+  // Go to next page of the advanced form
+  // if user press DOWN at the last field of page.
+  if (form == advancedForm && newFieldLabelIdx != currFieldLabelIdx + 2) {
+    moveNextPage(form);
+    return;
+  }
+
+  set_field_back(fields->at(newFieldLabelIdx), A_STANDOUT);
   refreshHelpWin(form);
 }
 
 void CommandGui::selectPrevField(FORM* form) {
-  int currFieldLabelIdx = field_index(current_field(form))-1;
+  int currFieldLabelIdx = field_index(current_field(form)) - 1;
   std::vector<FIELD*>* fields = nullptr;
 
   if (form == basicForm) {
@@ -1018,7 +1071,63 @@ void CommandGui::selectPrevField(FORM* form) {
   form_driver(form, REQ_PREV_FIELD);
   form_driver(form, REQ_END_LINE);
 
-  currFieldLabelIdx = field_index(current_field(form))-1;
+  int newFieldLabelIdx = field_index(current_field(form)) - 1;
+
+  // Go to previous page of the advanced form
+  // if user press UP at the first field of page.
+  if (form == advancedForm && newFieldLabelIdx != currFieldLabelIdx - 2) {
+    movePrevPage(form);
+
+    newFieldLabelIdx = field_index(current_field(form)) - 1;
+    set_field_back(fields->at(newFieldLabelIdx), A_NORMAL);
+    form_driver(form, REQ_LAST_FIELD);
+    newFieldLabelIdx = field_index(current_field(form)) - 1;
+  }
+
+  set_field_back(fields->at(newFieldLabelIdx), A_STANDOUT);
+  refreshHelpWin(form);
+}
+
+void CommandGui::moveNextPage(FORM* form) {
+  int currFieldLabelIdx = field_index(current_field(form)) - 1;
+  std::vector<FIELD*>* fields =
+      (form == basicForm) ? &basicFields : &advancedFields;
+
+  set_field_back(fields->at(currFieldLabelIdx), A_NORMAL);
+  form_driver(form, REQ_NEXT_PAGE);
+  if (form == advancedForm) {
+    // Change page number
+    std::string newPageStr =
+        fmt::format("Page {} / 2", std::to_string(form_page(form) + 1));
+    mvwprintw(
+        advancedWin, advancedWinInfo.height - 2,
+        advancedWinInfo.width / 2 - 5, newPageStr.data());
+  }
+
+  form_driver(form, REQ_END_LINE);
+  currFieldLabelIdx = field_index(current_field(form)) - 1;
+  set_field_back(fields->at(currFieldLabelIdx), A_STANDOUT);
+  refreshHelpWin(form);
+}
+
+void CommandGui::movePrevPage(FORM* form) {
+  int currFieldLabelIdx = field_index(current_field(form)) - 1;
+  std::vector<FIELD*>* fields =
+      (form == basicForm) ? &basicFields : &advancedFields;
+
+  set_field_back(fields->at(currFieldLabelIdx), A_NORMAL);
+  form_driver(form, REQ_PREV_PAGE);
+  if (form == advancedForm) {
+    // Change page number
+    std::string newPageStr =
+        fmt::format("Page {} / 2", std::to_string(form_page(form) + 1));
+    mvwprintw(
+        advancedWin, advancedWinInfo.height - 2,
+        advancedWinInfo.width / 2 - 5, newPageStr.data());
+  }
+
+  form_driver(form, REQ_END_LINE);
+  currFieldLabelIdx = field_index(current_field(form)) - 1;
   set_field_back(fields->at(currFieldLabelIdx), A_STANDOUT);
   refreshHelpWin(form);
 }
@@ -1080,77 +1189,86 @@ std::string CommandGui::getFieldValueString(FIELD* field) {
 }
 
 std::string CommandGui::getSourceRoot() {
-  return getFieldValueString(basicFields[1]);
+  return getFieldValueString(basicFields[SRC_ROOT_OPT]);
 }
 
 std::string CommandGui::getBuildDir() {
-  return getFieldValueString(basicFields[3]);
+  return getFieldValueString(basicFields[BUILD_DIR_OPT]);
 }
 
 std::string CommandGui::getOutputDir() {
-  return getFieldValueString(basicFields[5]);
+  return getFieldValueString(basicFields[OUTPUT_DIR_OPT]);
 }
 
 std::string CommandGui::getTestResultDir() {
-  return getFieldValueString(basicFields[7]);
+  return getFieldValueString(basicFields[TESTRESULT_DIR_OPT]);
 }
 
 std::string CommandGui::getBuildCmd() {
-  return getFieldValueString(basicFields[9]);
+  return getFieldValueString(basicFields[BUILD_CMD_OPT]);
 }
 
 std::string CommandGui::getTestCmd() {
-  return getFieldValueString(basicFields[11]);
+  return getFieldValueString(basicFields[TEST_CMD_OPT]);
 }
 
 std::string CommandGui::getWorkDir() {
-  return getFieldValueString(advancedFields[1]);
+  return getFieldValueString(advancedFields[WORK_DIR_OPT]);
 }
 
 std::vector<std::string> CommandGui::getTestResultFileExts() {
-  return string::split(getFieldValueString(advancedFields[3]), ',');
+  return string::split(getFieldValueString(
+      advancedFields[TEST_RESULT_FILE_EXT_OPT]), ',');
 }
 
 std::vector<std::string> CommandGui::getTargetFileExts() {
-  return string::split(getFieldValueString(advancedFields[5]), ',');
+  return string::split(getFieldValueString(
+      advancedFields[TARGET_FILE_EXT_OPT]), ',');
 }
 
 std::vector<std::string> CommandGui::getExcludePaths() {
-  return string::split(getFieldValueString(advancedFields[7]), ',');
+  return string::split(getFieldValueString(
+      advancedFields[EXCLUDE_PATHS_OPT]), ',');
+}
+
+std::vector<std::string> CommandGui::getCoverageFiles() {
+  return string::split(getFieldValueString(
+      advancedFields[COVERAGE_FILES_OPT]), ',');
 }
 
 int CommandGui::getMutantLimit() {
   return std::stoul(
-      string::trim(getFieldValueString(advancedFields[9])));
+      string::trim(getFieldValueString(advancedFields[MUTANT_LIMIT_OPT])));
 }
 
 std::string CommandGui::getTestTimeLimit() {
-  return  string::trim(getFieldValueString(advancedFields[11]));
+  return  string::trim(getFieldValueString(
+      advancedFields[TESTTIME_LIMIT_OPT]));
 }
 
 std::string CommandGui::getKillAfter() {
-  return string::trim(getFieldValueString(advancedFields[13]));
+  return string::trim(getFieldValueString(advancedFields[KILL_AFTER_OPT]));
 }
 
 unsigned CommandGui::getSeed() {
   return std::stoul(
-      string::trim(getFieldValueString(advancedFields[15])));
+      string::trim(getFieldValueString(advancedFields[RANDOM_SEED_OPT])));
 }
 
 std::string CommandGui::getGenerator() {
-  std::string gen{field_buffer(advancedFields[17], 0)};
+  std::string gen{field_buffer(advancedFields[GENERATOR_OPT], 0)};
   gen = string::trim(gen.substr(1, 12));
   return gen;
 }
 
 std::string CommandGui::getScope() {
-  std::string scope{field_buffer(advancedFields[19], 0)};
+  std::string scope{field_buffer(advancedFields[SCOPE_OPT], 0)};
   scope = string::trim(scope.substr(1, 12));
   return scope;
 }
 
 bool CommandGui::getVerbose() {
-  std::string verbosity{field_buffer(advancedFields[21], 0)};
+  std::string verbosity{field_buffer(advancedFields[VERBOSE_OPT], 0)};
   verbosity = string::trim(verbosity.substr(1, 12));
   return string::stringToBool(verbosity);
 }

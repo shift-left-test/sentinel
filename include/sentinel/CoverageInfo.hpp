@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2020 Sung Gon Kim
+  Copyright (c) 2021 Loc Duy Phan
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,65 +22,49 @@
   SOFTWARE.
 */
 
-#ifndef INCLUDE_SENTINEL_COMMAND_HPP_
-#define INCLUDE_SENTINEL_COMMAND_HPP_
+#ifndef INCLUDE_SENTINEL_COVERAGEINFO_HPP_
+#define INCLUDE_SENTINEL_COVERAGEINFO_HPP_
 
-#include <experimental/filesystem>
+#include <map>
 #include <string>
-#include <args/args.hxx>
-
+#include <vector>
+#include "sentinel/SourceLine.hpp"
 
 namespace sentinel {
 
 /**
- * @brief Command interface
+ * @brief CoverageInfo class
  */
-class Command {
+class CoverageInfo {
  public:
   /**
-   * @brief constructor
+   * @brief Default constructor
    */
-  explicit Command(args::Subparser& parser);
-  /**
-   * @brief destructor
-   */
-  virtual ~Command() = default;
-
- public:
-  /**
-   * @brief initialize execution environment
-   */
-  void init();
+  CoverageInfo() = default;
 
   /**
-   * @brief Execute subcommand.
+   * @brief Constructor
    *
-   * @return exit code
+   * @param filenames list of lcov-format coverage result file
    */
-  virtual int run() = 0;
-
- protected:
-  /**
-   * @brief source root directory
-   */
-  args::Positional<std::string> mSourceRoot;
+  explicit CoverageInfo(const std::vector<std::string>& filenames);
 
   /**
-   * @brief verbose option
+   * @brief Check if a code line is covered by test cases
+   *
+   * @param filename source code filename
+   * @param line number
+   * @return True if line is covered by test cases
    */
-  args::Flag mIsVerbose;
+  bool cover(const std::string& filename, size_t line);
 
+ private:
   /**
-   * @brief internal working directory
+   * @brief map from file name to list of covered lines
    */
-  args::ValueFlag<std::string> mWorkDir;
-
-  /**
-   * @brief output directory
-   */
-  args::ValueFlag<std::string> mOutputDir;
+  std::map<std::string, std::vector<size_t>> mData;
 };
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_COMMAND_HPP_
+#endif  // INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_

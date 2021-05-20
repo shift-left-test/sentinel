@@ -117,6 +117,20 @@ class CommandGui : public CommandRun {
   void selectPrevField(FORM* form);
 
   /**
+   * @brief Move to the next page in the form.
+   *
+   * @param form of fields
+   */
+  void moveNextPage(FORM* form);
+
+  /**
+   * @brief Move to the previous page in the form.
+   *
+   * @param form of fields
+   */
+  void movePrevPage(FORM* form);
+
+  /**
    * @brief update field value length
    *
    * @param form target form
@@ -203,6 +217,12 @@ class CommandGui : public CommandRun {
    * @return list of excluded paths
    */
   std::vector<std::string> getExcludePaths() override;
+
+  /**
+   * @brief get coverage files
+   * @return list of coverage files
+   */
+  std::vector<std::string> getCoverageFiles() override;
 
   /**
    * @brief get mutation scope
