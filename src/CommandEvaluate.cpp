@@ -50,7 +50,7 @@ CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
     "Evaluated output file name which will be joined with output-dir.",
     {"evaluation-file"}, "EvaluationResults"),
   mTestState(parser, "TEST_STATE",
-    R"asdf(Select the state of the test to be evaluated, one of ['success', 'build_failure', 'timeout'].)asdf",
+    R"asdf(Select the state of the test to be evaluated, one of ['success', 'build_failure', 'timeout', 'uncovered'].)asdf",
     {"test-state"}, "success") {
 }
 
@@ -58,7 +58,7 @@ int CommandEvaluate::run() {
   namespace fs = std::experimental::filesystem;
 
   if (mTestState.Get() != "build_failure" && mTestState.Get() != "timeout"
-      && mTestState.Get() != "success") {
+      && mTestState.Get() != "success" && mTestState.Get() != "uncovered") {
       throw InvalidArgumentException(fmt::format(
           "Invalid value for test-state option: {0}", mTestState.Get()));
   }

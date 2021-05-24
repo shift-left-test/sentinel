@@ -131,7 +131,8 @@ $ ./build.sh
                                         Default: EvaluationResults
       --test-state=[TEST_STATE]         Select the state of the test to be
                                         evaluated, one of ['success',
-                                        'build_failure', 'timeout'].
+                                        'build_failure', 'timeout',
+                                        'uncovered'].
                                         Default: success
 ```
 
