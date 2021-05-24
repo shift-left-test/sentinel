@@ -190,6 +190,14 @@ GitRepository::GitRepository(const std::string& path,
                    extension : fmt::format(".{}", extension); });
   }
 
+  try {
+    for (const auto& filename : excludes) {
+      fs::canonical(filename, mSourceRoot);
+    }
+  } catch(const fs::filesystem_error& e) {
+    throw InvalidArgumentException(fmt::format("exclude option error: {}",
+        e.what()));
+  }
   this->mExcludes = excludes;
 }
 

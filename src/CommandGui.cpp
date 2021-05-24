@@ -216,6 +216,7 @@ SENTINEL currently support C/C++.)asdf",
       R"asdf(Excluded File/Path
 
 Files/paths excluded from mutation testing.
+Path should be relative to Source Root Path.
 It is recommended not to mutate test files and third party, external source files.)asdf",
       string::join(",", mExcludes.Get())});
   advancedOptions.push_back(std::vector<std::string>{

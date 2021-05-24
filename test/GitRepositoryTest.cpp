@@ -27,6 +27,7 @@
 #include <string>
 #include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 namespace fs = std::experimental::filesystem;
@@ -54,14 +55,18 @@ class GitRepositoryTest : public ::testing::Test {
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
-    std::string tmpPath = repo_name / "test";
-    fs::create_directories(tmpPath);
+  std::string tmpPath = repo_name / "test";
+  fs::create_directories(tmpPath);
 
-    EXPECT_THROW({
-        GitRepository gitRepo(tmpPath);
+  EXPECT_THROW({
+      GitRepository gitRepo(tmpPath);
+      SourceLines lines = gitRepo.getSourceLines("commit");
+  }, RepositoryException);
+}
 
-        SourceLines lines = gitRepo.getSourceLines("commit");
-    }, RepositoryException);
+TEST_F(GitRepositoryTest, testInvalidExcludePathThrow) {
+  EXPECT_THROW(GitRepository gitRepo(repo_name, {}, {"unknown"}),
+               InvalidArgumentException);
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
@@ -249,7 +254,6 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
 }
 
 TEST_F(GitRepositoryTest, testIsTarget) {
-  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {"test"});
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles { "temp.cpp", "temp.c", "test/test.cpp" };
 
@@ -258,6 +262,7 @@ TEST_F(GitRepositoryTest, testIsTarget) {
   for (auto &file : stageFiles) {
     repo->addFile(file, content);
   }
+  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {"test"});
   EXPECT_TRUE(gitRepo.isTargetPath("temp.cpp"));
   EXPECT_FALSE(gitRepo.isTargetPath("temp.c"));
   EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));
