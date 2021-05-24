@@ -27,6 +27,7 @@
 #include <algorithm>
 #include "SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/CoverageInfo.hpp"
 
 namespace sentinel {
@@ -44,6 +45,11 @@ TEST_F(CoverageInfoTest, testCoverWorks) {
   EXPECT_TRUE(c.cover(targetfile, 33));         // covered line
   EXPECT_TRUE(c.cover(targetfile, 35));         // covered line
   EXPECT_FALSE(c.cover(targetfile, 100));        // line not included in file
+}
+
+TEST_F(CoverageInfoTest, testFailWhenUnknownFileGiven) {
+  EXPECT_THROW(CoverageInfo c{std::vector<std::string>(1, "unknown.info")},
+               InvalidArgumentException);
 }
 
 }  // namespace sentinel

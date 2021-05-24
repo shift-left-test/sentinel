@@ -29,6 +29,8 @@
 #include <string>
 #include <vector>
 #include "sentinel/CoverageInfo.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
@@ -36,6 +38,12 @@ namespace sentinel {
 CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
   namespace fs = std::experimental::filesystem;
   for (const auto& filename : filenames) {
+    if (!fs::exists(filename)) {
+      throw InvalidArgumentException(
+        fmt::format("Input coverage file does not exist: {}",
+                    filename));
+    }
+
     std::ifstream coverageFile(filename.c_str());
     std::string line;
     std::string currentFile;

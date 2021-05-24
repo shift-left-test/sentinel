@@ -284,6 +284,14 @@ int CommandRun::run() {
     // restore if previous backup is exists
     restoreBackup(backupDir, sourceRoot);
 
+    for (const auto& filename : coverageFiles) {
+      if (!fs::exists(filename)) {
+        throw InvalidArgumentException(
+          fmt::format("Input coverage file does not exist: {}",
+                      filename));
+      }
+    }
+
     // generate orignal test result
     if (access(buildDir.c_str(), X_OK) != 0) {
       throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
