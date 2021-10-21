@@ -17,10 +17,10 @@ $ sudo apt-get install -y sentinel
 
 ## How to run tests
 
-    
+
 ```bash
 $ docker run --rm -it cart.lge.com/swte/yocto-dev:18.04
-$ git clone http://mod.lge.com/hub/yocto/addons/sentinel.git
+$ git clone http://mod.lge.com/hub/yocto/sentinel.git
 $ cd sentinel
 $ ./build.sh
 ```
