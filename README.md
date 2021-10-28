@@ -1,6 +1,6 @@
 # sentinel
 
-> The mutation testing tool for the meta-shift project
+> The mutation testing tool for C/C++ projects
 
 
 ## How to install sentinel
