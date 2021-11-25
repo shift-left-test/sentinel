@@ -1,26 +1,7 @@
 /*
-  MIT License
-
-  Copyright (c) 2020 LG Electronics, Inc.
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  SOFTWARE.
-*/
+ * Copyright (c) 2020 LG Electronics Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #ifndef INCLUDE_SENTINEL_GITREPOSITORY_HPP_
 #define INCLUDE_SENTINEL_GITREPOSITORY_HPP_
@@ -61,7 +42,7 @@ class GitRepository : public Repository {
   std::shared_ptr<SourceTree> getSourceTree() override;
   /**
    * @brief Return the diff source lines from commit tree.
-   * 
+   *
    * @return SourceLines object
    */
   SourceLines getSourceLines(const std::string& scope) override;
@@ -76,11 +57,11 @@ class GitRepository : public Repository {
   /**
    * @brief Return path is target path for getSourceLines
    *
-   * @param path 
-   * 
-   * @param checkExtension if true, 
+   * @param path
+   *
+   * @param checkExtension if true,
    *        check extensino of path is included by extensions_.
-   * 
+   *
    * @return return true if path is valid sourceline target.
    */
   bool isTargetPath(const std::experimental::filesystem::path &path,
