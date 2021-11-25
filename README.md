@@ -3,24 +3,58 @@
 > The mutation testing tool for C/C++ projects
 
 
-## How to install sentinel
+## Requirements
 
+To install required packages
 
 ```bash
-$ sudo sh -c "echo 'deb [trusted=true] http://cart.lge.com/swte-debian bionic main' >> /etc/apt/sources.list"
+$ apt-get install build-essential cmake doxygen git googletest graphviz libgit2-dev libncurses5-dev wget
+```
+
+To install clang/llvm packages
+
+```bash
+$ echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" > /etc/apt/sources.list.d/llvm.list
+$ echo "deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list.d/llvm.list
+$ wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 $ sudo apt-get update
-$ sudo apt-get install -y sentinel
+$ sudo apt-get install clang libclang-10-dev llvm-10-dev
+```
+
+To build and install googletest
+
+```bash
+mkdir googletest && \
+    cd googletest && \
+    cmake /usr/src/googletest && \
+    make && \
+    cp googlemock/*.a /usr/lib && \
+    cp googlemock/gtest/*.a /usr/lib
+```
+
+
+## How to build
+
+```bash
+$ cmake .
+$ make all -j
+$ make package
 ```
 
 
 ## How to run tests
 
+```bash
+$ cmake -DENABLE_TEST=ON .
+$ make all -j
+$ ctest --output-on-failure
+```
+
+
+## How to install
 
 ```bash
-$ docker run --rm -it cart.lge.com/swte/yocto-dev:18.04
-$ git clone https://github.com/shift-left-test/sentinel.git
-$ cd sentinel
-$ ./build.sh
+$ sudo apt-get install ./sentinel-0.4.0-amd64-5.4.0-89-generic.deb
 ```
 
 
