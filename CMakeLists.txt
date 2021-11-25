@@ -45,7 +45,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1 DESTINATION man/man1)
 build_debian_package(
   MAINTAINER "Sung Gon Kim <sunggon82.kim@lge.com>"
   CONTACT "sunggon82.kim@lge.com"
-  HOMEPAGE "http://mod.lge.com/hub/yocto/sentinel"
+  HOMEPAGE "https://github.com/shift-left-test/sentinel"
   VENDOR "LG Electronics"
   SUMMARY "the mutation testing tool for C/C++ projects"
   SECTION "devel"

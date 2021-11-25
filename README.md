@@ -18,7 +18,7 @@ $ sudo apt-get install -y sentinel
 
 ```bash
 $ docker run --rm -it cart.lge.com/swte/yocto-dev:18.04
-$ git clone http://mod.lge.com/hub/yocto/sentinel.git
+$ git clone https://github.com/shift-left-test/sentinel.git
 $ cd sentinel
 $ ./build.sh
 ```

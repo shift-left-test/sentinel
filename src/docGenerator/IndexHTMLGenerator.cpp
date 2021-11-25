@@ -83,7 +83,7 @@ std::string IndexHTMLGenerator::str() {
                               "Directory" : "File"),
                      fmt::arg("table_col", tableCol),
                      fmt::arg("table_item", mTableItem),
-                     fmt::arg("http", "http://"));
+                     fmt::arg("https", "https://"));
 }
 
 }  // namespace sentinel

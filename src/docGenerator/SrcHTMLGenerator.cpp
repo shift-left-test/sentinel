@@ -105,7 +105,7 @@ std::string SrcHTMLGenerator::str() {
                      fmt::arg("mutations", mMutations),
                      fmt::arg("mutator_list", mMutators),
                      fmt::arg("test_list_guard", testListGuard),
-                     fmt::arg("http", "http://"));
+                     fmt::arg("https", "https://"));
 }
 
 }  // namespace sentinel
