@@ -1,0 +1,16 @@
+Open Source Software Package:
+- name: args
+  version: 6.2.3
+  source: https://github.com/Taywee/args
+  license : MIT
+  copyright : copyright (c) 2016-2017 Taylor C. Richberger <taywee@gmx.com> and Pavel Belikov
+- name: fmt
+  version: 7.0.2
+  source: https://github.com/fmtlib/fmt
+  license : LicenseRef-MIT-with-executable-object-exception
+  copyright : Copyright (c) 2012 - present, Victor Zverovich
+- name: tinyxml2
+  version: 8.0.0
+  source: https://github.com/leethomason/tinyxml2
+  license : Zlib
+  copyright : Lee Thomason (www.grinninglizard.com)
