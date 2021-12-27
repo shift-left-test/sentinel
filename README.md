@@ -1,64 +1,61 @@
 # sentinel
 
-> The mutation testing tool for C/C++ projects
+## About
+
+Sentinel is a mutation testing tool based on LLVM/Clang for C/C++ projects.
 
 
-## Requirements
+### Features
 
-To install required packages
+* Apply the mutation testing on C/C++ programs
+* Support diverse configuration options
+* Support application of mutation testing for commit code to cope with cost problem of mutation testing
+* Automatically generate HTML/XML format report files
 
-```bash
-$ apt-get install build-essential cmake doxygen git googletest graphviz libgit2-dev libncurses5-dev wget
-```
+### Mutation testing
 
-To install clang/llvm packages
+Mutation testing is a software testing technique to evaluate and improve the quality of a test suite by generating faulty versions of target program (mutants) and check if the test suite can detect such faults.
 
-```bash
-$ echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" > /etc/apt/sources.list.d/llvm.list
-$ echo "deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list.d/llvm.list
-$ wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-$ sudo apt-get update
-$ sudo apt-get install clang libclang-10-dev llvm-10-dev
-```
+Mutation testing can be beneficial for software developers in several ways.
 
-To build and install googletest
+* it provides developers/reviewers ways to evaluate the test suite's effectiveness with respect to the mutation score
+* it provides guidance to improve the test suite or to write new test cases
 
-```bash
-mkdir googletest && \
-    cd googletest && \
-    cmake /usr/src/googletest && \
-    make && \
-    cp googlemock/*.a /usr/lib && \
-    cp googlemock/gtest/*.a /usr/lib
-```
-
-
-## How to build
-
-```bash
-$ cmake .
-$ make all -j
-$ make package
-```
-
-
-## How to run tests
-
-```bash
-$ cmake -DENABLE_TEST=ON .
-$ make all -j
-$ ctest --output-on-failure
-```
+You may find more information about the mutation testing on https://en.wikipedia.org/wiki/Mutation_testing.
 
 
 ## How to install
 
-```bash
-$ sudo apt-get install ./sentinel-0.4.0-amd64-5.4.0-89-generic.deb
-```
+To prepare your host workspace, you can simply download a preconfigured dockerfile to start the docker container.
+
+    $ git clone https://github.com/shift-left-test/dockerfiles.git
+    $ cd dockerfiles
+    $ docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
+    $ docker run --rm -it clang-dev-11
+
+Create the sentinel package from the source code.
+
+    $ git clone https://github.com/shift-left-test/sentinel
+    $ cd sentinel
+    $ cmake .
+    $ make all -j
+    $ make package
+
+Then, install the package to your machine.
+
+    $ sudo apt-get install ./sentinel-0.4.0-amd64-5.4.0-89-generic.deb
 
 
-## How to use sentinel
+## How to use
+
+Sentinel in the text-based user interface mode is much easier to use and provides more userful information about each options. You can simply run the program in the text-based user interface mode by:
+
+    $ sentinel gui
+
+You can also run sentinel in the command line with detailed parameters. You may find the detailed information about the command-line arguments below.
+
+### Command-line arguments
+
 ```bash
   sentinel COMMAND {OPTIONS}
 
@@ -234,6 +231,28 @@ $ sudo apt-get install ./sentinel-0.4.0-amd64-5.4.0-89-generic.deb
       --seed=[SEED]                     Select random seed.
                                         Default: random
 ```
+
+
+## Development
+
+### Mutation operators
+
+The following mutation operators are supported by sentinel:
+
+- *AOR* - arithmetic operator replacement
+- *BOR* - bitwise operator replacement
+- *LCR* - logical connector replacement
+- *ROR* - relational operator replacement
+- *SDL* - statement deletion
+- *SOR* - shift operator replacement
+- *UOI* - unary operator insertion
+
+### Supported test runners
+
+The following test runners are supported by sentinel:
+
+- googletest
+- qtest
 
 
 ## Licenses
