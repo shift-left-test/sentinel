@@ -6,6 +6,7 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <tuple>
@@ -155,7 +156,8 @@ void HTMLReport::makeSourceHtml(
 
   std::string srcName = absSrcPath.filename();
 
-  std::map<std::size_t, std::vector<const MutationResult*>*> groupByLine;
+  std::map<std::size_t,
+      std::shared_ptr<std::vector<const MutationResult*>>> groupByLine;
   std::set<std::string> uniqueKillingTest;
   std::set<std::string> uniqueMutator;
 
@@ -179,7 +181,8 @@ void HTMLReport::makeSourceHtml(
       maxLineNum = curLineNum;
     }
     if (groupByLine.empty() || groupByLine.count(curLineNum) == 0) {
-      groupByLine.emplace(curLineNum, new std::vector<const MutationResult*>());
+      groupByLine.emplace(curLineNum,
+          std::make_shared<std::vector<const MutationResult*>>());
     }
     groupByLine[curLineNum]->push_back(mr);
   }
@@ -203,7 +206,7 @@ void HTMLReport::makeSourceHtml(
 
   for (auto it = srcLineByLine.begin() ; it != srcLineByLine.end() ; ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;
-    std::vector<const MutationResult*>* curLineMrs = nullptr;
+    std::shared_ptr<std::vector<const MutationResult*>> curLineMrs(nullptr);
     if (groupByLine.count(curLineNum) != 0) {
       curLineMrs = groupByLine[curLineNum];
     }
@@ -296,9 +299,6 @@ void HTMLReport::makeSourceHtml(
   ofs.close();
 
   mLogger->info(fmt::format("Save to {}", fileName));
-  for (const auto& t : groupByLine) {
-    delete t.second;
-  }
 }
 
 }  // namespace sentinel

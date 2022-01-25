@@ -47,7 +47,7 @@ class MainCLITest : public ::testing::Test {
 
   void TearDown() override {
     for (auto p : argVector) {
-      delete p;
+      delete[] p;
     }
     std::experimental::filesystem::remove_all(SAMPLE_BASE);
   }
