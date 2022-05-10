@@ -10,8 +10,8 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include "CaptureHelper.hpp"
-#include "SampleFileGeneratorForTest.hpp"
+#include "helper/CaptureHelper.hpp"
+#include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/MutationResult.hpp"

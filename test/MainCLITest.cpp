@@ -13,7 +13,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "CaptureHelper.hpp"
+#include "helper/CaptureHelper.hpp"
 #include "sentinel/MainCLI.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"

@@ -9,7 +9,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include "CaptureHelper.hpp"
+#include "helper/CaptureHelper.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"

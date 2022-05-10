@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "CaptureHelper.hpp"
+#include "helper/CaptureHelper.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 

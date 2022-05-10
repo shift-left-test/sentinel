@@ -9,7 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "SampleFileGeneratorForTest.hpp"
+#include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutants.hpp"
 
 

@@ -11,7 +11,7 @@
 #include <regex>
 #include <string>
 #include <sstream>
-#include "CaptureHelper.hpp"
+#include "helper/CaptureHelper.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Report.hpp"
 #include "sentinel/MutationResult.hpp"
