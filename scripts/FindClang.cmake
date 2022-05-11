@@ -21,7 +21,13 @@
 # Zeus: 9.0 (9.0.1)
 # Dunfell: 10.0 (10.0.1)
 # Gatesgarth: 11.0 (11.0.1)
+# Hardknott: 12.0 (12.0.0)
+# Honister: 13.0 (13.0.0)
+# Kirkstone: 14.0 (14.0.3)
 set(llvm_config_names llvm-config
+                      llvm-config-14.0 llvm-config140 llvm-config-14
+                      llvm-config-13.0 llvm-config130 llvm-config-13
+                      llvm-config-12.0 llvm-config120 llvm-config-12
                       llvm-config-11.0 llvm-config110 llvm-config-11
                       llvm-config-10.0 llvm-config100 llvm-config-10
                       llvm-config-9.0 llvm-config90 llvm-config-9

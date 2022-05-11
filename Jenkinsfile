@@ -55,6 +55,60 @@ pipeline {
                 }
             }
         }
+        stage('clang-dev-12') {
+            agent {
+                docker { image 'cart.lge.com/swte/clang-dev:12' }
+            }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
+            steps {
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
+            }
+            post {
+                success {
+                    junit 'test/result/*.xml'
+                    cobertura coberturaReportFile: 'coverage.xml'
+                }
+            }
+        }
+        stage('clang-dev-13') {
+            agent {
+                docker { image 'cart.lge.com/swte/clang-dev:13' }
+            }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
+            steps {
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
+            }
+            post {
+                success {
+                    junit 'test/result/*.xml'
+                    cobertura coberturaReportFile: 'coverage.xml'
+                }
+            }
+        }
+        stage('clang-dev-14') {
+            agent {
+                docker { image 'cart.lge.com/swte/clang-dev:14' }
+            }
+	    environment {
+		GTEST_OUTPUT = 'xml:result/'
+	    }
+            steps {
+                sh './build.sh'
+                sh 'gcovr --xml coverage.xml'
+            }
+            post {
+                success {
+                    junit 'test/result/*.xml'
+                    cobertura coberturaReportFile: 'coverage.xml'
+                }
+            }
+        }
     }
 }
 

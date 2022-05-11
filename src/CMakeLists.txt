@@ -32,5 +32,5 @@ build_static_library(
 build_program(
   NAME sentinel
   SRCS main.cpp
-  LIBS sentinel-core ${LLVM_CLANG_LIBS}
+  LIBS sentinel-core ${LLVM_CLANG_LIBS} ${CMAKE_DL_LIBS}
 )
