@@ -4,6 +4,7 @@
  */
 
 #include <experimental/filesystem>
+#include <fmt/core.h>
 #include <iostream>
 #include <memory>
 #include <list>
@@ -15,6 +16,7 @@
 #include "sentinel/CommandGui.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MainCLI.hpp"
+#include "sentinel/version.hpp"
 
 namespace sentinel {
 
@@ -26,7 +28,9 @@ int MainCLI(int argc, char** argv) {
     "Use 'sentinal COMMAND --help' to see help for each command.",
     {'h', "help"});
 
-  args::ArgumentParser parser("Mutation Test");
+  args::ArgumentParser parser(
+      fmt::format("A mutation testing tool for C/C++ projects ({})",
+                  PROGRAM_VERSION));
 
   args::Group commands(static_cast<args::Group&>(parser), "commands");
   args::Command populate(commands, "populate",

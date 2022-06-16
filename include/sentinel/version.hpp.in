@@ -1,0 +1,11 @@
+/*
+ * Copyright (c) 2020 LG Electronics Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef INCLUDE_SENTINEL_VERSION_HPP_
+#define INCLUDE_SENTINEL_VERSION_HPP_
+
+#define PROGRAM_VERSION "@sentinel_VERSION@"
+
+#endif  // INCLUDE_SENTINEL_VERSION_HPP_

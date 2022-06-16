@@ -21,6 +21,9 @@ endif()
 
 add_all_subdirectories()
 
+configure_file(${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp.in ${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp)
+configure_file(${CMAKE_SOURCE_DIR}/resources/man/sentinel.1.in ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1)
+
 install(FILES ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1 DESTINATION man/man1)
 
 build_debian_package(
