@@ -12,6 +12,8 @@ include(CMakeUtils)
 set_cxx_standard(14)
 set_default_build_type(Release)
 
+set(CMAKE_SKIP_RPATH TRUE)
+
 if(ENABLE_TEST)
   enable_static_analysis(NO_IWYU)
   enable_testing()
