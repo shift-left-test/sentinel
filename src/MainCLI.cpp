@@ -88,6 +88,7 @@ int MainCLI(int argc, char** argv) {
     }
   } catch (args::Help& e) {
     std::cout << parser;
+    return 0;
   } catch (args::Error& e) {
     std::cerr << e.what() << std::endl << parser;
     return 1;
