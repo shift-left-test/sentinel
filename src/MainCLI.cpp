@@ -27,10 +27,14 @@ int MainCLI(int argc, char** argv) {
     "Display this help menu. \n"
     "Use 'sentinal COMMAND --help' to see help for each command.",
     {'h', "help"});
+  args::HelpFlag v(arguments, "version",
+    "Display the program version. \n",
+    {'v', "version"});
 
   args::ArgumentParser parser(
-      fmt::format("A mutation testing tool for C/C++ projects ({})",
-                  PROGRAM_VERSION));
+      "A mutation testing tool for C/C++ projects",
+      "For more information, please visit: "
+      "https://github.com/shift-left-test/sentinel");
 
   args::Group commands(static_cast<args::Group&>(parser), "commands");
   args::Command populate(commands, "populate",
@@ -87,7 +91,11 @@ int MainCLI(int argc, char** argv) {
       return mainCommand->run();
     }
   } catch (args::Help& e) {
-    std::cout << parser;
+    if (std::strcmp(e.what(), "version") == 0) {
+      std::cout << "sentinel " << PROGRAM_VERSION << std::endl;
+    } else {
+      std::cout << parser;
+    }
     return 0;
   } catch (args::Error& e) {
     std::cerr << e.what() << std::endl << parser;
