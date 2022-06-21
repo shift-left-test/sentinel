@@ -294,7 +294,10 @@ int CommandRun::run() {
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Build cmd: {}", cmdPrefix+buildCmd));
-    Subprocess(cmdPrefix + buildCmd).execute();
+    Subprocess buildProc{cmdPrefix + buildCmd};
+    buildProc.execute();
+    if (!buildProc.isSuccessfulExit())
+      throw std::runtime_error("Build FAIL.");
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
     // test
