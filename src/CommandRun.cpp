@@ -148,9 +148,9 @@ int CommandRun::run() {
     fs::path workDir = fs::canonical(workDirStr);
     std::string backupDir = preProcessWorkDir(
         (workDir / "backup").string(), &backupDirExists, true);
-    std::string expectedDir = preProcessWorkDir(
-        (workDir / "actual").string(), &actualDirExists, false);
     std::string actualDir = preProcessWorkDir(
+        (workDir / "actual").string(), &actualDirExists, false);
+    std::string expectedDir = preProcessWorkDir(
         (workDir / "expected").string(), &expectedDirExists, false);
 
     bool emptyOutputDir = false;
