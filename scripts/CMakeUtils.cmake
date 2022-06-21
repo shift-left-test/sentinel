@@ -218,7 +218,15 @@ function(build_executable)
   if(BUILD_TYPE STREQUAL "TEST")
     find_package(Threads REQUIRED)
     find_package(GTest REQUIRED)
-    find_package(GMock REQUIRED)
+    find_package(GMock QUIET)
+
+    if(GMock_FOUND)
+      message(STATUS "Found GMock: ${GMOCK_LIBRARIES}")
+      set(MAIN_LIBRARIES ${GMOCK_MAIN_LIBRARIES})
+    else()
+      message(STATUS "Found GMock: FALSE")
+      set(MAIN_LIBRARIES ${GTEST_MAIN_LIBRARIES})
+    endif()
 
     set_target_properties(${BUILD_NAME} PROPERTIES
       CXX_STANDARD ${CXX_STANDARD_VALUE}
@@ -229,7 +237,7 @@ function(build_executable)
     target_include_directories(${BUILD_NAME}
       PRIVATE ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     target_link_libraries(${BUILD_NAME}
-      PRIVATE ${GTEST_LIBRARIES} GMock::GMock GMock::Main ${CMAKE_THREAD_LIBS_INIT})
+      PRIVATE ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES} ${MAIN_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     gtest_add_tests(${BUILD_NAME} "" AUTO)
   else()
     if(NOT BUILD_NO_INSTALL)
@@ -439,7 +447,7 @@ function(build_debian_package)
   endif()
 
   set(CPACK_PACKAGE_FILE_NAME
-    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}-${CMAKE_HOST_SYSTEM_VERSION}")
+    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 
   include(CPack)
 endfunction()
@@ -485,7 +493,7 @@ function(register_checker)
     return()
   endif()
 
-  if(DEFINED CMAKE_CXX_${ARGS_NAME})
+  if(DEFINED CMAKE_CXX_${ARGS_NAME} AND DEFINED CMAKE_C_${ARGS_NAME})
     message(STATUS "${MESSAGE}: TRUE")
     return()
   endif()
@@ -493,6 +501,7 @@ function(register_checker)
   if(NOT ARGS_NAMES)
     message(STATUS "${MESSAGE}: TRUE")
     set(CMAKE_CXX_${ARGS_NAME} ON PARENT_SCOPE)
+    set(CMAKE_C_${ARGS_NAME} ON PARENT_SCOPE)
     return()
   endif()
 
@@ -500,6 +509,10 @@ function(register_checker)
   if(${ARGS_NAME}_PATH)
     message(STATUS "${MESSAGE}: TRUE")
     set(CMAKE_CXX_${ARGS_NAME}
+      ${${ARGS_NAME}_PATH}
+      ${ARGS_OPTIONS}
+      PARENT_SCOPE)
+    set(CMAKE_C_${ARGS_NAME}
       ${${ARGS_NAME}_PATH}
       ${ARGS_OPTIONS}
       PARENT_SCOPE)
@@ -530,7 +543,7 @@ macro(enable_static_analysis)
       NAME CPPCHECK
       NAMES cppcheck
       VERSION 3.10.0
-      OPTIONS --enable=warning,style,performance,portability --library=googletest
+      OPTIONS --enable=warning,style,performance,portability --library=googletest --error-exitcode=1
       )
   endif()
 
