@@ -172,6 +172,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      */
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
       clang::CompilerInstance& CI, llvm::StringRef InFile) override {
+      CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
       return std::unique_ptr<clang::ASTConsumer>(
           new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
     }
