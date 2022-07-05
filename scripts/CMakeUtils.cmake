@@ -383,7 +383,7 @@ function(build_debian_package)
   set(oneValueArgs MAINTAINER CONTACT HOMEPAGE VENDOR SUMMARY SECTION PRIORITY)
   set(multiValueArgs DEPENDS)
   cmake_parse_arguments(PKG
-    "${options}"
+    ""
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN})
@@ -457,7 +457,7 @@ function(register_program)
   set(oneValueArgs NAME DEPENDS)
   set(multiValueArgs PATHS NAMES OPTIONS FILES)
   cmake_parse_arguments(ARGS
-    "${options}"
+    ""
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN})
@@ -476,12 +476,13 @@ function(register_program)
   endif()
 endfunction()
 
+
 # Helper for enabling static analysis
 function(register_checker)
   set(oneValueArgs NAME VERSION)
   set(multiValueArgs PATHS NAMES OPTIONS)
   cmake_parse_arguments(ARGS
-    "${options}"
+    ""
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN})
@@ -523,51 +524,46 @@ endfunction()
 
 # Enable static analysis
 macro(enable_static_analysis)
-  set(options NO_CLANG_TIDY NO_CPPCHECK NO_CPPLINT NO_IWYU NO_LWYU)
+  set(options clang-tidy cppcheck cpplint iwyu lwyu)
   cmake_parse_arguments(CHECKER
     "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
+    ""
+    ""
     ${ARGN})
 
-  if(NOT CHECKER_NO_CLANG_TIDY)
+  if(CHECKER_clang-tidy)
     register_checker(
       NAME CLANG_TIDY
       NAMES clang-tidy
-      VERSION 3.6.3
-      )
+      VERSION 3.6.3)
   endif()
 
-  if(NOT CHECKER_NO_CPPCHECK)
+  if(CHECKER_cppcheck)
     register_checker(
       NAME CPPCHECK
       NAMES cppcheck
       VERSION 3.10.0
-      OPTIONS --enable=warning,style,performance,portability --library=googletest --error-exitcode=1
-      )
+      OPTIONS --enable=warning,style,performance,portability --library=googletest --error-exitcode=1)
   endif()
 
-  if(NOT CHECKER_NO_CPPLINT)
+  if(CHECKER_cpplint)
     register_checker(
       NAME CPPLINT
       NAMES cpplint cpplint.py
-      VERSION 3.8.2
-      )
+      VERSION 3.8.2)
   endif()
 
-  if(NOT CHECKER_NO_IWYU)
+  if(CHECKER_iwyu)
     register_checker(
       NAME INCLUDE_WHAT_YOU_USE
       NAMES iwyu
-      VERSION 3.3.2
-      )
+      VERSION 3.3.2)
   endif()
 
-  if(NOT CHECKER_NO_LWYU)
+  if(CHECKER_lwyu)
     register_checker(
       NAME LINK_WHAT_YOU_USE
-      VERSION 3.7.0
-      )
+      VERSION 3.7.0)
   endif()
 endmacro()
 
@@ -582,8 +578,8 @@ function(enable_test_coverage)
   set(options BRANCH)
   cmake_parse_arguments(ENABLE
     "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
+    ""
+    ""
     ${ARGN})
 
   if(ENABLE_BRANCH)
