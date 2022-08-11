@@ -144,12 +144,17 @@ This directory must contain compile_commands.json, which is the compilation data
 The build and test command shall be executed from this directory.)asdf",
       mBuildDir.Get()});
   basicOptions.push_back(std::vector<std::string>{
-      "Output Directory:",
-      R"asdf(Output Directory
+      "  > Build Command:",
+      R"asdf(Build Command
 
-Directory contains html files showing mutation testing detailed results.
-If output directory is not given, by default, no output files are generated.)asdf",
-      mOutputDir.Get()});
+Shell command to build the target project from given build directory.)asdf",
+      mBuildCmd.Get()});
+  basicOptions.push_back(std::vector<std::string>{
+      "  > Test Command:",
+      R"asdf(Test Command
+
+Shell command to execute test cases from given build directory.)asdf",
+      mTestCmd.Get()});
   basicOptions.push_back(std::vector<std::string>{
       "Test Result Directory:",
       R"asdf(Test Result Directory
@@ -158,17 +163,12 @@ Directory contains the test output files generated after test command execution.
 The directory must be empty before starting mutation testing.)asdf",
       mTestResultDir.Get()});
   basicOptions.push_back(std::vector<std::string>{
-      "Build Command:",
-      R"asdf(Build Command
+      "Output Directory:",
+      R"asdf(Output Directory
 
-Shell command to build the target project from given build directory.)asdf",
-      mBuildCmd.Get()});
-  basicOptions.push_back(std::vector<std::string>{
-      "Test Command:",
-      R"asdf(Test Command
-
-Shell command to execute test cases from given build directory.)asdf",
-      mTestCmd.Get()});
+Directory contains html files showing mutation testing detailed results.
+If output directory is not given, by default, no output files are generated.)asdf",
+      mOutputDir.Get()});
 
   advancedOptions.push_back(std::vector<std::string>{
       "Working Directory:",
