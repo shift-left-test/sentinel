@@ -24,7 +24,9 @@
 # Hardknott: 12.0 (12.0.0)
 # Honister: 13.0 (13.0.0)
 # Kirkstone: 14.0 (14.0.3)
+# Langdale: 15.0 (15.0.1)
 set(llvm_config_names llvm-config
+                      llvm-config-15.0 llvm-config150 llvm-config-15
                       llvm-config-14.0 llvm-config140 llvm-config-14
                       llvm-config-13.0 llvm-config130 llvm-config-13
                       llvm-config-12.0 llvm-config120 llvm-config-12
@@ -113,6 +115,7 @@ FIND_AND_ADD_CLANG_LIB(clangStaticAnalyzerFrontend)
 FIND_AND_ADD_CLANG_LIB(clangTooling)
 FIND_AND_ADD_CLANG_LIB(clangDriver)
 FIND_AND_ADD_CLANG_LIB(clangBasic)
+FIND_AND_ADD_CLANG_LIB(clangSupport)
 
 if (NOT CLANG_LIBS)
   message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
