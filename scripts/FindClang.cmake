@@ -121,7 +121,7 @@ if (NOT CLANG_LIBS)
   message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
 endif()
 
-set(LLVM_CLANG_LIBS ${CLANG_LIBS} ${LLVM_LIBS} pthread z tinfo)
+set(LLVM_CLANG_LIBS ${CLANG_LIBS} ${LLVM_LIBS} pthread z tinfo zstd)
 set(CLANG_INCLUDE_DIRS ${LLVM_INCLUDE_DIRS})
 
 mark_as_advanced(LLVM_CLANG_LIBS)
