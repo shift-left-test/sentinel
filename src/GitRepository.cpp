@@ -171,15 +171,15 @@ GitRepository::GitRepository(const std::string& path,
                    extension : fmt::format(".{}", extension); });
   }
 
-  try {
-    for (const auto& filename : excludes) {
+  for (const auto& filename : excludes) {
+    try {
       fs::canonical(filename, mSourceRoot);
+      this->mExcludes.push_back(filename);
+      logger->info(fmt::format("exclude: {}", filename));
+    } catch(const fs::filesystem_error& e) {
+      logger->warn(fmt::format("exclude option ignore: {}", e.what()));
     }
-  } catch(const fs::filesystem_error& e) {
-    throw InvalidArgumentException(fmt::format("exclude option error: {}",
-        e.what()));
   }
-  this->mExcludes = excludes;
 }
 
 GitRepository::~GitRepository() {

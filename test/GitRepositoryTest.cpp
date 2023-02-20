@@ -8,6 +8,8 @@
 #include <string>
 #include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
+#include "helper/CaptureHelper.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
@@ -23,6 +25,9 @@ class GitRepositoryTest : public ::testing::Test {
     fs::remove_all(repo_name);
     repo = std::make_shared<GitHarness>(repo_name);
     repo_name = fs::canonical(repo_name);
+
+    mStderrCapture = CaptureHelper::getStderrCapture();
+    mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
@@ -31,8 +36,28 @@ class GitRepositoryTest : public ::testing::Test {
     }
   }
 
+  void captureStderr() {
+    mStderrCapture->capture();
+  }
+
+  std::string capturedStderr() {
+    return mStderrCapture->release();
+  }
+
+  void captureStdout() {
+    mStdoutCapture->capture();
+  }
+
+  std::string capturedStdout() {
+    return mStdoutCapture->release();
+  }
+
   fs::path repo_name;
   std::shared_ptr<GitHarness> repo;
+
+ private:
+  std::shared_ptr<CaptureHelper> mStderrCapture;
+  std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
@@ -45,9 +70,18 @@ TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   }, RepositoryException);
 }
 
-TEST_F(GitRepositoryTest, testInvalidExcludePathThrow) {
-  EXPECT_THROW(GitRepository gitRepo(repo_name, {}, {"unknown"}),
-               InvalidArgumentException);
+TEST_F(GitRepositoryTest, testInvalidExcludePath) {
+  std::string tmpPath = repo_name / "test";
+  fs::create_directories(tmpPath);
+
+  Logger::getLogger("GitRepository")->setLevel(Logger::Level::DEBUG);
+  captureStderr();
+  captureStdout();
+  GitRepository gitRepo(repo_name, {}, {"test", "unknown"});
+  EXPECT_TRUE(string::contains(capturedStdout(), "exclude: test"));
+  EXPECT_TRUE(string::contains(capturedStderr(),
+      "No such file or directory [unknown]"));
+  Logger::getLogger("GitRepository")->setLevel(Logger::Level::OFF);
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {

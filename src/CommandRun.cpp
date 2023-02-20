@@ -262,15 +262,6 @@ int CommandRun::run() {
     logger->info(fmt::format("Actual test result dir: \"{}\"", actualDir));
     logger->info(fmt::format("{0:-^{1}}", "", 50));
 
-    try {
-      for (const auto& p : excludePaths) {
-        fs::canonical(p, sourceRoot);
-      }
-    } catch(const fs::filesystem_error& e) {
-      throw InvalidArgumentException(
-          fmt::format("exclude option error: {}", e.what()));
-    }
-
     // restore if previous backup is exists
     restoreBackup(backupDir, sourceRoot);
 
