@@ -111,7 +111,7 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "((" + stmtStr + ")++)");
+        "(++(" + stmtStr + "))");
 
     mutables->emplace_back(
         mName, path, func,
@@ -119,7 +119,7 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
         mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
         mSrcMgr.getExpansionLineNumber(stmtEndLoc),
         mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "((" + stmtStr + ")--)");
+        "(--(" + stmtStr + "))");
   }
 
   if (getExprType(e)->isBooleanType()) {

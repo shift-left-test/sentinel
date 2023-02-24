@@ -285,13 +285,13 @@ To be equal to: 24]]></failure>
   std::string EVALUATION_RESULTS =
       R"azx2(		1			SOR,{0},sumOfEvenPositiveNumber,10,23,10,25,>>
 SampleTest.testSumOfEvenPositiveNumber		0			ROR,{0},sumOfEvenPositiveNumber,10,17,10,19,<=
-		4			UOI,{0},sumOfEvenPositiveNumber,9,29,9,31,((to)++)
-		1			UOI,{0},sumOfEvenPositiveNumber,7,11,7,15,((from)++)
-		4			UOI,{0},sumOfEvenPositiveNumber,9,26,9,27,((i)--)
+		4			UOI,{0},sumOfEvenPositiveNumber,9,29,9,31,(++(to))
+		1			UOI,{0},sumOfEvenPositiveNumber,7,11,7,15,(++(from))
+		4			UOI,{0},sumOfEvenPositiveNumber,9,26,9,27,(--(i))
 SampleTest.testSumOfEvenPositiveNumber		0			LCR,{0},sumOfEvenPositiveNumber,10,9,10,37,1
-		1			UOI,{0},sumOfEvenPositiveNumber,11,13,11,16,((ret)--)
+		1			UOI,{0},sumOfEvenPositiveNumber,11,13,11,16,(--(ret))
 SampleTest.testSumOfEvenPositiveNumber		0			SDL,{0},sumOfEvenPositiveNumber,11,7,11,21,{{}}
-		4			UOI,{0},sumOfEvenPositiveNumber,10,10,10,11,((i)--)
+		4			UOI,{0},sumOfEvenPositiveNumber,10,10,10,11,(--(i))
 SampleTest.testSumOfEvenPositiveNumber		0			ROR,{0},sumOfEvenPositiveNumber,10,32,10,37,0)azx2";
 
  private:
@@ -343,7 +343,7 @@ TEST_F(MainCLITest, testCommandPopulate) {
       R"a1f4(SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1f4",
       SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(UOI,{},sumOfEvenPositiveNumber,9,26,9,27,((i)--))a1f4",
+      R"a1f4(UOI,{},sumOfEvenPositiveNumber,9,26,9,27,(--(i)))a1f4",
       SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
       R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)a1f4",
@@ -476,7 +476,7 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(sentinel::string::contains(out,
       R"(ROR : sample.cpp (10:17-10:19 -> <=).............................. KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(out,
-      R"(UOI : sample.cpp (9:29-9:31 -> ((to)++)).......................... TIMEOUT)"));
+      R"(UOI : sample.cpp (9:29-9:31 -> (++(to))).......................... TIMEOUT)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 
