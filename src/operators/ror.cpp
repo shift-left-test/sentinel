@@ -43,6 +43,17 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
         continue;
       }
 
+      // Excluding tokens that generate fp in corner cases
+      auto contains = [](const std::vector<std::string>& haystack,
+                         const std::string& needle) {
+        return std::find(haystack.begin(), haystack.end(), needle) !=
+               haystack.end();
+      };
+      if (mIgnored.count(token) != 0 &&
+          contains(mIgnored.at(token), mutatedToken)) {
+        continue;
+      }
+
       if (mutatedToken != token) {
         mutables->emplace_back(
             mName, path, func,

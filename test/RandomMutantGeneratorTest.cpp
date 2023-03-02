@@ -43,9 +43,6 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
                 41, 9, 41, 10, "=="));
     allMutants->push_back(
         Mutant("ROR", TARGET_FILE1, "isWeekend",
-                41, 9, 41, 10, "!="));
-    allMutants->push_back(
-        Mutant("ROR", TARGET_FILE1, "isWeekend",
                 41, 7, 41, 17, "0"));
     allMutants->push_back(
         Mutant("ROR", TARGET_FILE1, "isWeekend",
@@ -67,13 +64,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
                 58, 17, 58, 19, "<"));
     allMutants->push_back(
         Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                58, 17, 58, 19, "<="));
-    allMutants->push_back(
-        Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 17, 58, 19, ">"));
-    allMutants->push_back(
-        Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                58, 17, 58, 19, ">="));
     allMutants->push_back(
         Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 9, 58, 28, "1"));
@@ -95,9 +86,6 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
     allMutants->push_back(
         Mutant("SOR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 23, 58, 25, ">>"));
-    allMutants->push_back(
-        Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
-                58, 34, 58, 35, "!="));
     allMutants->push_back(
         Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber",
                 58, 34, 58, 35, "<"));

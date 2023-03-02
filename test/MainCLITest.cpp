@@ -340,13 +340,13 @@ TEST_F(MainCLITest, testCommandPopulate) {
   EXPECT_EQ("", err);
   auto mdbContent = readFile(SAMPLE_DIR / "work" / "m.db");
   EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1f4",
+      R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,34,10,35,==)a1f4",
       SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(UOI,{},sumOfEvenPositiveNumber,9,26,9,27,(--(i)))a1f4",
+      R"a1f4(LCR,{},sumOfEvenPositiveNumber,10,9,10,37,0)a1f4",
       SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)a1f4",
+      R"a1f4(AOR,{},sumOfEvenPositiveNumber,11,17,11,18,%)a1f4",
       SAMPLE_PATH.string())));
 }
 
@@ -461,7 +461,7 @@ TEST_F(MainCLITest, testCommandRun) {
   addArg("-sall");
   addArg("-l3");
   addArg("--timeout=auto");
-  addArg("--seed=0");
+  addArg("--seed=77");
   addArg("--generator=random");
   addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
 
@@ -472,11 +472,11 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
   EXPECT_TRUE(sentinel::string::contains(out,
-        R"(SOR : sample.cpp (10:23-10:25 -> >>).............................. SURVIVED)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(ROR : sample.cpp (10:17-10:19 -> <=).............................. KILLED)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
       R"(UOI : sample.cpp (9:29-9:31 -> (++(to))).......................... TIMEOUT)"));
+  EXPECT_TRUE(sentinel::string::contains(out,
+      R"(ROR : sample.cpp (10:17-10:19 -> <)............................... KILLED)"));
+  EXPECT_TRUE(sentinel::string::contains(out,
+      R"(UOI : sample.cpp (7:11-7:15 -> (++(from)))........................ SURVIVED)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 

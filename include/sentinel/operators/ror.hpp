@@ -6,8 +6,11 @@
 #ifndef INCLUDE_SENTINEL_OPERATORS_ROR_HPP_
 #define INCLUDE_SENTINEL_OPERATORS_ROR_HPP_
 
+#include <algorithm>
+#include <map>
 #include <set>
 #include <string>
+#include <vector>
 #include "MutationOperator.hpp"
 
 namespace sentinel {
@@ -45,6 +48,9 @@ class ROR : public MutationOperator {
  private:
   std::set<std::string> mRelationalOperators
       = {">", ">=", "<", "<=", "==", "!="};
+  std::map<std::string, std::vector<std::string>> mIgnored
+      = {{"==", {"<=", ">="}}, {"!=", {"<", ">"}},
+         {">=", {"=="}}, {"<=", {"=="}}, {"<", {"!="}}, {">", {"!="}}};
 };
 
 }  // namespace sentinel
