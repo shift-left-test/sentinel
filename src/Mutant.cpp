@@ -47,6 +47,10 @@ bool Mutant::operator==(const Mutant& other) const {
       mToken == other.getToken();
 }
 
+bool Mutant::operator<(const Mutant& other) const {
+  return str() < other.str();
+}
+
 bool Mutant::operator!=(const Mutant& other) const {
   return !(*this == other);
 }

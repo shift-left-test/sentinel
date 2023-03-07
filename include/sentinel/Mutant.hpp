@@ -91,6 +91,14 @@ class Mutant {
   bool operator!=(const Mutant& other) const;
 
   /**
+   * @brief < operator overloading
+   *
+   * @param other Mutant
+   * @return True if this Mutant is less than other Mutant. False otherwise
+   */
+  bool operator<(const Mutant& other) const;
+
+  /**
    * @brief Return the mutation operator creating this mutable.
    *
    * @return mutation operator

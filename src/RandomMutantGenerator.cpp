@@ -86,6 +86,8 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
     term = nullptr;
   }
 
+  mutables.unique();
+
   if (mutables.size() <= maxMutants) {
     return Mutants(mutables.begin(), mutables.end());
   }

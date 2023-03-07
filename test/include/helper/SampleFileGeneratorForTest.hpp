@@ -225,6 +225,11 @@ int sdlBlockedCases() {
 }},
 {{
   "directory": "{0}",
+  "command": "/usr/bin/c++      -o CMakeFiles/sample1_test_for_dup.dir/sample1.cpp.o -c {0}/sample1.cpp",
+  "file": "{0}/sample1.cpp"
+}},
+{{
+  "directory": "{0}",
   "command": "/usr/bin/c++      -o CMakeFiles/sample1b.dir/sample1b.cpp.o -c {0}/sample1b.cpp",
   "file": "{0}/sample1b.cpp"
 }}
