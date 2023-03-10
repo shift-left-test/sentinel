@@ -413,7 +413,7 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target1_veryVeryVeryVeryVerylongFilePath.cpp_3">1</a>
                         <span>
-                            <b>1. AOR -&gt; SURVIVED</b>
+                            <b>1. AOR(arithmetic operator replacement) -&gt; SURVIVED</b>
                             <br/>
                             <b>Original Code</b>
                             <br/>
@@ -469,14 +469,14 @@ int minus(int a, int b){
                                 <b>Killed by : none</b>
                             </span>
                         </span>
-                        <span>AOR -&gt; SURVIVED</span>
+                        <span>AOR(arithmetic operator replacement) -&gt; SURVIVED</span>
                     </a>
                 </td>
             </tr>
         </table>
         <h2>Active mutators</h2>
         <ul>
-            <li class="mutator">AOR</li>
+            <li class="mutator">AOR(arithmetic operator replacement)</li>
         </ul>
         <h2>Tests examined</h2>
         <ul/>
@@ -516,7 +516,7 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target2.cpp_2">1</a>
                         <span>
-                            <b>1. BOR -&gt; KILLED</b>
+                            <b>1. BOR(bitwise operator replacement) -&gt; KILLED</b>
                             <br/>
                             <b>Original Code</b>
                             <br/>
@@ -572,14 +572,14 @@ int minus(int a, int b){
                                 <b>Killed by : testBitwiseOR</b>
                             </span>
                         </span>
-                        <span>BOR -&gt; KILLED</span>
+                        <span>BOR(bitwise operator replacement) -&gt; KILLED</span>
                     </a>
                 </td>
             </tr>
         </table>
         <h2>Active mutators</h2>
         <ul>
-            <li class="mutator">BOR</li>
+            <li class="mutator">BOR(bitwise operator replacement)</li>
         </ul>
         <h2>Tests examined</h2>
         <ul>
@@ -636,7 +636,7 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target3.cpp_3">1</a>
                         <span>
-                            <b>1. BOR -&gt; KILLED</b>
+                            <b>1. BOR(bitwise operator replacement) -&gt; KILLED</b>
                             <br/>
                             <b>Original Code</b>
                             <br/>
@@ -721,7 +721,7 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target3.cpp_8">1</a>
                         <span>
-                            <b>1. AOR -&gt; SURVIVED</b>
+                            <b>1. AOR(arithmetic operator replacement) -&gt; SURVIVED</b>
                             <br/>
                             <b>Original Code</b>
                             <br/>
@@ -777,7 +777,7 @@ int minus(int a, int b){
                                 <b>Killed by : testBitwiseAND, testBitwiseOP</b>
                             </span>
                         </span>
-                        <span>BOR -&gt; KILLED</span>
+                        <span>BOR(bitwise operator replacement) -&gt; KILLED</span>
                     </a>
                 </td>
             </tr>
@@ -796,15 +796,15 @@ int minus(int a, int b){
                                 <b>Killed by : none</b>
                             </span>
                         </span>
-                        <span>AOR -&gt; SURVIVED</span>
+                        <span>AOR(arithmetic operator replacement) -&gt; SURVIVED</span>
                     </a>
                 </td>
             </tr>
         </table>
         <h2>Active mutators</h2>
         <ul>
-            <li class="mutator">AOR</li>
-            <li class="mutator">BOR</li>
+            <li class="mutator">AOR(arithmetic operator replacement)</li>
+            <li class="mutator">BOR(bitwise operator replacement)</li>
         </ul>
         <h2>Tests examined</h2>
         <ul>
@@ -847,7 +847,7 @@ int minus(int a, int b){
                     <span class="pop">
                         <a href="#group.sentinel.report.html.SourceFile@target4.cpp_2">1</a>
                         <span>
-                            <b>1. AOR -&gt; KILLED</b>
+                            <b>1. AOR(arithmetic operator replacement) -&gt; KILLED</b>
                             <br/>
                             <b>Original Code</b>
                             <br/>
@@ -903,14 +903,14 @@ int minus(int a, int b){
                                 <b>Killed by : testMultiply</b>
                             </span>
                         </span>
-                        <span>AOR -&gt; KILLED</span>
+                        <span>AOR(arithmetic operator replacement) -&gt; KILLED</span>
                     </a>
                 </td>
             </tr>
         </table>
         <h2>Active mutators</h2>
         <ul>
-            <li class="mutator">AOR</li>
+            <li class="mutator">AOR(arithmetic operator replacement)</li>
         </ul>
         <h2>Tests examined</h2>
         <ul>

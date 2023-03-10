@@ -19,6 +19,7 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
+#include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
 
@@ -263,8 +264,9 @@ void HTMLReport::makeSourceHtml(
         mutatedCode.append(mutatedCodeHead);
         mutatedCode.append(mr->getMutant().getToken());
         mutatedCode.append(mutatedCodeTail);
-        lineExplainVec.emplace_back(count, mr->getMutant().getOperator(),
-                                    oriCode, mutatedCode, mr->getDetected());
+        lineExplainVec.emplace_back(count,
+            MutationOperatorToExpansion(mr->getMutant().getOperator()),
+            oriCode, mutatedCode, mr->getDetected());
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);
@@ -276,12 +278,12 @@ void HTMLReport::makeSourceHtml(
       count += 1;
       shg.pushMutation(t.first, mr->getDetected(), count,
           mr->getKillingTest(),
-          mr->getMutant().getOperator());
+          MutationOperatorToExpansion(mr->getMutant().getOperator()));
     }
   }
 
   for (const auto& ts : uniqueMutator) {
-    shg.pushMutator(ts);
+    shg.pushMutator(MutationOperatorToExpansion(ts));
   }
 
   for (const auto& ts : uniqueKillingTest) {
