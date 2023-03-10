@@ -78,6 +78,13 @@ class SrcHTMLGenerator : public DOCGenerator {
   std::string str() override;
 
  private:
+  /**
+   * @brief escape reserved characters
+   *
+   * @param original string
+   */
+  std::string escape(const std::string& original);
+
   bool mSrcRoot;
   std::string mSrcName;
   std::string mLines;

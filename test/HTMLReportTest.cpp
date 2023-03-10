@@ -523,7 +523,7 @@ int minus(int a, int b){
                             <b><pre>  return a | b;</pre></b>
                             <br/>
                             <b>Mutated Code</b>
-                            <b><pre>  return a & b;</pre></b>
+                            <b><pre>  return a &amp; b;</pre></b>
                             <br/>
                             <br/>
                         </span>
@@ -611,7 +611,7 @@ int minus(int a, int b){
                 </td>
                 <td class="">
                     <span class="">
-                        <pre>//a & b</pre>
+                        <pre>//a &amp; b</pre>
                     </span>
                 </td>
             </tr>
@@ -640,7 +640,7 @@ int minus(int a, int b){
                             <br/>
                             <b>Original Code</b>
                             <br/>
-                            <b><pre>  return a & b;</pre></b>
+                            <b><pre>  return a &amp; b;</pre></b>
                             <br/>
                             <b>Mutated Code</b>
                             <b><pre>  return a | b;</pre></b>
@@ -651,7 +651,7 @@ int minus(int a, int b){
                 </td>
                 <td class="killed">
                     <span class="killed">
-                        <pre>  return a & b;</pre>
+                        <pre>  return a &amp; b;</pre>
                     </span>
                 </td>
             </tr>

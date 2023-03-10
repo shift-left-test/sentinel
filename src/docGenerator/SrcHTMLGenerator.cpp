@@ -25,14 +25,12 @@ void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
     lineExplain += fmt::format(lineExplainContent,
                 fmt::arg("count", std::get<0>(curExplain)),
                 fmt::arg("operator", std::get<1>(curExplain)),
-                fmt::arg("original_code", std::get<2>(curExplain)),
-                fmt::arg("mutated_code", std::get<3>(curExplain)),
+                fmt::arg("original_code", escape(std::get<2>(curExplain))),
+                fmt::arg("mutated_code", escape(std::get<3>(curExplain))),
                 fmt::arg("killed_or_not",
                          std::get<4>(curExplain) ?
                          "KILLED" : "SURVIVED"));
   }
-  std::string rCode = string::replaceAll(curCode, "<", "&lt;");
-  rCode = string::replaceAll(rCode, ">", "&gt;");
   mLines += fmt::format(lineContent,
               fmt::arg("cur_lineNum", curLineNum),
               fmt::arg("src_name", mSrcName),
@@ -40,7 +38,7 @@ void SrcHTMLGenerator::pushLine(std::size_t curLineNum,
               fmt::arg("num_cur_line_mrs", numCurLineMrs == 0 ?
                                            "" : std::to_string(numCurLineMrs)),
               fmt::arg("line_explain", lineExplain),
-              fmt::arg("cur_code", rCode));
+              fmt::arg("cur_code", escape(curCode)));
 }
 
 void SrcHTMLGenerator::pushMutation(std::size_t curLineNum,
@@ -87,6 +85,15 @@ std::string SrcHTMLGenerator::str() {
                      fmt::arg("mutator_list", mMutators),
                      fmt::arg("test_list_guard", testListGuard),
                      fmt::arg("https", "https://"));
+}
+
+std::string SrcHTMLGenerator::escape(const std::string& original) {
+  std::string rCode = string::replaceAll(original, "&", "&amp;");
+  rCode = string::replaceAll(rCode, "<", "&lt;");
+  rCode = string::replaceAll(rCode, ">", "&gt;");
+  rCode = string::replaceAll(rCode, "\"", "&quot;");
+  rCode = string::replaceAll(rCode, "'", "&apos;");
+  return rCode;
 }
 
 }  // namespace sentinel
