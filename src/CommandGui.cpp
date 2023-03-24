@@ -1218,9 +1218,9 @@ std::vector<std::string> CommandGui::getCoverageFiles() {
       advancedFields[COVERAGE_FILES_OPT]), ',');
 }
 
-int CommandGui::getMutantLimit() {
-  return std::stoul(
-      string::trim(getFieldValueString(advancedFields[MUTANT_LIMIT_OPT])));
+size_t CommandGui::getMutantLimit() {
+  return string::stringToInt<size_t>(
+      getFieldValueString(advancedFields[MUTANT_LIMIT_OPT]));
 }
 
 std::string CommandGui::getTestTimeLimit() {
@@ -1233,8 +1233,8 @@ std::string CommandGui::getKillAfter() {
 }
 
 unsigned CommandGui::getSeed() {
-  return std::stoul(
-      string::trim(getFieldValueString(advancedFields[RANDOM_SEED_OPT])));
+  return string::stringToInt<unsigned>(
+      getFieldValueString(advancedFields[RANDOM_SEED_OPT]));
 }
 
 std::string CommandGui::getGenerator() {

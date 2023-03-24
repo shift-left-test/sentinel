@@ -72,15 +72,6 @@ class CommandRun : public Command {
       bool isFilledDir);
 
   /**
-   * @brief convert string to integer
-   *
-   * @param target string
-   * @return converted integer value
-   */
-  template<typename T>
-  T strToInt(const std::string& target);
-
-  /**
    * @brief return source root path
    * @return source root path
    */
@@ -162,7 +153,7 @@ class CommandRun : public Command {
    * @brief get maximum number of mutant to be generated
    * @return mutant limit
    */
-  virtual int getMutantLimit();
+  virtual size_t getMutantLimit();
 
   /**
    * @brief get test timeout
@@ -242,7 +233,7 @@ class CommandRun : public Command {
   /**
    * @brief maximum number of mutants to be generated
    */
-  args::ValueFlag<int> mLimit;
+  args::ValueFlag<size_t> mLimit;
 
   /**
    * @brief test timeout

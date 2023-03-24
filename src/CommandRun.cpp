@@ -210,7 +210,7 @@ int CommandRun::run() {
     size_t mTimeLimit = 0;
     if (timeLimit != "auto") {
       try {
-        mTimeLimit = strToInt<size_t>(timeLimit);
+        mTimeLimit = sentinel::string::stringToInt<size_t>(timeLimit);
       } catch(...) {
         throw InvalidArgumentException(fmt::format(
               R"a1s2(Failed to read timeout option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
@@ -220,7 +220,7 @@ int CommandRun::run() {
 
     size_t mKillAfter = 0;
     try {
-      mKillAfter = strToInt<size_t>(killAfter);
+      mKillAfter = sentinel::string::stringToInt<size_t>(killAfter);
     } catch(...) {
       throw InvalidArgumentException(fmt::format(
             R"a1s2(Failed to read kill-after option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
@@ -572,21 +572,6 @@ std::string CommandRun::preProcessWorkDir(const std::string& target,
   return fs::canonical(target).string();
 }
 
-template<typename T>
-T CommandRun::strToInt(const std::string& target) {
-  std::string str = string::trim(target);
-  if (str.at(0) == '+') {
-    str = str.replace(0, 1, "");
-  }
-  T ret;
-  std::stringstream ss(str);
-  ss >> ret;
-  if (std::to_string(ret) != str) {
-    throw InvalidArgumentException("Can't convert " + str);
-  }
-  return ret;
-}
-
 std::string CommandRun::getSourceRoot() {
   return mSourceRoot.Get();
 }
@@ -639,7 +624,7 @@ std::string CommandRun::getScope() {
   return mScope.Get();
 }
 
-int CommandRun::getMutantLimit() {
+size_t CommandRun::getMutantLimit() {
   return mLimit.Get();
 }
 

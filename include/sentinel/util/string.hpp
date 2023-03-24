@@ -258,6 +258,27 @@ inline const char* boolToString(bool b) {
 }
 
 /**
+ * @brief convert string to integer
+ *
+ * @param target string
+ * @return converted integer value
+ */
+template<typename T>
+T stringToInt(const std::string& s) {
+  std::string str = string::trim(s);
+  if (str.at(0) == '+') {
+    str = str.replace(0, 1, "");
+  }
+  T ret;
+  std::stringstream ss(str);
+  ss >> ret;
+  if (std::to_string(ret) != str) {
+    throw InvalidArgumentException("Can't convert " + str);
+  }
+  return ret;
+}
+
+/**
  * @brief convert string to boolean
  *
  * @param s target string

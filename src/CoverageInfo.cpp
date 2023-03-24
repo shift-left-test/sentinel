@@ -41,7 +41,7 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
         std::vector<std::string> v1 = string::split(line, ':');
         std::vector<std::string> v2 = string::split(v1[1], ',');
         if (v2[1] != "0") {
-          mData[currentFile].push_back(std::stoi(v2[0]));
+          mData[currentFile].push_back(string::stringToInt<size_t>(v2[0]));
         }
       }
     }

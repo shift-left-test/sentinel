@@ -215,7 +215,7 @@ class CommandGui : public CommandRun {
    * @brief get maximum number of mutant to be generated
    * @return mutant limit
    */
-  int getMutantLimit() override;
+  size_t getMutantLimit() override;
 
   /**
    * @brief get test timeout

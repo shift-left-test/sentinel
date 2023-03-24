@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include "sentinel/Mutant.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -103,8 +104,11 @@ std::istream& operator>>(std::istream& in, Mutant &m) {
   std::string line;
   if (getline(in, line)) {
     auto str = string::split(line, ",");
-    m = Mutant(str[0], str[1], str[2], std::stoi(str[3]), std::stoi(str[4]),
-                std::stoi(str[5]), std::stoi(str[6]), str[7]);
+    m = Mutant(str[0], str[1], str[2],
+        string::stringToInt<std::size_t>(str[3]),
+        string::stringToInt<std::size_t>(str[4]),
+        string::stringToInt<std::size_t>(str[5]),
+        string::stringToInt<std::size_t>(str[6]), str[7]);
   }
   return in;
 }

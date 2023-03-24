@@ -14,6 +14,7 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutant.hpp"
+#include "sentinel/util/string.hpp"
 
 
 namespace sentinel {
@@ -68,7 +69,7 @@ std::istream& operator>>(std::istream& in, MutationResult &mr) {
     std::istringstream iss(sep[1]);
     iss >> m;
     mr = MutationResult(m, str[0], str[1],
-        static_cast<MutationState>(std::stoi(str[2])));
+        static_cast<MutationState>(string::stringToInt<int>(str[2])));
   }
   return in;
 }
