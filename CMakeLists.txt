@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(sentinel VERSION 0.4.6)
+project(sentinel VERSION 0.4.7)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/scripts)
 
