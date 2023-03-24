@@ -308,7 +308,7 @@ int CommandRun::run() {
 
     auto start = std::chrono::steady_clock::now();
     firstTestProc.execute();
-    if (mTimeLimitStr.Get() == "auto") {
+    if (timeLimit == "auto") {
       auto end = std::chrono::steady_clock::now();
       auto diff = end - start;
       auto diffSecs = std::chrono::duration<double>(diff).count();
