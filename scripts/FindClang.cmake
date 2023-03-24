@@ -25,7 +25,9 @@
 # Honister: 13.0 (13.0.0)
 # Kirkstone: 14.0 (14.0.3)
 # Langdale: 15.0 (15.0.1)
+# Mickledore: 16.0 (16.0.0)
 set(llvm_config_names llvm-config
+                      llvm-config-16.0 llvm-config160 llvm-config-16
                       llvm-config-15.0 llvm-config150 llvm-config-15
                       llvm-config-14.0 llvm-config140 llvm-config-14
                       llvm-config-13.0 llvm-config130 llvm-config-13

@@ -1,7 +1,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 project(sentinel VERSION 0.4.6)
 
@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/scripts)
 
 include(CMakeUtils)
 
-set_cxx_standard(14)
+set_cxx_standard(17)
 set_default_build_type(Release)
 
 set(CMAKE_SKIP_RPATH TRUE)
