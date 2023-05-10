@@ -41,6 +41,8 @@ class CommandGui : public CommandRun {
 
   int run() override;
 
+  void init() override;
+
  private:
   /**
    * @brief Initilize ncurses-based sentinel GUI

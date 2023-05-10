@@ -67,13 +67,13 @@ static const char* guiHelp = R"a1b2z(F5: Start  ESC: Exit  F3: Toggle Advanced O
 static const char* exitPrompt = "Are you sure you want to exit? [y/N]";
 static const char* startPrompt ="Do you want to start mutation testing? [y/N]";
 std::vector<const char*> verboseValues = {
-    "<    true    >",
     "<    false   >",
+    "<    true    >",
     nullptr};
 std::vector<const char*> generatorValues = {
     "<   uniform  >",
-    "<  weighted  >",
     "<   random   >",
+    "<  weighted  >",
     nullptr};
 std::vector<const char*> scopeValues = {
     "<     all    >",
@@ -130,6 +130,16 @@ CommandGui::CommandGui(args::Subparser& parser) :
     outputPadCurrSize(1), outputPadCurrPos(0), outputPadScrollBufferSize(20000),
     currConfigPage(1), numBasicConfigPages(1), configScrollbarSize(1),
     CommandRun(parser) {
+}
+
+void CommandGui::setSignalHandler() {
+  signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
+      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1}, guiSignalHandler);
+}
+
+void CommandGui::init() {
+  Command::init();
+
   basicOptions.push_back(std::vector<std::string>{
       "Source Root Path:",
       R"asdf(Source Root Path
@@ -231,25 +241,59 @@ Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is no
 
 Used for debugging, experiments.)asdf",
       std::to_string(mSeed.Get())});
+
+  size_t generatorValuesIdx = 0;
+  auto generatorStr = mGenerator.Get();
+
+  if (generatorStr == "uniform") {
+    generatorValuesIdx = 0;
+  } else if (generatorStr == "random") {
+    generatorValuesIdx = 1;
+  } else if (generatorStr == "weighted") {
+  generatorValuesIdx = 2;
+  } else {
+    throw InvalidArgumentException(fmt::format(
+        "Invalid value for generator option: {0}", generatorStr));
+  }
+
   advancedOptions.push_back(std::vector<std::string>{
       "Mutant Generator:",
       R"asdf(Mutant Generator
 
 - uniform: target lines are randomly selected, and 1 mutant (if any) is randomly generated on each line until number of generated mutants reaches limit.
-- weighted: similar to uniform generator, but target lines are selected based on statement depth. Deeper stmt are selected first.
-- random: mutants are selected randomly.)asdf", "<   uniform  >"});
+- random: mutants are selected randomly.
+- weighted: similar to uniform generator, but target lines are selected based on statement depth. Deeper stmt are selected first.)asdf",
+      generatorValues[generatorValuesIdx]});
+
+  size_t scopeValuesIdx = 0;
+  auto scope = mScope.Get();
+
+  if (scope == "all") {
+    scopeValuesIdx = 0;
+  } else if (scope == "commit") {
+    scopeValuesIdx = 1;
+  } else {
+    throw InvalidArgumentException(fmt::format(
+      "scope '{}' is invalid.", scope));
+  }
+
   advancedOptions.push_back(std::vector<std::string>{
       "Scope:", R"asdf(Scope
 
 - all: all files in the source root path are targeted, except for new, unstaged files.
-- commit: only source lines that are changed in the latest commit are targeted.)asdf", "<     all    >"});
-  advancedOptions.push_back(std::vector<std::string>{
-      "Verbose:", R"asdf(Verbose)asdf", "<    true    >"});
-}
+- commit: only source lines that are changed in the latest commit are targeted.)asdf",
+      scopeValues[scopeValuesIdx]});
 
-void CommandGui::setSignalHandler() {
-  signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
-      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1}, guiSignalHandler);
+  size_t verboseValuesIdx = 0;
+
+  if (!mIsVerbose.Get()) {
+    verboseValuesIdx = 0;
+  } else {
+    verboseValuesIdx = 1;
+  }
+
+  advancedOptions.push_back(std::vector<std::string>{
+      "Verbose:", R"asdf(Verbose)asdf", verboseValues[verboseValuesIdx]});
 }
 
 int CommandGui::run() {

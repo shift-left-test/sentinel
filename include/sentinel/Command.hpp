@@ -31,7 +31,7 @@ class Command {
   /**
    * @brief initialize execution environment
    */
-  void init();
+  virtual void init();
 
   /**
    * @brief Execute subcommand.
