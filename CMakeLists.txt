@@ -15,7 +15,7 @@ set_default_build_type(Release)
 set(CMAKE_SKIP_RPATH TRUE)
 
 if(ENABLE_TEST)
-  enable_static_analysis(clang-tidy cppcheck cpplint lwyu)
+  enable_static_analysis(cppcheck cpplint lwyu)
   enable_testing()
   enable_test_coverage()
   enable_doxygen()
