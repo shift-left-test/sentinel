@@ -288,6 +288,7 @@ tags
 unittest
 CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
+Doxyfile.bak
 html/
 test/result/
 GPATH
