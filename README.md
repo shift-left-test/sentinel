@@ -43,7 +43,7 @@ Create the sentinel package from the source code.
 
 Then, install the package to your machine.
 
-    $ sudo apt-get install ./sentinel-0.4.0-amd64-5.4.0-89-generic.deb
+    $ sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
 
 ## How to use
