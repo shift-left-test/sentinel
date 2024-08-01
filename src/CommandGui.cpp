@@ -1036,10 +1036,18 @@ void CommandGui::quitGui() {
   // Free all ncurses objects
   unpost_form(basicForm);
   for (auto& field : basicFields) {
+    auto ptr = field_userptr(field);
+    if (ptr) {
+      free(ptr);
+    }
     free_field(field);
   }
   unpost_form(advancedForm);
   for (auto& field : advancedFields) {
+    auto ptr = field_userptr(field);
+    if (ptr) {
+      free(ptr);
+    }
     free_field(field);
   }
   free_form(basicForm);
