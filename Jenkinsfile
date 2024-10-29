@@ -52,6 +52,10 @@ pipeline {
                     agent { docker { image "${getDockerImage('clang-dev:18')}" } }
                     steps { testSentinel(report: true) }
                 }
+                stage('clang-dev-19') {
+                    agent { docker { image "${getDockerImage('clang-dev:19')}" } }
+                    steps { testSentinel(report: true) }
+                }
             }
         }
     }

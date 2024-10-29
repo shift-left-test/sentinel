@@ -28,7 +28,9 @@
 # Mickledore: 16.0 (16.0.0)
 # Nanbield: 17.0 (17.0.1)
 # Scarthgap: 18.0 (18.1.0)
+# Styhead: 19.0 (19.1.0)
 set(llvm_config_names llvm-config
+                      llvm-config-19.0 llvm-config190 llvm-config-19
                       llvm-config-18.0 llvm-config180 llvm-config-18
                       llvm-config-17.0 llvm-config170 llvm-config-17
                       llvm-config-16.0 llvm-config160 llvm-config-16
