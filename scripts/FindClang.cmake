@@ -29,7 +29,9 @@
 # Nanbield: 17.0 (17.0.1)
 # Scarthgap: 18.0 (18.1.0)
 # Styhead: 19.0 (19.1.0)
+# Walnascar: 20.0 (20.1.2)
 set(llvm_config_names llvm-config
+                      llvm-config-20.0 llvm-config200 llvm-config-20
                       llvm-config-19.0 llvm-config190 llvm-config-19
                       llvm-config-18.0 llvm-config180 llvm-config-18
                       llvm-config-17.0 llvm-config170 llvm-config-17
