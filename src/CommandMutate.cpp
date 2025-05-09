@@ -7,6 +7,7 @@
 #include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"

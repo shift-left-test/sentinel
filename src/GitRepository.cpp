@@ -6,7 +6,10 @@
 #include <fmt/core.h>
 #include <git2.h>
 #include <algorithm>
+#include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"

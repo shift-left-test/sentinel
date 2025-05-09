@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
 #include "sentinel/util/string.hpp"
 
 

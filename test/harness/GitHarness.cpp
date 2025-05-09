@@ -12,6 +12,8 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <string>
+#include <vector>
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 

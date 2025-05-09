@@ -5,6 +5,8 @@
 
 #include <fmt/core.h>
 #include <string>
+#include <vector>
+#include <tuple>
 #include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
 #include "sentinel/util/string.hpp"
 

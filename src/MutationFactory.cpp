@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <string>
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/Mutants.hpp"

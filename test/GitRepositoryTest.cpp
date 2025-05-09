@@ -5,7 +5,9 @@
 
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
+#include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
 #include "helper/CaptureHelper.hpp"

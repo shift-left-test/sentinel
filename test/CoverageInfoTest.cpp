@@ -6,6 +6,7 @@
 #include <experimental/filesystem>
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"

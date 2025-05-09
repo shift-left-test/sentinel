@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <memory>
+#include <string>
 #include "helper/CaptureHelper.hpp"
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/MutationFactory.hpp"

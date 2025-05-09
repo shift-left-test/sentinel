@@ -6,6 +6,7 @@
 #include <clang/AST/Expr.h>
 #include <clang/Lex/Lexer.h>
 #include <string>
+#include <vector>
 #include "sentinel/operators/ror.hpp"
 
 namespace sentinel {

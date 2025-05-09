@@ -13,7 +13,9 @@
 #include <ctime>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <random>
+#include <string>
 #include <vector>
 #include "sentinel/Mutants.hpp"
 #include "sentinel/ncstream/term.hpp"

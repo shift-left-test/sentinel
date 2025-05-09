@@ -12,13 +12,14 @@
 #include <sys/wait.h>
 #include <experimental/filesystem>
 #include <algorithm>
-#include <exception>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <map>
 #include <random>
 #include <string>
+#include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/ncstream/term.hpp"

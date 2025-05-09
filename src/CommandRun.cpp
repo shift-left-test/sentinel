@@ -14,10 +14,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <random>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 #include "sentinel/CoverageInfo.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"

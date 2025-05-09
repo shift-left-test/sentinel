@@ -9,6 +9,8 @@
 #include <fstream>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <vector>
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 

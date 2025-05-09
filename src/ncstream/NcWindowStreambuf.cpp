@@ -4,6 +4,7 @@
  */
 
 #include <panel.h>
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <sstream>

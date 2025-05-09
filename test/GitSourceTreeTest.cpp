@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"

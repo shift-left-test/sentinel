@@ -8,7 +8,9 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <random>
+#include <string>
 #include "sentinel/CommandPopulate.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"

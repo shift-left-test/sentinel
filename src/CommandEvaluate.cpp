@@ -7,6 +7,7 @@
 #include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
