@@ -1,8 +1,6 @@
 # Copyright (c) 2019 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-
 # Prevent from multiple inclusion
 if(DEFINED CMAKEUTILS_INCLUDED)
   return()
