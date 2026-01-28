@@ -479,7 +479,7 @@ int CommandRun::run() {
     outputDir = fs::canonical(outputDir);
 
     if (!emptyOutputDir) {
-      logger->info(fmt::format("Writting Report to {}", outputDir.string()));
+      logger->info(fmt::format("Writing Report to {}", outputDir.string()));
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.save(outputDir);
       sentinel::HTMLReport htmlReport(evaluator.getMutationResults(),

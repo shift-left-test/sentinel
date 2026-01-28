@@ -27,7 +27,7 @@ class GitRepository : public Repository {
    * @brief Default constructor
    *
    * @param path to the directory repository
-   * @param extensions compile_commands.json file location
+   * @param extensions list of allowed extensions for target files
    * @param excludes excluded directory list
    */
   explicit GitRepository(const std::string& path,
@@ -60,7 +60,8 @@ class GitRepository : public Repository {
    * @param path
    *
    * @param checkExtension if true,
-   *        check extensino of path is included by extensions_.
+   *        checks whether the file extension of the path is
+   *        included in extensions.
    *
    * @return return true if path is valid sourceline target.
    */
