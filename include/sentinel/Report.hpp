@@ -15,7 +15,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -31,8 +30,7 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const MutationResults& results,
-      const std::experimental::filesystem::path& sourcePath);
+  Report(const MutationResults& results, const std::experimental::filesystem::path& sourcePath);
 
   /**
    * @brief Default Constructor
@@ -43,7 +41,7 @@ class Report {
    *        when resultsPath is empty or sourcePath doesn't exist
    */
   Report(const std::experimental::filesystem::path& resultsPath,
-      const std::experimental::filesystem::path& sourcePath);
+         const std::experimental::filesystem::path& sourcePath);
   /**
    * @brief Default Destructor
    */
@@ -71,8 +69,7 @@ class Report {
    * @param start start dir
    * @return the relative path from start dir
    */
-  std::experimental::filesystem::path getRelativePath(
-      const std::string& path, const std::string& start);
+  std::experimental::filesystem::path getRelativePath(const std::string& path, const std::string& start);
 
   /**
    * @brief MutationResults instance
@@ -83,15 +80,15 @@ class Report {
    * @brief group MutationReuslt by Directory
    */
   std::map<std::experimental::filesystem::path,
-      std::tuple<std::vector<const MutationResult*>*, std::size_t,
-                 std::size_t, std::size_t>* > groupByDirPath;
+           std::tuple<std::vector<const MutationResult*>*, std::size_t,
+                      std::size_t, std::size_t>* > groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
   std::map<std::experimental::filesystem::path,
-      std::tuple<std::vector<const MutationResult*>*,
-                 std::size_t, std::size_t>* > groupByPath;
+           std::tuple<std::vector<const MutationResult*>*,
+                      std::size_t, std::size_t>* > groupByPath;
 
   /**
    * @brief total Number Of Mutation

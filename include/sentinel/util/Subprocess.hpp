@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <string>
 
-
 namespace sentinel {
 
 /**
@@ -25,8 +24,7 @@ class Subprocess {
    * @param secForKill
    * @throw runtime_error when another Subprocess already running.
    */
-  explicit Subprocess(const std::string& cmd, std::size_t sec = 0,
-      std::size_t secForKill = 0);
+  explicit Subprocess(const std::string& cmd, std::size_t sec = 0, std::size_t secForKill = 0);
 
   /**
    * @brief excute cmd

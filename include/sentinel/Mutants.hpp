@@ -11,7 +11,6 @@
 #include "sentinel/Container.hpp"
 #include "sentinel/Mutant.hpp"
 
-
 namespace sentinel {
 
 using Mutants = Container<Mutant>;

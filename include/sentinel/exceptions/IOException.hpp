@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace sentinel {
 
 /**

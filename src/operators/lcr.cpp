@@ -16,8 +16,7 @@ bool LCR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mLogicalOperators.find(std::string(bo->getOpcodeStr())) != \
-         mLogicalOperators.end();
+  return mLogicalOperators.find(std::string(bo->getOpcodeStr())) != mLogicalOperators.end();
 }
 
 void LCR::populate(clang::Stmt* s, Mutants* mutables) {

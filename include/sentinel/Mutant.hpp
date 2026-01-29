@@ -13,7 +13,6 @@
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -66,13 +65,13 @@ class Mutant {
    * @param token to replace with
    */
   Mutant(const std::string& mutationOperator,
-          const std::string& path,
-          const std::string& qualifiedFuncName,
-          std::size_t firstLine,
-          std::size_t firstColumn,
-          std::size_t lastLine,
-          std::size_t lastColumn,
-          const std::string& token);
+         const std::string& path,
+         const std::string& qualifiedFuncName,
+         std::size_t firstLine,
+         std::size_t firstColumn,
+         std::size_t lastLine,
+         std::size_t lastColumn,
+         const std::string& token);
 
   /**
    * @brief == operator overloading

@@ -10,7 +10,6 @@
 #include "sentinel/Container.hpp"
 #include "sentinel/MutationResult.hpp"
 
-
 namespace sentinel {
 
 /**

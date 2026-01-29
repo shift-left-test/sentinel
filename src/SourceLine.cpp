@@ -6,11 +6,9 @@
 #include <string>
 #include "sentinel/SourceLine.hpp"
 
-
 namespace sentinel {
 
-SourceLine::SourceLine(const std::experimental::filesystem::path& path,
-    std::size_t lineNumber) :
+SourceLine::SourceLine(const std::experimental::filesystem::path& path, std::size_t lineNumber) :
     mPath(path), mLineNumber(lineNumber) {
 }
 

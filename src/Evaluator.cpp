@@ -16,25 +16,22 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-Evaluator::Evaluator(const std::string& expectedResultDir,
-    const std::string& sourcePath) : mSourcePath(sourcePath),
-    mExpectedResult(expectedResultDir),
-    mLogger(Logger::getLogger("Evaluator")) {
+Evaluator::Evaluator(const std::string& expectedResultDir, const std::string& sourcePath) :
+    mSourcePath(sourcePath), mExpectedResult(expectedResultDir), mLogger(Logger::getLogger("Evaluator")) {
   mLogger->info(fmt::format("Load Expected Result: {}", expectedResultDir));
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
-    throw InvalidArgumentException(fmt::format(
-        "No passed TC in Expected Result({0})", expectedResultDir));
+    throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir));
   }
 }
 
 MutationResult Evaluator::compare(const Mutant& mut,
-    const std::string& ActualResultDir, const std::string& testState) {
+                                  const std::string& ActualResultDir,
+                                  const std::string& testState) {
   std::string killingTC;
   std::string errorTC;
   MutationState state;
@@ -51,11 +48,9 @@ MutationResult Evaluator::compare(const Mutant& mut,
   } else if (testState == "success") {
     Result mActualResult(ActualResultDir);
     mLogger->info(fmt::format("Load Actual Result: {}", ActualResultDir));
-    state = Result::compare(mExpectedResult, mActualResult,
-        &killingTC, &errorTC);
+    state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
   } else {
-      throw InvalidArgumentException(fmt::format(
-          "Invalid value for testState : {0}", testState));
+    throw InvalidArgumentException(fmt::format("Invalid value for testState : {0}", testState));
   }
   mLogger->info(fmt::format("Mutant: {}", mut.str()));
   mLogger->info(fmt::format("killing TC: {}", killingTC));
@@ -87,14 +82,13 @@ MutationResult Evaluator::compare(const Mutant& mut,
   }
 
   std::size_t flen = 60;
-  std::string mutLoc = fmt::format(
-      "{path} ({sl}:{sc}-{el}:{ec} -> {mc})",
-      fmt::arg("path", relPath.string()),
-      fmt::arg("sl", mut.getFirst().line),
-      fmt::arg("sc", mut.getFirst().column),
-      fmt::arg("el", mut.getLast().line),
-      fmt::arg("ec", mut.getLast().column),
-      fmt::arg("mc", mut.getToken().empty() ? "DELETE STMT": mut.getToken()));
+  std::string mutLoc = fmt::format("{path} ({sl}:{sc}-{el}:{ec} -> {mc})",
+                                   fmt::arg("path", relPath.string()),
+                                   fmt::arg("sl", mut.getFirst().line),
+                                   fmt::arg("sc", mut.getFirst().column),
+                                   fmt::arg("el", mut.getLast().line),
+                                   fmt::arg("ec", mut.getLast().column),
+                                   fmt::arg("mc", mut.getToken().empty() ? "DELETE STMT": mut.getToken()));
 
   int filePos = mutLoc.size() - flen;
   std::string skipStr;
@@ -105,12 +99,11 @@ MutationResult Evaluator::compare(const Mutant& mut,
     skipStr = "... ";
   }
 
-  std::cout << fmt::format(
-      "{mu:>5} : {loc:.<{flen}} {status}",
-      fmt::arg("mu", mut.getOperator()),
-      fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
-      fmt::arg("flen", flen),
-      fmt::arg("status", MutationStateToStr(state)))
+  std::cout << fmt::format("{mu:>5} : {loc:.<{flen}} {status}",
+                           fmt::arg("mu", mut.getOperator()),
+                           fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
+                           fmt::arg("flen", flen),
+                           fmt::arg("status", MutationStateToStr(state)))
             << std::endl;
 
   MutationResult ret(mut, killingTC, errorTC, state);
@@ -121,14 +114,13 @@ MutationResult Evaluator::compare(const Mutant& mut,
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
-    const std::experimental::filesystem::path& ActualResultDir,
-    const std::experimental::filesystem::path& evalFilePath,
-    const std::string& testState) {
+                                                       const std::experimental::filesystem::path& ActualResultDir,
+                                                       const std::experimental::filesystem::path& evalFilePath,
+                                                       const std::string& testState) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {
-      throw InvalidArgumentException(fmt::format(
-          "dirPath isn't directory({0})", outDir.string()));
+      throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})", outDir.string()));
     }
   } else {
     fs::create_directories(outDir);
@@ -136,8 +128,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
 
   MutationResult ret = compare(mut, ActualResultDir, testState);
 
-  std::ofstream outFile(evalFilePath.c_str(),
-      std::ios::out | std::ios::app);
+  std::ofstream outFile(evalFilePath.c_str(), std::ios::out | std::ios::app);
   outFile << ret << std::endl;
   outFile.close();
 

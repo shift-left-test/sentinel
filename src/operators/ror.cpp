@@ -17,8 +17,7 @@ bool ROR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mRelationalOperators.find(std::string(bo->getOpcodeStr())) != \
-         mRelationalOperators.end();
+  return mRelationalOperators.find(std::string(bo->getOpcodeStr())) != mRelationalOperators.end();
 }
 
 void ROR::populate(clang::Stmt* s, Mutants* mutables) {
@@ -45,13 +44,11 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
       }
 
       // Excluding tokens that generate fp in corner cases
-      auto contains = [](const std::vector<std::string>& haystack,
-                         const std::string& needle) {
+      auto contains = [](const std::vector<std::string>& haystack, const std::string& needle) {
         return std::find(haystack.begin(), haystack.end(), needle) !=
                haystack.end();
       };
-      if (mIgnored.count(token) != 0 &&
-          contains(mIgnored.at(token), mutatedToken)) {
+      if (mIgnored.count(token) != 0 && contains(mIgnored.at(token), mutatedToken)) {
         continue;
       }
 

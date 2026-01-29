@@ -15,7 +15,6 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -34,8 +33,7 @@ class HTMLReportTest : public ::testing::Test {
     fs::create_directories(NESTED_SOURCE_DIR2);
 
 
-    TARGET_FULL_PATH =
-        NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
+    TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
     TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
     writeFile(TARGET_FULL_PATH2, TARGET_CONTENT2);
@@ -49,8 +47,7 @@ class HTMLReportTest : public ::testing::Test {
     fs::remove_all(BASE);
   }
 
-  void readFileAndCompareExpected(const std::string& path,
-      const std::string& expectedContents) {
+  void readFileAndCompareExpected(const std::string& path, const std::string& expectedContents) {
     EXPECT_TRUE(fs::exists(path));
 
     std::ifstream t(path);
@@ -953,37 +950,28 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "-");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "-");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "&");
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "&");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "|");
-  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::KILLED);
+  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "|");
+  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "", MutationState::KILLED);
 
-  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "+");
+  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "+");
   MRs.emplace_back(M4, "", "", MutationState::SURVIVED);
 
-  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::BUILD_FAILURE);
 
-  Mutant M6("AOR", TARGET_FULL_PATH4, "multiply",
-             2, 12, 2, 13, "/");
+  Mutant M6("AOR", TARGET_FULL_PATH4, "multiply", 2, 12, 2, 13, "/");
   MRs.emplace_back(M6, "testMultiply", "", MutationState::KILLED);
 
-  Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M7, "", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M8("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M8("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M8, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
@@ -994,35 +982,30 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   htmlreport.save(OUT_DIR);
 
   readFileAndCompareExpected(OUT_DIR / "index.html",
-      ORI_ROOT_INDEX_HTML_CONTENTS);
+                             ORI_ROOT_INDEX_HTML_CONTENTS);
   readFileAndCompareExpected(OUT_DIR / "srcDir"/ "index.html",
-      ORI_SRCROOT_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(
-      OUT_DIR / "srcDir" / nestedSourceDir / "index.html",
-      ORI_NESTED1_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(
-      OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() / "index.html",
-      ORI_NESTED2_INDEX_HTML_CONTENTS);
+                             ORI_SRCROOT_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir / "index.html",
+                             ORI_NESTED1_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() / "index.html",
+                             ORI_NESTED2_INDEX_HTML_CONTENTS);
 
   readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir /
-      (TARGET_FULL_PATH.filename().string() + ".html"),
-      ORI_TARGET1_HTML_CONTENTS);
+                             (TARGET_FULL_PATH.filename().string() + ".html"),
+                             ORI_TARGET1_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() /
+                             (TARGET_FULL_PATH2.filename().string() + ".html"),
+                             ORI_TARGET2_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() /
+                             (TARGET_FULL_PATH3.filename().string() + ".html"),
+                             ORI_TARGET3_HTML_CONTENTS);
   readFileAndCompareExpected(OUT_DIR / "srcDir" /
-      NESTED_SOURCE_DIR2.filename() /
-      (TARGET_FULL_PATH2.filename().string() + ".html"),
-      ORI_TARGET2_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" /
-      NESTED_SOURCE_DIR2.filename() /
-      (TARGET_FULL_PATH3.filename().string() + ".html"),
-      ORI_TARGET3_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" /
-      (TARGET_FULL_PATH4.filename().string() + ".html"),
-      ORI_TARGET4_HTML_CONTENTS);
+                             (TARGET_FULL_PATH4.filename().string() + ".html"),
+                             ORI_TARGET4_HTML_CONTENTS);
 }
 
 TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
-  EXPECT_THROW(HTMLReport htmlreport("unknown", "unknown"),
-               InvalidArgumentException);
+  EXPECT_THROW(HTMLReport htmlreport("unknown", "unknown"), InvalidArgumentException);
 }
 
 TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
@@ -1042,8 +1025,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
 }
 
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1057,8 +1039,8 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   fs::remove_all("unknown");
 
   std::string nestedSourceDir =
-    NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
-    NESTED_SOURCE_DIR.filename().string();
+      NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
+      NESTED_SOURCE_DIR.filename().string();
 
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDDIRPATHGIVEN";
   fs::create_directories(OUT_DIR / "srcDir");
@@ -1073,8 +1055,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
   auto tmpPath = TARGET_FULL_PATH;
   tmpPath.concat("_tmpPath");
   fs::copy(TARGET_FULL_PATH, tmpPath);
-  Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "+");
+  Mutant M1("AOR", tmpPath, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1088,8 +1069,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
 TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER";
   fs::create_directories(OUT_DIR);
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             0, 12, 2, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 0, 12, 2, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1100,8 +1080,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
 
   auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
   fs::create_directories(OUT_DIR2);
-  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             1000, 12, 1000, 13, "+");
+  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 1000, 12, 1000, 13, "+");
   MutationResult MR2(M2, "", "", MutationState::SURVIVED);
 
   MutationResults MRs2;
@@ -1110,6 +1089,5 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   HTMLReport htmlreport2(MRs2, SOURCE_DIR);
   EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
 }
-
 
 }  // namespace sentinel

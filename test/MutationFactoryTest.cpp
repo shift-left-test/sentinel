@@ -21,13 +21,10 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
   auto mStdoutCapture = CaptureHelper::getStdoutCapture();
 
   SourceLines sourceLines;
-  sourceLines.push_back(SourceLine(
-      SAMPLE1_PATH, 58));
-  sourceLines.push_back(SourceLine(
-      SAMPLE1_PATH, 59));
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 58));
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 59));
 
-  std::shared_ptr<MutantGenerator> generator =
-      std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
+  std::shared_ptr<MutantGenerator> generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
   MutationFactory factory(generator);
 
   mStdoutCapture->capture();
@@ -39,10 +36,8 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
   EXPECT_EQ(selected.at(0).getFirst().line, 58);
   EXPECT_EQ(selected.at(1).getFirst().line, 59);
 
-  EXPECT_TRUE(string::contains(
-      out, SAMPLE1_NAME + "                                                2"));
-  EXPECT_TRUE(string::contains(
-      out, "TOTAL                                                      2"));
+  EXPECT_TRUE(string::contains(out, SAMPLE1_NAME + "                                                2"));
+  EXPECT_TRUE(string::contains(out, "TOTAL                                                      2"));
 }
 
 }  // namespace sentinel

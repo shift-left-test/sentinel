@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace sentinel {
 
 class ExceptionTest : public ::testing::Test {

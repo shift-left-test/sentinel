@@ -28,7 +28,6 @@
 #include "sentinel/operators/uoi.hpp"
 #include "sentinel/SourceLines.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -49,12 +48,9 @@ class WeightedMutantGenerator : public MutantGenerator {
   explicit WeightedMutantGenerator(const std::string& path) : mDbPath(path) {
   }
 
-  Mutants populate(const SourceLines& sourceLines,
-                   std::size_t maxMutants) override;
+  Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) override;
 
-  Mutants populate(const SourceLines& sourceLines,
-                   std::size_t maxMutants,
-                   unsigned randomSeed) override;
+  Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
   std::string mDbPath;
@@ -124,8 +120,7 @@ class WeightedMutantGenerator : public MutantGenerator {
                         Mutants* mutables,
                         const SourceLines& targetLines,
                         DepthMap* depthMap) :
-        mMutants(mutables), mTargetLines(targetLines),
-        mDepthMap(depthMap) {
+        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
     }
 
     /**
@@ -157,9 +152,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables (output)
      * @param mTargetLines list of target line numbers
      */
-    GenerateMutantAction(Mutants* mutables,
-                         const SourceLines& targetLines,
-                         DepthMap* depthMap) :
+    GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap) :
         mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
     }
 
@@ -170,11 +163,10 @@ class WeightedMutantGenerator : public MutantGenerator {
      * @param CI Clang compiler management object
      * @param InFile target file
      */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance& CI, llvm::StringRef InFile) override {
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI,
+                                                          llvm::StringRef InFile) override {
       CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-      return std::unique_ptr<clang::ASTConsumer>(
-          new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
+      return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
     }
 
    protected:
@@ -192,9 +184,7 @@ class WeightedMutantGenerator : public MutantGenerator {
    * @param mutables list of generated mutables
    */
   std::unique_ptr<clang::tooling::FrontendActionFactory>
-  myNewFrontendActionFactory(Mutants* mutables,
-                             const SourceLines& targetLines,
-                             DepthMap* depthMap);
+  myNewFrontendActionFactory(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap);
 };
 
 }  // namespace sentinel

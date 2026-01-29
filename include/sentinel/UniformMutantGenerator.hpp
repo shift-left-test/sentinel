@@ -27,7 +27,6 @@
 #include "sentinel/operators/uoi.hpp"
 #include "sentinel/SourceLines.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -43,12 +42,9 @@ class UniformMutantGenerator : public MutantGenerator {
   explicit UniformMutantGenerator(const std::string& path) : mDbPath(path) {
   }
 
-  Mutants populate(const SourceLines& sourceLines,
-                   std::size_t maxMutants) override;
+  Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) override;
 
-  Mutants populate(const SourceLines& sourceLines,
-                   std::size_t maxMutants,
-                   unsigned randomSeed) override;
+  Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
   std::string mDbPath;
@@ -67,8 +63,7 @@ class UniformMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      */
-    SentinelASTVisitor(clang::ASTContext* Context,
-                       Mutants* mutables,
+    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
                        const std::vector<std::size_t>& targetLines);
 
     /**
@@ -96,8 +91,7 @@ class UniformMutantGenerator : public MutantGenerator {
      *
      * @param CI Clang compiler management object
      */
-    SentinelASTConsumer(const clang::CompilerInstance& CI,
-                        Mutants* mutables,
+    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
                         const std::vector<std::size_t>& targetLines) :
         mMutants(mutables), mTargetLines(targetLines) {
     }
@@ -130,8 +124,7 @@ class UniformMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables (output)
      * @param mTargetLines list of target line numbers
      */
-    GenerateMutantAction(Mutants* mutables,
-                         const std::vector<std::size_t>& targetLines) :
+    GenerateMutantAction(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
         mMutants(mutables), mTargetLines(targetLines) {
     }
 
@@ -142,11 +135,10 @@ class UniformMutantGenerator : public MutantGenerator {
      * @param CI Clang compiler management object
      * @param InFile target file
      */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance& CI, llvm::StringRef InFile) override {
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI,
+                                                          llvm::StringRef InFile) override {
       CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-      return std::unique_ptr<clang::ASTConsumer>(
-          new SentinelASTConsumer(CI, mMutants, mTargetLines));
+      return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines));
     }
 
    protected:
@@ -163,8 +155,7 @@ class UniformMutantGenerator : public MutantGenerator {
    * @param mutables list of generated mutables
    */
   std::unique_ptr<clang::tooling::FrontendActionFactory>
-  myNewFrontendActionFactory(Mutants* mutables,
-                             const std::vector<std::size_t>& targetLines);
+  myNewFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines);
 };
 
 }  // namespace sentinel

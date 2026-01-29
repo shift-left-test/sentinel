@@ -39,18 +39,15 @@ class  SampleFileGeneratorForTest : public ::testing::Test {
 
     writeFile(SAMPLE1_PATH, SAMPLE1_CONTENTS);
     writeFile(SAMPLE1B_PATH, SAMPLE1B_CONTENTS);
-    writeFile(SAMPLECOMCOMJSON_PATH, fmt::format(SAMPLECOMCOMJSON_CONTENTS,
-          SAMPLE1_DIR.string()));
-    writeFile(SAMPLECOVERAGE_PATH, fmt::format(SAMPLECOVERAGE_CONTENTS,
-                                               SAMPLE1_PATH.string()));
+    writeFile(SAMPLECOMCOMJSON_PATH, fmt::format(SAMPLECOMCOMJSON_CONTENTS, SAMPLE1_DIR.string()));
+    writeFile(SAMPLECOVERAGE_PATH, fmt::format(SAMPLECOVERAGE_CONTENTS, SAMPLE1_PATH.string()));
   }
 
   void TearDown() override {
     std::experimental::filesystem::remove_all(SAMPLE_BASE);
   }
 
-  void writeFile(const std::experimental::filesystem::path& p,
-      const std::string& c) {
+  void writeFile(const std::experimental::filesystem::path& p, const std::string& c) {
     std::ofstream t(p.string());
     t << c;
     t.close();

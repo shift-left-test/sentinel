@@ -16,8 +16,7 @@ bool BOR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mBitwiseOperators.find(std::string(bo->getOpcodeStr())) != \
-         mBitwiseOperators.end();
+  return mBitwiseOperators.find(std::string(bo->getOpcodeStr())) != mBitwiseOperators.end();
 }
 
 void BOR::populate(clang::Stmt* s, Mutants* mutables) {

@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include "sentinel/Container.hpp"
 
-
 namespace sentinel {
 
 class Integers : public Container<int> {

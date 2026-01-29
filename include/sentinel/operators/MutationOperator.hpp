@@ -13,7 +13,6 @@
 #include <string>
 #include "sentinel/Mutants.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -34,7 +33,8 @@ class MutationOperator {
   /**
    * @brief Default destructor
    */
-  virtual ~MutationOperator() {}
+  virtual ~MutationOperator() {
+  }
 
   /**
    * @brief Return the name of the mutation operator
@@ -123,8 +123,7 @@ class MutationOperator {
    * @param endLoc end location of source range
    * @return True if range is valid
    */
-  bool isValidMutantSourceRange(clang::SourceLocation *startLoc,
-                                 clang::SourceLocation *endLoc);
+  bool isValidMutantSourceRange(clang::SourceLocation *startLoc, clang::SourceLocation *endLoc);
 
  protected:
   /**

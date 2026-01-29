@@ -11,7 +11,6 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/SourceTree.hpp"
 
-
 namespace sentinel {
 
 /**

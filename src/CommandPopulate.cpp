@@ -20,8 +20,8 @@
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
 
-
 namespace sentinel {
+
 const char * cCommandPopulateLoggerName = "CommandPopulate";
 
 CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
@@ -76,37 +76,26 @@ int CommandPopulate::run() {
     logger->info(fmt::format("generator:{}", mGenerator.Get()));
     logger->info(fmt::format("random seed:{}", mSeed.Get()));
   }
-  auto repo = std::make_unique<sentinel::GitRepository>(
-    sourceRoot, mExtensions.Get(), mExcludes.Get());
+  auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, mExtensions.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   // Shuffle target lines to reduce mutant selecting time.
-  std::shuffle(std::begin(sourceLines), std::end(sourceLines),
-               std::mt19937(mSeed.Get()));
+  std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(mSeed.Get()));
 
   std::shared_ptr<MutantGenerator> generator;
   if (mGenerator.Get() == "uniform") {
-    generator = std::make_shared<sentinel::UniformMutantGenerator>(
-        mBuildDir.Get());
+    generator = std::make_shared<sentinel::UniformMutantGenerator>(mBuildDir.Get());
+  } else if (mGenerator.Get() == "random") {
+    generator = std::make_shared<sentinel::RandomMutantGenerator>(mBuildDir.Get());
+  } else if (mGenerator.Get() == "weighted") {
+    generator = std::make_shared<sentinel::WeightedMutantGenerator>(mBuildDir.Get());
   } else {
-    if (mGenerator.Get() == "random") {
-      generator = std::make_shared<sentinel::RandomMutantGenerator>(
-          mBuildDir.Get());
-    } else {
-      if (mGenerator.Get() == "weighted") {
-        generator = std::make_shared<sentinel::WeightedMutantGenerator>(
-            mBuildDir.Get());
-      } else {
-        throw InvalidArgumentException(fmt::format(
-            "Invalid value for generator option: {0}", mGenerator.Get()));
-      }
-    }
+    throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", mGenerator.Get()));
   }
 
   sentinel::MutationFactory mutationFactory(generator);
 
-  sentinel::Mutants mutants = mutationFactory.populate(
-      sourceRoot, sourceLines, mLimit.Get(), mSeed.Get());
+  sentinel::Mutants mutants = mutationFactory.populate(sourceRoot, sourceLines, mLimit.Get(), mSeed.Get());
   if (mIsVerbose) {
     for (auto& mutant : mutants) {
       logger->info(fmt::format("mutant: {}", mutant.str()));

@@ -22,8 +22,7 @@ namespace sentinel {
 class GitRepositoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name =
-        fs::temp_directory_path() / "SENTINEL_GITREPOSITORYTEST_TMP_DIR";
+    repo_name = fs::temp_directory_path() / "SENTINEL_GITREPOSITORYTEST_TMP_DIR";
     fs::remove_all(repo_name);
     repo = std::make_shared<GitHarness>(repo_name);
     repo_name = fs::canonical(repo_name);
@@ -69,7 +68,7 @@ TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   EXPECT_THROW({
       GitRepository gitRepo(tmpPath);
       SourceLines lines = gitRepo.getSourceLines("commit");
-  }, RepositoryException);
+    }, RepositoryException);
 }
 
 TEST_F(GitRepositoryTest, testInvalidExcludePath) {
@@ -81,8 +80,7 @@ TEST_F(GitRepositoryTest, testInvalidExcludePath) {
   captureStdout();
   GitRepository gitRepo(repo_name, {}, {"test", "unknown"});
   EXPECT_TRUE(string::contains(capturedStdout(), "exclude: test"));
-  EXPECT_TRUE(string::contains(capturedStderr(),
-      "No such file or directory [unknown]"));
+  EXPECT_TRUE(string::contains(capturedStderr(), "No such file or directory [unknown]"));
   Logger::getLogger("GitRepository")->setLevel(Logger::Level::OFF);
 }
 
@@ -107,7 +105,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
   // only index
   {
     repo->stageFile(stageFiles);
-        SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
   }
@@ -161,8 +159,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 1);
-    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFilename, 2)), 1);
+    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 2)), 1);
   }
   // only workdir
   {
@@ -170,8 +167,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
-    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFilename, 3)), 1);
+    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 3)), 1);
   }
   // only index
   {
@@ -179,8 +175,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
-    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
-      SourceLine(stageFilename, 3)), 1);
+    EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 3)), 1);
   }
 }
 

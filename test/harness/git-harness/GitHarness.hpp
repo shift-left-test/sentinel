@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-
 namespace sentinel {
 
 class GitHarness {
@@ -31,16 +30,14 @@ class GitHarness {
   /**
    * @brief Create a new folder within the git repo.
    *
-   * @param folder_name relative path (new folder name included) with respect
-   *                    to git repo path.
+   * @param folder_name relative path (new folder name included) with respect to git repo path.
    */
   GitHarness& addFolder(const std::string& folder_name);
 
   /**
    * @brief Create a new file within the git repo and write content to file.
    *
-   * @param filename relative file path (new file name included) with respect
-   *                 to git repo path.
+   * @param filename relative file path (new file name included) with respect to git repo path.
    * @param content  text to insert to new file.
    */
   GitHarness& addFile(const std::string& filename, const std::string& content);
@@ -53,8 +50,7 @@ class GitHarness {
    *        If column number of negative or exceeding line length, code is
    *        appended to end of target line.
    *
-   * @param filename relative file path (file name included) with respect
-   *                 to git repo pat.
+   * @param filename relative file path (file name included) with respect to git repo pat.
    * @param content  text to insert to target file.
    * @param line     line number of target location to insert code.
    * @param col      column number of target location to insert code.
@@ -65,18 +61,15 @@ class GitHarness {
   /**
    * @brief Delete multiple line of codes within target file.
    *
-   * @param filename relative file path (target file name included) with
-   *                 with to git repo path.
+   * @param filename relative file path (target file name included) with to git repo path.
    * @param lines    list of target lines to delete.
    */
-  GitHarness& deleteCode(const std::string& filename,
-                         const std::vector<std::size_t>& lines);
+  GitHarness& deleteCode(const std::string& filename, const std::vector<std::size_t>& lines);
 
   /**
    * @brief Implementation of git add <filenames>.
    *
-   * @param filenames list of relative file paths (target file name included)
-   *                  with respect to git repo path.
+   * @param filenames list of relative file paths (target file name included) with respect to git repo path.
    */
   GitHarness& stageFile(std::vector<std::string> filenames);
 
@@ -93,8 +86,7 @@ class GitHarness {
    * @param tag_name tag name.
    * @param oid_str  target commit id.
    */
-  GitHarness& addTagLightweight(const std::string& tag_name,
-                                const std::string& oid_str);
+  GitHarness& addTagLightweight(const std::string& tag_name, const std::string& oid_str);
 
   /**
    * @brief Implementation of git tag <tag name>. Tag the head commit.
@@ -110,8 +102,7 @@ class GitHarness {
    * @param commit_id   ID of commit from which new branch is created.
    */
   GitHarness& createBranch(const std::string& branch_name);
-  GitHarness& createBranch(const std::string& branch_name,
-                           const std::string& commit_id);
+  GitHarness& createBranch(const std::string& branch_name, const std::string& commit_id);
 
   /**
    * @brief Implementation of git checkout <branch_name>.

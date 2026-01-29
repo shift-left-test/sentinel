@@ -46,8 +46,7 @@ class ResultTest : public ::testing::Test {
     return mStdoutCapture->release();
   }
 
-  void MAKE_RESULT_XML(const fs::path& dirPath,
-      const std::string& fileContent) {
+  void MAKE_RESULT_XML(const fs::path& dirPath, const std::string& fileContent) {
     static int inc = 0;
     std::ofstream tmpfile;
     tmpfile.open(dirPath / fmt::format("tmp{0}.xml", inc++));
@@ -56,11 +55,11 @@ class ResultTest : public ::testing::Test {
   }
 
   void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& givenXMLContents,
-      const std::string& targetTag, const std::string& ignoreTag = "") {
+                                      const std::string& targetTag,
+                                      const std::string& ignoreTag = "") {
     static int inc = 0;
     std::string XMLContents = givenXMLContents;
-    auto MUT_DIR = BASE /
-        fmt::format("mut_dir_make_and_test_wrong_result_xml_{0}", inc++);
+    auto MUT_DIR = BASE / fmt::format("mut_dir_make_and_test_wrong_result_xml_{0}", inc++);
     fs::create_directories(MUT_DIR);
     std::string tmpTag = "1A2B3C4D5F";
 
@@ -78,8 +77,7 @@ class ResultTest : public ::testing::Test {
     captureStdout();
     auto mut = new Result(MUT_DIR);
     std::string out = capturedStdout();
-    EXPECT_TRUE(string::contains(out,
-        "This file doesn't follow googletest result format:"));
+    EXPECT_TRUE(string::contains(out, "This file doesn't follow googletest result format:"));
 
     fs::remove_all(MUT_DIR);
     delete mut;
@@ -181,8 +179,7 @@ TEST_F(ResultTest, testResultWithSurvivedMutation) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::SURVIVED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::SURVIVED);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -198,8 +195,7 @@ TEST_F(ResultTest, testResultWithKillMutation) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::KILLED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
   EXPECT_EQ("C2.TC2", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -215,8 +211,7 @@ TEST_F(ResultTest, testResultWithKillMutations) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::KILLED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
   EXPECT_EQ("C1.TC1, C2.TC2", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -233,8 +228,7 @@ TEST_F(ResultTest, testResultWithKillMutationUsingQtTestResult) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::KILLED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
   EXPECT_EQ(R"(qmake5-project.MinusTest.testShouldAlsoFail)", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -250,8 +244,7 @@ TEST_F(ResultTest, testResultWithSurvivedMutationAddNewTC) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::SURVIVED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::SURVIVED);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -267,8 +260,7 @@ TEST_F(ResultTest, testResultWithKillMutationAddNewTC) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::KILLED);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
   EXPECT_EQ("C2.TC2", killingTest);
   EXPECT_EQ("", errorTest);
 }
@@ -282,8 +274,7 @@ TEST_F(ResultTest, testResultWithKErrorMutationErrorTC) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::RUNTIME_ERROR);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("C2.TC2", errorTest);
 }
@@ -297,8 +288,7 @@ TEST_F(ResultTest, testResultWithKErrorMutationErrorTCandKilledTC) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::RUNTIME_ERROR);
   EXPECT_EQ("C1.TC1", killingTest);
   EXPECT_EQ("C2.TC2", errorTest);
 }
@@ -313,8 +303,7 @@ TEST_F(ResultTest, testResultWithErrorMutationErrorTCAndAddNewTc) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::RUNTIME_ERROR);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("C2.TC2", errorTest);
 }
@@ -327,8 +316,7 @@ TEST_F(ResultTest, testResultWithEmptyMutationDir) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest),
-      MutationState::RUNTIME_ERROR);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::RUNTIME_ERROR);
   EXPECT_EQ("", killingTest);
   EXPECT_EQ("C1.TC1, C2.TC2", errorTest);
 }
@@ -344,8 +332,7 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   captureStdout();
   auto mut = new Result(MUT_DIR);
   std::string out = capturedStdout();
-  EXPECT_TRUE(string::contains(out,
-      "XML_ERROR_PARSING:"));
+  EXPECT_TRUE(string::contains(out, "XML_ERROR_PARSING:"));
   delete mut;
   Logger::setDefaultLevel(Logger::Level::OFF);
   Logger::getLogger("Result")->setLevel(Logger::Level::OFF);

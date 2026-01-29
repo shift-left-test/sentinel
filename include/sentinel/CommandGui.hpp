@@ -16,7 +16,6 @@
 #include "sentinel/CommandRun.hpp"
 #include "sentinel/ncstream/NcWindowStreambuf.hpp"
 
-
 namespace sentinel {
 
 /**

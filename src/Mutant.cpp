@@ -11,18 +11,17 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
 Mutant::Mutant() : mFirst{0, 0}, mLast{0, 0} {
 }
 
 Mutant::Mutant(const std::string& mutationOperator,
-                 const std::string& path,
-                 const std::string& qualifiedFuncName,
-                 std::size_t firstLine, std::size_t firstColumn,
-                 std::size_t lastLine, std::size_t lastColumn,
-                 const std::string& token) :
+               const std::string& path,
+               const std::string& qualifiedFuncName,
+               std::size_t firstLine, std::size_t firstColumn,
+               std::size_t lastLine, std::size_t lastColumn,
+               const std::string& token) :
     mPath(std::experimental::filesystem::canonical(path)), mToken(token),
     mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
@@ -32,7 +31,7 @@ Mutant::Mutant(const std::string& mutationOperator,
     mFunction = qualifiedFuncName;
   } else {
     mClass = qualifiedFuncName.substr(0, pos);
-    mFunction = qualifiedFuncName.substr(pos+1);
+    mFunction = qualifiedFuncName.substr(pos + 1);
   }
 }
 
@@ -90,9 +89,9 @@ std::string Mutant::getToken() const {
 
 std::string Mutant::str() const {
   return fmt::format("{},{},{},{},{},{},{},{}", getOperator(),
-      getPath().string(), getQualifiedFunction(),
-      getFirst().line, getFirst().column, getLast().line, getLast().column,
-      getToken());
+                     getPath().string(), getQualifiedFunction(),
+                     getFirst().line, getFirst().column, getLast().line, getLast().column,
+                     getToken());
 }
 
 std::ostream& operator<<(std::ostream& out, const Mutant& m) {
@@ -105,10 +104,11 @@ std::istream& operator>>(std::istream& in, Mutant &m) {
   if (getline(in, line)) {
     auto str = string::split(line, ",");
     m = Mutant(str[0], str[1], str[2],
-        string::stringToInt<std::size_t>(str[3]),
-        string::stringToInt<std::size_t>(str[4]),
-        string::stringToInt<std::size_t>(str[5]),
-        string::stringToInt<std::size_t>(str[6]), str[7]);
+               string::stringToInt<std::size_t>(str[3]),
+               string::stringToInt<std::size_t>(str[4]),
+               string::stringToInt<std::size_t>(str[5]),
+               string::stringToInt<std::size_t>(str[6]),
+               str[7]);
   }
   return in;
 }

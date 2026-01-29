@@ -12,7 +12,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-
 namespace sentinel {
 
 static std::map<std::string, std::shared_ptr<Logger>> loggers;
@@ -23,11 +22,8 @@ std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
   return getLogger(name, "{name} [{level}] {message}");
 }
 
-std::shared_ptr<Logger> Logger::getLogger(const std::string& name,
-                                          const std::string& format) {
-  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name,
-                                                           format,
-                                                           defaultLevel)));
+std::shared_ptr<Logger> Logger::getLogger(const std::string& name, const std::string& format) {
+  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name, format, defaultLevel)));
   return loggers.at(name);
 }
 
@@ -35,9 +31,7 @@ void Logger::setDefaultLevel(Logger::Level level) {
   defaultLevel = level;
 }
 
-Logger::Logger(const std::string& name,
-               const std::string& format,
-               Logger::Level level) :
+Logger::Logger(const std::string& name, const std::string& format, Logger::Level level) :
     mName(name), mFormat(format), mLevel(level) {
   try {
     this->format(mLevel, mName);
@@ -47,8 +41,7 @@ Logger::Logger(const std::string& name,
   }
 }
 
-std::string Logger::format(Logger::Level level,
-                           const std::string& message) {
+std::string Logger::format(Logger::Level level, const std::string& message) {
   std::string levelText;
   if (level == Level::DEBUG) {
     levelText = "DEBUG";

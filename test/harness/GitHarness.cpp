@@ -17,13 +17,11 @@
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-GitHarness::GitHarness(const std::string& dir_name) :
-    repo(nullptr) {
+GitHarness::GitHarness(const std::string& dir_name) : repo(nullptr) {
   git_libgit2_init();
 
   // Create the directory.
@@ -61,8 +59,7 @@ GitHarness& GitHarness::addFolder(const std::string& folder_name) {
 }
 
 // Create a file at specified location (relative path w.r.t repo path)
-GitHarness& GitHarness::addFile(const std::string& filename,
-                                const std::string& content) {
+GitHarness& GitHarness::addFile(const std::string& filename, const std::string& content) {
   if (fs::is_regular_file(repo_path / filename)) {
     throw IOException(EEXIST);
   }
@@ -83,12 +80,10 @@ GitHarness& GitHarness::addFile(const std::string& filename,
 }
 
 // Add code to file.
-// If line number is negative or exceed file length, the code is appended to
-// end of file.
+// If line number is negative or exceed file length, the code is appended to end of file.
 // By default, code is appended to end of file.
-GitHarness& GitHarness::addCode(const std::string& filename,
-                                const std::string& content,
-                                std::size_t line, std::size_t col) {
+GitHarness& GitHarness::addCode(const std::string& filename, const std::string& content, std::size_t line,
+                                std::size_t col) {
   std::string filename_full = repo_path / filename;
   if (!fs::is_regular_file(filename_full)) {
     throw IOException(EINVAL);
@@ -97,8 +92,7 @@ GitHarness& GitHarness::addCode(const std::string& filename,
   // Create a temporary file to modify file content.
   // Temporary filename is filename.temp
   std::ifstream orig_file(filename_full, std::ios_base::in);
-  std::ofstream changed_file(filename_full+".temp",
-                             std::ios_base::out | std::ios_base::trunc);
+  std::ofstream changed_file(filename_full + ".temp", std::ios_base::out | std::ios_base::trunc);
 
   std::size_t line_idx = 0;
   std::string line_str;
@@ -112,18 +106,16 @@ GitHarness& GitHarness::addCode(const std::string& filename,
     }
 
     // Column number starts from 1.
-    // For target line, if column number is negative, content is added to
-    // end of line.
+    // For target line, if column number is negative, content is added to end of line.
     if (col == 0 || col > line_str.length()) {
       changed_file << line_str << content << std::endl;
     } else {
-      changed_file << line_str.substr(0, col-1) << content
-                   << line_str.substr(col-1, std::string::npos) << std::endl;
+      changed_file << line_str.substr(0, col - 1) << content
+                   << line_str.substr(col - 1, std::string::npos) << std::endl;
     }
   }
 
-  // If line number is negative or exceeding length of file, content is added
-  // to end of file.
+  // If line number is negative or exceeding length of file, content is added to end of file.
   if (line == 0 || line > line_idx) {
     changed_file << content;
   }
@@ -132,13 +124,12 @@ GitHarness& GitHarness::addCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  fs::rename(filename_full+".temp", filename_full);
+  fs::rename(filename_full + ".temp", filename_full);
   return *this;
 }
 
 // Delete multiple line of codes. Code line starts from 1.
-GitHarness& GitHarness::deleteCode(const std::string& filename,
-                                   const std::vector<std::size_t>& lines) {
+GitHarness& GitHarness::deleteCode(const std::string& filename, const std::vector<std::size_t>& lines) {
   std::string filename_full = repo_path / filename;
   if (!fs::is_regular_file(filename_full)) {
     throw IOException(EINVAL);
@@ -147,7 +138,7 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
   // Create a temporary file to modify file content.
   // Temporary filename is filename.temp
   std::ifstream orig_file(filename_full);
-  std::ofstream changed_file(filename_full+".temp");
+  std::ofstream changed_file(filename_full + ".temp");
 
   std::size_t line_idx = 0;
   std::string line_str;
@@ -167,7 +158,7 @@ GitHarness& GitHarness::deleteCode(const std::string& filename,
   changed_file.close();
 
   // replace original file with changed file.
-  fs::rename(filename_full+".temp", filename_full);
+  fs::rename(filename_full + ".temp", filename_full);
   return *this;
 }
 
@@ -192,8 +183,7 @@ GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
   options.mode = INDEX_ADD;
 
   /* Grab the repository's index. */
-  libgitErrorCheck(git_repository_index(&index, repo),
-                   "Could not open repository index");
+  libgitErrorCheck(git_repository_index(&index, repo), "Could not open repository index");
 
   options.repo = repo;
 
@@ -223,16 +213,11 @@ GitHarness& GitHarness::commit(const std::string& message) {
     std::cerr << "git commit error\n";
   }
 
-  libgitErrorCheck(git_repository_index(&index, repo),
-                   "Could not open repository index");
-  libgitErrorCheck(git_index_write_tree(&tree_oid, index),
-                   "Could not write tree");
+  libgitErrorCheck(git_repository_index(&index, repo), "Could not open repository index");
+  libgitErrorCheck(git_index_write_tree(&tree_oid, index), "Could not write tree");
   libgitErrorCheck(git_index_write(index), "Could not write index");
-  libgitErrorCheck(git_tree_lookup(&tree, repo, &tree_oid),
-                   "Error looking up tree");
-  libgitErrorCheck(git_signature_now(&signature, "Loc Phan",
-                                     "loc.phan@lge.com"),
-                   "Error creating signature");
+  libgitErrorCheck(git_tree_lookup(&tree, repo, &tree_oid), "Error looking up tree");
+  libgitErrorCheck(git_signature_now(&signature, "Loc Phan", "loc.phan@lge.com"), "Error creating signature");
   libgitErrorCheck(git_commit_create_v(&new_commit_id, repo, "HEAD", signature,
                                        signature, "UTF-8", message.c_str(),
                                        tree, (parent != nullptr) ? 1 : 0,
@@ -250,8 +235,7 @@ GitHarness& GitHarness::commit(const std::string& message) {
 }
 
 // git tag <tag_name> <commit_id>
-GitHarness& GitHarness::addTagLightweight(const std::string& tag_name,
-                                          const std::string& oid_str) {
+GitHarness& GitHarness::addTagLightweight(const std::string& tag_name, const std::string& oid_str) {
   if (tag_name.empty()) {
     throw std::runtime_error("Tag name is empty");
   }
@@ -260,14 +244,10 @@ GitHarness& GitHarness::addTagLightweight(const std::string& tag_name,
   git_object *target;
   const char* buf = oid_str.c_str();
 
-  libgitErrorCheck(git_oid_fromstrp(&oid, buf),
-                   "Error retrieving commit");
-  libgitErrorCheck(git_revparse_single(&target, repo,
-                   static_cast<const char*>(buf)),
-                   "Unable to identify commit");
-  libgitErrorCheck(
-      git_tag_create_lightweight(&oid, repo, tag_name.c_str(), target, 0),
-      "Unable to create lightweight tag");
+  libgitErrorCheck(git_oid_fromstrp(&oid, buf), "Error retrieving commit");
+  libgitErrorCheck(git_revparse_single(&target, repo, static_cast<const char*>(buf)), "Unable to identify commit");
+  libgitErrorCheck(git_tag_create_lightweight(&oid, repo, tag_name.c_str(), target, 0),
+                   "Unable to create lightweight tag");
 
   git_object_free(target);
 
@@ -285,8 +265,7 @@ GitHarness& GitHarness::createBranch(const std::string& branch_name) {
   return createBranch(branch_name, "HEAD");
 }
 
-GitHarness& GitHarness::createBranch(const std::string& branch_name,
-                                     const std::string& commit_id) {
+GitHarness& GitHarness::createBranch(const std::string& branch_name, const std::string& commit_id) {
   git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
   git_reference* branch = nullptr;
   git_commit* target_commit = nullptr;
@@ -296,26 +275,17 @@ GitHarness& GitHarness::createBranch(const std::string& branch_name,
 
   checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
   if (git_oid_fromstrp(&oid, buf) < 0) {
-    libgitErrorCheck(git_reference_name_to_id(&oid, repo, commit_id.c_str()),
-                     "Fail to retrieve git_oid");
+    libgitErrorCheck(git_reference_name_to_id(&oid, repo, commit_id.c_str()), "Fail to retrieve git_oid");
   }
 
-  libgitErrorCheck(git_commit_lookup(&target_commit, repo, &oid),
-                    "Fail to retrieve commit");
-  libgitErrorCheck(git_object_lookup(&object, repo, &oid, GIT_OBJ_ANY),
-                   "Fail to retrieve object");
-  libgitErrorCheck(git_checkout_tree(
-                       repo,
-                       object,
-                       &checkout_opts),
-                   "Fail to checkout tree");
-  libgitErrorCheck(git_branch_create(&branch, repo, branch_name.c_str(),
-                                     target_commit, 0),
+  libgitErrorCheck(git_commit_lookup(&target_commit, repo, &oid), "Fail to retrieve commit");
+  libgitErrorCheck(git_object_lookup(&object, repo, &oid, GIT_OBJ_ANY), "Fail to retrieve object");
+  libgitErrorCheck(git_checkout_tree(repo, object, &checkout_opts), "Fail to checkout tree");
+  libgitErrorCheck(git_branch_create(&branch, repo, branch_name.c_str(), target_commit, 0),
                    "Fail to create new branch");
 
   const char* target_head = git_reference_name(branch);
-  libgitErrorCheck(git_repository_set_head(repo, target_head),
-                   "Fail to update HEAD reference");
+  libgitErrorCheck(git_repository_set_head(repo, target_head), "Fail to update HEAD reference");
 
   git_object_free(object);
   git_reference_free(branch);
@@ -331,12 +301,9 @@ GitHarness& GitHarness::checkoutBranch(const std::string& branch_name) {
   git_reference* branch = nullptr;
 
   checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
-  libgitErrorCheck(git_branch_lookup(&branch, repo, branch_name.c_str(),
-                                     GIT_BRANCH_LOCAL),
+  libgitErrorCheck(git_branch_lookup(&branch, repo, branch_name.c_str(), GIT_BRANCH_LOCAL),
                    "Fail to retrieve branch");
-  libgitErrorCheck(git_object_lookup(&object, repo,
-                                     git_reference_target(branch),
-                                     GIT_OBJ_ANY),
+  libgitErrorCheck(git_object_lookup(&object, repo, git_reference_target(branch), GIT_OBJ_ANY),
                    "Fail to retrieve object");
   libgitErrorCheck(git_checkout_tree(repo, object, &checkout_opts),
                    "Fail to checkout tree");
@@ -368,17 +335,14 @@ GitHarness& GitHarness::merge(const std::string& branch) {
   merge_opts.flags = GIT_MERGE_FAIL_ON_CONFLICT;
   merge_opts.file_flags = GIT_MERGE_FILE_STYLE_DIFF3;
 
-  checkout_opts.checkout_strategy = GIT_CHECKOUT_FORCE |
-                                    GIT_CHECKOUT_ALLOW_CONFLICTS;
+  checkout_opts.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_ALLOW_CONFLICTS;
 
   git_annotated_commit* target = nullptr;
   git_reference* branch_ref = nullptr;
 
-  libgitErrorCheck(git_branch_lookup(&branch_ref, repo, branch.c_str(),
-                                     GIT_BRANCH_LOCAL),
+  libgitErrorCheck(git_branch_lookup(&branch_ref, repo, branch.c_str(), GIT_BRANCH_LOCAL),
                    "Fail to retrieve branch");
-  libgitErrorCheck(git_annotated_commit_from_ref(&target, repo,
-                                                 branch_ref),
+  libgitErrorCheck(git_annotated_commit_from_ref(&target, repo, branch_ref),
                    "Fail to create git_annotated_commit");
   libgitErrorCheck(
       git_merge(
@@ -390,24 +354,20 @@ GitHarness& GitHarness::merge(const std::string& branch) {
   // Prepare commit message
   std::string commit_msg{"Merge branch " + branch + " into "};
   git_reference* head_ref;
-  libgitErrorCheck(git_repository_head(&head_ref, repo),
-                   "failed to get repo HEAD");
+  libgitErrorCheck(git_repository_head(&head_ref, repo), "failed to get repo HEAD");
   commit_msg += git_reference_name(head_ref);
 
   // Prepare parent commits
   git_commit* parents[2];
 
-  libgitErrorCheck(git_commit_lookup(&parents[0], repo,
-                                     git_reference_target(head_ref)),
+  libgitErrorCheck(git_commit_lookup(&parents[0], repo, git_reference_target(head_ref)),
                    "Fail to find HEAD commit");
-  libgitErrorCheck(git_commit_lookup(&parents[1], repo,
-                                     git_annotated_commit_id(target)),
+  libgitErrorCheck(git_commit_lookup(&parents[1], repo, git_annotated_commit_id(target)),
                    "Fail to find target branch commit");
 
   // Create commit signature
   git_signature* signature;
-  libgitErrorCheck(git_signature_now(&signature, "Loc Phan",
-                                     "loc.phan@lge.com"),
+  libgitErrorCheck(git_signature_now(&signature, "Loc Phan", "loc.phan@lge.com"),
                    "Error creating signature");
 
   // Prepare commit tree and commit
@@ -415,17 +375,13 @@ GitHarness& GitHarness::merge(const std::string& branch) {
   git_tree* tree;
   git_index* index;
 
-  libgitErrorCheck(git_repository_index(&index, repo),
-                   "Could not open repository index");
-  libgitErrorCheck(git_index_write_tree(&tree_oid, index),
-                   "Could not write tree");
-  libgitErrorCheck(git_tree_lookup(&tree, repo, &tree_oid),
-                   "Error looking up tree");
-  libgitErrorCheck(git_commit_create(
-                       &commit_oid, repo, git_reference_name(head_ref),
-                       signature, signature, "UTF-8", commit_msg.c_str(),
-                       tree, 2,
-                       const_cast<const git_commit **>(parents)),  // NOLINT
+  libgitErrorCheck(git_repository_index(&index, repo), "Could not open repository index");
+  libgitErrorCheck(git_index_write_tree(&tree_oid, index), "Could not write tree");
+  libgitErrorCheck(git_tree_lookup(&tree, repo, &tree_oid), "Error looking up tree");
+  libgitErrorCheck(git_commit_create(&commit_oid, repo, git_reference_name(head_ref),
+                                     signature, signature, "UTF-8", commit_msg.c_str(),
+                                     tree, 2,
+                                     const_cast<const git_commit **>(parents)),  // NOLINT
                    "Fail to create merge commit");
   commit_ids.push_back(commit_oid);
 

@@ -10,7 +10,6 @@
 #include <string>
 #include <args/args.hxx>
 
-
 namespace sentinel {
 
 /**

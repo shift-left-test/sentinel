@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-
 namespace sentinel {
 
 /**
@@ -36,8 +35,7 @@ class Container {
    * @param first iterator
    * @param last iterator
    */
-  Container(typename std::vector<T>::iterator first,
-            typename std::vector<T>::iterator last);
+  Container(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last);
 
   /**
    * @brief Return the number of elements
@@ -51,8 +49,7 @@ class Container {
    *
    * @return the iterator following the last removed element
    */
-  typename std::vector<T>::iterator erase(
-      typename std::vector<T>::const_iterator pos);
+  typename std::vector<T>::iterator erase(typename std::vector<T>::const_iterator pos);
 
   /**
    * @brief Return the iterator pointing to the first element
@@ -112,8 +109,7 @@ class Container {
    * @param position of an element
    * @return reference of the element
    */
-  typename std::vector<T>::const_reference
-  operator[](std::size_t position) const;
+  typename std::vector<T>::const_reference operator[](std::size_t position) const;
 
   /**
    * @brief Add the element at the end
@@ -200,8 +196,7 @@ class Container {
 };
 
 template <typename T>
-Container<T>::Container(typename std::vector<T>::iterator first,
-                        typename std::vector<T>::iterator last) :
+Container<T>::Container(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last) :
     mData(first, last) {
 }
 
@@ -211,8 +206,7 @@ std::size_t Container<T>::size() const noexcept {
 }
 
 template <typename T>
-typename std::vector<T>::iterator Container<T>::erase(
-    typename std::vector<T>::const_iterator pos) {
+typename std::vector<T>::iterator Container<T>::erase(typename std::vector<T>::const_iterator pos) {
   return mData.erase(pos);
 }
 
@@ -260,8 +254,7 @@ Container<T>::operator[](std::size_t position) const {
 }
 
 template <typename T>
-void Container<T>::push_back(
-    const typename std::vector<T>::value_type& object) {
+void Container<T>::push_back(const typename std::vector<T>::value_type& object) {
   mData.push_back(object);
 }
 
@@ -295,14 +288,12 @@ void Container<T>::unique() {
 
 template <typename T>
 void Container<T>::shuffle() {
-  std::shuffle(mData.begin(), mData.end(),
-               std::mt19937 { std::random_device {}() });
+  std::shuffle(mData.begin(), mData.end(), std::mt19937 { std::random_device {}() });
 }
 
 template <typename T>
 void Container<T>::shuffle(unsigned randomSeed) {
-  std::shuffle(mData.begin(), mData.end(),
-               std::mt19937 { randomSeed });
+  std::shuffle(mData.begin(), mData.end(), std::mt19937 { randomSeed });
 }
 
 template <typename T>
@@ -311,10 +302,8 @@ void Container<T>::clear() noexcept {
 }
 
 template <typename T>
-Container<T> Container<T>::split(std::size_t first,
-                                 std::size_t last) {
-  return Container<T>(std::next(begin(), first),
-                      std::next(begin(), last));
+Container<T> Container<T>::split(std::size_t first, std::size_t last) {
+  return Container<T>(std::next(begin(), first), std::next(begin(), last));
 }
 
 template <typename T>

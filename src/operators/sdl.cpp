@@ -71,8 +71,7 @@ bool SDL::canMutate(clang::Stmt* s) {
   // Because it is the value of the expression.
   auto cs = clang::dyn_cast<clang::CompoundStmt>(parent);
   const clang::Stmt *parentOfParent = getParentStmt(parent);
-  if (parentOfParent == nullptr ||
-      !clang::isa<clang::StmtExpr>(parentOfParent)) {
+  if (parentOfParent == nullptr || !clang::isa<clang::StmtExpr>(parentOfParent)) {
     return true;
   }
 
@@ -88,8 +87,7 @@ bool SDL::canMutate(clang::Stmt* s) {
 
 void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   auto stmtStartLoc = s->getBeginLoc();
-  auto stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+  auto stmtEndLoc = clang::Lexer::getLocForEndOfToken(s->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
 
   // A temporary solution to get the location after semicolon.
   // Tried Lexer::findLocAfterToken and Lexer::findNextToken

@@ -13,7 +13,6 @@
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
 
-
 namespace sentinel {
 const char * cGitSourceTreeLoggerName = "GitSourceTree";
 
@@ -21,8 +20,7 @@ GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
     SourceTree(baseDirectory) {
 }
 
-void GitSourceTree::modify(const Mutant& info,
-    const std::experimental::filesystem::path& backupPath) {
+void GitSourceTree::modify(const Mutant& info, const std::experimental::filesystem::path& backupPath) {
   namespace fs = std::experimental::filesystem;
 
   // Backup target file to be mutated
@@ -30,20 +28,16 @@ void GitSourceTree::modify(const Mutant& info,
 
   fs::path targetFilename = fs::canonical(info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
-  if (!string::startsWith(targetFilename.parent_path(),
-                          gitRootAbsolutePath)) {
-    throw IOException(EINVAL, "Git root does not contain "
-      + targetFilename.string());
+  if (!string::startsWith(targetFilename.parent_path(), gitRootAbsolutePath)) {
+    throw IOException(EINVAL, "Git root does not contain " + targetFilename.string());
   }
   std::string targetRelativePath = \
-      targetFilename.parent_path().string().substr(
-          gitRootAbsolutePath.string().length());
+      targetFilename.parent_path().string().substr(gitRootAbsolutePath.string().length());
   fs::path newBackupPath = backupPath / targetRelativePath;
   if (!fs::exists(newBackupPath)) {
     fs::create_directories(newBackupPath);
   }
-  fs::copy(targetFilename, newBackupPath,
-    fs::copy_options::overwrite_existing);
+  fs::copy(targetFilename, newBackupPath, fs::copy_options::overwrite_existing);
   logger->info(fmt::format("backup: {}", newBackupPath.string()));
 
   // Apply mutation
@@ -73,12 +67,12 @@ void GitSourceTree::modify(const Mutant& info,
     }
 
     if (lineIdx == info.getFirst().line) {
-      mutatedFile << line.substr(0, info.getFirst().column-1);
+      mutatedFile << line.substr(0, info.getFirst().column - 1);
       mutatedFile << info.getToken();
     }
 
     if (lineIdx == info.getLast().line) {
-      mutatedFile << line.substr(info.getLast().column-1) << std::endl;
+      mutatedFile << line.substr(info.getLast().column - 1) << std::endl;
     }
   }
 

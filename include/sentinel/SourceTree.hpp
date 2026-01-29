@@ -10,7 +10,6 @@
 #include <string>
 #include "sentinel/Mutant.hpp"
 
-
 namespace sentinel {
 
 class Mutant;
@@ -33,8 +32,7 @@ class SourceTree {
    * @param info Mutant information
    * @param backupPath backup directory
    */
-  virtual void modify(const Mutant& info,
-      const std::experimental::filesystem::path& backupPath) = 0;
+  virtual void modify(const Mutant& info, const std::experimental::filesystem::path& backupPath) = 0;
 
  protected:
   /**

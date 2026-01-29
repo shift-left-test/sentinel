@@ -12,7 +12,6 @@
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutants.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -58,9 +57,7 @@ class MutantsTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {
-  EXPECT_THROW(Mutant("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0,
-                       ONELINE_TOKEN),
-               fs::filesystem_error);
+  EXPECT_THROW(Mutant("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0, ONELINE_TOKEN), fs::filesystem_error);
 }
 
 TEST_F(MutantsTest, testAdd) {

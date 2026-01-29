@@ -6,13 +6,11 @@
 #ifndef TEST_INCLUDE_CAPTUREHELPER_HPP_
 #define TEST_INCLUDE_CAPTUREHELPER_HPP_
 
-
 #include <iostream>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
-
 
 namespace sentinel {
 
@@ -50,8 +48,8 @@ class CaptureHelper {
   }
 
  private:
-  explicit CaptureHelper(std::ostream* ioStream)
-    : mStream(ioStream), mIsCapturing(false), mOriginalBuffer(nullptr) {
+  explicit CaptureHelper(std::ostream* ioStream) :
+      mStream(ioStream), mIsCapturing(false), mOriginalBuffer(nullptr) {
   }
 
   std::ostream* mStream;

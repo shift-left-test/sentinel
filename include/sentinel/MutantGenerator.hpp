@@ -10,7 +10,6 @@
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -26,9 +25,7 @@ class MutantGenerator {
    * @param randomSeed random seed
    * @return mutables
    */
-  virtual Mutants populate(const SourceLines& sourceLines,
-                           std::size_t maxMutants,
-                           unsigned randomSeed) = 0;
+  virtual Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) = 0;
 
   /**
    * @brief Populate mutables from the given source line
@@ -37,8 +34,7 @@ class MutantGenerator {
    * @param maxMutants limit number of generated mutables
    * @return mutables
    */
-  virtual Mutants populate(const SourceLines& sourceLines,
-                           std::size_t maxMutants) = 0;
+  virtual Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) = 0;
 };
 
 }  // namespace sentinel

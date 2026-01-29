@@ -14,8 +14,8 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/CommandEvaluate.hpp"
 
-
 namespace sentinel {
+
 const char * cCommandEvaluateLoggerName = "CommandEvaluate";
 
 CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
@@ -39,10 +39,11 @@ CommandEvaluate::CommandEvaluate(args::Subparser& parser) : Command(parser),
 int CommandEvaluate::run() {
   namespace fs = std::experimental::filesystem;
 
-  if (mTestState.Get() != "build_failure" && mTestState.Get() != "timeout"
-      && mTestState.Get() != "success" && mTestState.Get() != "uncovered") {
-      throw InvalidArgumentException(fmt::format(
-          "Invalid value for test-state option: {0}", mTestState.Get()));
+  if (mTestState.Get() != "build_failure" &&
+      mTestState.Get() != "timeout"
+      && mTestState.Get() != "success" &&
+      mTestState.Get() != "uncovered") {
+    throw InvalidArgumentException(fmt::format("Invalid value for test-state option: {0}", mTestState.Get()));
   }
 
   fs::path sourceRoot = fs::canonical(mSourceRoot.Get());
@@ -67,9 +68,9 @@ int CommandEvaluate::run() {
 
   sentinel::Evaluator evaluator(mExpectedDir.Get(), sourceRoot);
 
-  evaluator.compareAndSaveMutationResult(m, mActualDir.Get(),
-    outputDir / mEvalFile.Get(), mTestState.Get());
+  evaluator.compareAndSaveMutationResult(m, mActualDir.Get(), outputDir / mEvalFile.Get(), mTestState.Get());
 
   return 0;
 }
+
 }  // namespace sentinel

@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-
 namespace sentinel {
 
 /**
@@ -44,8 +43,7 @@ class Logger {
    * @param format string
    * @return logger instance
    */
-  static std::shared_ptr<Logger> getLogger(const std::string& name,
-                                           const std::string& format);
+  static std::shared_ptr<Logger> getLogger(const std::string& name, const std::string& format);
 
   /**
    * @brief Set the logging level
@@ -97,9 +95,7 @@ class Logger {
    * @param format string
    * @param level logging level
    */
-  Logger(const std::string& name,
-         const std::string& format,
-         Logger::Level level);
+  Logger(const std::string& name, const std::string& format, Logger::Level level);
 
   /**
    * @brief Return formatted string
@@ -125,6 +121,5 @@ class Logger {
 };
 
 }  // namespace sentinel
-
 
 #endif  // INCLUDE_SENTINEL_LOGGER_HPP_

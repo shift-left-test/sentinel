@@ -11,11 +11,9 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
 
-
 namespace sentinel {
 
-SourceTree::SourceTree(
-    const std::experimental::filesystem::path& baseDirectory) :
+SourceTree::SourceTree(const std::experimental::filesystem::path& baseDirectory) :
     mBaseDirectory(baseDirectory) {
   if (!std::experimental::filesystem::exists(mBaseDirectory)) {
     throw IOException(EINVAL);

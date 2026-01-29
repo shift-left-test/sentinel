@@ -12,7 +12,6 @@
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 
-
 namespace sentinel {
 
 /**

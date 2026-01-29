@@ -11,7 +11,6 @@
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -20,8 +19,7 @@ class GitSourceTreeTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE_DIR =
-        fs::temp_directory_path() / "SENTINEL_GITSOURCETREETEST_TMP_DIR";
+    BASE_DIR = fs::temp_directory_path() / "SENTINEL_GITSOURCETREETEST_TMP_DIR";
     fs::remove_all(BASE_DIR);
     fs::create_directories(BASE_DIR);
     TMP_FILE_PATH = BASE_DIR / "sample1.cpp";
@@ -44,8 +42,7 @@ TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
 }
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
-  Mutant m{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
-            58, 29, 58, 31, "||"};
+  Mutant m{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
   GitSourceTree tree(BASE_DIR);
   fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
   fs::create_directories(BACKUP_PATH);
@@ -59,8 +56,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   std::size_t lineIdx = 0;
-  while (std::getline(mutatedFile, mutatedFileLine) &&
-         std::getline(origFile, origFileLine)) {
+  while (std::getline(mutatedFile, mutatedFileLine) && std::getline(origFile, origFileLine)) {
     lineIdx += 1;
     if (lineIdx != 58) {
       EXPECT_EQ(mutatedFileLine, origFileLine);
@@ -75,8 +71,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   // If position does not exist, no changes should be made.
-  Mutant nonexistLinePosition{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber",
-                               10000, 200, 300, 400, "||"};
+  Mutant nonexistLinePosition{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber", 10000, 200, 300, 400, "||"};
   GitSourceTree tree(BASE_DIR);
 
   fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
@@ -87,8 +82,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   std::ifstream mutatedFile(TMP_FILE_PATH);
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
-  while (std::getline(mutatedFile, mutatedFileLine) &&
-         std::getline(origFile, origFileLine)) {
+  while (std::getline(mutatedFile, mutatedFileLine) && std::getline(origFile, origFileLine)) {
     EXPECT_EQ(mutatedFileLine, origFileLine);
   }
   origFile.close();
@@ -110,8 +104,7 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
   std::string filename = tempFilename.filename();
   fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
-  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber",
-            58, 29, 58, 31, "||"};
+  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
   GitSourceTree tree(BASE_DIR);
   auto backupPath = BASE_DIR / "BACKUP_DIR";
   fs::create_directories(backupPath);
@@ -126,8 +119,7 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   std::size_t lineIdx = 0;
-  while (std::getline(mutatedFile, mutatedFileLine) &&
-         std::getline(origFile, origFileLine)) {
+  while (std::getline(mutatedFile, mutatedFileLine) && std::getline(origFile, origFileLine)) {
     lineIdx += 1;
     if (lineIdx != 58) {
       EXPECT_EQ(mutatedFileLine, origFileLine);

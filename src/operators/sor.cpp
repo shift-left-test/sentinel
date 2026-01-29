@@ -16,8 +16,7 @@ bool SOR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mShiftOperators.find(std::string(bo->getOpcodeStr())) != \
-         mShiftOperators.end();
+  return mShiftOperators.find(std::string(bo->getOpcodeStr())) != mShiftOperators.end();
 }
 
 void SOR::populate(clang::Stmt* s, Mutants* mutables) {

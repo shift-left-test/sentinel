@@ -16,7 +16,6 @@
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/Subprocess.hpp"
 
-
 namespace sentinel {
 
 pid_t Subprocess::childPid;
@@ -24,13 +23,11 @@ std::size_t Subprocess::killAfter;
 bool Subprocess::timedOut;
 int Subprocess::pendSig;
 
-Subprocess::Subprocess(const std::string& cmd, std::size_t sec,
-    std::size_t secForKill) :
-  mCmd(cmd), mSec(sec), mSecForKill(secForKill) {
-    if (Subprocess::childPid != 0) {
-      throw std::runtime_error(
-          "Another subprocess is running. (Problem with sentinel logic)");
-    }
+Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill) :
+    mCmd(cmd), mSec(sec), mSecForKill(secForKill) {
+  if (Subprocess::childPid != 0) {
+    throw std::runtime_error("Another subprocess is running. (Problem with sentinel logic)");
+  }
 }
 
 int Subprocess::execute() {
@@ -46,14 +43,13 @@ int Subprocess::execute() {
   // Open pipe
   int pfd[2];
   if (pipe(static_cast<int*>(pfd)) != 0) {
-    throw std::runtime_error(fmt::format("fail open pipe (cause: {})",
-          std::strerror(errno)));
+    throw std::runtime_error(fmt::format("fail open pipe (cause: {})", std::strerror(errno)));
   }
 
   // Backup below signals' handler temporally
   // sc's desctructor restore signals' handler.
   const std::vector<int> usingSignals = {SIGABRT, SIGINT, SIGFPE, SIGILL,
-    SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
+                                         SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
   auto sc = new signal::SaContainer(usingSignals);
 
   // Ignore below signals' temporally
@@ -79,8 +75,7 @@ int Subprocess::execute() {
     signal::setMultipleSignalHandlers(usingSignals, SIG_DFL);
 
     execlp("/bin/sh", "sh", "-c", mCmd.c_str(), nullptr);
-    std::cout << fmt::format("fail exec {} (cause: {})",
-          mCmd, std::strerror(errno)) << std::endl;
+    std::cout << fmt::format("fail exec {} (cause: {})", mCmd, std::strerror(errno)) << std::endl;
     exit(1);
   } else if (pid > 0) {
     // Close unused pipe
@@ -97,8 +92,7 @@ int Subprocess::execute() {
     // If sentinel catch below signals,
     // then send SIGKILL to child process group.
     // And send last signal to sentinel just before return this function
-    signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL,
-        SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
+    signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
         [](int signum) {
           std::cout << fmt::format(
               R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
@@ -121,13 +115,11 @@ int Subprocess::execute() {
             alarm(Subprocess::killAfter);
           } else {
             termSignal = SIGKILL;
-            tmpMsg = fmt::format("Failed to terminate child process within {}.",
-                Subprocess::killAfter);
+            tmpMsg = fmt::format("Failed to terminate child process within {}.", Subprocess::killAfter);
           }
           kill(-Subprocess::childPid, termSignal);
-          std::cout << fmt::format(
-              "{} Send a signal({}) to child process' process group.",
-              tmpMsg, strsignal(termSignal)) << std::endl;
+          std::cout << fmt::format("{} Send a signal({}) to child process' process group.",
+                                   tmpMsg, strsignal(termSignal)) << std::endl;
         });
 
     // Alarm setting
@@ -176,8 +168,7 @@ int Subprocess::execute() {
     delete sc;
     close(pfd[0]);
     close(pfd[1]);
-    throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})",
-          mCmd, std::strerror(errno)));
+    throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})", mCmd, std::strerror(errno)));
   }
 }
 

@@ -9,10 +9,9 @@
 #include <map>
 #include <string>
 
-
 namespace sentinel {
 /**
- * @brief change MutationOperator to Expansion form 
+ * @brief change MutationOperator to Expansion form
  *
  * @param mo MutationOperator
  * @return Expansion form of MutationOperator

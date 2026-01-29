@@ -30,8 +30,7 @@ TEST_F(CoverageInfoTest, testCoverWorks) {
 }
 
 TEST_F(CoverageInfoTest, testFailWhenUnknownFileGiven) {
-  EXPECT_THROW(CoverageInfo c{std::vector<std::string>(1, "unknown.info")},
-               InvalidArgumentException);
+  EXPECT_THROW(CoverageInfo c{std::vector<std::string>(1, "unknown.info")}, InvalidArgumentException);
 }
 
 }  // namespace sentinel

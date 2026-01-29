@@ -20,7 +20,8 @@ class SDL : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit SDL(clang::ASTContext* Context) : MutationOperator("SDL", Context) {}
+  explicit SDL(clang::ASTContext* Context) : MutationOperator("SDL", Context) {
+  }
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

@@ -5,7 +5,6 @@
 
 #include "sentinel/MainCLI.hpp"
 
-
 int main(int argc, char** argv) {
   return sentinel::MainCLI(argc, argv);
 }

@@ -24,13 +24,11 @@
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace sentinel {
 
 static const char * cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
-Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
-                                        std::size_t maxMutants) {
+Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
 
@@ -41,8 +39,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
 
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath,
-                                                             errorMsg);
+      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath, errorMsg);
 
   if (compileDb == nullptr) {
     throw IOException(EINVAL, errorMsg);
@@ -68,8 +65,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
-    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
-        "-ferror-limit=0"));
+    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
 
     // Save the current TERMINAL object (created by ncurses::initscr)
     // and set the current TERMINAL pointer to nullptr (might be error-prone)
@@ -98,11 +94,9 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
   return Mutants(mutables.begin(), mutables.begin() + maxMutants);
 }
 
-RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    clang::ASTContext* Context, Mutants* mutables,
-    const std::vector<std::size_t>& targetLines) :
-    mContext(Context), mSrcMgr(Context->getSourceManager()),
-    mMutants(mutables), mTargetLines(targetLines) {
+RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
+                                                              const std::vector<std::size_t>& targetLines) :
+    mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -126,24 +120,22 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   // Check if this Stmt node represents code on target lines.
   if (startLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext->getSourceManager()
-        .getImmediateExpansionRange(startLoc);
+    clang::CharSourceRange range = mContext->getSourceManager().getImmediateExpansionRange(startLoc);
     startLoc = range.getBegin();
   }
 
   if (endLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext->getSourceManager()
-        .getImmediateExpansionRange(endLoc);
-    endLoc = clang::Lexer::getLocForEndOfToken(
-        range.getEnd(), 0, mContext->getSourceManager(),
-        mContext->getLangOpts());
+    clang::CharSourceRange range = mContext->getSourceManager().getImmediateExpansionRange(endLoc);
+    endLoc = clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mContext->getSourceManager(),
+                                               mContext->getLangOpts());
   }
 
   std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
   bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](std::size_t lineNum)
-      { return lineNum >= startLineNum && lineNum <= endLineNum; } );
+      [startLineNum, endLineNum](std::size_t lineNum) {
+        return lineNum >= startLineNum && lineNum <= endLineNum;
+      } );
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {
@@ -161,15 +153,11 @@ void RandomMutantGenerator::GenerateMutantAction::ExecuteAction() {
   clang::ASTFrontendAction::ExecuteAction();
 }
 
-std::unique_ptr<clang::tooling::FrontendActionFactory>
-RandomMutantGenerator::myNewFrontendActionFactory(
+std::unique_ptr<clang::tooling::FrontendActionFactory> RandomMutantGenerator::myNewFrontendActionFactory(
     Mutants* mutables, const std::vector<std::size_t>& targetLines) {
-  class SimpleFrontendActionFactory :
-          public clang::tooling::FrontendActionFactory {
+  class SimpleFrontendActionFactory : public clang::tooling::FrontendActionFactory {
    public:
-    explicit SimpleFrontendActionFactory(
-        Mutants* mutables,
-        const std::vector<std::size_t>& targetLines) :
+    explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
         mMutants(mutables), mTargetLines(targetLines) {
     }
 

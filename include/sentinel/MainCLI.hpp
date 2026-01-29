@@ -6,7 +6,6 @@
 #ifndef INCLUDE_SENTINEL_MAINCLI_HPP_
 #define INCLUDE_SENTINEL_MAINCLI_HPP_
 
-
 namespace sentinel {
 
 /**

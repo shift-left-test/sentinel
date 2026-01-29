@@ -80,8 +80,7 @@ void ncstream::NcWindowStreambuf::refreshOutputWindows() {
   }
   int scrollBarSize = std::max(1, scrollLength / numLinesPerPixel);
   int maxScrollbarStartPos = scrollLength - scrollBarSize;
-  int startPos = std::min(*mCurrPos / numLinesPerPixel,
-                          maxScrollbarStartPos);
+  int startPos = std::min(*mCurrPos / numLinesPerPixel, maxScrollbarStartPos);
 
   // clear old scroll bar
   wbkgd(*mScroll, COLOR_PAIR(0));

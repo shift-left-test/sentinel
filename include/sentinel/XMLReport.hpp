@@ -10,7 +10,6 @@
 #include <string>
 #include "sentinel/Report.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -53,7 +52,7 @@ class XMLReport : public Report {
    * @param childText child XMLElement's text
    */
   void addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p,
-      const std::string& childName, const std::string& childText);
+                        const std::string& childName, const std::string& childText);
 };
 
 }  // namespace sentinel

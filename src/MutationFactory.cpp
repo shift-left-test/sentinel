@@ -17,18 +17,14 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
-MutationFactory::MutationFactory(
-    const std::shared_ptr<MutantGenerator>& generator) :
+MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) :
     mGenerator(generator) {
 }
 
-Mutants MutationFactory::populate(const std::string& gitPath,
-                                  const SourceLines& sourceLines,
-                                  std::size_t maxMutants,
-                                  unsigned randomSeed) {
+Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines,
+                                  std::size_t maxMutants, unsigned randomSeed) {
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger("populate");
@@ -54,18 +50,14 @@ Mutants MutationFactory::populate(const std::string& gitPath,
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}\n",
-                                         "Mutant Population Report", maxlen))
+  std::cout << string::rtrim(fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen))
             << std::endl;
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat,
-                           "File", flen,
-                           "#mutation", mlen);
+  std::cout << fmt::format(defFormat, "File", flen, "#mutation", mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   for (const auto& p : groupByPath) {
-    std::string filePath = fs::canonical(p.first).string().substr(
-        fs::canonical(gitPath).string().length() + 1);
+    std::string filePath = fs::canonical(p.first).string().substr(fs::canonical(gitPath).string().length() + 1);
 
     int filePos = filePath.size() - flen;
     std::string skipStr;
@@ -75,20 +67,15 @@ Mutants MutationFactory::populate(const std::string& gitPath,
       filePos += 4;
       skipStr = "... ";
     }
-    std::cout << fmt::format(defFormat,
-                             skipStr + filePath.substr(filePos), flen,
-                             p.second, mlen);
+    std::cout << fmt::format(defFormat, skipStr + filePath.substr(filePos), flen, p.second, mlen);
   }
 
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat,
-                           "TOTAL", flen,
-                           mutables.size(), mlen);
+  std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   logger->info(fmt::format("source lines: {}", sourceLines.size()));
-  logger->info(fmt::format("generated mutables count: {}",
-                           mutables.size()));
+  logger->info(fmt::format("generated mutables count: {}", mutables.size()));
 
   return mutables;
 }

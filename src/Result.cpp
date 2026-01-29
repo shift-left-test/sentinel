@@ -12,7 +12,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/Result.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -20,15 +19,14 @@ namespace sentinel {
 Result::Result(const std::string& path) :
     mLogger(Logger::getLogger("Result")) {
   std::vector<std::string> nonGtestFiles;
-  std::string logFormat =
-      "This file doesn't follow googletest result format: {}";
+  std::string logFormat = "This file doesn't follow googletest result format: {}";
 
   // gtest result format
   for (const auto& dirent : fs::recursive_directory_iterator(path)) {
     const auto& curPath = dirent.path();
     std::string curExt = curPath.extension().string();
     std::transform(curExt.begin(), curExt.end(), curExt.begin(),
-        [](unsigned char c) { return std::tolower(c); });
+                   [](unsigned char c) { return std::tolower(c); });
     if (fs::is_regular_file(curPath) && curExt == ".xml") {
       const auto& xmlPath = curPath.string();
       nonGtestFiles.push_back(xmlPath);
@@ -37,8 +35,7 @@ Result::Result(const std::string& path) :
       tinyxml2::XMLDocument doc;
       auto errcode = doc.LoadFile(xmlPath.c_str());
       if (errcode != 0) {
-        mLogger->debug(fmt::format("{}: {}",
-            tinyxml2::XMLDocument::ErrorIDToName(errcode), xmlPath));
+        mLogger->debug(fmt::format("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), xmlPath));
         continue;
       }
 
@@ -54,8 +51,7 @@ Result::Result(const std::string& path) :
       }
 
       bool allParsed = true;
-      for ( ; p != nullptr && allParsed
-          ; p = p->NextSiblingElement("testsuite")) {
+      for ( ; p != nullptr && allParsed; p = p->NextSiblingElement("testsuite")) {
         tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
         if (q == nullptr) {
           mLogger->debug(fmt::format(logFormat, xmlPath));
@@ -90,18 +86,15 @@ Result::Result(const std::string& path) :
         }
       }
       if (allParsed) {
-        mPassedTC.insert(
-            mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
-        mFailedTC.insert(
-            mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
+        mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
+        mFailedTC.insert(mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
       } else {
         nonGtestFiles.pop_back();
       }
     }
   }
 
-  logFormat =
-      "This file doesn't follow QtTest result format: {}";
+  logFormat = "This file doesn't follow QtTest result format: {}";
   // QtTest result format
   for (const std::string& xmlPath : nonGtestFiles) {
     std::vector<std::string> tmpPassedTC;
@@ -147,8 +140,7 @@ Result::Result(const std::string& path) :
     }
     if (allParsed) {
       mPassedTC.insert(mPassedTC.end(), tmpPassedTC.begin(), tmpPassedTC.end());
-      mFailedTC.insert(
-          mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
+      mFailedTC.insert(mFailedTC.end(), tmpFailedTC.begin(), tmpFailedTC.end());
     }
   }
 
@@ -163,14 +155,12 @@ bool Result::checkPassedTCEmpty() {
 }
 
 MutationState Result::compare(const Result& original, const Result& mutated,
-    std::string* killingTest, std::string* errorTest) {
+                              std::string* killingTest, std::string* errorTest) {
   killingTest->clear();
   errorTest->clear();
   for (const std::string &tc : original.mPassedTC) {
-    if (std::find(mutated.mPassedTC.begin(),
-        mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
-      if (std::find(mutated.mFailedTC.begin(),
-          mutated.mFailedTC.end(), tc) == mutated.mFailedTC.end()) {
+    if (std::find(mutated.mPassedTC.begin(), mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
+      if (std::find(mutated.mFailedTC.begin(), mutated.mFailedTC.end(), tc) == mutated.mFailedTC.end()) {
         if (!errorTest->empty()) {
           errorTest->append(", ");
         }

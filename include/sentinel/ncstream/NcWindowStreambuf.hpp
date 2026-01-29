@@ -19,7 +19,9 @@ struct WindowInfo {
   /**
    * @brief Default constructor.
    */
-  WindowInfo() : minX(0), minY(0), maxX(0), maxY(0), height(0), width(0) {}
+  WindowInfo() :
+      minX(0), minY(0), maxX(0), maxY(0), height(0), width(0) {
+  }
 
   /**
    * @brief Default constructor. Param order same with ncurses::window()
@@ -30,8 +32,7 @@ struct WindowInfo {
    * @param x top left x coordinate
    */
   WindowInfo(int h, int w, int y, int x) :
-      minX(x), minY(y), height(h), width(w),
-      maxX(x+w-1), maxY(y+h-1) {
+      minX(x), minY(y), height(h), width(w), maxX(x+w-1), maxY(y+h-1) {
   }
 
   /**
@@ -88,10 +89,9 @@ class NcWindowStreambuf : public std::streambuf {
    * @param lineCounter pointer to line counter variable
    * @param currPos pointer to the current line number position of cursor in p
    */
-  NcWindowStreambuf(
-      std::ostream& os, WINDOW* o, WINDOW* p, WindowInfo* winInfo,
-      WINDOW** scroll, WindowInfo* scrollInfo,
-      int* lineCounter, int* currPos);
+  NcWindowStreambuf(std::ostream& os, WINDOW* o, WINDOW* p, WindowInfo* winInfo,
+                    WINDOW** scroll, WindowInfo* scrollInfo,
+                    int* lineCounter, int* currPos);
 
   /**
    * @brief Destructor
@@ -142,7 +142,7 @@ class NcWindowStreambuf : public std::streambuf {
 };
 
 }  // namespace ncstream
-}  // namespace sentinel
 
+}  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_NCSTREAM_NCWINDOWSTREAMBUF_HPP_

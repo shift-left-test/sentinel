@@ -14,14 +14,12 @@
 #include <string>
 #include "sentinel/operators/MutationOperator.hpp"
 
-
 namespace sentinel {
 
 std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, mContext->getSourceManager(),
-      mContext->getLangOpts());
+      s->getEndLoc(), 0, mContext->getSourceManager(), mContext->getLangOpts());
   std::string ret;
 
   while (walkLoc != endLoc) {
@@ -38,12 +36,7 @@ const clang::Stmt* MutationOperator::getParentStmt(const clang::Stmt* s) {
     return nullptr;
   }
 
-  const auto ret = parent[0].get<clang::Stmt>();
-  if (ret == nullptr) {
-    return nullptr;
-  }
-
-  return ret;
+  return parent[0].get<clang::Stmt>();
 }
 
 const clang::Type* MutationOperator::getExprType(clang::Expr* e) {
@@ -70,8 +63,7 @@ bool MutationOperator::isPointerDereferenceExpr(clang::Stmt *s) {
   return false;
 }
 
-std::string MutationOperator::getContainingFunctionQualifiedName(
-    clang::Stmt* s) {
+std::string MutationOperator::getContainingFunctionQualifiedName(clang::Stmt* s) {
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
   auto parents = mContext->getParents(*s);
@@ -110,8 +102,7 @@ std::string MutationOperator::getContainingFunctionQualifiedName(
   return "";
 }
 
-bool MutationOperator::isValidMutantSourceRange(
-    clang::SourceLocation *startLoc, clang::SourceLocation *endLoc) {
+bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation *startLoc, clang::SourceLocation *endLoc) {
   if (startLoc->isInvalid() || endLoc->isInvalid()) {
     return false;
   }

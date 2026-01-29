@@ -104,10 +104,8 @@ TEST_F(LoggerTest, testLogsWithAllLevel) {
   all->info("I");
   all->warn("W");
   all->error("E");
-  EXPECT_STREQ("all [DEBUG] D\nall [INFO] I\n",
-               capturedStdout().c_str());
-  EXPECT_STREQ("all [WARN] W\nall [ERROR] E\n",
-               capturedStderr().c_str());
+  EXPECT_STREQ("all [DEBUG] D\nall [INFO] I\n", capturedStdout().c_str());
+  EXPECT_STREQ("all [WARN] W\nall [ERROR] E\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithOffLevelSet) {
@@ -136,8 +134,7 @@ TEST_F(LoggerTest, testLogWithEmptyFormat) {
 }
 
 TEST_F(LoggerTest, testLogWithWrongFormat) {
-  EXPECT_THROW(Logger::getLogger("wrong", "{wrong}"),
-               InvalidArgumentException);
+  EXPECT_THROW(Logger::getLogger("wrong", "{wrong}"), InvalidArgumentException);
 }
 
 TEST_F(LoggerTest, testLoggersAreShared) {

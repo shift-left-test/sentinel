@@ -10,7 +10,6 @@
 #include <vector>
 #include "sentinel/Command.hpp"
 
-
 namespace sentinel {
 
 /**

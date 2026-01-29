@@ -15,7 +15,6 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
 
-
 namespace sentinel {
 
 /**
@@ -31,8 +30,7 @@ class Evaluator {
    * @throw InvalidArgumentException
    *        when expected result doesn't have passed test case
    */
-  explicit Evaluator(const std::string& expectedResultDir,
-      const std::string& sourcePath);
+  explicit Evaluator(const std::string& expectedResultDir, const std::string& sourcePath);
 
   /**
    * @brief Compare an actual with the expected
@@ -42,8 +40,7 @@ class Evaluator {
    * @param testState one of ['success', 'build_failure', 'timeout']
    * @return MutationResult summary of compare
    */
-  MutationResult compare(const Mutant& mut, const std::string& ActualResultDir,
-      const std::string& testState);
+  MutationResult compare(const Mutant& mut, const std::string& ActualResultDir, const std::string& testState);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
@@ -57,9 +54,9 @@ class Evaluator {
    *        when evalFile's parent's path isn't directory
    */
   MutationResult compareAndSaveMutationResult(const Mutant& mut,
-      const std::experimental::filesystem::path& ActualResultDir,
-      const std::experimental::filesystem::path& evalFilePath,
-      const std::string& testState);
+                                              const std::experimental::filesystem::path& ActualResultDir,
+                                              const std::experimental::filesystem::path& evalFilePath,
+                                              const std::string& testState);
 
   /**
    * @brief Return mutation results

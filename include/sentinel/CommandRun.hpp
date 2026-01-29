@@ -12,7 +12,6 @@
 #include <vector>
 #include "sentinel/Command.hpp"
 
-
 namespace sentinel {
 
 extern bool workDirExists;
@@ -21,7 +20,6 @@ extern bool expectedDirExists;
 extern bool actualDirExists;
 extern std::experimental::filesystem::path workDirForSH;
 extern std::experimental::filesystem::path sourceRootForSH;
-
 
 /**
  * @brief sentinel commandline 'run' subcommand class.
@@ -57,8 +55,7 @@ class CommandRun : public Command {
    * @param to location
    * @param exts extensions
    */
-  void copyTestReportTo(const std::string& from,
-      const std::string& to, const std::vector<std::string>& exts);
+  void copyTestReportTo(const std::string& from, const std::string& to, const std::vector<std::string>& exts);
 
   /**
    * @brief preprocess working directory
@@ -68,8 +65,7 @@ class CommandRun : public Command {
    * @param isFilledDir or not
    * @return absolute path of target directory
    */
-  std::string preProcessWorkDir(const std::string& target, bool* targetExists,
-      bool isFilledDir);
+  std::string preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir);
 
   /**
    * @brief return source root path

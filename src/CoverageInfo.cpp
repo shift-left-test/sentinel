@@ -20,9 +20,7 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
   namespace fs = std::experimental::filesystem;
   for (const auto& filename : filenames) {
     if (!fs::exists(filename)) {
-      throw InvalidArgumentException(
-        fmt::format("Input coverage file does not exist: {}",
-                    filename));
+      throw InvalidArgumentException(fmt::format("Input coverage file does not exist: {}", filename));
     }
 
     std::ifstream coverageFile(filename.c_str());
@@ -56,8 +54,7 @@ bool CoverageInfo::cover(const std::string& filename, size_t line) {
     return false;
   }
 
-  return std::find(mData[p.string()].begin(),
-                   mData[p.string()].end(), line) != mData[p.string()].end();
+  return std::find(mData[p.string()].begin(), mData[p.string()].end(), line) != mData[p.string()].end();
 }
 
 }  // namespace sentinel

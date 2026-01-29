@@ -18,7 +18,6 @@
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
 
-
 namespace sentinel {
 
 class MainCLITest : public ::testing::Test {
@@ -66,8 +65,7 @@ class MainCLITest : public ::testing::Test {
     EXPECT_EQ(git_index_add_all(idx, nullptr, 0, nullptr, nullptr), GIT_OK);
     EXPECT_EQ(git_index_write_tree(&treeId, idx), GIT_OK);
     EXPECT_EQ(git_tree_lookup(&tree, repo, &treeId), GIT_OK);
-    EXPECT_EQ(git_commit_create_v(&commitId, repo, "HEAD", me, me, nullptr,
-        "Initial commit", tree, 0), GIT_OK);
+    EXPECT_EQ(git_commit_create_v(&commitId, repo, "HEAD", me, me, nullptr, "Initial commit", tree, 0), GIT_OK);
     EXPECT_EQ(git_index_write(idx), GIT_OK);
 
     git_signature_free(me);
@@ -107,8 +105,7 @@ class MainCLITest : public ::testing::Test {
     return mStderrCapture->release();
   }
 
-  void writeFile(const std::experimental::filesystem::path& p,
-      const std::string& c) {
+  void writeFile(const std::experimental::filesystem::path& p, const std::string& c) {
     std::ofstream t(p.string());
     t << c << std::endl;
     t.close();
@@ -305,20 +302,16 @@ TEST_F(MainCLITest, testHelpOption) {
   addArg("--help");
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
-  EXPECT_TRUE(sentinel::string::contains(out,
-      "./sentinel COMMAND {OPTIONS}"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      "populate                          Identify mutable test targets and"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      "-h, --help                        Display this help menu."));
+  EXPECT_TRUE(sentinel::string::contains(out, "./sentinel COMMAND {OPTIONS}"));
+  EXPECT_TRUE(sentinel::string::contains(out, "populate                          Identify mutable test targets and"));
+  EXPECT_TRUE(sentinel::string::contains(out, "-h, --help                        Display this help menu."));
 }
 
 TEST_F(MainCLITest, testCommandPopulate) {
   makeGitRepo();
 
   SAMPLE_COMCOMJSON_PATH = SAMPLE_DIR / SAMPLE_COMCOMJSON_NAME;
-  writeFile(SAMPLE_COMCOMJSON_PATH,
-      fmt::format(SAMPLE_COMCOMJSON_CONTENTS, SAMPLE_DIR.string()));
+  writeFile(SAMPLE_COMCOMJSON_PATH, fmt::format(SAMPLE_COMCOMJSON_CONTENTS, SAMPLE_DIR.string()));
 
   addArg("populate");
   addArg(SAMPLE_DIR.c_str());
@@ -366,15 +359,11 @@ TEST_F(MainCLITest, testCommandMutate) {
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   auto mutatedSample = readFile(SAMPLE_DIR / "sample.cpp");
-  EXPECT_TRUE(sentinel::string::contains(mutatedSample,
-        "if ((i & 1) == (1 >> 0) && i > 0) {"));
-  EXPECT_TRUE(!sentinel::string::contains(mutatedSample,
-        "if ((i & 1) == (1 << 0) && i > 0) {"));
+  EXPECT_TRUE(sentinel::string::contains(mutatedSample, "if ((i & 1) == (1 >> 0) && i > 0) {"));
+  EXPECT_TRUE(!sentinel::string::contains(mutatedSample, "if ((i & 1) == (1 << 0) && i > 0) {"));
   auto originalSample = readFile(SAMPLE_BASE/ "tmp" / "sample.cpp");
-  EXPECT_TRUE(sentinel::string::contains(originalSample,
-        "if ((i & 1) == (1 << 0) && i > 0) {"));
-  EXPECT_TRUE(!sentinel::string::contains(originalSample,
-        "if ((i & 1) == (1 >> 0) && i > 0) {"));
+  EXPECT_TRUE(sentinel::string::contains(originalSample, "if ((i & 1) == (1 << 0) && i > 0) {"));
+  EXPECT_TRUE(!sentinel::string::contains(originalSample, "if ((i & 1) == (1 >> 0) && i > 0) {"));
 }
 
 TEST_F(MainCLITest, testCommandEvaluate) {
@@ -385,7 +374,7 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   fs::create_directories(ACTUAL_PATH);
   writeFile(EXPECTED_PATH / "sample_test.xml", EXPECTED_RESULT);
   writeFile(ACTUAL_PATH / "sample_test.xml", fmt::format(ACTUAL_RESULT,
-        SAMPLE_TEST_PATH.string(), SAMPLE_DIR.string()));
+                                                         SAMPLE_TEST_PATH.string(), SAMPLE_DIR.string()));
 
   addArg("evaluate");
   addArg(fmt::format("-o{}", (SAMPLE_BASE / "out").string()).c_str());
@@ -400,8 +389,7 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   captureStderr();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
-  EXPECT_TRUE(sentinel::string::contains(out,
-        "sample.cpp (10:32-10:37 -> 0) KILLED"));
+  EXPECT_TRUE(sentinel::string::contains(out, "sample.cpp (10:32-10:37 -> 0) KILLED"));
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   auto evaluationResults = readFile(SAMPLE_BASE/ "out" / "EvaluationResults");
@@ -412,14 +400,12 @@ TEST_F(MainCLITest, testCommandEvaluate) {
 
 TEST_F(MainCLITest, testCommandReport) {
   namespace fs = std::experimental::filesystem;
-  writeFile(SAMPLE_BASE / "ev", fmt::format(EVALUATION_RESULTS,
-        SAMPLE_PATH.string()));
+  writeFile(SAMPLE_BASE / "ev", fmt::format(EVALUATION_RESULTS, SAMPLE_PATH.string()));
 
   addArg("report");
   addArg(SAMPLE_DIR.c_str());
   addArg(fmt::format("-o{}", (SAMPLE_BASE / "out").string()).c_str());
-  addArg(fmt::format("--evaluation-file={}",
-        (SAMPLE_BASE / "ev").string()).c_str());
+  addArg(fmt::format("--evaluation-file={}", (SAMPLE_BASE / "ev").string()).c_str());
 
   captureStdout();
   captureStderr();
@@ -441,23 +427,19 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
 
   // make timelimit
-  Subprocess(fmt::format("cd {} && make all",
-        SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format("cd {} && make all", SAMPLE_DIR.string())).execute();
   Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
-        SAMPLE_DIR.string())).execute();
-  Subprocess(fmt::format("cd {} && make clean",
-        SAMPLE_DIR.string())).execute();
+                         SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
   fs::remove_all(SAMPLE_DIR / "testresult");
 
   addArg("run");
   addArg(SAMPLE_DIR.c_str());
   addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
-  addArg(fmt::format("--test-result-dir={}",
-         (SAMPLE_DIR / "testresult").string()).c_str());
+  addArg(fmt::format("--test-result-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());
   addArg(fmt::format("--build-command={}", "make").c_str());
-  addArg(fmt::format("--test-command={}",
-        R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
+  addArg(fmt::format("--test-command={}", R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
   addArg("-sall");
   addArg("-l3");
   addArg("--timeout=auto");

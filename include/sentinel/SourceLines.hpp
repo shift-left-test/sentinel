@@ -9,7 +9,6 @@
 #include <vector>
 #include "sentinel/SourceLine.hpp"
 
-
 namespace sentinel {
 
 /**

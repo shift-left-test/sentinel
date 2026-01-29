@@ -8,17 +8,17 @@
 
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <algorithm>
 #include <cctype>
 #include <cstddef>
-#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-
 namespace sentinel {
+
 namespace string {
 
 /**
@@ -29,8 +29,7 @@ namespace string {
  * @return true if the string starts with the keyword, false otherwise
  */
 inline bool startsWith(const std::string& haystack, const std::string& needle) {
-  return (haystack.size() >= needle.size()) &&
-      std::equal(needle.begin(), needle.end(), haystack.begin());
+  return (haystack.size() >= needle.size()) && std::equal(needle.begin(), needle.end(), haystack.begin());
 }
 
 /**
@@ -41,8 +40,7 @@ inline bool startsWith(const std::string& haystack, const std::string& needle) {
  * @return true if the string ends with the keyword, false otherwise
  */
 inline bool endsWith(const std::string& haystack, const std::string& needle) {
-  return (haystack.size() >= needle.size()) &&
-      std::equal(needle.rbegin(), needle.rend(), haystack.rbegin());
+  return (haystack.size() >= needle.size()) && std::equal(needle.rbegin(), needle.rend(), haystack.rbegin());
 }
 
 /**
@@ -122,8 +120,7 @@ inline std::string trim(const std::string& s) {
  * @param needle keyword
  * @return true if the keyword exists, false otherwise
  */
-inline bool contains(const std::string& haystack,
-                     const std::string& needle) {
+inline bool contains(const std::string& haystack, const std::string& needle) {
   return haystack.find(needle) != std::string::npos;
 }
 
@@ -152,8 +149,7 @@ inline std::vector<std::string> split(const std::string& s, char delim = ' ') {
  * @param delimiter
  * @return vecotr of string that is split by delimiter
  */
-inline std::vector<std::string> split(
-    const std::string& s, const std::string& delimiter) {
+inline std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
   std::size_t pos_start = 0;
   std::size_t pos_end;
   std::size_t delim_len = delimiter.length();
@@ -175,8 +171,7 @@ inline std::vector<std::string> split(
  * @param tokens to join
  * @return joined string
  */
-inline std::string join(const std::string& delim,
-                        const std::vector<std::string>& tokens) {
+inline std::string join(const std::string& delim, const std::vector<std::string>& tokens) {
   std::ostringstream oss;
   auto first = std::begin(tokens);
   auto last = std::end(tokens);
@@ -197,8 +192,7 @@ inline std::string join(const std::string& delim,
  * @param tokens to join
  * @return joined string
  */
-inline std::string join(char delim,
-                        const std::vector<std::string>& tokens) {
+inline std::string join(char delim, const std::vector<std::string>& tokens) {
   return join(std::string(1, delim), tokens);
 }
 
@@ -210,8 +204,7 @@ inline std::string join(char delim,
  * @return joined string
  */
 template <typename ... Arg>
-inline std::string join(const std::string& delim,
-                        const Arg&... tokens) {
+inline std::string join(const std::string& delim, const Arg&... tokens) {
   return join(delim, { tokens ... });  // NOLINT
 }
 
@@ -223,26 +216,26 @@ inline std::string join(const std::string& delim,
  * @return joined string
  */
 template <typename ... Arg>
-inline std::string join(char delim,
-                        const Arg&... tokens) {
+inline std::string join(char delim, const Arg&... tokens) {
   return join(std::string(1, delim), { tokens ... });
 }
 
 /**
- * @brief replace all 'oldSubString' in 'target' with 'newSubString'
+ * @brief replace all 'oldStr' in 'target' with 'newStr'
  *
  * @param target string
- * @param oldSubString
- * @param newSubString
+ * @param oldStr
+ * @param newStr
  * @return joined string
  */
-inline std::string replaceAll(std::string target,
-    const std::string& oldSubString, const std::string& newSubString) {
+inline std::string replaceAll(std::string target, const std::string& oldStr, const std::string& newStr) {
   std::size_t pos = 0;
-  if (oldSubString.empty() || target.empty()) { return target; }
-  while ((pos = target.find(oldSubString, pos)) != std::string::npos) {
-    target.replace(pos, oldSubString.length(), newSubString);
-    pos += newSubString.length();
+  if (oldStr.empty() || target.empty()) {
+    return target;
+  }
+  while ((pos = target.find(oldStr, pos)) != std::string::npos) {
+    target.replace(pos, oldStr.length(), newStr);
+    pos += newStr.length();
   }
   return target;
 }
@@ -296,10 +289,11 @@ inline bool stringToBool(const std::string& s) {
   }
 
   throw InvalidArgumentException(
-      fmt::format("Input value is not a boolean (true or false): \"{}\". temp = {}", s, temp));
+      fmt::format("Input must be a boolean value (true or false): \"{}\". temp = {}", s, temp));
 }
 
 }  // namespace string
+
 }  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

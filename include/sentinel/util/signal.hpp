@@ -12,8 +12,8 @@
 #include <tuple>
 #include <vector>
 
-
 namespace sentinel {
+
 namespace signal {
 
 /**
@@ -36,8 +36,7 @@ inline void setSignalHandler(int signum, void (*handler)(int)) {
  * @param setSignum Set of signal names
  * @param handler signal handler
  */
-inline void setMultipleSignalHandlers(const std::vector<int>& setSignum,
-    void (*handler)(int)) {
+inline void setMultipleSignalHandlers(const std::vector<int>& setSignum, void (*handler)(int)) {
   for (auto target : setSignum) {
     setSignalHandler(target, handler);
   }
@@ -50,7 +49,7 @@ inline void setMultipleSignalHandlers(const std::vector<int>& setSignum,
  * @param [out] current sigaction
  */
 inline void getSigaction(int signum, struct sigaction* current) {
-    ::sigaction(signum, nullptr, current);
+  ::sigaction(signum, nullptr, current);
 }
 
 /**
@@ -60,7 +59,7 @@ inline void getSigaction(int signum, struct sigaction* current) {
  * @param newSigaction
  */
 inline void setSigaction(int signum, struct sigaction* newSigaction) {
-    ::sigaction(signum, newSigaction, nullptr);
+  ::sigaction(signum, newSigaction, nullptr);
 }
 
 /**
@@ -99,6 +98,7 @@ class SaContainer {
 };
 
 }  // namespace signal
+
 }  // namespace sentinel
 
 #endif  // INCLUDE_SENTINEL_UTIL_SIGNAL_HPP_

@@ -20,7 +20,8 @@ class UOI : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit UOI(clang::ASTContext* Context) : MutationOperator("UOI", Context) {}
+  explicit UOI(clang::ASTContext* Context) : MutationOperator("UOI", Context) {
+  }
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

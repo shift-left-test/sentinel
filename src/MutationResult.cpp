@@ -16,14 +16,11 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
-MutationResult::MutationResult(
-    const Mutant& m, const std::string& killingTest,
-    const std::string& errorTest, MutationState state) :
-    mKillingTest(killingTest), mErrorTest(errorTest),
-    mState(state), mMutant(m) {
+MutationResult::MutationResult(const Mutant& m, const std::string& killingTest,
+                               const std::string& errorTest, MutationState state) :
+    mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {
 }
 
 std::string MutationResult::getKillingTest() const {
@@ -54,8 +51,8 @@ bool MutationResult::compare(const MutationResult& other) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
-  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(),
-      mr.getErrorTest(), static_cast<int>(mr.getMutationState()));
+  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(), mr.getErrorTest(),
+                     static_cast<int>(mr.getMutationState()));
   out << mr.getMutant();
   return out;
 }
@@ -68,8 +65,7 @@ std::istream& operator>>(std::istream& in, MutationResult &mr) {
     Mutant m;
     std::istringstream iss(sep[1]);
     iss >> m;
-    mr = MutationResult(m, str[0], str[1],
-        static_cast<MutationState>(string::stringToInt<int>(str[2])));
+    mr = MutationResult(m, str[0], str[1], static_cast<MutationState>(string::stringToInt<int>(str[2])));
   }
   return in;
 }

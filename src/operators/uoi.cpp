@@ -10,7 +10,6 @@
 #include <string>
 #include "sentinel/operators/uoi.hpp"
 
-
 namespace sentinel {
 
 bool UOI::canMutate(clang::Stmt* s) {
@@ -62,8 +61,7 @@ bool UOI::canMutate(clang::Stmt* s) {
     }
 
     if (auto uo = clang::dyn_cast<clang::UnaryOperator>(parent)) {
-      if (uo->getOpcode() == clang::UO_AddrOf ||
-          uo->isIncrementDecrementOp()) {
+      if (uo->getOpcode() == clang::UO_AddrOf || uo->isIncrementDecrementOp()) {
         if (uo->getSubExpr()->IgnoreParens() == s) {
           return false;
         }
@@ -103,8 +101,7 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
   std::string func = getContainingFunctionQualifiedName(s);
   std::string stmtStr = convertStmtToString(e);
 
-  if (getExprType(e)->isArithmeticType() &&
-      !getExprType(e)->isBooleanType()) {
+  if (getExprType(e)->isArithmeticType() && !getExprType(e)->isBooleanType()) {
     mutables->emplace_back(
         mName, path, func,
         mSrcMgr.getExpansionLineNumber(stmtStartLoc),

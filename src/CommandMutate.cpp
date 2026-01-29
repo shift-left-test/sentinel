@@ -14,14 +14,11 @@
 #include "sentinel/SourceTree.hpp"
 #include "sentinel/CommandMutate.hpp"
 
-
 namespace sentinel {
 const char * cCommandMutateLoggerName = "CommandMutate";
 
-CommandMutate::CommandMutate(args::Subparser& parser) : Command(parser),
-  mMutantStr(parser, "MUTANT",
-    "Mutant string",
-    {'m', "mutant"}, args::Options::Required) {
+CommandMutate::CommandMutate(args::Subparser& parser) :
+    Command(parser), mMutantStr(parser, "MUTANT", "Mutant string", {'m', "mutant"}, args::Options::Required) {
 }
 
 int CommandMutate::run() {
@@ -45,4 +42,5 @@ int CommandMutate::run() {
 
   return 0;
 }
+
 }  // namespace sentinel

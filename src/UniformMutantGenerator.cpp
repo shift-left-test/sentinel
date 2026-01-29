@@ -24,25 +24,21 @@
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace sentinel {
 
 static const char * cUniformGeneratorLoggerName = "UniformMutantGenerator";
 
-Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
-                                         std::size_t maxMutants) {
+Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
 
-Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
-                                         std::size_t maxMutants,
+Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants,
                                          unsigned randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath,
-                                                             errorMsg);
+      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath, errorMsg);
 
   if (compileDb == nullptr) {
     throw IOException(EINVAL, errorMsg);
@@ -68,8 +64,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
     clang::tooling::ClangTool tool(*compileDb, file.first);
-    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster(
-        "-ferror-limit=0"));
+    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
 
     // Save the current TERMINAL object (created by ncurses::initscr)
     // and set the current TERMINAL pointer to nullptr (might be error-prone)
@@ -98,20 +93,17 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
           m.getFirst().line <= line.getLineNumber() &&
           m.getLast().line >= line.getLineNumber();
     };
-    std::copy_if(mutables.begin(), mutables.end(),
-                 std::back_inserter(temp), pred);
+    std::copy_if(mutables.begin(), mutables.end(), std::back_inserter(temp), pred);
 
     if (temp.empty()) {
       continue;
     }
 
-    std::shuffle(std::begin(temp), std::end(temp),
-                 std::mt19937(randomSeed));
+    std::shuffle(std::begin(temp), std::end(temp), std::mt19937(randomSeed));
     // find first element of temp that is not in temp_storage
     auto it = std::find_if(temp.begin(), temp.end(),
         [&](const Mutant& a) {
-           return std::find(temp_storage.begin(), temp_storage.end(), a) ==
-               temp_storage.end();
+           return std::find(temp_storage.begin(), temp_storage.end(), a) == temp_storage.end();
         });
     if (it != temp.end()) {
       temp_storage.push_back(*it);
@@ -125,11 +117,9 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines,
   return Mutants(temp_storage.begin(), temp_storage.end());
 }
 
-UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(
-    clang::ASTContext* Context, Mutants* mutables,
-    const std::vector<std::size_t>& targetLines) :
-    mContext(Context), mSrcMgr(Context->getSourceManager()),
-    mMutants(mutables), mTargetLines(targetLines) {
+UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
+                                                               const std::vector<std::size_t>& targetLines) :
+    mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -153,23 +143,21 @@ bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   // Check if this Stmt node represents code on target lines.
   if (startLoc.isMacroID()) {
-    clang::CharSourceRange range =
-        mSrcMgr.getImmediateExpansionRange(startLoc);
+    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(startLoc);
     startLoc = range.getBegin();
   }
 
   if (endLoc.isMacroID()) {
-    clang::CharSourceRange range =
-        mSrcMgr.getImmediateExpansionRange(endLoc);
-    endLoc = clang::Lexer::getLocForEndOfToken(
-        range.getEnd(), 0, mSrcMgr, mContext->getLangOpts());
+    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(endLoc);
+    endLoc = clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mSrcMgr, mContext->getLangOpts());
   }
 
   std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
   bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](std::size_t lineNum)
-      { return lineNum >= startLineNum && lineNum <= endLineNum; } );
+      [startLineNum, endLineNum](std::size_t lineNum) {
+        return lineNum >= startLineNum && lineNum <= endLineNum;
+      } );
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {
@@ -188,14 +176,12 @@ void UniformMutantGenerator::GenerateMutantAction::ExecuteAction() {
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory>
-UniformMutantGenerator::myNewFrontendActionFactory(
-    Mutants* mutables, const std::vector<std::size_t>& targetLines) {
+UniformMutantGenerator::myNewFrontendActionFactory(Mutants* mutables,
+                                                   const std::vector<std::size_t>& targetLines) {
   class SimpleFrontendActionFactory :
           public clang::tooling::FrontendActionFactory {
    public:
-    explicit SimpleFrontendActionFactory(
-        Mutants* mutables,
-        const std::vector<std::size_t>& targetLines) :
+    explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
         mMutants(mutables), mTargetLines(targetLines) {
     }
 

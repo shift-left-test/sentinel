@@ -14,7 +14,6 @@
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -22,8 +21,7 @@ namespace sentinel {
 class GitHarnessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name =
-        fs::temp_directory_path() / "SENTINEL_GITHARNESSTEST_TMP_DIR";
+    repo_name = fs::temp_directory_path() / "SENTINEL_GITHARNESSTEST_TMP_DIR";
     fs::remove_all(repo_name);
     repo = std::make_shared<GitHarness>(repo_name);
   }
@@ -32,10 +30,9 @@ class GitHarnessTest : public ::testing::Test {
     fs::remove_all(repo_name);
   }
 
-  static void getStagedAndUnstagedFiles(
-      std::vector<std::string>* staged_files,
-      std::vector<std::string>* unstaged_files,
-      git_status_list *status) {
+  static void getStagedAndUnstagedFiles(std::vector<std::string>* staged_files,
+                                        std::vector<std::string>* unstaged_files,
+                                        git_status_list *status) {
     std::size_t i;
     std::size_t maxi = git_status_list_entrycount(status);
     const git_status_entry* s;
@@ -67,14 +64,11 @@ class GitHarnessTest : public ::testing::Test {
            (s->status & GIT_STATUS_WT_TYPECHANGE) != 0)) {
         old_path = s->index_to_workdir->old_file.path;
         new_path = s->index_to_workdir->new_file.path;
-        unstaged_files->emplace_back((old_path != nullptr)
-                                     ? old_path
-                                     : new_path);
+        unstaged_files->emplace_back((old_path != nullptr) ? old_path : new_path);
       }
 
       // An untracked file is a new file in the work tree
-      if (s != nullptr && s->status == GIT_STATUS_WT_NEW &&
-          s->index_to_workdir != nullptr) {
+      if (s != nullptr && s->status == GIT_STATUS_WT_NEW && s->index_to_workdir != nullptr) {
         old_path = s->index_to_workdir->old_file.path;
         unstaged_files->emplace_back(old_path);
       }
@@ -97,10 +91,8 @@ TEST_F(GitHarnessTest, testInitWorks) {
 // Action: initiate a git repo twice
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testInitFailWhenDirAlreadyExists) {
-  EXPECT_THROW(
-      std::unique_ptr<GitHarness> test_repo = \
-          std::make_unique<GitHarness>(repo_name),
-      std::runtime_error);
+  EXPECT_THROW(std::unique_ptr<GitHarness> test_repo = std::make_unique<GitHarness>(repo_name),
+               std::runtime_error);
 }
 
 // Action: create new folder in git repo
@@ -146,13 +138,11 @@ TEST_F(GitHarnessTest, testAddFileFailWhenFileExisted) {
 // Expected Output: assertion errors
 TEST_F(GitHarnessTest, testAddFileFailWhenInvalidPathGiven) {
   std::string content = "int main() {}";
-  EXPECT_THROW({repo->addFile("unexisted/temp.cpp", content);},
-               std::runtime_error);
+  EXPECT_THROW({repo->addFile("unexisted/temp.cpp", content);}, std::runtime_error);
 }
 
 // Action: add content to file
-// Expected Output: content are added properly to the right file. Other files
-// are unaffected.
+// Expected Output: content are added properly to the right file. Other files are unaffected.
 TEST_F(GitHarnessTest, testAddCodeWorks) {
   std::string filename = repo_name / "temp.cpp";
   std::string initial_content = "// comment\n";
@@ -166,7 +156,7 @@ TEST_F(GitHarnessTest, testAddCodeWorks) {
   std::string inserted_content((std::istreambuf_iterator<char>(created_file)),
                                (std::istreambuf_iterator<char>()));
   created_file.close();
-  EXPECT_EQ(initial_content+content, inserted_content);
+  EXPECT_EQ(initial_content + content, inserted_content);
 
   // Add code to specific position
   content = "return 0;";
@@ -176,7 +166,7 @@ TEST_F(GitHarnessTest, testAddCodeWorks) {
   std::string new_content((std::istreambuf_iterator<char>(nonempty_file)),
                           (std::istreambuf_iterator<char>()));
   nonempty_file.close();
-  EXPECT_EQ(initial_content+"int main() {return 0;}\n", new_content);
+  EXPECT_EQ(initial_content + "int main() {return 0;}\n", new_content);
 }
 
 // Action: add code to a position with line/col number of out of bound
@@ -227,7 +217,7 @@ TEST_F(GitHarnessTest, testDeleteCodeWorks) {
   std::string filename = repo_name / "temp.cpp";
   std::ifstream file(filename.c_str());
   std::string content((std::istreambuf_iterator<char>(file)),
-                               (std::istreambuf_iterator<char>()));
+                      (std::istreambuf_iterator<char>()));
   file.close();
   EXPECT_EQ("int main() {\n}\n", content);
 }
@@ -243,7 +233,7 @@ TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
   std::string filename = repo_name / "temp.cpp";
   std::ifstream file(filename.c_str());
   std::string content((std::istreambuf_iterator<char>(file)),
-                               (std::istreambuf_iterator<char>()));
+                      (std::istreambuf_iterator<char>()));
   file.close();
   EXPECT_EQ(initial_content, content);
 }
@@ -271,27 +261,20 @@ TEST_F(GitHarnessTest, testStageFileWorks) {
   statusopt.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
                     GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX |
                     GIT_STATUS_OPT_SORT_CASE_SENSITIVELY;
-  GitHarness::libgitErrorCheck(git_status_list_new(&status,
-                                                   repo->getGitRepo(),
-                                                   &statusopt),
+  GitHarness::libgitErrorCheck(git_status_list_new(&status, repo->getGitRepo(), &statusopt),
                                "Could not get status");
   std::vector<std::string> staged_files_before, unstaged_files_before;
-  getStagedAndUnstagedFiles(&staged_files_before,
-                            &unstaged_files_before,
-                            status);
+  getStagedAndUnstagedFiles(&staged_files_before, &unstaged_files_before, status);
   git_status_list_free(status);
 
   // stage files: git add
   repo->stageFile(target_files);
 
   // Get list of staged and unstaged files after git add
-  GitHarness::libgitErrorCheck(git_status_list_new(&status, repo->getGitRepo(),
-                                                   &statusopt),
+  GitHarness::libgitErrorCheck(git_status_list_new(&status, repo->getGitRepo(), &statusopt),
                                "Could not get status");
   std::vector<std::string> staged_files_after, unstaged_files_after;
-  getStagedAndUnstagedFiles(&staged_files_after,
-                            &unstaged_files_after,
-                            status);
+  getStagedAndUnstagedFiles(&staged_files_after, &unstaged_files_after, status);
   git_status_list_free(status);
 
   // Before git add, 2 files are untracked, 0 files are staged.
@@ -328,8 +311,7 @@ TEST_F(GitHarnessTest, testCommitWorks) {
   git_oid head_oid, latest_oid;
   git_commit *head_commit, *commit;
   std::string latest_oid_str = repo->getLatestCommitId();
-  GitHarness::libgitErrorCheck(git_oid_fromstrp(&latest_oid,
-                                                latest_oid_str.c_str()),
+  GitHarness::libgitErrorCheck(git_oid_fromstrp(&latest_oid, latest_oid_str.c_str()),
                                "Error retrieving commit");
 
   EXPECT_EQ(git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD"), 0);
@@ -398,8 +380,7 @@ TEST_F(GitHarnessTest, testAddTagLightweightFailWhenCommitAlreadyTagged) {
       .commit(message);
   target_oid = repo->getLatestCommitId();
   std::string error_msg = "Unable to create lightweight tag";
-  EXPECT_THROW(repo->addTagLightweight(tag_name, target_oid),
-               IOException);
+  EXPECT_THROW(repo->addTagLightweight(tag_name, target_oid), IOException);
 }
 
 TEST_F(GitHarnessTest, testCreateBranchWorks) {
@@ -415,9 +396,7 @@ TEST_F(GitHarnessTest, testCreateBranchWorks) {
 
   // Check if branch b1 exists
   git_reference *ref = nullptr;
-  EXPECT_EQ(git_branch_lookup(&ref, repo->getGitRepo(),
-                              branch_name.c_str(), GIT_BRANCH_LOCAL),
-            0);
+  EXPECT_EQ(0, git_branch_lookup(&ref, repo->getGitRepo(), branch_name.c_str(), GIT_BRANCH_LOCAL));
   git_reference_free(ref);
 }
 
@@ -442,8 +421,7 @@ TEST_F(GitHarnessTest, testCheckoutBranchWorks) {
   // The repo should only contains temp.cpp and not temp2.cpp
   repo->checkoutBranch("master");
   git_reference* master_branch = nullptr;
-  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
-                    GIT_BRANCH_LOCAL);
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master", GIT_BRANCH_LOCAL);
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
@@ -490,8 +468,7 @@ TEST_F(GitHarnessTest, testMergeWorks) {
   // The repo should contain both temp.cpp and temp2.cpp
   repo->checkoutBranch("master");
   git_reference* master_branch = nullptr;
-  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
-                    GIT_BRANCH_LOCAL);
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master", GIT_BRANCH_LOCAL);
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);
@@ -537,8 +514,7 @@ TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
   // The repo should contain both temp.cpp and temp2.cpp
   repo->checkoutBranch("master");
   git_reference* master_branch = nullptr;
-  git_branch_lookup(&master_branch, repo->getGitRepo(), "master",
-                    GIT_BRANCH_LOCAL);
+  git_branch_lookup(&master_branch, repo->getGitRepo(), "master", GIT_BRANCH_LOCAL);
   git_oid head_oid;
   git_reference_name_to_id(&head_oid, repo->getGitRepo(), "HEAD");
   EXPECT_EQ(git_oid_cmp(git_reference_target(master_branch), &head_oid), 0);

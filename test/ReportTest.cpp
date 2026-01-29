@@ -17,7 +17,6 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
@@ -36,8 +35,7 @@ class ReportTest : public ::testing::Test {
     fs::create_directories(NESTED_SOURCE_DIR2);
 
 
-    TARGET_FULL_PATH =
-        NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
+    TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
     makeFile(TARGET_FULL_PATH);
     TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
     makeFile(TARGET_FULL_PATH2);
@@ -111,16 +109,13 @@ TOTAL                                                      0         0        -%
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M1, "", "", MutationState::BUILD_FAILURE);
 
-  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M2, "", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M3("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M3("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M3, "", "", MutationState::TIMEOUT);
 
   MRs.save(MRPath);
@@ -152,25 +147,19 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "|");
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "|");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "&");
-  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::KILLED);
+  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "&");
+  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "", MutationState::KILLED);
 
-  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M4, "", "", MutationState::SURVIVED);
 
-  Mutant M5("AOR", TARGET_FULL_PATH4, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M5("AOR", TARGET_FULL_PATH4, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
@@ -204,25 +193,19 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "|");
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "|");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "&");
-  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::RUNTIME_ERROR);
+  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "&");
+  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
-  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M6, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
@@ -259,25 +242,19 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "+");
+  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "+");
   MRs.emplace_back(M1, "", "", MutationState::BUILD_FAILURE);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber",
-             2, 12, 2, 13, "|");
+  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "|");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             3, 12, 3, 13, "&");
-  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "",
-                     MutationState::RUNTIME_ERROR);
+  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "&");
+  MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::SURVIVED);
 
-  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber",
-             8, 12, 8, 13, "-");
+  Mutant M6("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M6, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";

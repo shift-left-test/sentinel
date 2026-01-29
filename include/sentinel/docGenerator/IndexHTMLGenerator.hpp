@@ -45,10 +45,10 @@ class IndexHTMLGenerator : public DOCGenerator {
    * @param numOfFiles in dir (only used if root)
    */
   void pushItemToTable(const std::string& subName,
-                     int subCoverage,
-                     std::size_t subNumerator,
-                     std::size_t subDenominator,
-                     std::size_t numOfFiles);
+                       int subCoverage,
+                       std::size_t subNumerator,
+                       std::size_t subDenominator,
+                       std::size_t numOfFiles);
 
   /**
    * @brief make html string

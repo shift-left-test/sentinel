@@ -16,10 +16,10 @@
 #include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-
 namespace sentinel {
 
 const char * cGitRepositoryLoggerName = "GitRepository";
+
 /**
  * @brief git_xxx pointer free guard
  */
@@ -72,13 +72,13 @@ class DiffData {
    *
    * @param gitRepo git repository
    */
-  explicit DiffData(GitRepository * gitRepo) : mGitRepo(gitRepo) {}
+  explicit DiffData(GitRepository * gitRepo) : mGitRepo(gitRepo) {
+  }
 
   /**
    * @brief add Source Line
    *
    * @param file source file name
-   *
    * @param line line number
    */
   void addSourceLine(const std::string & file, int line) {
@@ -103,8 +103,7 @@ class DiffData {
   GitRepository * mGitRepo;
 };
 
-static void getDiffFromTree(git_repository* repo, git_tree* tree,
-  DiffData& d) {  // NOLINT
+static void getDiffFromTree(git_repository* repo, git_tree* tree, DiffData& d) {  // NOLINT
   SafeGit2ObjPtr<git_diff, git_diff_free> diff;
 
   if (git_diff_tree_to_workdir_with_index(diff.getPtr(),
@@ -127,17 +126,11 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree,
       // each_hunk_cb
       return 0;
     },
-    [](const git_diff_delta* delta,
-    const git_diff_hunk* hunk,
-    const git_diff_line* line,
-    void *payload) {
+    [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void *payload) {
       // each_line_cb
       auto d = reinterpret_cast<DiffData*>(payload); // NOLINT
       auto logger = Logger::getLogger(cGitRepositoryLoggerName);
-      logger->debug(fmt::format("{}:{}:{}",
-                               line->origin,
-                               delta->new_file.path,
-                               line->new_lineno));
+      logger->debug(fmt::format("{}:{}:{}", line->origin, delta->new_file.path, line->new_lineno));
 
       if (line->origin == '+') {
         d->addSourceLine(delta->new_file.path, line->new_lineno);
@@ -150,8 +143,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree,
 }
 
 GitRepository::GitRepository(const std::string& path,
-  const std::vector<std::string>& extensions,
-  const std::vector<std::string>& excludes) {
+                             const std::vector<std::string>& extensions,
+                             const std::vector<std::string>& excludes) {
   namespace fs = std::experimental::filesystem;
 
   git_libgit2_init();
@@ -161,8 +154,7 @@ GitRepository::GitRepository(const std::string& path,
   try {
     mSourceRoot = fs::canonical(path);
   } catch(const fs::filesystem_error & e) {
-    throw InvalidArgumentException(fmt::format("source_root option error: {}",
-        e.what()));
+    throw InvalidArgumentException(fmt::format("source_root option error: {}", e.what()));
   }
   logger->info(fmt::format("source root: {}", mSourceRoot.string()));
 
@@ -170,8 +162,7 @@ GitRepository::GitRepository(const std::string& path,
     std::transform(extensions.begin(), extensions.end(),
                    std::back_inserter(mExtensions),
                    [](auto extension) -> std::string
-                   { return extension.at(0) == '.' ?
-                   extension : fmt::format(".{}", extension); });
+                   { return extension.at(0) == '.' ? extension : fmt::format(".{}", extension); });
   }
 
   for (const auto& filename : excludes) {
@@ -189,8 +180,7 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
-bool GitRepository::isTargetPath(
-  const std::experimental::filesystem::path &path, bool checkExtension) {
+bool GitRepository::isTargetPath(const std::experimental::filesystem::path &path, bool checkExtension) {
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
@@ -199,7 +189,7 @@ bool GitRepository::isTargetPath(
     fs::path canonicalPath;
     try {
       canonicalPath = fs::canonical(path, getSourceRoot());
-    } catch(const fs::filesystem_error & e) {
+    } catch(const fs::filesystem_error& e) {
       return false;
     }
 
@@ -207,13 +197,12 @@ bool GitRepository::isTargetPath(
       try {
         fs::path excludePath = fs::canonical(exclude, getSourceRoot());
 
-        auto excludeMatchResult = std::mismatch(
-          excludePath.begin(), excludePath.end(),
-          canonicalPath.begin(), canonicalPath.end());
+        auto excludeMatchResult = std::mismatch(excludePath.begin(), excludePath.end(),
+                                                canonicalPath.begin(), canonicalPath.end());
         if (excludeMatchResult.first == excludePath.end()) {
           return false;
         }
-      } catch (const fs::filesystem_error & e) {
+      } catch (const fs::filesystem_error& e) {
         logger->warn(fmt::format("exclude check error: {}", e.what()));
       }
     }
@@ -223,8 +212,7 @@ bool GitRepository::isTargetPath(
     std::string extension = path.extension();
 
     if (!this->mExtensions.empty() &&
-      std::find(this->mExtensions.begin(), this->mExtensions.end(),
-        extension) == this->mExtensions.end()) {
+        std::find(this->mExtensions.begin(), this->mExtensions.end(), extension) == this->mExtensions.end()) {
       return false;
     }
   }
@@ -246,32 +234,26 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     SafeGit2ObjPtr<git_object, git_object_free> obj;
     SafeGit2ObjPtr<git_tree, git_tree_free> tree;
     SafeGit2ObjPtr<git_reference, git_reference_free> ref;
-    if (git_reference_lookup(ref.getPtr(), static_cast<git_repository*>(repo),
-                            "refs/tags/devtool-base") == 0) {
+    if (git_reference_lookup(ref.getPtr(), static_cast<git_repository*>(repo), "refs/tags/devtool-base") == 0) {
       logger->info("found devtool tag");
-      int error_code = git_reference_peel(
-          obj.getPtr(),
-          static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
+      int error_code = git_reference_peel(obj.getPtr(), static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
       if (error_code != 0) {
         auto e = fmt::format("Failed to peel tag: error code {}", error_code);
         throw RepositoryException(e);
       }
     } else {
-      git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo),
-                          "HEAD^{commit}");
+      git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo), "HEAD^{commit}");
     }
 
     if (!obj.isNull()) {
       SafeGit2ObjPtr<git_commit, git_commit_free> parent_commit;
 
       if (git_commit_parentcount(obj.cast<const git_commit*>()) > 0) {
-        if (git_commit_parent(parent_commit.getPtr(),
-                              obj.cast<const git_commit*>(), 0) != 0) {
+        if (git_commit_parent(parent_commit.getPtr(), obj.cast<const git_commit*>(), 0) != 0) {
           throw RepositoryException("Failed to find parent commit");
         }
 
-        if (git_commit_tree(tree.getPtr(),
-                            static_cast<git_commit*>(parent_commit)) != 0) {
+        if (git_commit_tree(tree.getPtr(), static_cast<git_commit*>(parent_commit)) != 0) {
           throw RepositoryException("Failed to find parent tree");
         }
       }
@@ -279,16 +261,11 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       logger->warn("No HEAD commit or devtool tag found");
     }
 
-    getDiffFromTree(static_cast<git_repository*>(repo),
-                    static_cast<git_tree*>(tree),
-                    d);
+    getDiffFromTree(static_cast<git_repository*>(repo), static_cast<git_tree*>(tree), d);
   } else if (scope == "all") {
-    getDiffFromTree(static_cast<git_repository*>(repo),
-                    nullptr,
-                    d);
+    getDiffFromTree(static_cast<git_repository*>(repo), nullptr, d);
   } else {
-    throw InvalidArgumentException(
-      fmt::format("scope '{}' is invalid.", scope));
+    throw InvalidArgumentException(fmt::format("scope '{}' is invalid.", scope));
   }
 
   return d.getSourceLines();

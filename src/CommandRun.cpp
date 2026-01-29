@@ -37,7 +37,6 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/CommandRun.hpp"
 
-
 namespace sentinel {
 
 static const char * cCommandRunLoggerName = "CommandRun";
@@ -73,9 +72,8 @@ static void signalHandler(int signum) {
   }
   std::cout.flush();
   if (signum != SIGUSR1) {
-    std::cerr <<
-      fmt::format("Receive a signal({}).", strsignal(signum)) << std::endl;
-      std::exit(EXIT_FAILURE);
+    std::cerr << fmt::format("Receive a signal({}).", strsignal(signum)) << std::endl;
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -125,8 +123,8 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
 }
 
 void CommandRun::setSignalHandler() {
-  signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
-      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1}, signalHandler);
+  signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
+                                    signalHandler);
 }
 
 int CommandRun::run() {
@@ -149,12 +147,9 @@ int CommandRun::run() {
       fs::create_directories(workDirStr);
     }
     fs::path workDir = fs::canonical(workDirStr);
-    std::string backupDir = preProcessWorkDir(
-        (workDir / "backup").string(), &backupDirExists, true);
-    std::string actualDir = preProcessWorkDir(
-        (workDir / "actual").string(), &actualDirExists, false);
-    std::string expectedDir = preProcessWorkDir(
-        (workDir / "expected").string(), &expectedDirExists, false);
+    std::string backupDir = preProcessWorkDir((workDir / "backup").string(), &backupDirExists, true);
+    std::string actualDir = preProcessWorkDir((workDir / "actual").string(), &actualDirExists, false);
+    std::string expectedDir = preProcessWorkDir((workDir / "expected").string(), &expectedDirExists, false);
 
     bool emptyOutputDir = false;
     if (outputDirStr.empty()) {
@@ -168,31 +163,26 @@ int CommandRun::run() {
     std::string testCmd = getTestCmd();
 
     if (buildCmd.empty()) {
-      throw InvalidArgumentException(
-          "Option --build-command is required to be not empty");
+      throw InvalidArgumentException("Option --build-command is required to be not empty");
     }
 
     if (testCmd.empty()) {
-      throw InvalidArgumentException(
-          "Option --test-command is required to be not empty");
+      throw InvalidArgumentException("Option --test-command is required to be not empty");
     }
 
     if (testResultDirStr.empty()) {
-      throw InvalidArgumentException(
-          "Option --test-result-dir is required");
+      throw InvalidArgumentException("Option --test-result-dir is required");
     }
 
     if (fs::exists(testResultDirStr)) {
       if (!fs::is_directory(testResultDirStr)) {
-        throw InvalidArgumentException(fmt::format(
-              "The given test result path is not a directory: {0}",
-              testResultDirStr));
+        throw InvalidArgumentException(fmt::format("The given test result path is not a directory: {0}",
+                                                   testResultDirStr));
       }
 
       if (!fs::is_empty(testResultDirStr)) {
-        throw InvalidArgumentException(fmt::format(
-              "The given test result path is not empty: {0}",
-              testResultDirStr));
+        throw InvalidArgumentException(fmt::format("The given test result path is not empty: {0}",
+                                                   testResultDirStr));
       }
     }
     fs::create_directories(testResultDirStr);
@@ -238,26 +228,17 @@ int CommandRun::run() {
     logger->info(fmt::format("Build cmd: \"{}\"", buildCmd));
 
     logger->info(fmt::format("Test cmd: \"{}\"", testCmd));
-    logger->info(fmt::format("Test result dir: \"{}\"",
-                             testResultDir.string()));
-    logger->info(fmt::format("Test result extension: \"{}\"",
-          sentinel::string::join(", ", testResultFileExts)));
-    logger->info(fmt::format("Time limit for test: {}s",
-                             std::to_string(mTimeLimit)));
-    logger->info(fmt::format("Kill after time limit: {}s",
-                             std::to_string(mKillAfter)));
-    logger->info(fmt::format("Extentions of source: {}",
-          sentinel::string::join(", ", targetFileExts)));
-    logger->info(fmt::format("Exclude path: {}",
-          sentinel::string::join(", ", excludePaths)));
-    logger->info(fmt::format("Coverage files: {}",
-          sentinel::string::join(", ", coverageFiles)));
+    logger->info(fmt::format("Test result dir: \"{}\"", testResultDir.string()));
+    logger->info(fmt::format("Test result extension: \"{}\"", sentinel::string::join(", ", testResultFileExts)));
+    logger->info(fmt::format("Time limit for test: {}s", std::to_string(mTimeLimit)));
+    logger->info(fmt::format("Kill after time limit: {}s", std::to_string(mKillAfter)));
+    logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
+    logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
+    logger->info(fmt::format("Coverage files: {}", sentinel::string::join(", ", coverageFiles)));
     logger->info(fmt::format("Diff scope: {}", scope));
     logger->info(fmt::format("Generator: {}", generatorStr));
-    logger->info(fmt::format("Max generated mutable: {}",
-                             std::to_string(mutantLimit)));
-    logger->info(fmt::format("Random seed: {}",
-                             std::to_string(randomSeed)));
+    logger->info(fmt::format("Max generated mutable: {}", std::to_string(mutantLimit)));
+    logger->info(fmt::format("Random seed: {}", std::to_string(randomSeed)));
 
     logger->info(fmt::format("Work dir: \"{}\"", workDir.string()));
     logger->info(fmt::format("Backup dir: \"{}\"", backupDir));
@@ -270,16 +251,14 @@ int CommandRun::run() {
 
     for (const auto& filename : coverageFiles) {
       if (!fs::exists(filename)) {
-        throw InvalidArgumentException(
-          fmt::format("Input coverage file does not exist: {}",
-                      filename));
+        throw InvalidArgumentException(fmt::format("Input coverage file does not exist: {}", filename));
       }
     }
 
     // generate orignal test result
     if (access(buildDir.c_str(), X_OK) != 0) {
       throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
-            buildDir.c_str(), std::strerror(errno)));
+                                           buildDir.c_str(), std::strerror(errno)));
     }
     auto cmdPrefix = fmt::format("cd \"{}\" && ", buildDir.string());
 
@@ -300,12 +279,9 @@ int CommandRun::run() {
     logger->info(fmt::format("Build dir: {}", buildDir.string()));
     logger->info(fmt::format("Test cmd: {}", testCmd));
     logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
-    logger->info(fmt::format("Test result extension: {}",
-          sentinel::string::join(", ", testResultFileExts)));
-    logger->info(fmt::format("Time limit for test: {}s",
-                             std::to_string(mTimeLimit)));
-    logger->info(fmt::format("Kill after time limit: {}s",
-                             std::to_string(mKillAfter)));
+    logger->info(fmt::format("Test result extension: {}", sentinel::string::join(", ", testResultFileExts)));
+    logger->info(fmt::format("Time limit for test: {}s", std::to_string(mTimeLimit)));
+    logger->info(fmt::format("Kill after time limit: {}s", std::to_string(mKillAfter)));
     fs::remove_all(testResultDir);
     Subprocess firstTestProc(cmdPrefix + testCmd, mTimeLimit, mKillAfter);
 
@@ -320,31 +296,24 @@ int CommandRun::run() {
       } else {
         mTimeLimit = static_cast<size_t>(ceil(diffSecs * 1.1));
       }
-      logger->info(fmt::format("Time limit for test is set to {}(s)",
-            mTimeLimit));
+      logger->info(fmt::format("Time limit for test is set to {}(s)", mTimeLimit));
     }
 
     if (firstTestProc.isTimedOut()) {
-      throw std::runtime_error(
-          "Timeout occurs when excuting test cmd for original source code.");
+      throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
     }
 
     if (!fs::exists(testResultDir)) {
-      throw InvalidArgumentException(fmt::format(
-          "The test result path does not exist : {0}",
-          testResultDirStr));
+      throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", testResultDirStr));
     }
 
     if (!fs::is_directory(testResultDir)) {
-      throw InvalidArgumentException(fmt::format(
-            "The test result path is not a directory: {0}",
-            testResultDir.c_str()));
+      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}",
+                                                 testResultDir.c_str()));
     }
 
     if (fs::is_empty(testResultDir)) {
-      throw InvalidArgumentException(fmt::format(
-            "The test result path is empty: {0}",
-            testResultDir.c_str()));
+      throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", testResultDir.c_str()));
     }
 
     // copy test report to expected
@@ -353,33 +322,26 @@ int CommandRun::run() {
     // populate mutants
     logger->info("Populating mutants ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
-    logger->info(fmt::format("Extentions of source: {}",
-          sentinel::string::join(", ", targetFileExts)));
-    logger->info(fmt::format("Exclude path: {}",
-          sentinel::string::join(", ", excludePaths)));
-    auto repo = std::make_unique<sentinel::GitRepository>(
-        sourceRoot, targetFileExts, excludePaths);
+    logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
+    logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
+    auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, excludePaths);
 
     logger->info(fmt::format("Diff scope: {}", scope));
     sentinel::SourceLines sourceLines = repo->getSourceLines(scope);
 
-    std::shuffle(std::begin(sourceLines), std::end(sourceLines),
-                 std::mt19937(randomSeed));
+    std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(randomSeed));
 
     std::shared_ptr<MutantGenerator> generator;
     if (generatorStr == "uniform") {
       generator = std::make_shared<sentinel::UniformMutantGenerator>(buildDir);
     } else {
       if (generatorStr == "random") {
-        generator = std::make_shared<sentinel::RandomMutantGenerator>(
-            buildDir);
+        generator = std::make_shared<sentinel::RandomMutantGenerator>(buildDir);
       } else {
         if (generatorStr == "weighted") {
-          generator = std::make_shared<sentinel::WeightedMutantGenerator>(
-              buildDir);
+          generator = std::make_shared<sentinel::WeightedMutantGenerator>(buildDir);
         } else {
-          throw InvalidArgumentException(fmt::format(
-              "Invalid value for generator option: {0}", generatorStr));
+          throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", generatorStr));
         }
       }
     }
@@ -387,8 +349,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Generator: {}", generatorStr));
     sentinel::MutationFactory mutationFactory(generator);
     logger->info(fmt::format("Max generated mutable: {}", mutantLimit));
-    auto mutants = mutationFactory.populate(sourceRoot, sourceLines,
-                                            mutantLimit, randomSeed);
+    auto mutants = mutationFactory.populate(sourceRoot, sourceLines, mutantLimit, randomSeed);
 
     // Build and execute each selected mutant
     CoverageInfo cov(coverageFiles);
@@ -414,8 +375,7 @@ int CommandRun::run() {
       // mutate
       std::stringstream buf;
       buf << m;
-      logger->info(fmt::format("Creating mutant #{0} : {1}",
-                               std::to_string(mutantId), buf.str()));
+      logger->info(fmt::format("Creating mutant #{0} : {1}", std::to_string(mutantId), buf.str()));
       repo->getSourceTree()->modify(m, backupDir);
       logger->info(fmt::format("{0:-^{1}}", "", 50));
 
@@ -434,10 +394,8 @@ int CommandRun::run() {
 
         logger->info(fmt::format("Build dir: {}", buildDir.string()));
         logger->info(fmt::format("Test cmd:{}", testCmd));
-        logger->info(fmt::format("Test result dir: {}",
-              testResultDir.string()));
-        logger->info(fmt::format("Test result extension: {}",
-              sentinel::string::join(", ", testResultFileExts)));
+        logger->info(fmt::format("Test result dir: {}", testResultDir.string()));
+        logger->info(fmt::format("Test result extension: {}", sentinel::string::join(", ", testResultFileExts)));
         logger->info(fmt::format("Time limit for test: {}s", mTimeLimit));
         logger->info(fmt::format("Kill after time limit: {}s", mKillAfter));
         Subprocess proc(cmdPrefix + testCmd, mTimeLimit, mKillAfter);
@@ -470,11 +428,7 @@ int CommandRun::run() {
       mutantId++;
     }
 
-    // TODO(daeseong.seong) : consider rebuilding with original source!!!
-    //                        (source file restore was completed already.)
-
     // report
-
     fs::create_directories(outputDir);
     outputDir = fs::canonical(outputDir);
 
@@ -482,8 +436,7 @@ int CommandRun::run() {
       logger->info(fmt::format("Writing Report to {}", outputDir.string()));
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.save(outputDir);
-      sentinel::HTMLReport htmlReport(evaluator.getMutationResults(),
-          sourceRoot);
+      sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
       htmlReport.save(outputDir);
       logger->info("Print Summary Report");
       htmlReport.printSummary();
@@ -513,7 +466,7 @@ void CommandRun::copyTestReportTo(const std::string& from,
       const auto& curPath = dirent.path();
       std::string curExt = curPath.extension().string();
       std::transform(curExt.begin(), curExt.end(), curExt.begin(),
-          [](unsigned char c) { return std::tolower(c); });
+                     [](unsigned char c) { return std::tolower(c); });
       if (fs::is_regular_file(curPath)) {
         bool copyFlag = false;
         if (exts.empty()) {
@@ -522,7 +475,7 @@ void CommandRun::copyTestReportTo(const std::string& from,
           for (const auto& t : exts) {
             std::string tmp("." + t);
             std::transform(tmp.begin(), tmp.end(), tmp.begin(),
-                [](unsigned char c) { return std::tolower(c); });
+                           [](unsigned char c) { return std::tolower(c); });
             if (tmp == curExt) {
               copyFlag = true;
               break;
@@ -531,7 +484,6 @@ void CommandRun::copyTestReportTo(const std::string& from,
         }
 
         if (copyFlag) {
-          // TODO(daeseong.seong): keep relative directory of backupFile
           fs::copy(curPath, to);
         }
       }
@@ -539,37 +491,31 @@ void CommandRun::copyTestReportTo(const std::string& from,
   }
 }
 
-void CommandRun::restoreBackup(const std::string& backup,
-  const std::string& srcRoot) {
+void CommandRun::restoreBackup(const std::string& backup, const std::string& srcRoot) {
   namespace fs = std::experimental::filesystem;
 
   for (const auto& dirent : fs::directory_iterator(backup)) {
     const auto& backupFile = dirent.path();
     if (fs::is_regular_file(backupFile) || fs::is_directory(backupFile)) {
       fs::copy(backupFile, srcRoot / backupFile.filename(),
-          fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+               fs::copy_options::overwrite_existing | fs::copy_options::recursive);
       fs::remove_all(backupFile);
     }
   }
 }
 
-std::string CommandRun::preProcessWorkDir(const std::string& target,
-    bool* targetExists, bool isFilledDir) {
+std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir) {
   namespace fs =  std::experimental::filesystem;
   if (!fs::exists(target)) {
     *targetExists = false;
     fs::create_directories(target);
   } else {
     if (!fs::is_directory(target)) {
-      throw InvalidArgumentException(fmt::format(
-            "{0} must be directory.",
-            target));
+      throw InvalidArgumentException(fmt::format("{0} must be directory.", target));
     }
 
     if (!isFilledDir && !fs::is_empty(target)) {
-      throw InvalidArgumentException(fmt::format(
-            "{0} must be empty.",
-            target));
+      throw InvalidArgumentException(fmt::format("{0} must be empty.", target));
     }
   }
   return fs::canonical(target).string();

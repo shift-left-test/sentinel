@@ -22,16 +22,13 @@
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
-HTMLReport::HTMLReport(const MutationResults& results,
-                       const std::string& sourcePath) :
+HTMLReport::HTMLReport(const MutationResults& results, const std::string& sourcePath) :
     Report(results, sourcePath) {
 }
 
-HTMLReport::HTMLReport(const std::string& resultsPath,
-                       const std::string& sourcePath) :
+HTMLReport::HTMLReport(const std::string& resultsPath, const std::string& sourcePath) :
     Report(resultsPath, sourcePath) {
 }
 
@@ -41,8 +38,7 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
 
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})",
-                                                 dirPath.string()));
+      throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})", dirPath.string()));
     }
   } else {
     fs::create_directories(dirPath);
@@ -60,12 +56,10 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
     return;
   }
 
-  makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, true, "",
-                dirPath);
+  makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, true, "", dirPath);
 
   for (const auto& p : groupByDirPath) {
-    makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, false,
-                  p.first, dirPath);
+    makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, false, p.first, dirPath);
   }
 
   for (const auto& p : groupByPath) {
@@ -73,10 +67,9 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   }
 }
 
-void HTMLReport::makeIndexHtml(
-    std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
-    bool root, const std::experimental::filesystem::path& currentDirPath,
-    const std::experimental::filesystem::path& outputDir) {
+void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
+                               bool root, const std::experimental::filesystem::path& currentDirPath,
+                               const std::experimental::filesystem::path& outputDir) {
   namespace fs = std::experimental::filesystem;
 
   std::size_t sizeOfTargetFiles = 0;
@@ -93,8 +86,7 @@ void HTMLReport::makeIndexHtml(
   }
   unsigned int cov = 100 * numerator / denominator;
 
-  IndexHTMLGenerator ihg(root, currentDirPath, sizeOfTargetFiles,
-                         cov, numerator, denominator);
+  IndexHTMLGenerator ihg(root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator);
 
   if (root) {
     for (const auto& p : groupByDirPath) {
@@ -117,8 +109,7 @@ void HTMLReport::makeIndexHtml(
       std::size_t subMut = std::get<1>(*p.second);
       auto subCov = 100 * subDetected / subMut;
 
-      ihg.pushItemToTable(p.first.filename(),
-                          subCov, subDetected, subMut, -1);
+      ihg.pushItemToTable(p.first.filename(), subCov, subDetected, subMut, -1);
     }
   }
 
@@ -130,8 +121,7 @@ void HTMLReport::makeIndexHtml(
     auto newDir = outputDir / "srcDir" / currentDirPath;
     if (fs::exists(newDir)) {
       if (!fs::is_directory(newDir)) {
-        throw InvalidArgumentException(fmt::format("path isn't direcotry({0})",
-                                                   newDir.string()));
+        throw InvalidArgumentException(fmt::format("path isn't direcotry({0})", newDir.string()));
       }
     } else {
       fs::create_directories(newDir);
@@ -143,29 +133,25 @@ void HTMLReport::makeIndexHtml(
   mLogger->info(fmt::format("Save to {}", (outputDir / fileName).string()));
 }
 
-void HTMLReport::makeSourceHtml(
-    std::vector<const MutationResult*>* MRs,
-    const std::experimental::filesystem::path& srcPath,
-    const std::experimental::filesystem::path& outputDir) {
+void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
+                                const std::experimental::filesystem::path& srcPath,
+                                const std::experimental::filesystem::path& outputDir) {
   namespace fs = std::experimental::filesystem;
 
   auto absSrcPath = mSourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
-    throw InvalidArgumentException(
-        fmt::format("Source doesn't exists: {0}", absSrcPath.string()));
+    throw InvalidArgumentException(fmt::format("Source doesn't exists: {0}", absSrcPath.string()));
   }
 
   std::string srcName = absSrcPath.filename();
 
-  std::map<std::size_t,
-      std::shared_ptr<std::vector<const MutationResult*>>> groupByLine;
+  std::map<std::size_t, std::shared_ptr<std::vector<const MutationResult*>>> groupByLine;
   std::set<std::string> uniqueKillingTest;
   std::set<std::string> uniqueMutator;
 
   std::size_t maxLineNum = 0;
   for (const MutationResult* mr : *MRs) {
-    auto tmpvector = string::split(
-        mr->getKillingTest(), ", ");
+    auto tmpvector = string::split(mr->getKillingTest(), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {
         uniqueKillingTest.insert(ts);
@@ -175,15 +161,13 @@ void HTMLReport::makeSourceHtml(
 
     std::size_t curLineNum = mr->getMutant().getFirst().line;
     if (curLineNum == 0) {
-      throw InvalidArgumentException(
-          fmt::format("Muation at line number 0"));
+      throw InvalidArgumentException(fmt::format("Muation at line number 0"));
     }
     if (curLineNum > maxLineNum) {
       maxLineNum = curLineNum;
     }
     if (groupByLine.empty() || groupByLine.count(curLineNum) == 0) {
-      groupByLine.emplace(curLineNum,
-          std::make_shared<std::vector<const MutationResult*>>());
+      groupByLine.emplace(curLineNum, std::make_shared<std::vector<const MutationResult*>>());
     }
     groupByLine[curLineNum]->push_back(mr);
   }
@@ -197,10 +181,8 @@ void HTMLReport::makeSourceHtml(
   auto srcLineByLine = string::split(srcContents, '\n');
 
   if (srcLineByLine.empty() || srcLineByLine.size() < maxLineNum) {
-    throw InvalidArgumentException(
-        fmt::format(
-            "Src file's line num({0}) is smaller than mutation' line num({1})",
-            srcLineByLine.size(), maxLineNum));
+    throw InvalidArgumentException(fmt::format(
+        "Src file's line num({0}) is smaller than mutation' line num({1})", srcLineByLine.size(), maxLineNum));
   }
 
   SrcHTMLGenerator shg(srcName, srcPath.parent_path().empty());
@@ -231,11 +213,9 @@ void HTMLReport::makeSourceHtml(
         curClass = "survived";
       }
     }
-    size_t numCurLineMrs = curLineMrs != nullptr ?
-        curLineMrs->size() : 0;
+    size_t numCurLineMrs = curLineMrs != nullptr ? curLineMrs->size() : 0;
 
-    std::vector<std::tuple<int, std::string, std::string, std::string, bool>>
-        lineExplainVec;
+    std::vector<std::tuple<int, std::string, std::string, std::string, bool>> lineExplainVec;
 
     if (curLineMrs != nullptr) {
       std::size_t count = 0;
@@ -255,8 +235,7 @@ void HTMLReport::makeSourceHtml(
             mutatedCodeHead = curLineContent.substr(0, first.column - 1);
           }
           if (i == last.line) {
-            mutatedCodeTail = curLineContent.substr(
-                last.column - 1, std::string::npos);
+            mutatedCodeTail = curLineContent.substr(last.column - 1, std::string::npos);
           }
           oriCode.append(curLineContent);
         }
@@ -264,9 +243,8 @@ void HTMLReport::makeSourceHtml(
         mutatedCode.append(mutatedCodeHead);
         mutatedCode.append(mr->getMutant().getToken());
         mutatedCode.append(mutatedCodeTail);
-        lineExplainVec.emplace_back(count,
-            MutationOperatorToExpansion(mr->getMutant().getOperator()),
-            oriCode, mutatedCode, mr->getDetected());
+        lineExplainVec.emplace_back(count, MutationOperatorToExpansion(mr->getMutant().getOperator()),
+                                    oriCode, mutatedCode, mr->getDetected());
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);
@@ -277,8 +255,8 @@ void HTMLReport::makeSourceHtml(
     for (const auto& mr : *t.second) {
       count += 1;
       shg.pushMutation(t.first, mr->getDetected(), count,
-          mr->getKillingTest(),
-          MutationOperatorToExpansion(mr->getMutant().getOperator()));
+                       mr->getKillingTest(),
+                       MutationOperatorToExpansion(mr->getMutant().getOperator()));
     }
   }
 

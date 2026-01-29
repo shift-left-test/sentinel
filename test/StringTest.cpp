@@ -8,7 +8,6 @@
 #include <vector>
 #include "sentinel/util/string.hpp"
 
-
 namespace sentinel {
 
 class StringTest : public ::testing::Test {
@@ -77,8 +76,7 @@ TEST_F(StringTest, testRtrimShouldNotTrimLeadingWhitespaces) {
 }
 
 TEST_F(StringTest, testTrimShouldTrimLeadingAndTrailingWhitespaces) {
-  EXPECT_STREQ(HELLO_WORLD,
-               string::trim(SPACE_HELLO_WORLD_SPACE).c_str());
+  EXPECT_STREQ(HELLO_WORLD, string::trim(SPACE_HELLO_WORLD_SPACE).c_str());
   EXPECT_STREQ(HELLO_WORLD, string::trim(SPACE_HELLO_WORLD).c_str());
   EXPECT_STREQ(HELLO_WORLD, string::trim(HELLO_WORLD_SPACE).c_str());
   EXPECT_STREQ(BLANK, string::trim(SPACE).c_str());
@@ -126,10 +124,8 @@ TEST_F(StringTest, testReplaceAll) {
   EXPECT_STREQ(BLANK, string::replaceAll(BLANK, BLANK, "b").c_str());
   EXPECT_STREQ(BLANK, string::replaceAll(WORLD, WORLD, BLANK).c_str());
   EXPECT_STREQ(WORLD, string::replaceAll(WORLD, "A", "B").c_str());
-  EXPECT_STREQ(HELLO_HELLO, string::replaceAll(
-      HELLO_WORLD, WORLD, HELLO).c_str());
-  EXPECT_STREQ(HELLO_HELLO, string::replaceAll(
-      WORLD_WORLD, WORLD, HELLO).c_str());
+  EXPECT_STREQ(HELLO_HELLO, string::replaceAll(HELLO_WORLD, WORLD, HELLO).c_str());
+  EXPECT_STREQ(HELLO_HELLO, string::replaceAll(WORLD_WORLD, WORLD, HELLO).c_str());
 }
 
 }  // namespace sentinel

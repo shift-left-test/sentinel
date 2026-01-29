@@ -17,8 +17,7 @@ bool AOR::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  return mArithmeticOperators.find(std::string(bo->getOpcodeStr())) != \
-         mArithmeticOperators.end();
+  return mArithmeticOperators.find(std::string(bo->getOpcodeStr())) != mArithmeticOperators.end();
 }
 
 void AOR::populate(clang::Stmt* s, Mutants* mutables) {
@@ -43,10 +42,8 @@ void AOR::populate(clang::Stmt* s, Mutants* mutables) {
       clang::Expr *rhs = bo->getRHS()->IgnoreImpCasts();
 
       // 2 pointers can only minus each other, so no mutables are generated.
-      if ((getExprType(lhs)->isPointerType() ||
-           getExprType(lhs)->isArrayType()) &&
-          (getExprType(rhs)->isPointerType() ||
-           getExprType(rhs)->isArrayType())) {
+      if ((getExprType(lhs)->isPointerType() || getExprType(lhs)->isArrayType()) &&
+          (getExprType(rhs)->isPointerType() || getExprType(rhs)->isArrayType())) {
         continue;
       }
 
@@ -59,10 +56,8 @@ void AOR::populate(clang::Stmt* s, Mutants* mutables) {
 
       // multiplicative operator only takes non-pointer operands.
       if ((mutatedToken == "*" || mutatedToken == "/") &&
-          (getExprType(lhs)->isPointerType() ||
-           getExprType(rhs)->isPointerType() ||
-           getExprType(lhs)->isArrayType() ||
-           getExprType(rhs)->isArrayType())) {
+          (getExprType(lhs)->isPointerType() || getExprType(rhs)->isPointerType() ||
+           getExprType(lhs)->isArrayType() || getExprType(rhs)->isArrayType())) {
         continue;
       }
 
