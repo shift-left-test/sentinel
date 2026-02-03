@@ -77,7 +77,7 @@ class ResultTest : public ::testing::Test {
     captureStdout();
     auto mut = new Result(MUT_DIR);
     std::string out = capturedStdout();
-    EXPECT_TRUE(string::contains(out, "This file doesn't follow googletest result format:"));
+    EXPECT_TRUE(string::contains(out, "This file doesn't follow googletest result format"));
 
     fs::remove_all(MUT_DIR);
     delete mut;

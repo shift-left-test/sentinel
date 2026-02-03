@@ -135,7 +135,7 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
       [startLineNum, endLineNum](std::size_t lineNum) {
         return lineNum >= startLineNum && lineNum <= endLineNum;
-      } );
+      });
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {
