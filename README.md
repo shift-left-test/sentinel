@@ -253,6 +253,7 @@ The following test runners are supported by sentinel:
 
 - googletest
 - qtest
+- ctest
 
 
 ## Licenses
