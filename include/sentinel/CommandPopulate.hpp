@@ -28,6 +28,7 @@ class CommandPopulate : public Command {
   args::ValueFlag<std::string> mBuildDir;
   args::ValueFlag<std::string> mScope;
   args::ValueFlagList<std::string> mExtensions;
+  args::ValueFlagList<std::string> mPatterns;
   args::ValueFlagList<std::string> mExcludes;
   args::ValueFlag<int> mLimit;
   args::ValueFlag<std::string> mMutableFilename;

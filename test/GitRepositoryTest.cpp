@@ -78,7 +78,7 @@ TEST_F(GitRepositoryTest, testInvalidExcludePath) {
   Logger::getLogger("GitRepository")->setLevel(Logger::Level::DEBUG);
   captureStderr();
   captureStdout();
-  GitRepository gitRepo(repo_name, {}, {"test", "unknown"});
+  GitRepository gitRepo(repo_name, {}, {}, {"test", "unknown"});
   EXPECT_TRUE(string::contains(capturedStdout(), "exclude: test"));
   EXPECT_TRUE(string::contains(capturedStderr(), "No such file or directory [unknown]"));
   Logger::getLogger("GitRepository")->setLevel(Logger::Level::OFF);
@@ -274,7 +274,7 @@ TEST_F(GitRepositoryTest, testIsTarget) {
   for (auto &file : stageFiles) {
     repo->addFile(file, content);
   }
-  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {"test"});
+  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {}, {"test"});
   EXPECT_TRUE(gitRepo.isTargetPath("temp.cpp"));
   EXPECT_FALSE(gitRepo.isTargetPath("temp.c"));
   EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));

@@ -128,6 +128,12 @@ class CommandRun : public Command {
   virtual std::vector<std::string> getTargetFileExts();
 
   /**
+   * @brief get paths or pattersn to constrain diff
+   * @return list of paths or patterns
+   */
+  virtual std::vector<std::string> getPatterns();
+
+  /**
    * @brief get excluded paths
    * @return list of excluded paths
    */
@@ -210,6 +216,11 @@ class CommandRun : public Command {
    * @brief target file extensions for mutation
    */
   args::ValueFlagList<std::string> mExtensions;
+
+  /**
+   * @brief paths or patterns to constrain diff
+   */
+  args::ValueFlagList<std::string> mPatterns;
 
   /**
    * @brief paths excluded from mutation

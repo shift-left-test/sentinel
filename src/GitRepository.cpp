@@ -103,13 +103,13 @@ class DiffData {
   GitRepository * mGitRepo;
 };
 
-static void getDiffFromTree(git_repository* repo, git_tree* tree, DiffData& d) {  // NOLINT
+static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData& d) {  // NOLINT
   SafeGit2ObjPtr<git_diff, git_diff_free> diff;
 
   if (git_diff_tree_to_workdir_with_index(diff.getPtr(),
                                           static_cast<git_repository*>(repo),
                                           static_cast<git_tree*>(tree),
-                                          nullptr) != 0) {
+                                          opts) != 0) {
     throw RepositoryException("Failed to find diff");
   }
 
@@ -144,6 +144,7 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, DiffData& d) {
 
 GitRepository::GitRepository(const std::string& path,
                              const std::vector<std::string>& extensions,
+                             const std::vector<std::string>& patterns,
                              const std::vector<std::string>& excludes) {
   namespace fs = std::experimental::filesystem;
 
@@ -164,6 +165,8 @@ GitRepository::GitRepository(const std::string& path,
                    [](auto extension) -> std::string
                    { return extension.at(0) == '.' ? extension : fmt::format(".{}", extension); });
   }
+
+  mPatterns = patterns;
 
   for (const auto& filename : excludes) {
     try {
@@ -230,6 +233,13 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
 
   DiffData d(this);
 
+  git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
+  std::vector<char *> cstrs(mPatterns.size());
+  std::transform(mPatterns.begin(), mPatterns.end(), cstrs.begin(),
+                 [](auto& s) { return const_cast<char *>(s.c_str()); });
+  git_strarray pathspec = { cstrs.data(), cstrs.size() };
+  opts.pathspec = pathspec;
+
   if (scope == "commit") {
     SafeGit2ObjPtr<git_object, git_object_free> obj;
     SafeGit2ObjPtr<git_tree, git_tree_free> tree;
@@ -261,9 +271,9 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       logger->warn("No HEAD commit or devtool tag found");
     }
 
-    getDiffFromTree(static_cast<git_repository*>(repo), static_cast<git_tree*>(tree), d);
+    getDiffFromTree(static_cast<git_repository*>(repo), static_cast<git_tree*>(tree), &opts, d);
   } else if (scope == "all") {
-    getDiffFromTree(static_cast<git_repository*>(repo), nullptr, d);
+    getDiffFromTree(static_cast<git_repository*>(repo), nullptr, &opts, d);
   } else {
     throw InvalidArgumentException(fmt::format("scope '{}' is invalid.", scope));
   }

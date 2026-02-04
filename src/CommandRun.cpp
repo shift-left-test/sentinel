@@ -87,6 +87,9 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mExtensions(parser, "EXTENSION",
     "Extentions of source files to be mutated.",
     {'t', "extension"}, {"cxx", "cpp", "cc", "c", "c++", "cu"}),
+  mPatterns(parser, "PATTERN",
+    "Path or pattern",
+    {'p', "pattern"}),
   mExcludes(parser, "PATH",
     "Exclude file or path",
     {'e', "exclude"}),
@@ -195,6 +198,7 @@ int CommandRun::run() {
     std::string killAfter = getKillAfter();
     std::vector<std::string> targetFileExts = getTargetFileExts();
     std::vector<std::string> excludePaths = getExcludePaths();
+    std::vector<std::string> diffPatterns = getPatterns();
     std::vector<std::string> coverageFiles = getCoverageFiles();
     std::string scope = getScope();
     std::string generatorStr = getGenerator();
@@ -234,6 +238,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Kill after time limit: {}s", std::to_string(mKillAfter)));
     logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
     logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
+    logger->info(fmt::format("Patterns: {}", sentinel::string::join(", ", diffPatterns)));
     logger->info(fmt::format("Coverage files: {}", sentinel::string::join(", ", coverageFiles)));
     logger->info(fmt::format("Diff scope: {}", scope));
     logger->info(fmt::format("Generator: {}", generatorStr));
@@ -324,7 +329,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
     logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
-    auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, excludePaths);
+    auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
 
     logger->info(fmt::format("Diff scope: {}", scope));
     sentinel::SourceLines sourceLines = repo->getSourceLines(scope);
@@ -559,6 +564,10 @@ std::vector<std::string> CommandRun::getTestResultFileExts() {
 
 std::vector<std::string> CommandRun::getTargetFileExts() {
   return mExtensions.Get();
+}
+
+std::vector<std::string> CommandRun::getPatterns() {
+  return mPatterns.Get();
 }
 
 std::vector<std::string> CommandRun::getExcludePaths() {

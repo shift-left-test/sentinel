@@ -27,11 +27,13 @@ class GitRepository : public Repository {
    *
    * @param path to the directory repository
    * @param extensions list of allowed extensions for target files
+   * @param patterns list of patterns to constrain diff
    * @param excludes excluded directory list
    */
   explicit GitRepository(const std::string& path,
-    const std::vector<std::string>& extensions = std::vector<std::string>(),
-    const std::vector<std::string>& excludes = std::vector<std::string>());
+                         const std::vector<std::string>& extensions = std::vector<std::string>(),
+                         const std::vector<std::string>& patterns = std::vector<std::string>(),
+                         const std::vector<std::string>& excludes = std::vector<std::string>());
 
   /**
    * @brief Default destructor
@@ -69,6 +71,7 @@ class GitRepository : public Repository {
  private:
   std::experimental::filesystem::path mSourceRoot;
   std::vector<std::string> mExtensions;
+  std::vector<std::string> mPatterns;
   std::vector<std::string> mExcludes;
 };
 

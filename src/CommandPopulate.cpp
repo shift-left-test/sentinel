@@ -34,6 +34,9 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
   mExtensions(parser, "EXTENSION",
     "Extentions of source file which could be mutated.",
     {'t', "extension"}, {"cxx", "cpp", "cc", "c", "c++", "cu"}),
+  mPatterns(parser, "PATTERN",
+    "Path or pattern",
+    {'p', "pattern"}),
   mExcludes(parser, "PATH",
     "exclude file or path",
     {'e', "exclude"}),
@@ -66,17 +69,23 @@ int CommandPopulate::run() {
   auto logger = Logger::getLogger(cCommandPopulateLoggerName);
   if (mIsVerbose.Get()) {
     logger->info(fmt::format("source root:{}", sourceRoot.string()));
-    for (auto&exclude : mExcludes.Get()) {
+    for (auto& exclude : mExcludes.Get()) {
       logger->info(fmt::format("exclude:{}", exclude));
     }
     for (auto& extension : mExtensions.Get()) {
       logger->info(fmt::format("extension:{}", extension));
     }
+    for (auto& pattern : mPatterns.Get()) {
+      logger->info(fmt::format("pattern:{}", pattern));
+    }
     logger->info(fmt::format("limit:{}", mLimit.Get()));
     logger->info(fmt::format("generator:{}", mGenerator.Get()));
     logger->info(fmt::format("random seed:{}", mSeed.Get()));
   }
-  auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, mExtensions.Get(), mExcludes.Get());
+  auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
+                                                        mExtensions.Get(),
+                                                        mPatterns.Get(),
+                                                        mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   // Shuffle target lines to reduce mutant selecting time.
