@@ -107,7 +107,7 @@ You can also run sentinel in the command line with detailed parameters. You may 
       -t[EXTENSION...],
       --extension=[EXTENSION...]        Extentions of source file which could be
                                         mutated.
-      -e[PATH...], --exclude=[PATH...]  exclude file or path
+      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
       -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
                                         Default: 10
       --mutants-file-name=[PATH]        Populated result file name which will be
@@ -210,7 +210,7 @@ You can also run sentinel in the command line with detailed parameters. You may 
       -t[EXTENSION...],
       --extension=[EXTENSION...]        Extentions of source files to be
                                         mutated.
-      -e[PATH...], --exclude=[PATH...]  Exclude file or path
+      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
       --coverage=[COV.INFO...]          lcov-format coverage result file
       -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
                                         Default: all

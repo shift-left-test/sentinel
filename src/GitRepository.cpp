@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fnmatch.h>
 #include <fmt/core.h>
 #include <git2.h>
+#include <iostream>
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -15,6 +17,8 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+
+namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
@@ -82,8 +86,6 @@ class DiffData {
    * @param line line number
    */
   void addSourceLine(const std::string & file, int line) {
-    namespace fs = std::experimental::filesystem;
-
     fs::path filePath(mGitRepo->getSourceRoot());
     filePath.append(file);
     if (mGitRepo->isTargetPath(filePath)) {
@@ -146,8 +148,6 @@ GitRepository::GitRepository(const std::string& path,
                              const std::vector<std::string>& extensions,
                              const std::vector<std::string>& patterns,
                              const std::vector<std::string>& excludes) {
-  namespace fs = std::experimental::filesystem;
-
   git_libgit2_init();
 
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
@@ -166,17 +166,11 @@ GitRepository::GitRepository(const std::string& path,
                    { return extension.at(0) == '.' ? extension : fmt::format(".{}", extension); });
   }
 
+  logger->debug(fmt::format("patterns: {}", string::join(", ", patterns)));
   mPatterns = patterns;
 
-  for (const auto& filename : excludes) {
-    try {
-      fs::canonical(filename, mSourceRoot);
-      this->mExcludes.push_back(filename);
-      logger->info(fmt::format("exclude: {}", filename));
-    } catch(const fs::filesystem_error& e) {
-      logger->warn(fmt::format("exclude option ignore: {}", e.what()));
-    }
-  }
+  logger->debug(fmt::format("excludes: {}", string::join(", ", excludes)));
+  mExcludes = excludes;
 }
 
 GitRepository::~GitRepository() {
@@ -184,31 +178,20 @@ GitRepository::~GitRepository() {
 }
 
 bool GitRepository::isTargetPath(const std::experimental::filesystem::path &path, bool checkExtension) {
-  namespace fs = std::experimental::filesystem;
-
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
+  fs::path canonicalPath;
 
-  if (!this->mExcludes.empty()) {
-    fs::path canonicalPath;
-    try {
-      canonicalPath = fs::canonical(path, getSourceRoot());
-    } catch(const fs::filesystem_error& e) {
-      return false;
-    }
+  try {
+    canonicalPath = fs::canonical(path, getSourceRoot());
+  } catch(const fs::filesystem_error& e) {
+    return false;
+  }
 
-    for (auto& exclude : this->mExcludes) {
-      try {
-        fs::path excludePath = fs::canonical(exclude, getSourceRoot());
-
-        auto excludeMatchResult = std::mismatch(excludePath.begin(), excludePath.end(),
-                                                canonicalPath.begin(), canonicalPath.end());
-        if (excludeMatchResult.first == excludePath.end()) {
-          return false;
-        }
-      } catch (const fs::filesystem_error& e) {
-        logger->warn(fmt::format("exclude check error: {}", e.what()));
-      }
-    }
+  auto matcher = [&](const auto& exclude) {
+                   return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0;
+                 };
+  if (std::any_of(mExcludes.begin(), mExcludes.end(), matcher)) {
+    return false;
   }
 
   if (checkExtension) {

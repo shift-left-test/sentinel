@@ -90,8 +90,8 @@ CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mPatterns(parser, "PATTERN",
     "Path or pattern",
     {'p', "pattern"}),
-  mExcludes(parser, "PATH",
-    "Exclude file or path",
+  mExcludes(parser, "PAT",
+    "Exclude paths matching fnmatch-style patterns",
     {'e', "exclude"}),
   mLimit(parser, "COUNT",
     "Maximum number of mutants to be generated",
@@ -237,7 +237,7 @@ int CommandRun::run() {
     logger->info(fmt::format("Time limit for test: {}s", std::to_string(mTimeLimit)));
     logger->info(fmt::format("Kill after time limit: {}s", std::to_string(mKillAfter)));
     logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
-    logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
+    logger->info(fmt::format("Exclude patterns: {}", sentinel::string::join(", ", excludePaths)));
     logger->info(fmt::format("Patterns: {}", sentinel::string::join(", ", diffPatterns)));
     logger->info(fmt::format("Coverage files: {}", sentinel::string::join(", ", coverageFiles)));
     logger->info(fmt::format("Diff scope: {}", scope));
@@ -328,7 +328,7 @@ int CommandRun::run() {
     logger->info("Populating mutants ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
-    logger->info(fmt::format("Exclude path: {}", sentinel::string::join(", ", excludePaths)));
+    logger->info(fmt::format("Exclude patterns: {}", sentinel::string::join(", ", excludePaths)));
     auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
 
     logger->info(fmt::format("Diff scope: {}", scope));
