@@ -188,8 +188,8 @@ bool GitRepository::isTargetPath(const std::experimental::filesystem::path &path
   }
 
   auto matcher = [&](const auto& exclude) {
-                   return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0;
-                 };
+    return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0;
+  };
   if (std::any_of(mExcludes.begin(), mExcludes.end(), matcher)) {
     return false;
   }

@@ -26,6 +26,7 @@ class CommandPopulate : public Command {
 
  private:
   args::ValueFlag<std::string> mBuildDir;
+  args::ValueFlag<std::string> mCompileDbDir;
   args::ValueFlag<std::string> mScope;
   args::ValueFlagList<std::string> mExtensions;
   args::ValueFlagList<std::string> mPatterns;

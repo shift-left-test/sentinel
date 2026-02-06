@@ -80,6 +80,12 @@ class CommandRun : public Command {
   virtual std::string getBuildDir();
 
   /**
+   * @brief get directory containing compile_commands.json file
+   * @return directory containing compile_commands.json file
+   */
+  virtual std::string getCompileDbDir();
+
+  /**
    * @brief get work directory
    * @return work directory
    */
@@ -186,6 +192,11 @@ class CommandRun : public Command {
    * @brief build directory
    */
   args::ValueFlag<std::string> mBuildDir;
+
+  /**
+   * @brief directory containing compile_commands.json file
+   */
+  args::ValueFlag<std::string> mCompileDbDir;
 
   /**
    * @brief test result directory

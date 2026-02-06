@@ -83,6 +83,57 @@ You can also run sentinel in the command line with detailed parameters. You may 
                                           help for each command.
 ```
 
+### run
+```bash
+  sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
+
+    Run mutation test in standalone mode
+
+  OPTIONS:
+
+      SOURCE_ROOT_PATH                  source root directory.
+      -v, --verbose                     Verbosity
+      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
+                                        Default: ./sentinel_tmp
+      -o[PATH], --output-dir=[PATH]     Directory for saving output.
+      -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
+                                        file exists.
+                                        Default: .
+      --compiledb=[PATH]                Path to directory containing
+                                        compile_commands.json file
+      --test-result-dir=[PATH]          Test command output directory
+      --build-command=[SH_CMD]          Shell command to build source
+      --test-command=[SH_CMD]           Shell command to execute test
+      --generator=[gen]                 Mutant generator type, one of
+                                        ['uniform', 'random', 'weighted'].
+                                        Default: uniform
+      --test-result-extension=[EXTENSION...]
+                                        Test command output file extensions.
+      -t[EXTENSION...],
+      --extension=[EXTENSION...]        Extentions of source files to be
+                                        mutated.
+      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
+      --coverage=[COV.INFO...]          lcov-format coverage result file
+      -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
+                                        Default: all
+      -l[COUNT], --limit=[COUNT]        Maximum number of mutants to be
+                                        generated
+                                        Default: 10
+      --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
+                                        there is no time limit. If auto, time
+                                        limit is automatically set using the
+                                        test execution time of the original
+                                        code.
+                                        Default: auto
+      --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
+                                        running after timeout. If 0, SIGKILL is
+                                        not sent. This option has no meaning
+                                        when timeout is set 0.
+                                        Default: 60
+      --seed=[SEED]                     Select random seed.
+                                        Default: random
+```
+
 ### populate
 
 ```bash
@@ -102,6 +153,8 @@ You can also run sentinel in the command line with detailed parameters. You may 
       -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
                                         file exists.
                                         Default: .
+      --compiledb=[PATH]                Directory containing
+                                        compile_commands.json file
       -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
                                         Default: all
       -t[EXTENSION...],
@@ -181,55 +234,6 @@ You can also run sentinel in the command line with detailed parameters. You may 
                                         If output-dir is not given,
                                         pass generating output file.
       --evaluation-file=[PATH]          Mutation test result file
-```
-
-### run
-```bash
-  sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
-
-    Run mutation test in standalone mode
-
-  OPTIONS:
-
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-      -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
-                                        file exists.
-                                        Default: .
-      --test-result-dir=[PATH]          Test command output directory
-      --build-command=[SH_CMD]          Shell command to build source
-      --test-command=[SH_CMD]           Shell command to execute test
-      --generator=[gen]                 Mutant generator type, one of
-                                        ['uniform', 'random', 'weighted'].
-                                        Default: uniform
-      --test-result-extension=[EXTENSION...]
-                                        Test command output file extensions.
-      -t[EXTENSION...],
-      --extension=[EXTENSION...]        Extentions of source files to be
-                                        mutated.
-      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
-      --coverage=[COV.INFO...]          lcov-format coverage result file
-      -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
-                                        Default: all
-      -l[COUNT], --limit=[COUNT]        Maximum number of mutants to be
-                                        generated
-                                        Default: 10
-      --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
-                                        there is no time limit. If auto, time
-                                        limit is automatically set using the
-                                        test execution time of the original
-                                        code.
-                                        Default: auto
-      --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
-                                        running after timeout. If 0, SIGKILL is
-                                        not sent. This option has no meaning
-                                        when timeout is set 0.
-                                        Default: 60
-      --seed=[SEED]                     Select random seed.
-                                        Default: random
 ```
 
 

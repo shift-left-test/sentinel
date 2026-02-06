@@ -26,8 +26,11 @@ const char * cCommandPopulateLoggerName = "CommandPopulate";
 
 CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
   mBuildDir(parser, "PATH",
-    "Directory where compile_commands.json file exists.",
+    "Build command output directory",
     {'b', "build-dir"}, "."),
+  mCompileDbDir(parser, "PATH",
+    "Directory containing compile_commands.json file",
+    {"compiledb"}),
   mScope(parser, "SCOPE",
     "Diff scope, one of ['commit', 'all'].",
     {'s', "scope"}, "all"),
@@ -91,16 +94,8 @@ int CommandPopulate::run() {
   // Shuffle target lines to reduce mutant selecting time.
   std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(mSeed.Get()));
 
-  std::shared_ptr<MutantGenerator> generator;
-  if (mGenerator.Get() == "uniform") {
-    generator = std::make_shared<sentinel::UniformMutantGenerator>(mBuildDir.Get());
-  } else if (mGenerator.Get() == "random") {
-    generator = std::make_shared<sentinel::RandomMutantGenerator>(mBuildDir.Get());
-  } else if (mGenerator.Get() == "weighted") {
-    generator = std::make_shared<sentinel::WeightedMutantGenerator>(mBuildDir.Get());
-  } else {
-    throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", mGenerator.Get()));
-  }
+  std::string compileDbDir = (mCompileDbDir.Get().empty()) ? mBuildDir.Get() : mCompileDbDir.Get();
+  std::shared_ptr<MutantGenerator> generator = MutantGenerator::getInstance(mGenerator.Get(), compileDbDir);
 
   sentinel::MutationFactory mutationFactory(generator);
 

@@ -26,12 +26,9 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
-#include "sentinel/RandomMutantGenerator.hpp"
-#include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
-#include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/HTMLReport.hpp"
@@ -79,8 +76,11 @@ static void signalHandler(int signum) {
 
 CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
   mBuildDir(parser, "PATH",
-    "Directory where compile_commands.json file exists.",
+    "Build command output directory",
     {'b', "build-dir"}, "."),
+  mCompileDbDir(parser, "PATH",
+    "Path to directory containing compile_commands.json file",
+    {"compiledb"}),
   mScope(parser, "SCOPE",
     "Diff scope, one of ['commit', 'all'].",
     {'s', "scope"}, "all"),
@@ -192,6 +192,7 @@ int CommandRun::run() {
     fs::path testResultDir = fs::canonical(testResultDirStr);
 
     fs::path buildDir = fs::canonical(getBuildDir());
+    std::string compileDbDir = (getCompileDbDir().empty()) ? getBuildDir() : getCompileDbDir();
     std::vector<std::string> testResultFileExts = getTestResultFileExts();
     std::string timeLimit = getTestTimeLimit();
     size_t mutantLimit = getMutantLimit();
@@ -229,8 +230,8 @@ int CommandRun::run() {
     logger->info(fmt::format("{0:-^{1}}", "", 50));
     logger->info(fmt::format("Source root: \"{}\"", sourceRoot.string()));
     logger->info(fmt::format("Build dir: \"{}\"", buildDir.string()));
+    logger->info(fmt::format("compiledb dir: \"{}\"", compileDbDir));
     logger->info(fmt::format("Build cmd: \"{}\"", buildCmd));
-
     logger->info(fmt::format("Test cmd: \"{}\"", testCmd));
     logger->info(fmt::format("Test result dir: \"{}\"", testResultDir.string()));
     logger->info(fmt::format("Test result extension: \"{}\"", sentinel::string::join(", ", testResultFileExts)));
@@ -336,20 +337,7 @@ int CommandRun::run() {
 
     std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(randomSeed));
 
-    std::shared_ptr<MutantGenerator> generator;
-    if (generatorStr == "uniform") {
-      generator = std::make_shared<sentinel::UniformMutantGenerator>(buildDir);
-    } else {
-      if (generatorStr == "random") {
-        generator = std::make_shared<sentinel::RandomMutantGenerator>(buildDir);
-      } else {
-        if (generatorStr == "weighted") {
-          generator = std::make_shared<sentinel::WeightedMutantGenerator>(buildDir);
-        } else {
-          throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", generatorStr));
-        }
-      }
-    }
+    std::shared_ptr<MutantGenerator> generator = MutantGenerator::getInstance(generatorStr, compileDbDir);
 
     logger->info(fmt::format("Generator: {}", generatorStr));
     sentinel::MutationFactory mutationFactory(generator);
@@ -544,6 +532,10 @@ std::string CommandRun::getOutputDir() {
 
 std::string CommandRun::getTestResultDir() {
   return mTestResultDir.Get();
+}
+
+std::string CommandRun::getCompileDbDir() {
+  return mCompileDbDir.Get();
 }
 
 std::string CommandRun::getBuildCmd() {
