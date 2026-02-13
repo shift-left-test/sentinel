@@ -33,6 +33,9 @@ namespace sentinel {
 
 static const char * cWeightedGeneratorLoggerName = "WeightedMutantGenerator";
 
+WeightedMutantGenerator::WeightedMutantGenerator(const std::string& path) : mDbPath(path) {
+}
+
 Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
@@ -243,6 +246,30 @@ int WeightedMutantGenerator::SentinelASTVisitor::getDepth(clang::Stmt* s) {
   }
 
   return depth;
+}
+
+WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
+                                                                  Mutants* mutables,
+                                                                  const SourceLines& targetLines,
+                                                                  DepthMap* depthMap) :
+    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
+}
+
+void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext &Context) {
+  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mDepthMap);
+  mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+}
+
+WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
+                                                                    const SourceLines& targetLines,
+                                                                    DepthMap* depthMap) :
+    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
+}
+
+std::unique_ptr<clang::ASTConsumer> WeightedMutantGenerator::GenerateMutantAction::CreateASTConsumer(
+    clang::CompilerInstance& CI, llvm::StringRef InFile) {
+  CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
 }
 
 void WeightedMutantGenerator::GenerateMutantAction::ExecuteAction() {

@@ -28,6 +28,9 @@ namespace sentinel {
 
 static const char * cUniformGeneratorLoggerName = "UniformMutantGenerator";
 
+UniformMutantGenerator::UniformMutantGenerator(const std::string& path) : mDbPath(path) {
+}
+
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
@@ -168,6 +171,28 @@ bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   }
 
   return true;
+}
+
+UniformMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
+                                                                 Mutants* mutables,
+                                                                 const std::vector<std::size_t>& targetLines) :
+    mMutants(mutables), mTargetLines(targetLines) {
+}
+
+void UniformMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext &Context) {
+  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines);
+  mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+}
+
+UniformMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
+                                                                   const std::vector<std::size_t>& targetLines) :
+    mMutants(mutables), mTargetLines(targetLines) {
+}
+
+std::unique_ptr<clang::ASTConsumer> UniformMutantGenerator::GenerateMutantAction::CreateASTConsumer(
+    clang::CompilerInstance& CI, llvm::StringRef InFile) {
+  CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines));
 }
 
 void UniformMutantGenerator::GenerateMutantAction::ExecuteAction() {

@@ -28,6 +28,9 @@ namespace sentinel {
 
 static const char * cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
+RandomMutantGenerator::RandomMutantGenerator(const std::string& path) : mDbPath(path) {
+}
+
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
@@ -146,6 +149,28 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   }
 
   return true;
+}
+
+RandomMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
+                                                                Mutants* mutables,
+                                                                const std::vector<std::size_t>& targetLines) :
+    mMutants(mutables), mTargetLines(targetLines) {
+}
+
+void RandomMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext &Context) {
+  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines);
+  mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+}
+
+RandomMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
+                                                                  const std::vector<std::size_t>& targetLines) :
+    mMutants(mutables), mTargetLines(targetLines) {
+}
+
+std::unique_ptr<clang::ASTConsumer> RandomMutantGenerator::GenerateMutantAction::CreateASTConsumer(
+    clang::CompilerInstance& CI, llvm::StringRef InFile) {
+  CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines));
 }
 
 void RandomMutantGenerator::GenerateMutantAction::ExecuteAction() {

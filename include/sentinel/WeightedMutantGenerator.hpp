@@ -45,11 +45,9 @@ class WeightedMutantGenerator : public MutantGenerator {
    *
    * @param path to compilation database file
    */
-  explicit WeightedMutantGenerator(const std::string& path) : mDbPath(path) {
-  }
+  explicit WeightedMutantGenerator(const std::string& path);
 
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) override;
-
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
@@ -59,8 +57,7 @@ class WeightedMutantGenerator : public MutantGenerator {
    * @brief SentinelASTVistor class
    *        defines what to do at each type of AST node.
    */
-  class SentinelASTVisitor :
-      public clang::RecursiveASTVisitor<SentinelASTVisitor> {
+  class SentinelASTVisitor : public clang::RecursiveASTVisitor<SentinelASTVisitor> {
    public:
     /**
      * @brief Default constructor
@@ -116,12 +113,8 @@ class WeightedMutantGenerator : public MutantGenerator {
      *
      * @param CI Clang compiler management object
      */
-    SentinelASTConsumer(const clang::CompilerInstance& CI,
-                        Mutants* mutables,
-                        const SourceLines& targetLines,
-                        DepthMap* depthMap) :
-        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
-    }
+    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+                        const SourceLines& targetLines, DepthMap* depthMap);
 
     /**
      * @brief A callback function triggered when ASTs for translation unit
@@ -129,10 +122,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      *
      * @param Context Clang object holding long-lived AST nodes.
      */
-    void HandleTranslationUnit(clang::ASTContext &Context) override {
-      SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mDepthMap);
-      mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
-    }
+    void HandleTranslationUnit(clang::ASTContext &Context) override;
 
    private:
     // SentinelASTVisitor mVisitor;
@@ -152,9 +142,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables (output)
      * @param mTargetLines list of target line numbers
      */
-    GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap) :
-        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
-    }
+    GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap);
 
     /**
      * @brief Create an ASTConsumer object to identify mutation locations
@@ -163,11 +151,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      * @param CI Clang compiler management object
      * @param InFile target file
      */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI,
-                                                          llvm::StringRef InFile) override {
-      CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-      return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
-    }
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI, llvm::StringRef InFile) override;
 
    protected:
     void ExecuteAction() override;

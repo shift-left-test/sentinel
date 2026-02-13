@@ -39,11 +39,9 @@ class RandomMutantGenerator : public MutantGenerator {
    *
    * @param path to compilation database file
    */
-  explicit RandomMutantGenerator(const std::string& path) : mDbPath(path) {
-  }
+  explicit RandomMutantGenerator(const std::string& path);
 
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) override;
-
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
@@ -62,8 +60,7 @@ class RandomMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      */
-    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
-                       const std::vector<std::size_t>& targetLines);
+    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables, const std::vector<std::size_t>& targetLines);
 
     /**
      * @brief Default destructor
@@ -90,11 +87,8 @@ class RandomMutantGenerator : public MutantGenerator {
      *
      * @param CI Clang compiler management object
      */
-    SentinelASTConsumer(const clang::CompilerInstance& CI,
-                        Mutants* mutables,
-                        const std::vector<std::size_t>& targetLines) :
-        mMutants(mutables), mTargetLines(targetLines) {
-    }
+    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+                        const std::vector<std::size_t>& targetLines);
 
     /**
      * @brief A callback function triggered when ASTs for translation unit
@@ -102,10 +96,7 @@ class RandomMutantGenerator : public MutantGenerator {
      *
      * @param Context Clang object holding long-lived AST nodes.
      */
-    void HandleTranslationUnit(clang::ASTContext &Context) override {
-      SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines);
-      mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
-    }
+    void HandleTranslationUnit(clang::ASTContext &Context) override;
 
    private:
     // SentinelASTVisitor mVisitor;
@@ -124,9 +115,7 @@ class RandomMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables (output)
      * @param mTargetLines list of target line numbers
      */
-    GenerateMutantAction(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
-        mMutants(mutables), mTargetLines(targetLines) {
-    }
+    GenerateMutantAction(Mutants* mutables, const std::vector<std::size_t>& targetLines);
 
     /**
      * @brief Create an ASTConsumer object to identify mutation locations
@@ -135,11 +124,7 @@ class RandomMutantGenerator : public MutantGenerator {
      * @param CI Clang compiler management object
      * @param InFile target file
      */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI,
-                                                          llvm::StringRef InFile) override {
-      CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-      return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines));
-    }
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI, llvm::StringRef InFile) override;
 
    protected:
     void ExecuteAction() override;
