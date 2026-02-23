@@ -83,6 +83,7 @@ int MainCLI(int argc, char** argv) {
   try {
     parser.helpParams.showTerminator = false;
     parser.helpParams.addDefault = true;
+    parser.helpParams.width = 120;
 
     parser.ParseCLI(argc, argv);
 
