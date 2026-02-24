@@ -1,265 +1,306 @@
-# sentinel
+# Sentinel
+
+**Sentinel** is a mutation testing tool based on LLVM/Clang for C/C++ projects.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.4.8-blue.svg)](CMakeLists.txt)
+
+---
+
+## Table of Contents
+
+- [About](#about)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Workflow Overview](#workflow-overview)
+  - [GUI Mode](#gui-mode)
+  - [Command Reference](#command-reference)
+- [Mutation Operators](#mutation-operators)
+- [Supported Test Runners](#supported-test-runners)
+- [Development](#development)
+- [Licenses](#licenses)
+
+---
 
 ## About
 
-Sentinel is a mutation testing tool based on LLVM/Clang for C/C++ projects.
+Mutation testing is a technique to evaluate and improve the quality of a test suite. It works by injecting small, deliberate faults (mutants) into the source code and checking whether the existing tests can detect them.
 
+**Benefits for developers:**
+- Measure the effectiveness of a test suite using the *mutation score*
+- Identify weak spots in tests and get guidance on writing better test cases
 
-### Features
+Sentinel makes mutation testing practical for C/C++ projects by:
+- Supporting diverse configuration options
+- Limiting mutation scope to committed changes (to reduce cost)
+- Automatically generating HTML/XML reports
 
-* Apply the mutation testing on C/C++ programs
-* Support diverse configuration options
-* Support application of mutation testing for commit code to cope with cost problem of mutation testing
-* Automatically generate HTML/XML format report files
+> For more background, see [Mutation testing on Wikipedia](https://en.wikipedia.org/wiki/Mutation_testing).
 
-### Mutation testing
+---
 
-Mutation testing is a software testing technique to evaluate and improve the quality of a test suite by generating faulty versions of target program (mutants) and check if the test suite can detect such faults.
-
-Mutation testing can be beneficial for software developers in several ways.
-
-* it provides developers/reviewers ways to evaluate the test suite's effectiveness with respect to the mutation score
-* it provides guidance to improve the test suite or to write new test cases
-
-You may find more information about the mutation testing on https://en.wikipedia.org/wiki/Mutation_testing.
-
-
-## How to install
-
-To prepare your host workspace, you can simply download a preconfigured dockerfile to start the docker container.
-
-    $ git clone https://github.com/shift-left-test/dockerfiles.git
-    $ cd dockerfiles
-    $ docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
-    $ docker run --rm -it clang-dev-11
-
-Create the sentinel package from the source code.
-
-    $ git clone https://github.com/shift-left-test/sentinel
-    $ cd sentinel
-    $ cmake .
-    $ make all -j
-    $ make package
-
-Then, install the package to your machine.
-
-    $ sudo apt-get install ./sentinel-0.4.8-amd64.deb
-
-
-## How to use
-
-Sentinel in the text-based user interface mode is much easier to use and provides more userful information about each options. You can simply run the program in the text-based user interface mode by:
-
-    $ sentinel gui
-
-You can also run sentinel in the command line with detailed parameters. You may find the detailed information about the command-line arguments below.
-
-### Command-line arguments
+## Quick Start
 
 ```bash
-  sentinel COMMAND {OPTIONS}
+# 1. Start the Docker environment
+git clone https://github.com/shift-left-test/dockerfiles.git
+cd dockerfiles
+docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
+docker run --rm -it clang-dev-11
 
-    Mutation Test
+# 2. Build and install Sentinel
+git clone https://github.com/shift-left-test/sentinel
+cd sentinel && cmake . && make all -j && make package
+sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
-  OPTIONS:
-
-      commands
-        populate                          Identify mutable test targets and
-                                          application methods in 'git' and print
-                                          a list
-        mutate                            Apply the selected 'mutable' to the
-                                          source. The original file is backed up
-                                          in 'work-dir'
-        evaluate                          Compare the test result with mutable
-                                          applied and the test result not
-                                          applied
-        report                            Create a mutation test report based on
-                                          the'evaluate' result and source code
-        run                               Run mutation test in standalone mode
-        gui                               Run sentinel in GUI mode
-      arguments
-        -h, --help                        Display this help menu.
-                                          Use 'sentinal COMMAND --help' to see
-                                          help for each command.
+# 3. Run mutation testing on your project
+sentinel run /path/to/your/project \
+  --build-command="make" \
+  --test-command="make test"
 ```
 
-### run
-```bash
-  sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
+---
 
-    Run mutation test in standalone mode
+## Prerequisites
 
-  OPTIONS:
+| Requirement | Version  |
+|-------------|----------|
+| LLVM/Clang  | 11+      |
+| CMake       | 3.8+     |
+| libgit2     | any      |
+| Docker      | optional (recommended for setup) |
 
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-      -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
-                                        file exists.
-                                        Default: .
-      --compiledb=[PATH]                Path to directory containing
-                                        compile_commands.json file
-      --test-result-dir=[PATH]          Test command output directory
-      --build-command=[SH_CMD]          Shell command to build source
-      --test-command=[SH_CMD]           Shell command to execute test
-      --generator=[gen]                 Mutant generator type, one of
-                                        ['uniform', 'random', 'weighted'].
-                                        Default: uniform
-      --test-result-extension=[EXTENSION...]
-                                        Test command output file extensions.
-      -t[EXTENSION...],
-      --extension=[EXTENSION...]        Extentions of source files to be
-                                        mutated.
-      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
-      --coverage=[COV.INFO...]          lcov-format coverage result file
-      -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
-                                        Default: all
-      -l[COUNT], --limit=[COUNT]        Maximum number of mutants to be
-                                        generated
-                                        Default: 10
-      --timeout=[TIME_SEC]              Time limit (sec) for test-command. If 0,
-                                        there is no time limit. If auto, time
-                                        limit is automatically set using the
-                                        test execution time of the original
-                                        code.
-                                        Default: auto
-      --kill-after=[TIME_SEC]           Send SIGKILL if test-command is still
-                                        running after timeout. If 0, SIGKILL is
-                                        not sent. This option has no meaning
-                                        when timeout is set 0.
-                                        Default: 60
-      --seed=[SEED]                     Select random seed.
-                                        Default: random
-```
+---
 
-### populate
+## Installation
+
+### Option 1: Docker (Recommended)
+
+Use the preconfigured Docker image to avoid manual dependency setup.
 
 ```bash
-  sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
-
-    Identify mutable test targets and application methods in 'git' and print a
-    list
-
-  OPTIONS:
-
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        Default: .
-      -b[PATH], --build-dir=[PATH]      Directory where compile_commands.json
-                                        file exists.
-                                        Default: .
-      --compiledb=[PATH]                Directory containing
-                                        compile_commands.json file
-      -s[SCOPE], --scope=[SCOPE]        Diff scope, one of ['commit', 'all'].
-                                        Default: all
-      -t[EXTENSION...],
-      --extension=[EXTENSION...]        Extentions of source file which could be
-                                        mutated.
-      -e[PAT...], --exclude=[PAT...]    Exclude paths matching fnmatch-style patterns
-      -l[COUNT], --limit=[COUNT]        Maximum generated mutable count.
-                                        Default: 10
-      --mutants-file-name=[PATH]        Populated result file name which will be
-                                        created at output-dir.
-                                        Default: mutables.db
-      --generator=[gen]                 Select mutant generator type, one of
-                                        ['uniform', 'random', 'weighted'].
-                                        Default: uniform
-      --seed=[SEED]                     Select random seed.
-                                        Default: 1942447250
+git clone https://github.com/shift-left-test/dockerfiles.git
+cd dockerfiles
+docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
+docker run --rm -it clang-dev-11
 ```
 
-### mutate
+### Option 2: Build from Source
+
 ```bash
-  sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
-
-    Apply the selected 'mutable' to the source. The original file is backed up
-    in 'work-dir'
-
-  OPTIONS:
-
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        Default: .
-      -m[MUTANT], --mutant=[MUTANT]     Mutant string
+git clone https://github.com/shift-left-test/sentinel
+cd sentinel
+cmake .
+make all -j
+make package
+sudo apt-get install ./sentinel-0.4.8-amd64.deb
 ```
 
-### evaluate
+---
+
+## Usage
+
+### Workflow Overview
+
+Sentinel provides individual commands for each phase of mutation testing. You can either run them step by step or use the `run` command to execute the entire pipeline at once.
+
+```
+populate → mutate → evaluate → report
+    ↑                               ↑
+find mutants                 generate report
+
+          OR use: sentinel run
+          (runs all steps automatically)
+```
+
+| Step       | Command    | Description                                      |
+|------------|------------|--------------------------------------------------|
+| 1. Find    | `populate` | Identify mutable locations in the source code    |
+| 2. Apply   | `mutate`   | Apply a single mutant to the source              |
+| 3. Check   | `evaluate` | Compare test results with and without the mutant |
+| 4. Report  | `report`   | Generate an HTML/XML report from results         |
+| All-in-one | `run`      | Execute all steps in standalone mode             |
+
+### GUI Mode
+
+The easiest way to get started is the text-based UI, which guides you through all options interactively:
+
 ```bash
-  sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
-
-    Compare the test result with mutable applied and the test result not applied
-
-  OPTIONS:
-
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        Default: .
-      -m[mutant], --mutant=[mutant]     Mutant string
-      -e[PATH], --expected=[PATH]       Expected result directory
-      -a[PATH], --actual=[PATH]         Actual result directory
-      --evaluation-file=[FILEPATH]      Evaluated output filename which will be
-                                        joined with output-dir.
-                                        Default: EvaluationResults
-      --test-state=[TEST_STATE]         Select the state of the test to be
-                                        evaluated, one of ['success',
-                                        'build_failure', 'timeout',
-                                        'uncovered'].
-                                        Default: success
+sentinel gui
 ```
 
-### report
+### Command Reference
+
+#### `run` — All-in-one mutation test
+
 ```bash
-  sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
-
-    Create a mutation test report based on the'evaluate' result and source code
-
-  OPTIONS:
-
-      SOURCE_ROOT_PATH                  source root directory.
-      -v, --verbose                     Verbosity
-      -w[PATH], --work-dir=[PATH]       Sentinel temporary working directory.
-                                        Default: ./sentinel_tmp
-      -o[PATH], --output-dir=[PATH]     Directory for saving output.
-                                        If output-dir is not given,
-                                        pass generating output file.
-      --evaluation-file=[PATH]          Mutation test result file
+sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
 ```
 
+| Option | Description | Default |
+|--------|-------------|---------|
+| `SOURCE_ROOT_PATH` | Source root directory | |
+| `-v, --verbose` | Enable verbose output | |
+| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-o, --output-dir=PATH` | Directory for output files | |
+| `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
+| `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
+| `--build-command=CMD` | Shell command to build the source | |
+| `--test-command=CMD` | Shell command to run tests | |
+| `--test-result-dir=PATH` | Directory for test output files | |
+| `--test-result-extension=EXT` | File extensions of test output | |
+| `-t, --extension=EXT` | Source file extensions to mutate | |
+| `-e, --exclude=PATTERN` | Exclude paths matching fnmatch-style patterns | |
+| `--coverage=COV.INFO` | lcov-format coverage file | |
+| `-s, --scope=SCOPE` | Diff scope: `commit` or `all` | `all` |
+| `-l, --limit=COUNT` | Maximum number of mutants to generate | `10` |
+| `--generator=TYPE` | Mutant generator: `uniform`, `random`, or `weighted` | `uniform` |
+| `--seed=SEED` | Random seed | random |
+| `--timeout=SEC` | Time limit for test command; `0` = no limit, `auto` = auto-detect | `auto` |
+| `--kill-after=SEC` | Send SIGKILL this many seconds after timeout; `0` = disabled | `60` |
+
+**Example:**
+
+```bash
+sentinel run ./my-project \
+  --build-command="cmake --build build" \
+  --test-command="ctest --test-dir build" \
+  --scope=commit \
+  --limit=50 \
+  --exclude="*/test/*" "*/third_party/*"
+```
+
+---
+
+#### `populate` — Find mutable locations
+
+Scans the source tree and generates a list of mutable locations.
+
+```bash
+sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `SOURCE_ROOT_PATH` | Source root directory | |
+| `-v, --verbose` | Enable verbose output | |
+| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-o, --output-dir=PATH` | Directory for output files | `.` |
+| `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
+| `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
+| `-s, --scope=SCOPE` | Diff scope: `commit` or `all` | `all` |
+| `-t, --extension=EXT` | Source file extensions to mutate | |
+| `-e, --exclude=PATTERN` | Exclude paths matching fnmatch-style patterns | |
+| `-l, --limit=COUNT` | Maximum number of mutants to generate | `10` |
+| `--mutants-file-name=PATH` | Output file name for mutant list | `mutables.db` |
+| `--generator=TYPE` | Mutant generator: `uniform`, `random`, or `weighted` | `uniform` |
+| `--seed=SEED` | Random seed | `1942447250` |
+
+---
+
+#### `mutate` — Apply a mutant
+
+Applies a single mutant to the source code. The original file is backed up in `work-dir`.
+
+```bash
+sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `SOURCE_ROOT_PATH` | Source root directory | |
+| `-v, --verbose` | Enable verbose output | |
+| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-o, --output-dir=PATH` | Directory for output files | `.` |
+| `-m, --mutant=MUTANT` | Mutant string to apply | |
+
+---
+
+#### `evaluate` — Compare test results
+
+Compares test results before and after a mutant is applied to determine if the mutant was killed.
+
+```bash
+sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `SOURCE_ROOT_PATH` | Source root directory | |
+| `-v, --verbose` | Enable verbose output | |
+| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-o, --output-dir=PATH` | Directory for output files | `.` |
+| `-m, --mutant=MUTANT` | Mutant string | |
+| `-e, --expected=PATH` | Expected (baseline) test result directory | |
+| `-a, --actual=PATH` | Actual (mutated) test result directory | |
+| `--evaluation-file=PATH` | Output filename for evaluation results | `EvaluationResults` |
+| `--test-state=STATE` | Test state to evaluate: `success`, `build_failure`, `timeout`, `uncovered` | `success` |
+
+---
+
+#### `report` — Generate a report
+
+Creates an HTML or XML mutation test report from the evaluation results.
+
+```bash
+sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `SOURCE_ROOT_PATH` | Source root directory | |
+| `-v, --verbose` | Enable verbose output | |
+| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-o, --output-dir=PATH` | Directory for output files (omit to skip file generation) | |
+| `--evaluation-file=PATH` | Mutation test result file to read | |
+
+---
+
+## Mutation Operators
+
+Sentinel supports the following mutation operators:
+
+| Operator | Name | Description | Example |
+|----------|------|-------------|---------|
+| **AOR** | Arithmetic Operator Replacement | Replaces arithmetic operators | `a + b` → `a - b` |
+| **BOR** | Bitwise Operator Replacement | Replaces bitwise operators | `a & b` → `a \| b` |
+| **LCR** | Logical Connector Replacement | Replaces logical operators | `a && b` → `a \|\| b` |
+| **ROR** | Relational Operator Replacement | Replaces relational operators | `a < b` → `a > b` |
+| **SDL** | Statement Deletion | Deletes a statement | `return x;` → *(deleted)* |
+| **SOR** | Shift Operator Replacement | Replaces shift operators | `a << b` → `a >> b` |
+| **UOI** | Unary Operator Insertion | Inserts a unary operator | `x` → `-x` |
+
+---
+
+## Supported Test Runners
+
+- [GoogleTest](https://github.com/google/googletest)
+- [QTest](https://doc.qt.io/qt-6/qtest-overview.html)
+- [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html)
+
+---
 
 ## Development
 
-### Mutation operators
+To build with tests and static analysis enabled:
 
-The following mutation operators are supported by sentinel:
+```bash
+cmake -DENABLE_TEST=ON .
+make all -j
+```
 
-- *AOR* - arithmetic operator replacement
-- *BOR* - bitwise operator replacement
-- *LCR* - logical connector replacement
-- *ROR* - relational operator replacement
-- *SDL* - statement deletion
-- *SOR* - shift operator replacement
-- *UOI* - unary operator insertion
+This enables:
+- Static analysis (`cppcheck`, `cpplint`, `lwyu`)
+- Unit tests
+- Code coverage
+- Doxygen documentation
 
-### Supported test runners
-
-The following test runners are supported by sentinel:
-
-- googletest
-- qtest
-- ctest
-
+---
 
 ## Licenses
 
-The project source code is available under MIT license. See [LICENSE](LICENSE).
+The project source code is available under the MIT license. See [LICENSE](LICENSE).
+
+Third-party licenses are listed in the [LICENSES](LICENSES) directory.
