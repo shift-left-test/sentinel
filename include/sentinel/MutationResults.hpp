@@ -15,8 +15,7 @@ namespace sentinel {
 /**
  * @brief MutationResults class
  */
-class MutationResults : public Container<MutationResult> {
-};
+class MutationResults : public Container<MutationResult> {};
 
 }  // namespace sentinel
 

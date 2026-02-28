@@ -93,35 +93,38 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
   fs::path OUT_DIR;
   std::string MUT_DIR;
   std::string MUT_DIR_SURVIVED;
-  std::string TC1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C1\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC1\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
-  std::string TC2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C2\" />\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
-  std::string TC2_FAIL = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
-    " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
-    "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
-    " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
-    "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
-    " time=\"*\" timestamp=\"*\" classname=\"C2\">\n"
-    "\t\t\t<failure message=\"fail message\" type=\"\" />"
-    "\t\t</testcase>\n"
-    "\t</testsuite>\n"
-    "</testsuites>\n";
+  std::string TC1 =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
+      " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
+      "\t<testsuite name=\"C1\" tests=\"1\" failures=\"0\" skipped=\"0\""
+      " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
+      "\t\t<testcase name=\"TC1\" status=\"run\" result=\"completed\""
+      " time=\"*\" timestamp=\"*\" classname=\"C1\" />\n"
+      "\t</testsuite>\n"
+      "</testsuites>\n";
+  std::string TC2 =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
+      " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
+      "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
+      " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
+      "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
+      " time=\"*\" timestamp=\"*\" classname=\"C2\" />\n"
+      "\t</testsuite>\n"
+      "</testsuites>\n";
+  std::string TC2_FAIL =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
+      " time=\"*\"timestamp=\"*\" name=\"AllTests\">\n"
+      "\t<testsuite name=\"C2\" tests=\"1\" failures=\"0\" skipped=\"0\""
+      " disabled=\"0\" errors=\"0\" time=\"*\" timestamp=\"*\">\n"
+      "\t\t<testcase name=\"TC2\" status=\"run\" result=\"completed\""
+      " time=\"*\" timestamp=\"*\" classname=\"C2\">\n"
+      "\t\t\t<failure message=\"fail message\" type=\"\" />"
+      "\t\t</testcase>\n"
+      "\t</testsuite>\n"
+      "</testsuites>\n";
 
  private:
   std::shared_ptr<CaptureHelper> mStdoutCapture;
@@ -129,13 +132,12 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
   auto mrPath = OUT_DIR / "MutationResult";
-  EXPECT_NO_THROW(Evaluator(ORI_DIR, SAMPLE_BASE)
-                  .compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath, "success"));
+  EXPECT_NO_THROW(Evaluator(ORI_DIR, SAMPLE_BASE).compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath, "success"));
 
   auto mrPathForException = SAMPLE1_PATH / "MutationResult";
-  EXPECT_THROW(Evaluator(ORI_DIR, SAMPLE_BASE)
-               .compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPathForException, "success"),
-               InvalidArgumentException);
+  EXPECT_THROW(
+      Evaluator(ORI_DIR, SAMPLE_BASE).compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPathForException, "success"),
+      InvalidArgumentException);
 }
 
 TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {

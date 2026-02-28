@@ -36,12 +36,9 @@ class SrcHTMLGenerator : public DOCGenerator {
    * @param curCode current line's code
    * @param explain vector of tuple (count, operator, killed or not)
    */
-  void pushLine(std::size_t curLineNum,
-                const std::string& curClass,
-                std::size_t numCurLineMrs,
+  void pushLine(std::size_t curLineNum, const std::string& curClass, std::size_t numCurLineMrs,
                 const std::string& curCode,
-                const std::vector<std::tuple<int, std::string,
-                std::string, std::string, bool>>& explain);
+                const std::vector<std::tuple<int, std::string, std::string, std::string, bool>>& explain);
 
   /**
    * @brief push a mutation
@@ -52,10 +49,7 @@ class SrcHTMLGenerator : public DOCGenerator {
    * @param curKillingTest current killing test
    * @param curOperator current mutation operatior
    */
-  void pushMutation(std::size_t curLineNum,
-                    bool killed,
-                    std::size_t count,
-                    const std::string& curKillingTest,
+  void pushMutation(std::size_t curLineNum, bool killed, std::size_t count, const std::string& curKillingTest,
                     const std::string& curOperator);
 
   /**

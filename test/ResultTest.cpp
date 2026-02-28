@@ -54,8 +54,7 @@ class ResultTest : public ::testing::Test {
     tmpfile.close();
   }
 
-  void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& givenXMLContents,
-                                      const std::string& targetTag,
+  void MAKE_AND_TEST_WRONG_RESULT_XML(const std::string& givenXMLContents, const std::string& targetTag,
                                       const std::string& ignoreTag = "") {
     static int inc = 0;
     std::string XMLContents = givenXMLContents;

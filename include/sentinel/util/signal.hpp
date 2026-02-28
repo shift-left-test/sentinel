@@ -23,7 +23,7 @@ namespace signal {
  * @param handler signal handler
  */
 inline void setSignalHandler(int signum, void (*handler)(int)) {
-  struct sigaction target{};
+  struct sigaction target {};
   target.sa_handler = handler;  // NOLINT
   sigemptyset(&target.sa_mask);
   target.sa_flags = 0;
@@ -73,8 +73,8 @@ class SaContainer {
    * @param signums target signums
    */
   explicit SaContainer(const std::vector<int>& signums) {
-    std::transform(std::begin(signums), std::end(signums),
-        std::back_inserter(signumAndSa),
+    std::transform(
+        std::begin(signums), std::end(signums), std::back_inserter(signumAndSa),
         [](int signum) -> std::tuple<int, struct sigaction*> {
           struct sigaction* sa = new struct sigaction;
           getSigaction(signum, sa);
@@ -87,10 +87,10 @@ class SaContainer {
    */
   ~SaContainer() {
     std::for_each(std::begin(signumAndSa), std::end(signumAndSa),
-        [](const std::tuple<int, struct sigaction*>& current) {
-          setSigaction(std::get<0>(current), std::get<1>(current));
-          delete std::get<1>(current);
-        });
+                  [](const std::tuple<int, struct sigaction*>& current) {
+                    setSigaction(std::get<0>(current), std::get<1>(current));
+                    delete std::get<1>(current);
+                  });
   }
 
  private:

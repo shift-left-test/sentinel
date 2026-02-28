@@ -21,9 +21,7 @@ class InvalidArgumentException : public std::invalid_argument {
    *
    * @param message of the exception
    */
-  explicit InvalidArgumentException(const std::string& message) :
-      std::invalid_argument(message) {
-  }
+  explicit InvalidArgumentException(const std::string& message) : std::invalid_argument(message) {}
 };
 
 }  // namespace sentinel

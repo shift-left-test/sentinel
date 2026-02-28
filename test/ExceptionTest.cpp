@@ -10,8 +10,7 @@
 
 namespace sentinel {
 
-class ExceptionTest : public ::testing::Test {
-};
+class ExceptionTest : public ::testing::Test {};
 
 TEST_F(ExceptionTest, testIOExceptionType) {
   EXPECT_THROW(throw IOException(EEXIST), std::runtime_error);

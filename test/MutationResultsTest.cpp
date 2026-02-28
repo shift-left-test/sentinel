@@ -14,7 +14,6 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutant.hpp"
 
-
 namespace fs = std::experimental::filesystem;
 
 namespace sentinel {

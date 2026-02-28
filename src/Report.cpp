@@ -73,19 +73,16 @@ void Report::generateReport() {
     curDirname = string::replaceAll(curDirname, "/", ".");
 
     if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
-      groupByDirPath.emplace(
-          curDirname,
-          new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t, std::size_t>(
-              new std::vector<const MutationResult*>(), 0, 0, 0));
+      groupByDirPath.emplace(curDirname,
+                             new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t, std::size_t>(
+                                 new std::vector<const MutationResult*>(), 0, 0, 0));
     }
     std::get<0>(*groupByDirPath[curDirname])->push_back(&mr);
     std::get<1>(*groupByDirPath[curDirname]) += 1;
 
     if (groupByPath.empty() || groupByPath.count(mrPath) == 0) {
-      groupByPath.emplace(
-          mrPath,
-          new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t>(
-              new std::vector<const MutationResult*>(), 0, 0));
+      groupByPath.emplace(mrPath, new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t>(
+                                      new std::vector<const MutationResult*>(), 0, 0));
     }
     std::get<0>(*groupByPath[mrPath])->push_back(&mr);
     std::get<1>(*groupByPath[mrPath]) += 1;
@@ -125,8 +122,7 @@ void Report::printSummary() {
 
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen))
-            << std::endl;
+  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)) << std::endl;
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat, "File", flen, "#killed", klen, "#mutation", mlen, "cov", clen);
 
@@ -145,51 +141,33 @@ void Report::printSummary() {
       filePos += 4;
       skipStr = "... ";
     }
-    std::cout << fmt::format(defFormat,
-                             skipStr + p.first.string().substr(filePos), flen,
-                             std::get<2>(*p.second), klen,
+    std::cout << fmt::format(defFormat, skipStr + p.first.string().substr(filePos), flen, std::get<2>(*p.second), klen,
                              std::get<1>(*p.second), mlen,
-                             (curCov != -1 ? std::to_string(curCov) : std::string("-")) + "%",
-                             clen);
+                             (curCov != -1 ? std::to_string(curCov) : std::string("-")) + "%", clen);
   }
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   int finalCov = -1;
   if (totNumberOfMutation != 0) {
     finalCov = 100 * totNumberOfDetectedMutation / totNumberOfMutation;
   }
-  std::cout << fmt::format(defFormat,
-                           "TOTAL", flen,
-                           totNumberOfDetectedMutation, klen,
-                           totNumberOfMutation, mlen,
-                           (finalCov != -1 ? std::to_string(finalCov) : std::string("-")) + "%",
-                           clen);
+  std::cout << fmt::format(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen, totNumberOfMutation, mlen,
+                           (finalCov != -1 ? std::to_string(finalCov) : std::string("-")) + "%", clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   if ((totNumberOfBuildFailure + totNumberOfRuntimeError + totNumberOfTimeout) != 0) {
     std::cout << fmt::format("Ignored Mutation\n");
-    std::cout << string::rtrim(fmt::format(defFormat,
-                                           "Build Failure", flen,
-                                           "", klen,
-                                           totNumberOfBuildFailure, mlen,
-                                           "", clen))
+    std::cout << string::rtrim(
+                     fmt::format(defFormat, "Build Failure", flen, "", klen, totNumberOfBuildFailure, mlen, "", clen))
               << std::endl;
-    std::cout << string::rtrim(fmt::format(defFormat,
-                                           "Runtime Error", flen,
-                                           "", klen,
-                                           totNumberOfRuntimeError, mlen,
-                                           "", clen))
+    std::cout << string::rtrim(
+                     fmt::format(defFormat, "Runtime Error", flen, "", klen, totNumberOfRuntimeError, mlen, "", clen))
               << std::endl;
-    std::cout << string::rtrim(fmt::format(defFormat,
-                                           "Timeout", flen,
-                                           "", klen,
-                                           totNumberOfTimeout, mlen,
-                                           "", clen))
+    std::cout << string::rtrim(fmt::format(defFormat, "Timeout", flen, "", klen, totNumberOfTimeout, mlen, "", clen))
               << std::endl;
     std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   }
 }
 
-fs::path Report::getRelativePath(
-    const std::string& path, const std::string& start) {
+fs::path Report::getRelativePath(const std::string& path, const std::string& start) {
   // 1. convert p and base to absolute paths
   auto p = fs::canonical(path);
   auto base = fs::canonical(start);

@@ -6,17 +6,15 @@
 #ifndef TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
 #define TEST_INCLUDE_SAMPLEFILEGENERATORFORTEST_HPP_
 
-
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
 #include <string>
 
-
 namespace sentinel {
 
-class  SampleFileGeneratorForTest : public ::testing::Test {
+class SampleFileGeneratorForTest : public ::testing::Test {
  protected:
   void SetUp() override {
     namespace fs = std::experimental::filesystem;

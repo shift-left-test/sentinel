@@ -66,9 +66,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      */
-    SentinelASTVisitor(clang::ASTContext* Context,
-                       Mutants* mutables,
-                       const SourceLines& targetLines,
+    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables, const SourceLines& targetLines,
                        DepthMap* depthMap);
 
     /**
@@ -79,7 +77,7 @@ class WeightedMutantGenerator : public MutantGenerator {
     /**
      * @brief Callback function each time the visitor meets a Stmt node.
      */
-    bool VisitStmt(clang::Stmt *s);
+    bool VisitStmt(clang::Stmt* s);
 
     /**
      * @brief Return the depth of a Stmt AST node.
@@ -113,8 +111,8 @@ class WeightedMutantGenerator : public MutantGenerator {
      *
      * @param CI Clang compiler management object
      */
-    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
-                        const SourceLines& targetLines, DepthMap* depthMap);
+    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables, const SourceLines& targetLines,
+                        DepthMap* depthMap);
 
     /**
      * @brief A callback function triggered when ASTs for translation unit
@@ -122,7 +120,7 @@ class WeightedMutantGenerator : public MutantGenerator {
      *
      * @param Context Clang object holding long-lived AST nodes.
      */
-    void HandleTranslationUnit(clang::ASTContext &Context) override;
+    void HandleTranslationUnit(clang::ASTContext& Context) override;
 
    private:
     // SentinelASTVisitor mVisitor;
@@ -167,8 +165,9 @@ class WeightedMutantGenerator : public MutantGenerator {
    *
    * @param mutables list of generated mutables
    */
-  std::unique_ptr<clang::tooling::FrontendActionFactory>
-  myNewFrontendActionFactory(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap);
+  std::unique_ptr<clang::tooling::FrontendActionFactory> myNewFrontendActionFactory(Mutants* mutables,
+                                                                                    const SourceLines& targetLines,
+                                                                                    DepthMap* depthMap);
 };
 
 }  // namespace sentinel

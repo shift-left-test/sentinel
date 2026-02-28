@@ -6,18 +6,11 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 #define INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 
-
 namespace sentinel {
 /**
  * @brief Result State enumeration
  */
-enum class MutationState : int {
-  KILLED = 0,
-  SURVIVED = 1,
-  RUNTIME_ERROR = 2,
-  BUILD_FAILURE = 3,
-  TIMEOUT = 4
-};
+enum class MutationState : int { KILLED = 0, SURVIVED = 1, RUNTIME_ERROR = 2, BUILD_FAILURE = 3, TIMEOUT = 4 };
 
 /**
  * @brief change MutationState to String

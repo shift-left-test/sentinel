@@ -35,9 +35,7 @@ class MutationFactory {
    * @param randomSeed random seed
    * @return list of mutables
    */
-  Mutants populate(const std::string& gitPath,
-                   const SourceLines& sourceLines,
-                   std::size_t maxMutants,
+  Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                    unsigned randomSeed);
 
   /**
@@ -48,9 +46,7 @@ class MutationFactory {
    * @param maxMutants maximum number of mutables generated
    * @return list of mutables
    */
-  Mutants populate(const std::string& gitPath,
-                   const SourceLines& sourceLines,
-                   std::size_t maxMutants);
+  Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants);
 
  private:
   std::shared_ptr<MutantGenerator> mGenerator;

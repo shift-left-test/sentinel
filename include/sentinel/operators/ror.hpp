@@ -25,8 +25,7 @@ class ROR : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit ROR(clang::ASTContext* Context) : MutationOperator("ROR", Context) {
-  }
+  explicit ROR(clang::ASTContext* Context) : MutationOperator("ROR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST
@@ -47,11 +46,9 @@ class ROR : public MutationOperator {
   void populate(clang::Stmt* s, Mutants* mutables) override;
 
  private:
-  std::set<std::string> mRelationalOperators
-      = {">", ">=", "<", "<=", "==", "!="};
-  std::map<std::string, std::vector<std::string>> mIgnored
-      = {{"==", {"<=", ">="}}, {"!=", {"<", ">"}},
-         {">=", {"=="}}, {"<=", {"=="}}, {"<", {"!="}}, {">", {"!="}}};
+  std::set<std::string> mRelationalOperators = {">", ">=", "<", "<=", "==", "!="};
+  std::map<std::string, std::vector<std::string>> mIgnored = {{"==", {"<=", ">="}}, {"!=", {"<", ">"}}, {">=", {"=="}},
+                                                              {"<=", {"=="}},       {"<", {"!="}},      {">", {"!="}}};
 };
 
 }  // namespace sentinel

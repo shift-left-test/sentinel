@@ -13,18 +13,17 @@
 
 namespace sentinel {
 
-Mutant::Mutant() : mFirst{0, 0}, mLast{0, 0} {
-}
+Mutant::Mutant() : mFirst {0, 0}, mLast {0, 0} {}
 
-Mutant::Mutant(const std::string& mutationOperator,
-               const std::string& path,
-               const std::string& qualifiedFuncName,
-               std::size_t firstLine, std::size_t firstColumn,
-               std::size_t lastLine, std::size_t lastColumn,
+Mutant::Mutant(const std::string& mutationOperator, const std::string& path, const std::string& qualifiedFuncName,
+               std::size_t firstLine, std::size_t firstColumn, std::size_t lastLine, std::size_t lastColumn,
                const std::string& token) :
-    mPath(std::experimental::filesystem::canonical(path)), mToken(token),
-    mOperator(mutationOperator), mQualifiedFunction(qualifiedFuncName),
-    mFirst{firstLine, firstColumn}, mLast{lastLine, lastColumn} {
+    mPath(std::experimental::filesystem::canonical(path)),
+    mToken(token),
+    mOperator(mutationOperator),
+    mQualifiedFunction(qualifiedFuncName),
+    mFirst {firstLine, firstColumn},
+    mLast {lastLine, lastColumn} {
   std::size_t pos = qualifiedFuncName.find_last_of(':');
   if (pos == std::string::npos) {
     mClass = "";
@@ -38,13 +37,9 @@ Mutant::Mutant(const std::string& mutationOperator,
 bool Mutant::operator==(const Mutant& other) const {
   namespace fs = std::experimental::filesystem;
 
-  return mOperator == other.getOperator() &&
-      fs::equivalent(mPath, other.getPath()) &&
-      mFirst.line == other.getFirst().line &&
-      mFirst.column == other.getFirst().column &&
-      mLast.line == other.getLast().line &&
-      mLast.column == other.getLast().column &&
-      mToken == other.getToken();
+  return mOperator == other.getOperator() && fs::equivalent(mPath, other.getPath()) &&
+         mFirst.line == other.getFirst().line && mFirst.column == other.getFirst().column &&
+         mLast.line == other.getLast().line && mLast.column == other.getLast().column && mToken == other.getToken();
 }
 
 bool Mutant::operator<(const Mutant& other) const {
@@ -88,10 +83,8 @@ std::string Mutant::getToken() const {
 }
 
 std::string Mutant::str() const {
-  return fmt::format("{},{},{},{},{},{},{},{}", getOperator(),
-                     getPath().string(), getQualifiedFunction(),
-                     getFirst().line, getFirst().column, getLast().line, getLast().column,
-                     getToken());
+  return fmt::format("{},{},{},{},{},{},{},{}", getOperator(), getPath().string(), getQualifiedFunction(),
+                     getFirst().line, getFirst().column, getLast().line, getLast().column, getToken());
 }
 
 std::ostream& operator<<(std::ostream& out, const Mutant& m) {
@@ -99,16 +92,13 @@ std::ostream& operator<<(std::ostream& out, const Mutant& m) {
   return out;
 }
 
-std::istream& operator>>(std::istream& in, Mutant &m) {
+std::istream& operator>>(std::istream& in, Mutant& m) {
   std::string line;
   if (getline(in, line)) {
     auto str = string::split(line, ",");
-    m = Mutant(str[0], str[1], str[2],
-               string::stringToInt<std::size_t>(str[3]),
-               string::stringToInt<std::size_t>(str[4]),
-               string::stringToInt<std::size_t>(str[5]),
-               string::stringToInt<std::size_t>(str[6]),
-               str[7]);
+    m = Mutant(str[0], str[1], str[2], string::stringToInt<std::size_t>(str[3]),
+               string::stringToInt<std::size_t>(str[4]), string::stringToInt<std::size_t>(str[5]),
+               string::stringToInt<std::size_t>(str[6]), str[7]);
   }
   return in;
 }

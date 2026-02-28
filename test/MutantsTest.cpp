@@ -35,14 +35,10 @@ class MutantsTest : public SampleFileGeneratorForTest {
   }
 
   bool equal(const Mutant& m1, const Mutant& m2) {
-    return m1.getOperator() == m2.getOperator() &&
-           m1.getPath() == m2.getPath() &&
-           m1.getQualifiedFunction() == m2.getQualifiedFunction() &&
-           m1.getFirst().line == m2.getFirst().line &&
-           m1.getFirst().column == m2.getFirst().column &&
-           m1.getLast().line == m2.getLast().line &&
-           m1.getLast().column == m2.getLast().column &&
-           m1.getToken() == m2.getToken();
+    return m1.getOperator() == m2.getOperator() && m1.getPath() == m2.getPath() &&
+           m1.getQualifiedFunction() == m2.getQualifiedFunction() && m1.getFirst().line == m2.getFirst().line &&
+           m1.getFirst().column == m2.getFirst().column && m1.getLast().line == m2.getLast().line &&
+           m1.getLast().column == m2.getLast().column && m1.getToken() == m2.getToken();
   }
 
   std::string NONEXISTED_DIR = "nonexist";

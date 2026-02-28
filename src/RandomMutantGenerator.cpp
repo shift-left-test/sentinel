@@ -24,7 +24,7 @@
 
 namespace sentinel {
 
-static const char * cRandomGeneratorLoggerName = "RandomMutantGenerator";
+static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
 RandomMutantGenerator::RandomMutantGenerator(const std::string& path) : mDbPath(path) {
 }
@@ -33,13 +33,11 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   return populate(sourceLines, maxMutants, std::random_device {}());
 }
 
-Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines,
-                                        std::size_t maxMutants,
-                                        unsigned randomSeed) {
+Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;
-  std::unique_ptr<clang::tooling::CompilationDatabase> compileDb = \
+  std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
       clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath, errorMsg);
 
   if (compileDb == nullptr) {
@@ -113,16 +111,15 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   if (endLoc.isMacroID()) {
     clang::CharSourceRange range = mContext->getSourceManager().getImmediateExpansionRange(endLoc);
-    endLoc = clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mContext->getSourceManager(),
-                                               mContext->getLangOpts());
+    endLoc =
+        clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mContext->getSourceManager(), mContext->getLangOpts());
   }
 
   std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
-  bool containTargetLine = std::any_of(mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](std::size_t lineNum) {
-        return lineNum >= startLineNum && lineNum <= endLineNum;
-      });
+  bool containTargetLine = std::any_of(
+      mTargetLines.begin(), mTargetLines.end(),
+      [startLineNum, endLineNum](std::size_t lineNum) { return lineNum >= startLineNum && lineNum <= endLineNum; });
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {
@@ -167,15 +164,14 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> RandomMutantGenerator::my
   class SimpleFrontendActionFactory : public clang::tooling::FrontendActionFactory {
    public:
     explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
-        mMutants(mutables), mTargetLines(targetLines) {
-    }
+        mMutants(mutables), mTargetLines(targetLines) {}
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {
       return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines);
     }
 #else
-    clang::FrontendAction *create() override {
+    clang::FrontendAction* create() override {
       return new GenerateMutantAction(mMutants, mTargetLines);
     }
 #endif
@@ -185,8 +181,7 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> RandomMutantGenerator::my
     const std::vector<std::size_t>& mTargetLines;
   };
 
-  return std::unique_ptr<clang::tooling::FrontendActionFactory>(
-      new SimpleFrontendActionFactory(mutables, targetLines));
+  return std::unique_ptr<clang::tooling::FrontendActionFactory>(new SimpleFrontendActionFactory(mutables, targetLines));
 }
 
 }  // namespace sentinel

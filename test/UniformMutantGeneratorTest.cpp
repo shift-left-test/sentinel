@@ -112,12 +112,12 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
-  UniformMutantGenerator generator{SAMPLE_BASE};
+  UniformMutantGenerator generator {SAMPLE_BASE};
   EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100), IOException);
 }
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
-  UniformMutantGenerator generator{SAMPLE1_DIR};
+  UniformMutantGenerator generator {SAMPLE1_DIR};
   Mutants mutants = generator.populate(*sourceLines, 100);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
@@ -135,7 +135,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 }
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
-  UniformMutantGenerator generator{SAMPLE1_DIR};
+  UniformMutantGenerator generator {SAMPLE1_DIR};
   Mutants mutants = generator.populate(*sourceLines, 3);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
@@ -153,10 +153,10 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 }
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
-  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  UniformMutantGenerator generator1 {SAMPLE1_DIR};
   Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
-  UniformMutantGenerator generator2{SAMPLE1_DIR};
+  UniformMutantGenerator generator2 {SAMPLE1_DIR};
   Mutants mutants2 = generator2.populate(*sourceLines, 3, 3);
 
   ASSERT_EQ(mutants1.size(), 3);
@@ -165,10 +165,10 @@ TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 }
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithSameSeedWorks) {
-  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  UniformMutantGenerator generator1 {SAMPLE1_DIR};
   Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
 
-  UniformMutantGenerator generator2{SAMPLE1_DIR};
+  UniformMutantGenerator generator2 {SAMPLE1_DIR};
   Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
 
   ASSERT_EQ(mutants1.size(), 3);

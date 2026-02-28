@@ -10,8 +10,7 @@
 
 namespace sentinel {
 
-class StringTest : public ::testing::Test {
-};
+class StringTest : public ::testing::Test {};
 
 static constexpr const char* SPACE_HELLO_WORLD_SPACE = " HELLO WORLD ";
 static constexpr const char* SPACE_HELLO_WORLD = " HELLO WORLD";
@@ -100,17 +99,17 @@ TEST_F(StringTest, testContainsReturnFalseWhenInvalidArgsGiven) {
 }
 
 TEST_F(StringTest, testSplitReturnSplittedTokens) {
-  std::vector<std::string> expected = { HELLO, WORLD };
+  std::vector<std::string> expected = {HELLO, WORLD};
   EXPECT_EQ(expected, string::split(HELLO_WORLD));
 }
 
 TEST_F(StringTest, testSplitByStringDeliReturnSplittedTokens) {
-  std::vector<std::string> expected = { HELLO, "ORLD" };
+  std::vector<std::string> expected = {HELLO, "ORLD"};
   EXPECT_EQ(expected, string::split(HELLO_WORLD, " W"));
 }
 
 TEST_F(StringTest, testJoinReturnJoinedCharactersWhenVectorStrGiven) {
-  std::vector<std::string> input = { HELLO, WORLD };
+  std::vector<std::string> input = {HELLO, WORLD};
   EXPECT_STREQ(HELLO_WORLD, string::join(SPACE, input).c_str());
 }
 

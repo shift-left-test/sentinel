@@ -63,7 +63,9 @@ class Evaluator {
    *
    * @return MutationResults
    */
-  const MutationResults& getMutationResults() { return mMutationResults; }
+  const MutationResults& getMutationResults() {
+    return mMutationResults;
+  }
 
  private:
   std::shared_ptr<Logger> mLogger;

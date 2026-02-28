@@ -54,9 +54,7 @@ class HTMLReport : public Report {
    * @param currentDirPath current key of groupByDirPath (used in non root)
    * @param outputDir
    */
-  void makeIndexHtml(std::size_t totNumberOfMutation,
-                     std::size_t totNumberOfDetectedMutation,
-                     bool root,
+  void makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
                      const std::experimental::filesystem::path& currentDirPath,
                      const std::experimental::filesystem::path& outputDir);
 
@@ -67,8 +65,7 @@ class HTMLReport : public Report {
    * @param srcPath
    * @param outputDir
    */
-  void makeSourceHtml(std::vector<const MutationResult*>* MRs,
-                      const std::experimental::filesystem::path& srcPath,
+  void makeSourceHtml(std::vector<const MutationResult*>* MRs, const std::experimental::filesystem::path& srcPath,
                       const std::experimental::filesystem::path& outputDir);
 };
 

@@ -14,14 +14,11 @@
 #include "sentinel/CommandReport.hpp"
 
 namespace sentinel {
-const char * cCommandReportLoggerName = "CommandReport";
+const char* cCommandReportLoggerName = "CommandReport";
 
 CommandReport::CommandReport(args::Subparser& parser) :
     Command(parser),
-    mEvalFile(parser, "PATH",
-              "Mutation test result file.",
-              {"evaluation-file"}, args::Options::Required) {
-}
+    mEvalFile(parser, "PATH", "Mutation test result file.", {"evaluation-file"}, args::Options::Required) {}
 
 int CommandReport::run() {
   namespace fs = std::experimental::filesystem;

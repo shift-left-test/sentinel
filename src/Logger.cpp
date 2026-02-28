@@ -17,7 +17,6 @@ namespace sentinel {
 static std::map<std::string, std::shared_ptr<Logger>> loggers;
 static Logger::Level defaultLevel = Logger::Level::OFF;
 
-
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
   return getLogger(name, "{name} [{level}] {message}");
 }
@@ -35,8 +34,7 @@ Logger::Logger(const std::string& name, const std::string& format, Logger::Level
     mName(name), mFormat(format), mLevel(level) {
   try {
     this->format(mLevel, mName);
-  }
-  catch (const fmt::format_error& e) {
+  } catch (const fmt::format_error& e) {
     throw InvalidArgumentException(e.what());
   }
 }
@@ -54,10 +52,7 @@ std::string Logger::format(Logger::Level level, const std::string& message) {
   } else {
     levelText = "UNKNOWN";
   }
-  return fmt::format(mFormat,
-                     fmt::arg("name", mName),
-                     fmt::arg("level", levelText),
-                     fmt::arg("message", message));
+  return fmt::format(mFormat, fmt::arg("name", mName), fmt::arg("level", levelText), fmt::arg("message", message));
 }
 
 bool Logger::isAllowed(Logger::Level level) {

@@ -51,8 +51,8 @@ class XMLReport : public Report {
    * @param childName child XMLElement's name
    * @param childText child XMLElement's text
    */
-  void addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p,
-                        const std::string& childName, const std::string& childText);
+  void addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,
+                        const std::string& childText);
 };
 
 }  // namespace sentinel

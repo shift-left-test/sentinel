@@ -23,53 +23,48 @@ int MainCLI(int argc, char** argv) {
   std::unique_ptr<sentinel::Command> mainCommand;
   args::Group arguments("arguments");
   args::HelpFlag h(arguments, "help",
-    "Display this help menu. \n"
-    "Use 'sentinal COMMAND --help' to see help for each command.",
-    {'h', "help"});
-  args::HelpFlag v(arguments, "version",
-    "Display the program version. \n",
-    {'v', "version"});
+                   "Display this help menu. \n"
+                   "Use 'sentinal COMMAND --help' to see help for each command.",
+                   {'h', "help"});
+  args::HelpFlag v(arguments, "version", "Display the program version. \n", {'v', "version"});
 
-  args::ArgumentParser parser(
-      "A mutation testing tool for C/C++ projects",
-      "For more information, please visit: "
-      "https://github.com/shift-left-test/sentinel");
+  args::ArgumentParser parser("A mutation testing tool for C/C++ projects",
+                              "For more information, please visit: "
+                              "https://github.com/shift-left-test/sentinel");
 
   args::Group commands(static_cast<args::Group&>(parser), "commands");
   args::Command populate(commands, "populate",
-    "Identify mutable test targets and application methods in'git' "
-    "and print a list",
-    [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandPopulate>(subParser);
-      subParser.Parse();
-    });
+                         "Identify mutable test targets and application methods in'git' "
+                         "and print a list",
+                         [&](args::Subparser& subParser) {
+                           mainCommand = std::make_unique<sentinel::CommandPopulate>(subParser);
+                           subParser.Parse();
+                         });
   args::Command mutate(commands, "mutate",
-    "Apply the selected 'mutable' to the source. "
-    "The original file is backed up in 'work-dir'",
-    [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandMutate>(subParser);
-      subParser.Parse();
-    });
+                       "Apply the selected 'mutable' to the source. "
+                       "The original file is backed up in 'work-dir'",
+                       [&](args::Subparser& subParser) {
+                         mainCommand = std::make_unique<sentinel::CommandMutate>(subParser);
+                         subParser.Parse();
+                       });
   args::Command evaluate(commands, "evaluate",
-    "Compare the test result with mutable applied and the test result "
-    "not applied",
-    [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandEvaluate>(subParser);
-      subParser.Parse();
-    });
+                         "Compare the test result with mutable applied and the test result "
+                         "not applied",
+                         [&](args::Subparser& subParser) {
+                           mainCommand = std::make_unique<sentinel::CommandEvaluate>(subParser);
+                           subParser.Parse();
+                         });
   args::Command report(commands, "report",
-    "Create a mutation test report based on the'evaluate' result "
-    "and source code",
-    [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandReport>(subParser);
-      subParser.Parse();
-    });
-  args::Command run(commands, "run",
-    "Run mutation test in standalone mode",
-    [&](args::Subparser& subParser) {
-      mainCommand = std::make_unique<sentinel::CommandRun>(subParser);
-      subParser.Parse();
-    });
+                       "Create a mutation test report based on the'evaluate' result "
+                       "and source code",
+                       [&](args::Subparser& subParser) {
+                         mainCommand = std::make_unique<sentinel::CommandReport>(subParser);
+                         subParser.Parse();
+                       });
+  args::Command run(commands, "run", "Run mutation test in standalone mode", [&](args::Subparser& subParser) {
+    mainCommand = std::make_unique<sentinel::CommandRun>(subParser);
+    subParser.Parse();
+  });
   args::GlobalOptions globals(parser, arguments);
 
   try {

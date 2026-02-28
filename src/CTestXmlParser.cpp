@@ -11,35 +11,33 @@
 
 namespace sentinel {
 
-CTestXmlParser::CTestXmlParser() : XmlParser() {
-}
+CTestXmlParser::CTestXmlParser() : XmlParser() {}
 
 bool CTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
   auto logger = Logger::getLogger("Result");
   std::string message = "This file doesn't follow ctest result format";
 
-  tinyxml2::XMLElement *p = document->FirstChildElement("testsuite");
+  tinyxml2::XMLElement* p = document->FirstChildElement("testsuite");
   if (p == nullptr) {
     logger->debug(message);
     return false;
   }
 
-  for ( ; p != nullptr; p = p->NextSiblingElement("testsuite")) {
-    tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+  for (; p != nullptr; p = p->NextSiblingElement("testsuite")) {
+    tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
     if (q == nullptr) {
       logger->debug(message);
       return false;
     }
 
-    for ( ; q != nullptr; q = q->NextSiblingElement("testcase")) {
+    for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
       const char* pStatus = q->Attribute("status");
       if (pStatus == nullptr) {
         logger->debug(message);
         return false;
       }
 
-      if (std::string(pStatus) == std::string("run") ||
-          std::string(pStatus) == std::string("fail")) {
+      if (std::string(pStatus) == std::string("run") || std::string(pStatus) == std::string("fail")) {
         const char* pName = q->Attribute("name");
         if (pName == nullptr) {
           logger->debug(message);

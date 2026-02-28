@@ -10,7 +10,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-
 namespace sentinel {
 
 class LoggerTest : public ::testing::Test {

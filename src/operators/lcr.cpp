@@ -23,54 +23,41 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
   // create mutables by changing the operator
-  std::string token{bo->getOpcodeStr()};
+  std::string token {bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
-  clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(
-      mSrcMgr.getMainFileID(),
-      mSrcMgr.getExpansionLineNumber(opStartLoc),
-      mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
+  clang::SourceLocation opEndLoc =
+      mSrcMgr.translateLineCol(mSrcMgr.getMainFileID(), mSrcMgr.getExpansionLineNumber(opStartLoc),
+                               mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path{mSrcMgr.getFilename(opStartLoc)};
+    std::string path {mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mLogicalOperators) {
       if (mutatedToken != token) {
-        mutables->emplace_back(
-            mName, path, func,
-            mSrcMgr.getExpansionLineNumber(opStartLoc),
-            mSrcMgr.getExpansionColumnNumber(opStartLoc),
-            mSrcMgr.getExpansionLineNumber(opEndLoc),
-            mSrcMgr.getExpansionColumnNumber(opEndLoc),
-            mutatedToken);
+        mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(opStartLoc),
+                               mSrcMgr.getExpansionColumnNumber(opStartLoc), mSrcMgr.getExpansionLineNumber(opEndLoc),
+                               mSrcMgr.getExpansionColumnNumber(opEndLoc), mutatedToken);
       }
     }
   }
 
   // create mutables by changing the whole expression to true(1) and false(0)
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
-  clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+  clang::SourceLocation stmtEndLoc =
+      clang::Lexer::getLocForEndOfToken(bo->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
 
   if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 
-  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
+  std::string path {mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
-  mutables->emplace_back(
-      mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      "1");
-  mutables->emplace_back(
-      mName, path, func,
-      mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-      mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-      mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-      "0");
+  mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "1");
+  mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "0");
 }
 
 }  // namespace sentinel

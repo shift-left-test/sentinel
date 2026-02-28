@@ -13,13 +13,9 @@
 
 namespace sentinel {
 
-XMLReport::XMLReport(const MutationResults& results, const std::string& sourcePath) :
-    Report(results, sourcePath) {
-}
+XMLReport::XMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
 
-XMLReport::XMLReport(const std::string& resultsPath, const std::string& sourcePath) :
-    Report(resultsPath, sourcePath) {
-}
+XMLReport::XMLReport(const std::string& resultsPath, const std::string& sourcePath) : Report(resultsPath, sourcePath) {}
 
 void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
@@ -43,8 +39,7 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   for (const auto& r : mResults) {
     auto currentState = r.getMutationState();
     bool skip = false;
-    if (currentState == MutationState::BUILD_FAILURE ||
-        currentState == MutationState::RUNTIME_ERROR ||
+    if (currentState == MutationState::BUILD_FAILURE || currentState == MutationState::RUNTIME_ERROR ||
         currentState == MutationState::TIMEOUT) {
       skip = true;
     }
@@ -77,8 +72,8 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   delete doc;
 }
 
-void XMLReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p,
-                                 const std::string& childName, const std::string& childText) {
+void XMLReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,
+                                 const std::string& childText) {
   tinyxml2::XMLElement* pChild = d->NewElement(childName.c_str());
   pChild->SetText(childText.c_str());
   p->InsertEndChild(pChild);

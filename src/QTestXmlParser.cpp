@@ -11,26 +11,25 @@
 
 namespace sentinel {
 
-QTestXmlParser::QTestXmlParser() : XmlParser() {
-}
+QTestXmlParser::QTestXmlParser() : XmlParser() {}
 
 bool QTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
   auto logger = Logger::getLogger("Result");
   std::string message = "This file doesn't follow QTest result format";
 
-  tinyxml2::XMLElement *p = document->FirstChildElement("testsuite");
+  tinyxml2::XMLElement* p = document->FirstChildElement("testsuite");
   if (p == nullptr) {
     logger->debug(message);
     return false;
   }
 
-  tinyxml2::XMLElement *q = p->FirstChildElement("testcase");
+  tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
   if (q == nullptr) {
     logger->debug(message);
     return false;
   }
 
-  for ( ; q != nullptr; q = q->NextSiblingElement("testcase")) {
+  for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
     const char* pResult = q->Attribute("result");
     if (pResult == nullptr) {
       logger->debug(message);

@@ -15,11 +15,10 @@
 #include "sentinel/CommandMutate.hpp"
 
 namespace sentinel {
-const char * cCommandMutateLoggerName = "CommandMutate";
+const char* cCommandMutateLoggerName = "CommandMutate";
 
 CommandMutate::CommandMutate(args::Subparser& parser) :
-    Command(parser), mMutantStr(parser, "MUTANT", "Mutant string", {'m', "mutant"}, args::Options::Required) {
-}
+    Command(parser), mMutantStr(parser, "MUTANT", "Mutant string", {'m', "mutant"}, args::Options::Required) {}
 
 int CommandMutate::run() {
   namespace fs = std::experimental::filesystem;

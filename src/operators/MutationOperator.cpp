@@ -18,8 +18,8 @@ namespace sentinel {
 
 std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
-  clang::SourceLocation endLoc = clang::Lexer::getLocForEndOfToken(
-      s->getEndLoc(), 0, mContext->getSourceManager(), mContext->getLangOpts());
+  clang::SourceLocation endLoc =
+      clang::Lexer::getLocForEndOfToken(s->getEndLoc(), 0, mContext->getSourceManager(), mContext->getLangOpts());
   std::string ret;
 
   while (walkLoc != endLoc) {
@@ -55,7 +55,7 @@ bool MutationOperator::isDeclRefExpr(clang::Stmt* s) {
   return false;
 }
 
-bool MutationOperator::isPointerDereferenceExpr(clang::Stmt *s) {
+bool MutationOperator::isPointerDereferenceExpr(clang::Stmt* s) {
   if (auto uo = clang::dyn_cast<clang::UnaryOperator>(s)) {
     return (uo->getOpcode() == clang::UO_Deref);
   }
@@ -102,7 +102,7 @@ std::string MutationOperator::getContainingFunctionQualifiedName(clang::Stmt* s)
   return "";
 }
 
-bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation *startLoc, clang::SourceLocation *endLoc) {
+bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc) {
   if (startLoc->isInvalid() || endLoc->isInvalid()) {
     return false;
   }

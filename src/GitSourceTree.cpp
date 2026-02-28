@@ -14,11 +14,9 @@
 #include "sentinel/Logger.hpp"
 
 namespace sentinel {
-const char * cGitSourceTreeLoggerName = "GitSourceTree";
+const char* cGitSourceTreeLoggerName = "GitSourceTree";
 
-GitSourceTree::GitSourceTree(const std::string& baseDirectory) :
-    SourceTree(baseDirectory) {
-}
+GitSourceTree::GitSourceTree(const std::string& baseDirectory) : SourceTree(baseDirectory) {}
 
 void GitSourceTree::modify(const Mutant& info, const std::experimental::filesystem::path& backupPath) {
   namespace fs = std::experimental::filesystem;
@@ -31,8 +29,7 @@ void GitSourceTree::modify(const Mutant& info, const std::experimental::filesyst
   if (!string::startsWith(targetFilename.parent_path(), gitRootAbsolutePath)) {
     throw IOException(EINVAL, "Git root does not contain " + targetFilename.string());
   }
-  std::string targetRelativePath = \
-      targetFilename.parent_path().string().substr(gitRootAbsolutePath.string().length());
+  std::string targetRelativePath = targetFilename.parent_path().string().substr(gitRootAbsolutePath.string().length());
   fs::path newBackupPath = backupPath / targetRelativePath;
   if (!fs::exists(newBackupPath)) {
     fs::create_directories(newBackupPath);

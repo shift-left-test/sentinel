@@ -13,8 +13,7 @@
 
 namespace sentinel {
 
-SourceTree::SourceTree(const std::experimental::filesystem::path& baseDirectory) :
-    mBaseDirectory(baseDirectory) {
+SourceTree::SourceTree(const std::experimental::filesystem::path& baseDirectory) : mBaseDirectory(baseDirectory) {
   if (!std::experimental::filesystem::exists(mBaseDirectory)) {
     throw IOException(EINVAL);
   }

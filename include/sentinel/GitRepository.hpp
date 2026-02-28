@@ -66,7 +66,7 @@ class GitRepository : public Repository {
    *
    * @return return true if path is valid sourceline target.
    */
-  bool isTargetPath(const std::experimental::filesystem::path &path, bool checkExtension = true);
+  bool isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension = true);
 
  private:
   std::experimental::filesystem::path mSourceRoot;

@@ -32,7 +32,6 @@ class HTMLReportTest : public ::testing::Test {
     NESTED_SOURCE_DIR2 = SOURCE_DIR / "NESTED_DIR2";
     fs::create_directories(NESTED_SOURCE_DIR2);
 
-
     TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
     TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
@@ -945,8 +944,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   fs::create_directories(MUT_RESULT_DIR);
 
   std::string nestedSourceDir =
-    NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
-    NESTED_SOURCE_DIR.filename().string();
+      NESTED_SOURCE_DIR.parent_path().filename().string() + "." + NESTED_SOURCE_DIR.filename().string();
 
   MutationResults MRs;
 
@@ -981,26 +979,21 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
 
   htmlreport.save(OUT_DIR);
 
-  readFileAndCompareExpected(OUT_DIR / "index.html",
-                             ORI_ROOT_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir"/ "index.html",
-                             ORI_SRCROOT_INDEX_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir / "index.html",
-                             ORI_NESTED1_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "index.html", ORI_ROOT_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / "index.html", ORI_SRCROOT_INDEX_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir / "index.html", ORI_NESTED1_INDEX_HTML_CONTENTS);
   readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() / "index.html",
                              ORI_NESTED2_INDEX_HTML_CONTENTS);
 
-  readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir /
-                             (TARGET_FULL_PATH.filename().string() + ".html"),
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / nestedSourceDir / (TARGET_FULL_PATH.filename().string() + ".html"),
                              ORI_TARGET1_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() /
-                             (TARGET_FULL_PATH2.filename().string() + ".html"),
-                             ORI_TARGET2_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() /
-                             (TARGET_FULL_PATH3.filename().string() + ".html"),
-                             ORI_TARGET3_HTML_CONTENTS);
-  readFileAndCompareExpected(OUT_DIR / "srcDir" /
-                             (TARGET_FULL_PATH4.filename().string() + ".html"),
+  readFileAndCompareExpected(
+      OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() / (TARGET_FULL_PATH2.filename().string() + ".html"),
+      ORI_TARGET2_HTML_CONTENTS);
+  readFileAndCompareExpected(
+      OUT_DIR / "srcDir" / NESTED_SOURCE_DIR2.filename() / (TARGET_FULL_PATH3.filename().string() + ".html"),
+      ORI_TARGET3_HTML_CONTENTS);
+  readFileAndCompareExpected(OUT_DIR / "srcDir" / (TARGET_FULL_PATH4.filename().string() + ".html"),
                              ORI_TARGET4_HTML_CONTENTS);
 }
 
@@ -1039,8 +1032,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   fs::remove_all("unknown");
 
   std::string nestedSourceDir =
-      NESTED_SOURCE_DIR.parent_path().filename().string() + "." +
-      NESTED_SOURCE_DIR.filename().string();
+      NESTED_SOURCE_DIR.parent_path().filename().string() + "." + NESTED_SOURCE_DIR.filename().string();
 
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDDIRPATHGIVEN";
   fs::create_directories(OUT_DIR / "srcDir");

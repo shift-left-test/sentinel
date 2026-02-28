@@ -35,7 +35,7 @@
 
 namespace sentinel {
 
-static const char * cCommandRunLoggerName = "CommandRun";
+static const char* cCommandRunLoggerName = "CommandRun";
 bool workDirExists = true;
 bool backupDirExists = true;
 bool expectedDirExists = true;
@@ -73,56 +73,33 @@ static void signalHandler(int signum) {
   }
 }
 
-CommandRun::CommandRun(args::Subparser& parser) : Command(parser),
-  mBuildDir(parser, "PATH",
-    "Build command output directory",
-    {'b', "build-dir"}, "."),
-  mCompileDbDir(parser, "PATH",
-    "Path to directory containing compile_commands.json file",
-    {"compiledb"}),
-  mScope(parser, "SCOPE",
-    "Diff scope, one of ['commit', 'all'].",
-    {'s', "scope"}, "all"),
-  mExtensions(parser, "EXTENSION",
-    "Extentions of source files to be mutated.",
-    {'t', "extension"}, {"cxx", "cpp", "cc", "c", "c++", "cu"}),
-  mPatterns(parser, "PATTERN",
-    "Path or pattern",
-    {'p', "pattern"}),
-  mExcludes(parser, "PAT",
-    "Exclude paths matching fnmatch-style patterns",
-    {'e', "exclude"}),
-  mLimit(parser, "COUNT",
-    "Maximum number of mutants to be generated",
-    {'l', "limit"}, 10),
-  mBuildCmd(parser, "SH_CMD",
-    "Shell command to build source",
-    {"build-command"}),
-  mTestCmd(parser, "SH_CMD",
-    "Shell command to execute test",
-    {"test-command"}),
-  mTestResultDir(parser, "PATH",
-    "Test command output directory",
-    {"test-result-dir"}),
-  mTestResultFileExts(parser, "EXTENSION",
-    "Test command output file extensions.",
-    {"test-result-extension"}, {"xml", "XML"}),
-  mCoverageFiles(parser, "COV.INFO",
-    "lcov-format coverage result file",
-    {"coverage"}),
-  mGenerator(parser, "gen",
-    "Mutant generator type, one of ['uniform', 'random', 'weighted'].",
-    {"generator"}, "uniform"),
-  mTimeLimitStr(parser, "TIME_SEC",
-    R"a1s2(Time limit (sec) for test-command. If 0, there is no time limit. If auto, time limit is automatically set using the test execution time of the original code.)a1s2",
-    {"timeout"}, "auto"),
-  mKillAfterStr(parser, "TIME_SEC",
-    R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
-    {"kill-after"}, "60"),
-  mSeed(parser, "SEED",
-    "Select random seed.",
-    {"seed"}, std::random_device {}()) {
-}
+CommandRun::CommandRun(args::Subparser& parser) :
+    Command(parser),
+    mBuildDir(parser, "PATH", "Build command output directory", {'b', "build-dir"}, "."),
+    mCompileDbDir(parser, "PATH", "Path to directory containing compile_commands.json file", {"compiledb"}),
+    mScope(parser, "SCOPE", "Diff scope, one of ['commit', 'all'].", {'s', "scope"}, "all"),
+    mExtensions(parser, "EXTENSION", "Extentions of source files to be mutated.", {'t', "extension"},
+                {"cxx", "cpp", "cc", "c", "c++", "cu"}),
+    mPatterns(parser, "PATTERN", "Path or pattern", {'p', "pattern"}),
+    mExcludes(parser, "PAT", "Exclude paths matching fnmatch-style patterns", {'e', "exclude"}),
+    mLimit(parser, "COUNT", "Maximum number of mutants to be generated", {'l', "limit"}, 10),
+    mBuildCmd(parser, "SH_CMD", "Shell command to build source", {"build-command"}),
+    mTestCmd(parser, "SH_CMD", "Shell command to execute test", {"test-command"}),
+    mTestResultDir(parser, "PATH", "Test command output directory", {"test-result-dir"}),
+    mTestResultFileExts(parser, "EXTENSION", "Test command output file extensions.", {"test-result-extension"},
+                        {"xml", "XML"}),
+    mCoverageFiles(parser, "COV.INFO", "lcov-format coverage result file", {"coverage"}),
+    mGenerator(parser, "gen", "Mutant generator type, one of ['uniform', 'random', 'weighted'].", {"generator"},
+               "uniform"),
+    mTimeLimitStr(
+        parser, "TIME_SEC",
+        R"a1s2(Time limit (sec) for test-command. If 0, there is no time limit. If auto, time limit is automatically set using the test execution time of the original code.)a1s2",
+        {"timeout"}, "auto"),
+    mKillAfterStr(
+        parser, "TIME_SEC",
+        R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
+        {"kill-after"}, "60"),
+    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()) {}
 
 void CommandRun::setSignalHandler() {
   signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
@@ -178,8 +155,8 @@ int CommandRun::run() {
 
     if (fs::exists(testResultDirStr)) {
       if (!fs::is_directory(testResultDirStr)) {
-        throw InvalidArgumentException(fmt::format("The given test result path is not a directory: {0}",
-                                                   testResultDirStr));
+        throw InvalidArgumentException(
+            fmt::format("The given test result path is not a directory: {0}", testResultDirStr));
       }
 
       if (!fs::is_empty(testResultDirStr)) {
@@ -188,8 +165,8 @@ int CommandRun::run() {
         std::string answer;
         std::getline(std::cin, answer);
         if (answer != "y" && answer != "Y") {
-          throw InvalidArgumentException(fmt::format("The given test result path is not empty: {0}",
-                                                     testResultDirStr));
+          throw InvalidArgumentException(
+              fmt::format("The given test result path is not empty: {0}", testResultDirStr));
         }
         fs::remove_all(testResultDirStr);
       }
@@ -215,20 +192,20 @@ int CommandRun::run() {
     if (timeLimit != "auto") {
       try {
         mTimeLimit = sentinel::string::stringToInt<size_t>(timeLimit);
-      } catch(...) {
+      } catch (...) {
         throw InvalidArgumentException(fmt::format(
-              R"a1s2(Failed to read timeout option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
-              timeLimit));
+            R"a1s2(Failed to read timeout option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
+            timeLimit));
       }
     }
 
     size_t mKillAfter = 0;
     try {
       mKillAfter = sentinel::string::stringToInt<size_t>(killAfter);
-    } catch(...) {
+    } catch (...) {
       throw InvalidArgumentException(fmt::format(
-            R"a1s2(Failed to read kill-after option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
-            killAfter));
+          R"a1s2(Failed to read kill-after option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
+          killAfter));
     }
 
     // log parsed parameter
@@ -269,8 +246,8 @@ int CommandRun::run() {
 
     // generate orignal test result
     if (access(buildDir.c_str(), X_OK) != 0) {
-      throw std::runtime_error(fmt::format("fail to change dir {} (cause: {})",
-                                           buildDir.c_str(), std::strerror(errno)));
+      throw std::runtime_error(
+          fmt::format("fail to change dir {} (cause: {})", buildDir.c_str(), std::strerror(errno)));
     }
     auto cmdPrefix = fmt::format("cd \"{}\" && ", buildDir.string());
 
@@ -278,8 +255,8 @@ int CommandRun::run() {
     logger->info("Building original source code ...");
     logger->info(fmt::format("Source root: {}", sourceRoot.string()));
     logger->info(fmt::format("Build dir: {}", buildDir.string()));
-    logger->info(fmt::format("Build cmd: {}", cmdPrefix+buildCmd));
-    Subprocess origBuildProc{cmdPrefix + buildCmd};
+    logger->info(fmt::format("Build cmd: {}", cmdPrefix + buildCmd));
+    Subprocess origBuildProc {cmdPrefix + buildCmd};
     origBuildProc.execute();
     if (!origBuildProc.isSuccessfulExit()) {
       throw std::runtime_error("Build FAIL.");
@@ -320,8 +297,8 @@ int CommandRun::run() {
     }
 
     if (!fs::is_directory(testResultDir)) {
-      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}",
-                                                 testResultDir.c_str()));
+      throw InvalidArgumentException(
+          fmt::format("The test result path is not a directory: {0}", testResultDir.c_str()));
     }
 
     if (fs::is_empty(testResultDir)) {
@@ -444,7 +421,7 @@ int CommandRun::run() {
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
     }
-  } catch(...) {
+  } catch (...) {
     std::raise(SIGUSR1);
     throw;
   }
@@ -453,8 +430,8 @@ int CommandRun::run() {
   return 0;
 }
 
-void CommandRun::copyTestReportTo(const std::string& from,
-  const std::string& to, const std::vector<std::string>& exts) {
+void CommandRun::copyTestReportTo(const std::string& from, const std::string& to,
+                                  const std::vector<std::string>& exts) {
   namespace fs = std::experimental::filesystem;
 
   fs::remove_all(to);
@@ -464,8 +441,7 @@ void CommandRun::copyTestReportTo(const std::string& from,
     for (const auto& dirent : fs::recursive_directory_iterator(from)) {
       const auto& curPath = dirent.path();
       std::string curExt = curPath.extension().string();
-      std::transform(curExt.begin(), curExt.end(), curExt.begin(),
-                     [](unsigned char c) { return std::tolower(c); });
+      std::transform(curExt.begin(), curExt.end(), curExt.begin(), [](unsigned char c) { return std::tolower(c); });
       if (fs::is_regular_file(curPath)) {
         bool copyFlag = false;
         if (exts.empty()) {
@@ -473,8 +449,7 @@ void CommandRun::copyTestReportTo(const std::string& from,
         } else {
           for (const auto& t : exts) {
             std::string tmp("." + t);
-            std::transform(tmp.begin(), tmp.end(), tmp.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
+            std::transform(tmp.begin(), tmp.end(), tmp.begin(), [](unsigned char c) { return std::tolower(c); });
             if (tmp == curExt) {
               copyFlag = true;
               break;
@@ -504,7 +479,7 @@ void CommandRun::restoreBackup(const std::string& backup, const std::string& src
 }
 
 std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir) {
-  namespace fs =  std::experimental::filesystem;
+  namespace fs = std::experimental::filesystem;
   if (!fs::exists(target)) {
     *targetExists = false;
     fs::create_directories(target);

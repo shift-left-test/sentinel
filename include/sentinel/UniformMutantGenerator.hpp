@@ -67,7 +67,7 @@ class UniformMutantGenerator : public MutantGenerator {
      */
     virtual ~SentinelASTVisitor();
 
-    bool VisitStmt(clang::Stmt *s);
+    bool VisitStmt(clang::Stmt* s);
 
    private:
     clang::ASTContext* mContext;
@@ -96,7 +96,7 @@ class UniformMutantGenerator : public MutantGenerator {
      *
      * @param Context Clang object holding long-lived AST nodes.
      */
-    void HandleTranslationUnit(clang::ASTContext &Context) override;
+    void HandleTranslationUnit(clang::ASTContext& Context) override;
 
    private:
     // SentinelASTVisitor mVisitor;
@@ -139,8 +139,8 @@ class UniformMutantGenerator : public MutantGenerator {
    *
    * @param mutables list of generated mutables
    */
-  std::unique_ptr<clang::tooling::FrontendActionFactory>
-  myNewFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines);
+  std::unique_ptr<clang::tooling::FrontendActionFactory> myNewFrontendActionFactory(
+      Mutants* mutables, const std::vector<std::size_t>& targetLines);
 };
 
 }  // namespace sentinel

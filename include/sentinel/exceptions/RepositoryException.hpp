@@ -21,9 +21,7 @@ class RepositoryException : public std::runtime_error {
    *
    * @param message of the error
    */
-  explicit RepositoryException(const std::string& message) :
-      std::runtime_error(message.c_str()) {
-  }
+  explicit RepositoryException(const std::string& message) : std::runtime_error(message.c_str()) {}
 };
 
 }  // namespace sentinel

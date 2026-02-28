@@ -28,12 +28,8 @@ class IndexHTMLGenerator : public DOCGenerator {
    * @param numerator
    * @param denominator
    */
-  IndexHTMLGenerator(bool root,
-                     const std::string& dirName,
-                     std::size_t sizeOfTargetFiles,
-                     unsigned int coverage,
-                     std::size_t numerator,
-                     std::size_t denominator);
+  IndexHTMLGenerator(bool root, const std::string& dirName, std::size_t sizeOfTargetFiles, unsigned int coverage,
+                     std::size_t numerator, std::size_t denominator);
 
   /**
    * @brief push a item to table
@@ -44,11 +40,8 @@ class IndexHTMLGenerator : public DOCGenerator {
    * @param subDenominator
    * @param numOfFiles in dir (only used if root)
    */
-  void pushItemToTable(const std::string& subName,
-                       int subCoverage,
-                       std::size_t subNumerator,
-                       std::size_t subDenominator,
-                       std::size_t numOfFiles);
+  void pushItemToTable(const std::string& subName, int subCoverage, std::size_t subNumerator,
+                       std::size_t subDenominator, std::size_t numOfFiles);
 
   /**
    * @brief make html string
@@ -64,8 +57,7 @@ class IndexHTMLGenerator : public DOCGenerator {
   std::size_t mDenominator;
   std::string mTableItem;
 
-  std::string indexRootTitle =
-      R"(        <h3>Proejct Summary</h3>)";
+  std::string indexRootTitle = R"(        <h3>Proejct Summary</h3>)";
 
   std::string indexSubTitle =
       R"(        <h2>Directory Summary</h2>

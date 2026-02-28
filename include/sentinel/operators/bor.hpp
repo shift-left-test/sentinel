@@ -22,8 +22,7 @@ class BOR : public MutationOperator {
    *
    * @param Context Clang ASTContext object
    */
-  explicit BOR(clang::ASTContext* Context) : MutationOperator("BOR", Context) {
-  }
+  explicit BOR(clang::ASTContext* Context) : MutationOperator("BOR", Context) {}
 
   /**
    * @brief Return True if this mutation operator can be applied to give AST

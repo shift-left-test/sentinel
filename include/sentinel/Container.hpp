@@ -197,8 +197,7 @@ class Container {
 
 template <typename T>
 Container<T>::Container(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last) :
-    mData(first, last) {
-}
+    mData(first, last) {}
 
 template <typename T>
 std::size_t Container<T>::size() const noexcept {
@@ -236,20 +235,17 @@ typename std::vector<T>::reference Container<T>::at(std::size_t position) {
 }
 
 template <typename T>
-typename std::vector<T>::const_reference
-Container<T>::at(std::size_t position) const {
+typename std::vector<T>::const_reference Container<T>::at(std::size_t position) const {
   return mData.at(position);
 }
 
 template <typename T>
-typename std::vector<T>::reference
-Container<T>::operator[](std::size_t position) {
+typename std::vector<T>::reference Container<T>::operator[](std::size_t position) {
   return mData.at(position);
 }
 
 template <typename T>
-typename std::vector<T>::const_reference
-Container<T>::operator[](std::size_t position) const {
+typename std::vector<T>::const_reference Container<T>::operator[](std::size_t position) const {
   return mData.at(position);
 }
 
@@ -288,12 +284,12 @@ void Container<T>::unique() {
 
 template <typename T>
 void Container<T>::shuffle() {
-  std::shuffle(mData.begin(), mData.end(), std::mt19937 { std::random_device {}() });
+  std::shuffle(mData.begin(), mData.end(), std::mt19937 {std::random_device {}()});
 }
 
 template <typename T>
 void Container<T>::shuffle(unsigned randomSeed) {
-  std::shuffle(mData.begin(), mData.end(), std::mt19937 { randomSeed });
+  std::shuffle(mData.begin(), mData.end(), std::mt19937 {randomSeed});
 }
 
 template <typename T>

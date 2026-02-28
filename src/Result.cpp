@@ -40,11 +40,11 @@ bool Result::checkPassedTCEmpty() {
   return mPassedTC.empty();
 }
 
-MutationState Result::compare(const Result& original, const Result& mutated,
-                              std::string* killingTest, std::string* errorTest) {
+MutationState Result::compare(const Result& original, const Result& mutated, std::string* killingTest,
+                              std::string* errorTest) {
   killingTest->clear();
   errorTest->clear();
-  for (const std::string &tc : original.mPassedTC) {
+  for (const std::string& tc : original.mPassedTC) {
     if (std::find(mutated.mPassedTC.begin(), mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
       if (std::find(mutated.mFailedTC.begin(), mutated.mFailedTC.end(), tc) == mutated.mFailedTC.end()) {
         if (!errorTest->empty()) {

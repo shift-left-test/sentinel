@@ -48,8 +48,8 @@ int Subprocess::execute() {
 
   // Backup below signals' handler temporally
   // sc's desctructor restore signals' handler.
-  const std::vector<int> usingSignals = {SIGABRT, SIGINT, SIGFPE, SIGILL,
-                                         SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
+  const std::vector<int> usingSignals = {SIGABRT, SIGINT,  SIGFPE, SIGILL,  SIGSEGV,
+                                         SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
   auto sc = new signal::SaContainer(usingSignals);
 
   // Ignore below signals' temporally
@@ -92,35 +92,35 @@ int Subprocess::execute() {
     // If sentinel catch below signals,
     // then send SIGKILL to child process group.
     // And send last signal to sentinel just before return this function
-    signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
-        [](int signum) {
+    signal::setMultipleSignalHandlers(
+        {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP}, [](int signum) {
           std::cout << fmt::format(
-              R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
-              strsignal(signum), strsignal(SIGKILL)) << std::endl;
+                           R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
+                           strsignal(signum), strsignal(SIGKILL))
+                    << std::endl;
           kill(-Subprocess::childPid, SIGKILL);
           Subprocess::pendSig = signum;
         });
 
     // Just catch SIGCHLD
-    signal::setMultipleSignalHandlers({SIGCHLD}, [](int signum){});
+    signal::setMultipleSignalHandlers({SIGCHLD}, [](int signum) {});
 
     // SIGALRM handler
-    signal::setMultipleSignalHandlers({SIGALRM},
-        [](int signum) {
-          int termSignal = SIGTERM;
-          std::string tmpMsg;
-          if (!Subprocess::timedOut) {
-            Subprocess::timedOut = true;
-            tmpMsg = "Timeout when executing test command.";
-            alarm(Subprocess::killAfter);
-          } else {
-            termSignal = SIGKILL;
-            tmpMsg = fmt::format("Failed to terminate child process within {}.", Subprocess::killAfter);
-          }
-          kill(-Subprocess::childPid, termSignal);
-          std::cout << fmt::format("{} Send a signal({}) to child process' process group.",
-                                   tmpMsg, strsignal(termSignal)) << std::endl;
-        });
+    signal::setMultipleSignalHandlers({SIGALRM}, [](int signum) {
+      int termSignal = SIGTERM;
+      std::string tmpMsg;
+      if (!Subprocess::timedOut) {
+        Subprocess::timedOut = true;
+        tmpMsg = "Timeout when executing test command.";
+        alarm(Subprocess::killAfter);
+      } else {
+        termSignal = SIGKILL;
+        tmpMsg = fmt::format("Failed to terminate child process within {}.", Subprocess::killAfter);
+      }
+      kill(-Subprocess::childPid, termSignal);
+      std::cout << fmt::format("{} Send a signal({}) to child process' process group.", tmpMsg, strsignal(termSignal))
+                << std::endl;
+    });
 
     // Alarm setting
     alarm(mSec);
@@ -142,8 +142,7 @@ int Subprocess::execute() {
     close(pfd[0]);
 
     mStatus = status;
-    if (Subprocess::timedOut && WIFSIGNALED(status) &&
-        (WTERMSIG(status) == SIGKILL || WTERMSIG(status) == SIGTERM))  {
+    if (Subprocess::timedOut && WIFSIGNALED(status) && (WTERMSIG(status) == SIGKILL || WTERMSIG(status) == SIGTERM)) {
       mTimedOut = true;
     }
 

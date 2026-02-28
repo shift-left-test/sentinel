@@ -14,8 +14,7 @@
 
 namespace sentinel {
 
-class MutationFactoryTest : public SampleFileGeneratorForTest {
-};
+class MutationFactoryTest : public SampleFileGeneratorForTest {};
 
 TEST_F(MutationFactoryTest, testPopulateWorks) {
   auto mStdoutCapture = CaptureHelper::getStdoutCapture();

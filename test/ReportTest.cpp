@@ -34,7 +34,6 @@ class ReportTest : public ::testing::Test {
     NESTED_SOURCE_DIR2 = SOURCE_DIR / "NESTED_DIR2";
     fs::create_directories(NESTED_SOURCE_DIR2);
 
-
     TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
     makeFile(TARGET_FULL_PATH);
     TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
@@ -105,7 +104,8 @@ File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
 TOTAL                                                      0         0        -%
 ----------------------------------------------------------------------------------
-)a1b2z", out);
+)a1b2z",
+      out);
 
   MutationResults MRs;
 
@@ -138,7 +138,8 @@ Build Failure                                                        1
 Runtime Error                                                        1
 Timeout                                                              1
 ----------------------------------------------------------------------------------
-)a1b2z", out2);
+)a1b2z",
+      out2);
 }
 
 TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
@@ -184,7 +185,8 @@ target4.cpp                                                0         1        0%
 ----------------------------------------------------------------------------------
 TOTAL                                                      2         5       40%
 ----------------------------------------------------------------------------------
-)a1b2z", out);
+)a1b2z",
+      out);
 }
 
 TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
@@ -233,7 +235,8 @@ Build Failure                                                        0
 Runtime Error                                                        1
 Timeout                                                              1
 ----------------------------------------------------------------------------------
-)a1b2z", out);
+)a1b2z",
+      out);
 }
 
 TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
@@ -281,7 +284,8 @@ Build Failure                                                        1
 Runtime Error                                                        1
 Timeout                                                              1
 ----------------------------------------------------------------------------------
-)a1b2z", out);
+)a1b2z",
+      out);
 }
 
 }  // namespace sentinel

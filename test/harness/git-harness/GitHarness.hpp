@@ -55,8 +55,8 @@ class GitHarness {
    * @param line     line number of target location to insert code.
    * @param col      column number of target location to insert code.
    */
-  GitHarness& addCode(const std::string& filename, const std::string& content,
-                      std::size_t line = 0, std::size_t col = 0);
+  GitHarness& addCode(const std::string& filename, const std::string& content, std::size_t line = 0,
+                      std::size_t col = 0);
 
   /**
    * @brief Delete multiple line of codes within target file.
@@ -120,12 +120,11 @@ class GitHarness {
   GitHarness& merge(const std::string& branch);
   GitHarness& merge(const std::vector<std::string>& branches);
 
-  template <typename ... Arg>
+  template <typename... Arg>
   inline GitHarness& merge(const Arg&... branches) {
-    std::vector<std::string> v = {branches ...};  // NOLINT
+    std::vector<std::string> v = {branches...};  // NOLINT
     return merge(v);
   }
-
 
   /**
    * @brief Get HEAD commit id.
@@ -151,7 +150,6 @@ class GitHarness {
   git_repository* repo;
   std::vector<git_oid> commit_ids;
 };
-
 
 enum index_mode {
   INDEX_NONE,

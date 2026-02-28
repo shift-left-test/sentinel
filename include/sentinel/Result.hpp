@@ -42,8 +42,8 @@ class Result {
    * @param [out] errorTest
    * @return mutation's Result State
    */
-  static MutationState compare(const Result& original, const Result& mutated,
-                               std::string* killingTest, std::string* errorTest);
+  static MutationState compare(const Result& original, const Result& mutated, std::string* killingTest,
+                               std::string* errorTest);
 
  private:
   std::vector<std::string> mPassedTC;

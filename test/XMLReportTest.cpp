@@ -43,10 +43,9 @@ class XMLReportTest : public ::testing::Test {
     std::string TARGET_NAME2 = TARGET_FULL_PATH2.filename();
     std::ofstream(TARGET_FULL_PATH2).close();
 
-    EXPECT_MUT_XML_CONTENT = fmt::format(EXPECT_MUT_XML_CONTENT,
-                                         TARGET_NAME, TARGET_FULL_PATH.filename().string(),
-                                         TARGET_NAME2, NESTED_SOURCE_DIR.filename().string() + "/" +
-                                         TARGET_FULL_PATH2.filename().string());
+    EXPECT_MUT_XML_CONTENT =
+        fmt::format(EXPECT_MUT_XML_CONTENT, TARGET_NAME, TARGET_FULL_PATH.filename().string(), TARGET_NAME2,
+                    NESTED_SOURCE_DIR.filename().string() + "/" + TARGET_FULL_PATH2.filename().string());
   }
 
   void TearDown() override {

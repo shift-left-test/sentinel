@@ -22,15 +22,14 @@ bool AOR::canMutate(clang::Stmt* s) {
 
 void AOR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
-  std::string token{bo->getOpcodeStr()};
+  std::string token {bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
-  clang::SourceLocation opEndLoc = mSrcMgr.translateLineCol(
-      mSrcMgr.getMainFileID(),
-      mSrcMgr.getExpansionLineNumber(opStartLoc),
-      mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
+  clang::SourceLocation opEndLoc =
+      mSrcMgr.translateLineCol(mSrcMgr.getMainFileID(), mSrcMgr.getExpansionLineNumber(opStartLoc),
+                               mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
 
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path{mSrcMgr.getFilename(opStartLoc)};
+    std::string path {mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mArithmeticOperators) {
@@ -38,8 +37,8 @@ void AOR::populate(clang::Stmt* s, Mutants* mutables) {
         continue;
       }
 
-      clang::Expr *lhs = bo->getLHS()->IgnoreImpCasts();
-      clang::Expr *rhs = bo->getRHS()->IgnoreImpCasts();
+      clang::Expr* lhs = bo->getLHS()->IgnoreImpCasts();
+      clang::Expr* rhs = bo->getRHS()->IgnoreImpCasts();
 
       // 2 pointers can only minus each other, so no mutables are generated.
       if ((getExprType(lhs)->isPointerType() || getExprType(lhs)->isArrayType()) &&
@@ -49,25 +48,20 @@ void AOR::populate(clang::Stmt* s, Mutants* mutables) {
 
       // modulo operator only takes integral operands.
       if (mutatedToken == "%" &&
-          (!getExprType(lhs)->isIntegralType(*mContext) ||
-           !getExprType(rhs)->isIntegralType(*mContext))) {
+          (!getExprType(lhs)->isIntegralType(*mContext) || !getExprType(rhs)->isIntegralType(*mContext))) {
         continue;
       }
 
       // multiplicative operator only takes non-pointer operands.
       if ((mutatedToken == "*" || mutatedToken == "/") &&
-          (getExprType(lhs)->isPointerType() || getExprType(rhs)->isPointerType() ||
-           getExprType(lhs)->isArrayType() || getExprType(rhs)->isArrayType())) {
+          (getExprType(lhs)->isPointerType() || getExprType(rhs)->isPointerType() || getExprType(lhs)->isArrayType() ||
+           getExprType(rhs)->isArrayType())) {
         continue;
       }
 
-      mutables->emplace_back(
-          mName, path, func,
-          mSrcMgr.getExpansionLineNumber(opStartLoc),
-          mSrcMgr.getExpansionColumnNumber(opStartLoc),
-          mSrcMgr.getExpansionLineNumber(opEndLoc),
-          mSrcMgr.getExpansionColumnNumber(opEndLoc),
-          mutatedToken);
+      mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(opStartLoc),
+                             mSrcMgr.getExpansionColumnNumber(opStartLoc), mSrcMgr.getExpansionLineNumber(opEndLoc),
+                             mSrcMgr.getExpansionColumnNumber(opEndLoc), mutatedToken);
     }
   }
 }

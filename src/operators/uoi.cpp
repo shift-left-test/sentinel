@@ -21,17 +21,13 @@ bool UOI::canMutate(clang::Stmt* s) {
   // UOI targets variable reference expression, which includes
   // a variable reference, member reference (class.member, class->member),
   // array subscript expression (arr[idx]), pointer dereference (*ptr)
-  if (!(isDeclRefExpr(e) ||
-        isPointerDereferenceExpr(e) ||
-        clang::isa<clang::ArraySubscriptExpr>(e) ||
+  if (!(isDeclRefExpr(e) || isPointerDereferenceExpr(e) || clang::isa<clang::ArraySubscriptExpr>(e) ||
         clang::isa<clang::MemberExpr>(e))) {
     return false;
   }
 
   // UOI targets non-constant, arithmetic/boolean expression only.
-  if (e->getType().isConstant(*mContext) ||
-      (!getExprType(e)->isArithmeticType() &&
-       !getExprType(e)->isBooleanType())) {
+  if (e->getType().isConstant(*mContext) || (!getExprType(e)->isArithmeticType() && !getExprType(e)->isBooleanType())) {
     return false;
   }
 
@@ -90,43 +86,31 @@ bool UOI::canMutate(clang::Stmt* s) {
 void UOI::populate(clang::Stmt* s, Mutants* mutables) {
   auto e = clang::dyn_cast<clang::Expr>(s);
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
-  clang::SourceLocation stmtEndLoc = clang::Lexer::getLocForEndOfToken(
-      e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
+  clang::SourceLocation stmtEndLoc =
+      clang::Lexer::getLocForEndOfToken(e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
 
   if (!isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
     return;
   }
 
-  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
+  std::string path {mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
   std::string stmtStr = convertStmtToString(e);
 
   if (getExprType(e)->isArithmeticType() && !getExprType(e)->isBooleanType()) {
-    mutables->emplace_back(
-        mName, path, func,
-        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "(++(" + stmtStr + "))");
+    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(++(" + stmtStr + "))");
 
-    mutables->emplace_back(
-        mName, path, func,
-        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "(--(" + stmtStr + "))");
+    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(--(" + stmtStr + "))");
   }
 
   if (getExprType(e)->isBooleanType()) {
-    mutables->emplace_back(
-        mName, path, func,
-        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "(!(" + stmtStr + "))");
+    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(!(" + stmtStr + "))");
   }
 }
 

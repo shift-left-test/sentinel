@@ -18,10 +18,9 @@
 
 namespace sentinel {
 
-MutationResult::MutationResult(const Mutant& m, const std::string& killingTest,
-                               const std::string& errorTest, MutationState state) :
-    mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {
-}
+MutationResult::MutationResult(const Mutant& m, const std::string& killingTest, const std::string& errorTest,
+                               MutationState state) :
+    mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {}
 
 std::string MutationResult::getKillingTest() const {
   return mKillingTest;
@@ -44,10 +43,8 @@ bool MutationResult::getDetected() const {
 }
 
 bool MutationResult::compare(const MutationResult& other) const {
-  return mMutant == other.mMutant &&
-      mKillingTest == other.mKillingTest &&
-      mErrorTest == other.mErrorTest &&
-      mState == other.mState;
+  return mMutant == other.mMutant && mKillingTest == other.mKillingTest && mErrorTest == other.mErrorTest &&
+         mState == other.mState;
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
@@ -57,7 +54,7 @@ std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
   return out;
 }
 
-std::istream& operator>>(std::istream& in, MutationResult &mr) {
+std::istream& operator>>(std::istream& in, MutationResult& mr) {
   std::string line;
   if (getline(in, line)) {
     auto sep = string::split(line, "\t\t\t");

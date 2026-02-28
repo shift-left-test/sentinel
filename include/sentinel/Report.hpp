@@ -40,8 +40,7 @@ class Report {
    * @throw InvalidArgumentException
    *        when resultsPath is empty or sourcePath doesn't exist
    */
-  Report(const std::experimental::filesystem::path& resultsPath,
-         const std::experimental::filesystem::path& sourcePath);
+  Report(const std::experimental::filesystem::path& resultsPath, const std::experimental::filesystem::path& sourcePath);
   /**
    * @brief Default Destructor
    */
@@ -80,15 +79,15 @@ class Report {
    * @brief group MutationReuslt by Directory
    */
   std::map<std::experimental::filesystem::path,
-           std::tuple<std::vector<const MutationResult*>*, std::size_t,
-                      std::size_t, std::size_t>* > groupByDirPath;
+           std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t, std::size_t>*>
+      groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
   std::map<std::experimental::filesystem::path,
-           std::tuple<std::vector<const MutationResult*>*,
-                      std::size_t, std::size_t>* > groupByPath;
+           std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t>*>
+      groupByPath;
 
   /**
    * @brief total Number Of Mutation

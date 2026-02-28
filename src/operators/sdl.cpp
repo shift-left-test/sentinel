@@ -11,23 +11,14 @@
 #include <string>
 #include "sentinel/operators/sdl.hpp"
 
-
 namespace sentinel {
 
 bool SDL::canMutate(clang::Stmt* s) {
   // Declarations, null, complex  statements are not mutated
-  if (clang::isa<clang::DeclStmt>(s) ||
-      clang::isa<clang::NullStmt>(s) ||
-      clang::isa<clang::IfStmt>(s) ||
-      clang::isa<clang::ForStmt>(s) ||
-      clang::isa<clang::CXXForRangeStmt>(s) ||
-      clang::isa<clang::DoStmt>(s) ||
-      clang::isa<clang::WhileStmt>(s) ||
-      clang::isa<clang::CompoundStmt>(s) ||
-      clang::isa<clang::SwitchStmt>(s) ||
-      clang::isa<clang::CXXTryStmt>(s) ||
-      clang::isa<clang::CXXDeleteExpr>(s) ||
-      clang::isa<clang::ReturnStmt>(s)) {
+  if (clang::isa<clang::DeclStmt>(s) || clang::isa<clang::NullStmt>(s) || clang::isa<clang::IfStmt>(s) ||
+      clang::isa<clang::ForStmt>(s) || clang::isa<clang::CXXForRangeStmt>(s) || clang::isa<clang::DoStmt>(s) ||
+      clang::isa<clang::WhileStmt>(s) || clang::isa<clang::CompoundStmt>(s) || clang::isa<clang::SwitchStmt>(s) ||
+      clang::isa<clang::CXXTryStmt>(s) || clang::isa<clang::CXXDeleteExpr>(s) || clang::isa<clang::ReturnStmt>(s)) {
     return false;
   }
 
@@ -70,7 +61,7 @@ bool SDL::canMutate(clang::Stmt* s) {
   // The last statement of a Statement Expression should not be deleted.
   // Because it is the value of the expression.
   auto cs = clang::dyn_cast<clang::CompoundStmt>(parent);
-  const clang::Stmt *parentOfParent = getParentStmt(parent);
+  const clang::Stmt* parentOfParent = getParentStmt(parent);
   if (parentOfParent == nullptr || !clang::isa<clang::StmtExpr>(parentOfParent)) {
     return true;
   }
@@ -110,16 +101,12 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   }
 
   if (isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
-    std::string path{mSrcMgr.getFilename(stmtStartLoc)};
+    std::string path {mSrcMgr.getFilename(stmtStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
-    mutables->emplace_back(
-        mName, path, func,
-        mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtStartLoc),
-        mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-        mSrcMgr.getExpansionColumnNumber(stmtEndLoc),
-        "{}");
+    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
+                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "{}");
   }
 }
 

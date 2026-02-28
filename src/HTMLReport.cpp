@@ -24,13 +24,10 @@
 
 namespace sentinel {
 
-HTMLReport::HTMLReport(const MutationResults& results, const std::string& sourcePath) :
-    Report(results, sourcePath) {
-}
+HTMLReport::HTMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
 
 HTMLReport::HTMLReport(const std::string& resultsPath, const std::string& sourcePath) :
-    Report(resultsPath, sourcePath) {
-}
+    Report(resultsPath, sourcePath) {}
 
 void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   namespace fs = std::experimental::filesystem;
@@ -67,8 +64,8 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   }
 }
 
-void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation,
-                               bool root, const std::experimental::filesystem::path& currentDirPath,
+void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
+                               const std::experimental::filesystem::path& currentDirPath,
                                const std::experimental::filesystem::path& outputDir) {
   namespace fs = std::experimental::filesystem;
 
@@ -181,13 +178,13 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
   auto srcLineByLine = string::split(srcContents, '\n');
 
   if (srcLineByLine.empty() || srcLineByLine.size() < maxLineNum) {
-    throw InvalidArgumentException(fmt::format(
-        "Src file's line num({0}) is smaller than mutation' line num({1})", srcLineByLine.size(), maxLineNum));
+    throw InvalidArgumentException(fmt::format("Src file's line num({0}) is smaller than mutation' line num({1})",
+                                               srcLineByLine.size(), maxLineNum));
   }
 
   SrcHTMLGenerator shg(srcName, srcPath.parent_path().empty());
 
-  for (auto it = srcLineByLine.begin() ; it != srcLineByLine.end() ; ++it) {
+  for (auto it = srcLineByLine.begin(); it != srcLineByLine.end(); ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;
     std::shared_ptr<std::vector<const MutationResult*>> curLineMrs(nullptr);
     if (groupByLine.count(curLineNum) != 0) {
@@ -226,7 +223,7 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
         std::string mutatedCodeTail;
         auto first = mr->getMutant().getFirst();
         auto last = mr->getMutant().getLast();
-        for (int i = first.line ; i <= last.line ; i++) {
+        for (int i = first.line; i <= last.line; i++) {
           std::string curLineContent = srcLineByLine[i - 1];
           if (!oriCode.empty()) {
             oriCode += "\n";
@@ -243,8 +240,8 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
         mutatedCode.append(mutatedCodeHead);
         mutatedCode.append(mr->getMutant().getToken());
         mutatedCode.append(mutatedCodeTail);
-        lineExplainVec.emplace_back(count, MutationOperatorToExpansion(mr->getMutant().getOperator()),
-                                    oriCode, mutatedCode, mr->getDetected());
+        lineExplainVec.emplace_back(count, MutationOperatorToExpansion(mr->getMutant().getOperator()), oriCode,
+                                    mutatedCode, mr->getDetected());
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);
@@ -254,8 +251,7 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
     std::size_t count = 0;
     for (const auto& mr : *t.second) {
       count += 1;
-      shg.pushMutation(t.first, mr->getDetected(), count,
-                       mr->getKillingTest(),
+      shg.pushMutation(t.first, mr->getDetected(), count, mr->getKillingTest(),
                        MutationOperatorToExpansion(mr->getMutant().getOperator()));
     }
   }
@@ -270,9 +266,8 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
 
   auto contents = shg.str();
 
-  std::string fileName = outputDir / "srcDir" /
-      string::replaceAll(srcPath.parent_path(), "/", ".") /
-      fmt::format("{0}.html", srcName);
+  std::string fileName =
+      outputDir / "srcDir" / string::replaceAll(srcPath.parent_path(), "/", ".") / fmt::format("{0}.html", srcName);
 
   std::ofstream ofs(fileName, std::ofstream::out);
   ofs << contents;

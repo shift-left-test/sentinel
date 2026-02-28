@@ -27,14 +27,12 @@ class MutationOperator {
    * @param Context Clang ASTContext object
    */
   MutationOperator(const std::string& name, clang::ASTContext* Context) :
-      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {
-  }
+      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {}
 
   /**
    * @brief Default destructor
    */
-  virtual ~MutationOperator() {
-  }
+  virtual ~MutationOperator() {}
 
   /**
    * @brief Return the name of the mutation operator
@@ -101,7 +99,7 @@ class MutationOperator {
    * @param s target AST node
    * @return True/False
    */
-  bool isPointerDereferenceExpr(clang::Stmt *s);
+  bool isPointerDereferenceExpr(clang::Stmt* s);
 
   /**
    * @brief Return the qualified name of the function surround this ast node.
@@ -123,7 +121,7 @@ class MutationOperator {
    * @param endLoc end location of source range
    * @return True if range is valid
    */
-  bool isValidMutantSourceRange(clang::SourceLocation *startLoc, clang::SourceLocation *endLoc);
+  bool isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc);
 
  protected:
   /**

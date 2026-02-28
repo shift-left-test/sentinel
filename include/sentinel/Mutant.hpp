@@ -25,9 +25,7 @@ struct Location {
    * @param lineNum number
    * @param colNum number
    */
-  Location(std::size_t lineNum, std::size_t colNum) :
-      line(lineNum), column(colNum) {
-  }
+  Location(std::size_t lineNum, std::size_t colNum) : line(lineNum), column(colNum) {}
 
   /**
    * @brief line number
@@ -64,13 +62,8 @@ class Mutant {
    * @param lastColumn column number of last location
    * @param token to replace with
    */
-  Mutant(const std::string& mutationOperator,
-         const std::string& path,
-         const std::string& qualifiedFuncName,
-         std::size_t firstLine,
-         std::size_t firstColumn,
-         std::size_t lastLine,
-         std::size_t lastColumn,
+  Mutant(const std::string& mutationOperator, const std::string& path, const std::string& qualifiedFuncName,
+         std::size_t firstLine, std::size_t firstColumn, std::size_t lastLine, std::size_t lastColumn,
          const std::string& token);
 
   /**
@@ -127,7 +120,7 @@ class Mutant {
    */
   std::string getFunction() const;
 
-   /**
+  /**
    * @brief Return the namespace, class, function containing mutation location.
    *        Return empty string if such function does not exist.
    *
@@ -175,7 +168,7 @@ class Mutant {
 };
 
 std::ostream& operator<<(std::ostream& out, const Mutant& m);
-std::istream& operator>>(std::istream& in, Mutant &m);
+std::istream& operator>>(std::istream& in, Mutant& m);
 
 }  // namespace sentinel
 

@@ -53,9 +53,9 @@ class MainCLITest : public ::testing::Test {
 
   void makeGitRepo() {
     git_oid commitId, treeId;
-    git_repository *repo = nullptr;
+    git_repository* repo = nullptr;
     git_index* idx = nullptr;
-    git_signature *me = nullptr;
+    git_signature* me = nullptr;
     git_tree* tree = nullptr;
 
     git_libgit2_init();
@@ -241,7 +241,7 @@ Timeout                                                              3
 ----------------------------------------------------------------------------------)a1f4";
 
   std::string MUTATION_COVERAGE_REPORT2 =
-     R"a1f4z0(----------------------------------------------------------------------------------
+      R"a1f4z0(----------------------------------------------------------------------------------
                              Mutation Coverage Report
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
@@ -332,24 +332,20 @@ TEST_F(MainCLITest, testCommandPopulate) {
   auto err = capturedStderr();
   EXPECT_EQ("", err);
   auto mdbContent = readFile(SAMPLE_DIR / "work" / "m.db");
-  EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1f4",
-      SAMPLE_PATH.string())));
-  EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(ROR,{},lessThanOrEqual,2,10,2,16,0)a1f4",
-      SAMPLE_PATH.string())));
-  EXPECT_TRUE(sentinel::string::contains(mdbContent, fmt::format(
-      R"a1f4(UOI,{},sumOfEvenPositiveNumber,11,19,11,20,(++(i)))a1f4",
-      SAMPLE_PATH.string())));
+  EXPECT_TRUE(sentinel::string::contains(
+      mdbContent, fmt::format(R"a1f4(SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1f4", SAMPLE_PATH.string())));
+  EXPECT_TRUE(sentinel::string::contains(
+      mdbContent, fmt::format(R"a1f4(ROR,{},lessThanOrEqual,2,10,2,16,0)a1f4", SAMPLE_PATH.string())));
+  EXPECT_TRUE(sentinel::string::contains(
+      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,11,19,11,20,(++(i)))a1f4", SAMPLE_PATH.string())));
 }
 
 TEST_F(MainCLITest, testCommandMutate) {
   addArg("mutate");
   addArg(SAMPLE_DIR.c_str());
   addArg(fmt::format("-w{}", (SAMPLE_BASE / "tmp").string()).c_str());
-  addArg(fmt::format(
-        R"a1d4(--mutant=SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1d4",
-        SAMPLE_PATH.string()).c_str());
+  addArg(
+      fmt::format(R"a1d4(--mutant=SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1d4", SAMPLE_PATH.string()).c_str());
 
   captureStdout();
   captureStderr();
@@ -361,7 +357,7 @@ TEST_F(MainCLITest, testCommandMutate) {
   auto mutatedSample = readFile(SAMPLE_DIR / "sample.cpp");
   EXPECT_TRUE(sentinel::string::contains(mutatedSample, "if ((i & 1) == (1 >> 0) && i > 0) {"));
   EXPECT_TRUE(!sentinel::string::contains(mutatedSample, "if ((i & 1) == (1 << 0) && i > 0) {"));
-  auto originalSample = readFile(SAMPLE_BASE/ "tmp" / "sample.cpp");
+  auto originalSample = readFile(SAMPLE_BASE / "tmp" / "sample.cpp");
   EXPECT_TRUE(sentinel::string::contains(originalSample, "if ((i & 1) == (1 << 0) && i > 0) {"));
   EXPECT_TRUE(!sentinel::string::contains(originalSample, "if ((i & 1) == (1 >> 0) && i > 0) {"));
 }
@@ -373,17 +369,15 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   fs::create_directories(EXPECTED_PATH);
   fs::create_directories(ACTUAL_PATH);
   writeFile(EXPECTED_PATH / "sample_test.xml", EXPECTED_RESULT);
-  writeFile(ACTUAL_PATH / "sample_test.xml", fmt::format(ACTUAL_RESULT,
-                                                         SAMPLE_TEST_PATH.string(), SAMPLE_DIR.string()));
+  writeFile(ACTUAL_PATH / "sample_test.xml",
+            fmt::format(ACTUAL_RESULT, SAMPLE_TEST_PATH.string(), SAMPLE_DIR.string()));
 
   addArg("evaluate");
   addArg(fmt::format("-o{}", (SAMPLE_BASE / "out").string()).c_str());
   addArg(fmt::format("--expected={}", EXPECTED_PATH.string()).c_str());
   addArg(fmt::format("--actual={}", ACTUAL_PATH.string()).c_str());
   addArg("--test-state=success");
-  addArg(fmt::format(
-        R"a1d4(--mutant=ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)a1d4",
-        SAMPLE_PATH.string()).c_str());
+  addArg(fmt::format(R"a1d4(--mutant=ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)a1d4", SAMPLE_PATH.string()).c_str());
 
   captureStdout();
   captureStderr();
@@ -392,10 +386,12 @@ TEST_F(MainCLITest, testCommandEvaluate) {
   EXPECT_TRUE(sentinel::string::contains(out, "sample.cpp (10:32-10:37 -> 0) KILLED"));
   auto err = capturedStderr();
   EXPECT_EQ("", err);
-  auto evaluationResults = readFile(SAMPLE_BASE/ "out" / "EvaluationResults");
-  EXPECT_TRUE(sentinel::string::contains(evaluationResults, fmt::format(
-        R"k98d(SampleTest.testSumOfEvenPositiveNumber		0			ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)k98d",
-        SAMPLE_PATH.string())));
+  auto evaluationResults = readFile(SAMPLE_BASE / "out" / "EvaluationResults");
+  EXPECT_TRUE(sentinel::string::contains(
+      evaluationResults,
+      fmt::format(
+          R"k98d(SampleTest.testSumOfEvenPositiveNumber		0			ROR,{},sumOfEvenPositiveNumber,10,32,10,37,0)k98d",
+          SAMPLE_PATH.string())));
 }
 
 TEST_F(MainCLITest, testCommandReport) {
@@ -428,8 +424,8 @@ TEST_F(MainCLITest, testCommandRun) {
 
   // make timelimit
   Subprocess(fmt::format("cd {} && make all", SAMPLE_DIR.string())).execute();
-  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
-                         SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2", SAMPLE_DIR.string()))
+      .execute();
   Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
   fs::remove_all(SAMPLE_DIR / "testresult");
 
@@ -453,12 +449,12 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(UOI : sample.cpp (9:26-9:27 -> (--(i)))........................... TIMEOUT)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(ROR : sample.cpp (10:34-10:35 -> <)............................... KILLED)"));
-  EXPECT_TRUE(sentinel::string::contains(out,
-      R"(ROR : sample.cpp (10:34-10:35 -> >=).............................. SURVIVED)"));
+  EXPECT_TRUE(
+      sentinel::string::contains(out, R"(UOI : sample.cpp (9:26-9:27 -> (--(i)))........................... TIMEOUT)"));
+  EXPECT_TRUE(
+      sentinel::string::contains(out, R"(ROR : sample.cpp (10:34-10:35 -> <)............................... KILLED)"));
+  EXPECT_TRUE(sentinel::string::contains(
+      out, R"(ROR : sample.cpp (10:34-10:35 -> >=).............................. SURVIVED)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 

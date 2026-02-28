@@ -22,15 +22,15 @@ namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-const char * cGitRepositoryLoggerName = "GitRepository";
+const char* cGitRepositoryLoggerName = "GitRepository";
 
 /**
  * @brief git_xxx pointer free guard
  */
-template<typename T, void Free(T*)>
+template <typename T, void Free(T*)>
 class SafeGit2ObjPtr {
  private:
-  T * obj;
+  T* obj;
 
  public:
   SafeGit2ObjPtr() : obj(nullptr) {}
@@ -43,19 +43,23 @@ class SafeGit2ObjPtr {
   /**
    * @brief get T pointer type member address to assign value
    */
-  T ** getPtr() { return &obj; }
+  T** getPtr() {
+    return &obj;
+  }
 
   /**
    * @brief cast to T pointer
    */
-  explicit operator T*() { return obj; }
+  explicit operator T*() {
+    return obj;
+  }
 
   /**
    * @brief cast to C
    */
-  template<typename C>
+  template <typename C>
   C cast() {
-    return reinterpret_cast<C>(obj); // NOLINT
+    return reinterpret_cast<C>(obj);  // NOLINT
   }
 
   /**
@@ -76,8 +80,7 @@ class DiffData {
    *
    * @param gitRepo git repository
    */
-  explicit DiffData(GitRepository * gitRepo) : mGitRepo(gitRepo) {
-  }
+  explicit DiffData(GitRepository* gitRepo) : mGitRepo(gitRepo) {}
 
   /**
    * @brief add Source Line
@@ -85,7 +88,7 @@ class DiffData {
    * @param file source file name
    * @param line line number
    */
-  void addSourceLine(const std::string & file, int line) {
+  void addSourceLine(const std::string& file, int line) {
     fs::path filePath(mGitRepo->getSourceRoot());
     filePath.append(file);
     if (mGitRepo->isTargetPath(filePath)) {
@@ -96,74 +99,73 @@ class DiffData {
   /**
    * @brief get source lines
    */
-  SourceLines getSourceLines() { return mSourceLines; }
+  SourceLines getSourceLines() {
+    return mSourceLines;
+  }
 
  private:
   /// diff result
   SourceLines mSourceLines;
   /// logger
-  GitRepository * mGitRepo;
+  GitRepository* mGitRepo;
 };
 
 static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData& d) {  // NOLINT
   SafeGit2ObjPtr<git_diff, git_diff_free> diff;
 
-  if (git_diff_tree_to_workdir_with_index(diff.getPtr(),
-                                          static_cast<git_repository*>(repo),
-                                          static_cast<git_tree*>(tree),
-                                          opts) != 0) {
+  if (git_diff_tree_to_workdir_with_index(diff.getPtr(), static_cast<git_repository*>(repo),
+                                          static_cast<git_tree*>(tree), opts) != 0) {
     throw RepositoryException("Failed to find diff");
   }
 
-  if (git_diff_foreach(static_cast<git_diff*>(diff),
-    [](const git_diff_delta*, float, void*) {
-      // each_file_cb
-      return 0;
-    },
-    [](const git_diff_delta*, const git_diff_binary*, void*) {
-      // each_binary_cb
-      return 0;
-    },
-    [](const git_diff_delta*, const git_diff_hunk*, void*) {
-      // each_hunk_cb
-      return 0;
-    },
-    [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void *payload) {
-      // each_line_cb
-      auto d = reinterpret_cast<DiffData*>(payload); // NOLINT
-      auto logger = Logger::getLogger(cGitRepositoryLoggerName);
-      logger->debug(fmt::format("{}:{}:{}", line->origin, delta->new_file.path, line->new_lineno));
+  if (git_diff_foreach(
+          static_cast<git_diff*>(diff),
+          [](const git_diff_delta*, float, void*) {
+            // each_file_cb
+            return 0;
+          },
+          [](const git_diff_delta*, const git_diff_binary*, void*) {
+            // each_binary_cb
+            return 0;
+          },
+          [](const git_diff_delta*, const git_diff_hunk*, void*) {
+            // each_hunk_cb
+            return 0;
+          },
+          [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void* payload) {
+            // each_line_cb
+            auto d = reinterpret_cast<DiffData*>(payload);  // NOLINT
+            auto logger = Logger::getLogger(cGitRepositoryLoggerName);
+            logger->debug(fmt::format("{}:{}:{}", line->origin, delta->new_file.path, line->new_lineno));
 
-      if (line->origin == '+') {
-        d->addSourceLine(delta->new_file.path, line->new_lineno);
-      }
-      return 0;
-    },
-    &d) != 0) {
+            if (line->origin == '+') {
+              d->addSourceLine(delta->new_file.path, line->new_lineno);
+            }
+            return 0;
+          },
+          &d) != 0) {
     throw RepositoryException("Failed to diff iterate");
   }
 }
 
-GitRepository::GitRepository(const std::string& path,
-                             const std::vector<std::string>& extensions,
-                             const std::vector<std::string>& patterns,
-                             const std::vector<std::string>& excludes) {
+GitRepository::GitRepository(const std::string& path, const std::vector<std::string>& extensions,
+                             const std::vector<std::string>& patterns, const std::vector<std::string>& excludes) {
   git_libgit2_init();
 
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   try {
     mSourceRoot = fs::canonical(path);
-  } catch(const fs::filesystem_error & e) {
+  } catch (const fs::filesystem_error& e) {
     throw InvalidArgumentException(fmt::format("source_root option error: {}", e.what()));
   }
   logger->info(fmt::format("source root: {}", mSourceRoot.string()));
 
   if (!extensions.empty()) {
-    std::transform(extensions.begin(), extensions.end(),
-                   std::back_inserter(mExtensions),
-                   [](auto extension) -> std::string
-                   { return extension.at(0) == '.' ? extension : fmt::format(".{}", extension); });
+    std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),
+                   [](auto extension) -> std::string {
+                     return extension.at(0) == '.' ? extension : fmt::format(".{}", extension);
+                   });
   }
 
   logger->debug(fmt::format("patterns: {}", string::join(", ", patterns)));
@@ -177,13 +179,13 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
-bool GitRepository::isTargetPath(const std::experimental::filesystem::path &path, bool checkExtension) {
+bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
   fs::path canonicalPath;
 
   try {
     canonicalPath = fs::canonical(path, getSourceRoot());
-  } catch(const fs::filesystem_error& e) {
+  } catch (const fs::filesystem_error& e) {
     return false;
   }
 
@@ -217,10 +219,10 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
   DiffData d(this);
 
   git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
-  std::vector<char *> cstrs(mPatterns.size());
+  std::vector<char*> cstrs(mPatterns.size());
   std::transform(mPatterns.begin(), mPatterns.end(), cstrs.begin(),
-                 [](auto& s) { return const_cast<char *>(s.c_str()); });
-  git_strarray pathspec = { cstrs.data(), cstrs.size() };
+                 [](auto& s) { return const_cast<char*>(s.c_str()); });
+  git_strarray pathspec = {cstrs.data(), cstrs.size()};
   opts.pathspec = pathspec;
 
   if (scope == "commit") {

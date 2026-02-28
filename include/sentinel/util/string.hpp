@@ -203,9 +203,9 @@ inline std::string join(char delim, const std::vector<std::string>& tokens) {
  * @param tokens to join
  * @return joined string
  */
-template <typename ... Arg>
+template <typename... Arg>
 inline std::string join(const std::string& delim, const Arg&... tokens) {
-  return join(delim, { tokens ... });  // NOLINT
+  return join(delim, {tokens...});  // NOLINT
 }
 
 /**
@@ -215,9 +215,9 @@ inline std::string join(const std::string& delim, const Arg&... tokens) {
  * @param tokens to join
  * @return joined string
  */
-template <typename ... Arg>
+template <typename... Arg>
 inline std::string join(char delim, const Arg&... tokens) {
-  return join(std::string(1, delim), { tokens ... });
+  return join(std::string(1, delim), {tokens...});
 }
 
 /**
@@ -256,7 +256,7 @@ inline const char* boolToString(bool b) {
  * @param target string
  * @return converted integer value
  */
-template<typename T>
+template <typename T>
 T stringToInt(const std::string& s) {
   std::string str = string::trim(s);
   if (str.at(0) == '+') {

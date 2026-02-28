@@ -29,9 +29,7 @@ Evaluator::Evaluator(const std::string& expectedResultDir, const std::string& so
   }
 }
 
-MutationResult Evaluator::compare(const Mutant& mut,
-                                  const std::string& ActualResultDir,
-                                  const std::string& testState) {
+MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualResultDir, const std::string& testState) {
   std::string killingTC;
   std::string errorTC;
   MutationState state;
@@ -82,13 +80,10 @@ MutationResult Evaluator::compare(const Mutant& mut,
   }
 
   std::size_t flen = 60;
-  std::string mutLoc = fmt::format("{path} ({sl}:{sc}-{el}:{ec} -> {mc})",
-                                   fmt::arg("path", relPath.string()),
-                                   fmt::arg("sl", mut.getFirst().line),
-                                   fmt::arg("sc", mut.getFirst().column),
-                                   fmt::arg("el", mut.getLast().line),
-                                   fmt::arg("ec", mut.getLast().column),
-                                   fmt::arg("mc", mut.getToken().empty() ? "DELETE STMT": mut.getToken()));
+  std::string mutLoc = fmt::format("{path} ({sl}:{sc}-{el}:{ec} -> {mc})", fmt::arg("path", relPath.string()),
+                                   fmt::arg("sl", mut.getFirst().line), fmt::arg("sc", mut.getFirst().column),
+                                   fmt::arg("el", mut.getLast().line), fmt::arg("ec", mut.getLast().column),
+                                   fmt::arg("mc", mut.getToken().empty() ? "DELETE STMT" : mut.getToken()));
 
   int filePos = mutLoc.size() - flen;
   std::string skipStr;
@@ -99,10 +94,8 @@ MutationResult Evaluator::compare(const Mutant& mut,
     skipStr = "... ";
   }
 
-  std::cout << fmt::format("{mu:>5} : {loc:.<{flen}} {status}",
-                           fmt::arg("mu", mut.getOperator()),
-                           fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
-                           fmt::arg("flen", flen),
+  std::cout << fmt::format("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
+                           fmt::arg("loc", skipStr + mutLoc.substr(filePos)), fmt::arg("flen", flen),
                            fmt::arg("status", MutationStateToStr(state)))
             << std::endl;
 

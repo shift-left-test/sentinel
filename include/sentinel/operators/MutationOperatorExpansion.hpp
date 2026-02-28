@@ -18,14 +18,13 @@ namespace sentinel {
  *
  */
 inline std::string MutationOperatorToExpansion(const std::string& mo) {
-  static const std::map<std::string, std::string> expansion = {
-    {"AOR", "AOR(arithmetic operator replacement)"},
-    {"BOR", "BOR(bitwise operator replacement)"},
-    {"LCR", "LCR(logical connector replacement)"},
-    {"ROR", "ROR(relational operator replacement)"},
-    {"SDL", "SDL(statement deletion)"},
-    {"SOR", "SOR(shift operator replacement)"},
-    {"UOI", "UOI(unary operator insertion)"}};
+  static const std::map<std::string, std::string> expansion = {{"AOR", "AOR(arithmetic operator replacement)"},
+                                                               {"BOR", "BOR(bitwise operator replacement)"},
+                                                               {"LCR", "LCR(logical connector replacement)"},
+                                                               {"ROR", "ROR(relational operator replacement)"},
+                                                               {"SDL", "SDL(statement deletion)"},
+                                                               {"SOR", "SOR(shift operator replacement)"},
+                                                               {"UOI", "UOI(unary operator insertion)"}};
   return expansion.at(mo);
 }
 

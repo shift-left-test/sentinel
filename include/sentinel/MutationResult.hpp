@@ -32,8 +32,7 @@ class MutationResult {
    * @param errorTest that killed mutant
    * @param state MutationState
    */
-  MutationResult(const Mutant& m, const std::string& killingTest,
-                 const std::string& errorTest, MutationState state);
+  MutationResult(const Mutant& m, const std::string& killingTest, const std::string& errorTest, MutationState state);
 
   /**
    * @brief Return killingTest that killed mutant
@@ -87,7 +86,7 @@ class MutationResult {
 };
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr);
-std::istream& operator>>(std::istream& in, MutationResult &mr);
+std::istream& operator>>(std::istream& in, MutationResult& mr);
 
 }  // namespace sentinel
 

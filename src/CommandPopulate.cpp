@@ -22,40 +22,23 @@
 
 namespace sentinel {
 
-const char * cCommandPopulateLoggerName = "CommandPopulate";
+const char* cCommandPopulateLoggerName = "CommandPopulate";
 
-CommandPopulate::CommandPopulate(args::Subparser& parser) : Command(parser),
-  mBuildDir(parser, "PATH",
-    "Build command output directory",
-    {'b', "build-dir"}, "."),
-  mCompileDbDir(parser, "PATH",
-    "Directory containing compile_commands.json file",
-    {"compiledb"}),
-  mScope(parser, "SCOPE",
-    "Diff scope, one of ['commit', 'all'].",
-    {'s', "scope"}, "all"),
-  mExtensions(parser, "EXTENSION",
-    "Extentions of source file which could be mutated.",
-    {'t', "extension"}, {"cxx", "cpp", "cc", "c", "c++", "cu"}),
-  mPatterns(parser, "PATTERN",
-    "Path or pattern",
-    {'p', "pattern"}),
-  mExcludes(parser, "PAT",
-    "Exclude paths matching fnmatch-style patterns",
-    {'e', "exclude"}),
-  mLimit(parser, "COUNT",
-    "Maximum generated mutable count.",
-    {'l', "limit"}, 10),
-  mMutableFilename(parser, "PATH",
-    "Populated result file name which will be created at output-dir.",
-    {"mutants-file-name"}, "mutables.db"),
-  mGenerator(parser, "GEN",
-    "Select mutant generator type, one of ['uniform', 'random', 'weighted'].",
-    {"generator"}, "uniform"),
-  mSeed(parser, "SEED",
-    "Select random seed.",
-    {"seed"}, std::random_device {}()) {
-}
+CommandPopulate::CommandPopulate(args::Subparser& parser) :
+    Command(parser),
+    mBuildDir(parser, "PATH", "Build command output directory", {'b', "build-dir"}, "."),
+    mCompileDbDir(parser, "PATH", "Directory containing compile_commands.json file", {"compiledb"}),
+    mScope(parser, "SCOPE", "Diff scope, one of ['commit', 'all'].", {'s', "scope"}, "all"),
+    mExtensions(parser, "EXTENSION", "Extentions of source file which could be mutated.", {'t', "extension"},
+                {"cxx", "cpp", "cc", "c", "c++", "cu"}),
+    mPatterns(parser, "PATTERN", "Path or pattern", {'p', "pattern"}),
+    mExcludes(parser, "PAT", "Exclude paths matching fnmatch-style patterns", {'e', "exclude"}),
+    mLimit(parser, "COUNT", "Maximum generated mutable count.", {'l', "limit"}, 10),
+    mMutableFilename(parser, "PATH", "Populated result file name which will be created at output-dir.",
+                     {"mutants-file-name"}, "mutables.db"),
+    mGenerator(parser, "GEN", "Select mutant generator type, one of ['uniform', 'random', 'weighted'].", {"generator"},
+               "uniform"),
+    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()) {}
 
 int CommandPopulate::run() {
   namespace fs = std::experimental::filesystem;
@@ -85,10 +68,8 @@ int CommandPopulate::run() {
     logger->info(fmt::format("generator:{}", mGenerator.Get()));
     logger->info(fmt::format("random seed:{}", mSeed.Get()));
   }
-  auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot,
-                                                        mExtensions.Get(),
-                                                        mPatterns.Get(),
-                                                        mExcludes.Get());
+  auto repo =
+      std::make_unique<sentinel::GitRepository>(sourceRoot, mExtensions.Get(), mPatterns.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
 
   // Shuffle target lines to reduce mutant selecting time.

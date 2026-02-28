@@ -19,12 +19,10 @@
 
 namespace sentinel {
 
-MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) :
-    mGenerator(generator) {
-}
+MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
 
-Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines,
-                                  std::size_t maxMutants, unsigned randomSeed) {
+Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
+                                  unsigned randomSeed) {
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger("populate");
@@ -50,8 +48,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen))
-            << std::endl;
+  std::cout << string::rtrim(fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen)) << std::endl;
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat, "File", flen, "#mutation", mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
@@ -80,9 +77,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   return mutables;
 }
 
-Mutants MutationFactory::populate(const std::string& gitPath,
-                                  const SourceLines& sourceLines,
-                                  std::size_t maxMutants) {
+Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants) {
   return populate(gitPath, sourceLines, maxMutants, std::random_device {}());
 }
 
