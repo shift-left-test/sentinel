@@ -64,6 +64,11 @@ class Command {
    * @brief output directory
    */
   args::ValueFlag<std::string> mOutputDir;
+
+  /**
+   * @brief current working directory
+   */
+  args::ValueFlag<std::string> mCwd;
 };
 
 }  // namespace sentinel
