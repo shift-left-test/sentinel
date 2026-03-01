@@ -62,15 +62,32 @@ class GitRepositoryTest : public ::testing::Test {
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
-  std::string tmpPath = repo_name / "test";
-  fs::create_directories(tmpPath);
+  // Use a directory that is NOT inside any git repository so that
+  // git_repository_open_ext (which now searches parent directories) still fails.
+  fs::path nonGitPath = fs::temp_directory_path() / "SENTINEL_NON_GIT_DIR_XYZXYZ";
+  fs::remove_all(nonGitPath);
+  fs::create_directories(nonGitPath);
 
   EXPECT_THROW(
       {
-        GitRepository gitRepo(tmpPath);
+        GitRepository gitRepo(nonGitPath.string());
         SourceLines lines = gitRepo.getSourceLines("commit");
       },
       RepositoryException);
+
+  fs::remove_all(nonGitPath);
+}
+
+TEST_F(GitRepositoryTest, testSubdirectoryOfRepoWorks) {
+  // A subdirectory of a git repo should be accepted — git_repository_open_ext
+  // searches parent directories, so the .git at repo_name is found.
+  fs::path subdir = repo_name / "subdir_for_test";
+  fs::create_directories(subdir);
+
+  EXPECT_NO_THROW({
+    GitRepository gitRepo(subdir.string());
+    gitRepo.getSourceLines("all");
+  });
 }
 
 TEST_F(GitRepositoryTest, testPatterns) {

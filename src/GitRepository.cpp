@@ -79,17 +79,18 @@ class DiffData {
    * @brief Default constructor
    *
    * @param gitRepo git repository
+   * @param gitWorkdir actual git working directory root (may differ from sourceRoot)
    */
-  explicit DiffData(GitRepository* gitRepo) : mGitRepo(gitRepo) {}
+  DiffData(GitRepository* gitRepo, std::string gitWorkdir) : mGitRepo(gitRepo), mGitWorkdir(std::move(gitWorkdir)) {}
 
   /**
    * @brief add Source Line
    *
-   * @param file source file name
+   * @param file source file name (relative to git workdir)
    * @param line line number
    */
   void addSourceLine(const std::string& file, int line) {
-    fs::path filePath(mGitRepo->getSourceRoot());
+    fs::path filePath(mGitWorkdir);
     filePath.append(file);
     if (mGitRepo->isTargetPath(filePath)) {
       mSourceLines.push_back(SourceLine(filePath, line));
@@ -106,8 +107,10 @@ class DiffData {
  private:
   /// diff result
   SourceLines mSourceLines;
-  /// logger
+  /// git repository instance
   GitRepository* mGitRepo;
+  /// actual git working directory root
+  std::string mGitWorkdir;
 };
 
 static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData& d) {  // NOLINT
@@ -209,14 +212,25 @@ bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path
 }
 
 SourceLines GitRepository::getSourceLines(const std::string& scope) {
+  namespace fs = std::experimental::filesystem;
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   SafeGit2ObjPtr<git_repository, git_repository_free> repo;
-  if (git_repository_open(repo.getPtr(), getSourceRoot().c_str()) != 0) {
+  // Use git_repository_open_ext (flags=0) to search parent directories for .git,
+  // so sourceRoot can be a subdirectory of the git repository.
+  if (git_repository_open_ext(repo.getPtr(), getSourceRoot().c_str(), 0, nullptr) != 0) {
     throw RepositoryException("Fail to open repository");
   }
 
-  DiffData d(this);
+  const char* rawWorkdir = git_repository_workdir(static_cast<git_repository*>(repo));
+  if (!rawWorkdir) {
+    throw RepositoryException("Repository has no working directory (bare repository not supported)");
+  }
+  // git_repository_workdir returns a path with a trailing slash; fs::canonical normalises it.
+  std::string gitWorkdir = fs::canonical(fs::path(rawWorkdir)).string();
+  logger->info(fmt::format("git workdir: {}", gitWorkdir));
+
+  DiffData d(this, gitWorkdir);
 
   git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
   std::vector<char*> cstrs(mPatterns.size());
