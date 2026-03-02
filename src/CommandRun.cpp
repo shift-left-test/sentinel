@@ -559,7 +559,7 @@ int CommandRun::run() {
         if (diffSecs < 1.0) {
           mTimeLimit = 1;
         } else {
-          mTimeLimit = static_cast<size_t>(ceil(diffSecs * 1.1));
+          mTimeLimit = static_cast<size_t>(ceil(diffSecs * 2.0));
         }
         logger->info(fmt::format("Time limit for test is set to {}(s)", mTimeLimit));
       }
