@@ -114,6 +114,9 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["operator"]) {
       cfg.operators = toStringVector(root["operator"], "operator");
     }
+    if (root["no-statusline"]) {
+      cfg.noStatusLine = root["no-statusline"].as<bool>();
+    }
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }

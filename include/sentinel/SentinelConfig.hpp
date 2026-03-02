@@ -68,6 +68,8 @@ struct SentinelConfig {
   std::optional<unsigned> seed;
   /// Mutation operators to use (--operator).
   std::optional<std::vector<std::string>> operators;
+  /// Disable the terminal status line even when stdout is a TTY (--no-statusline).
+  std::optional<bool> noStatusLine;
 
   /**
    * @brief Load configuration from a YAML file.

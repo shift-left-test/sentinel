@@ -154,6 +154,7 @@ sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
 | `--kill-after=SEC` | Send SIGKILL this many seconds after timeout; `0` = disabled | `60` |
 | `--config=PATH` | Path to a YAML configuration file | `sentinel.yaml` (auto-detected) |
 | `--init` | Generate a `sentinel.yaml` configuration template and exit | |
+| `--no-statusline` | Disable the terminal status line even when stdout is a TTY | |
 
 **Example:**
 
@@ -165,6 +166,18 @@ sentinel run ./my-project \
   --limit=50 \
   --exclude="*/test/*" "*/third_party/*"
 ```
+
+**Terminal Status Line:**
+
+When stdout is a TTY, `sentinel run` displays a live status line pinned to the bottom row of the terminal.
+It shows the current phase, mutant progress, result counters, mutation score, and elapsed time:
+
+```
+ Phase:MUTANT     [42/150] | AOR  sample.cpp:10 | K:30 S:8 B:2 T:1 R:0 | Score:73.2% | Elapsed:00:42:17
+```
+
+The status line is automatically suppressed when output is piped or redirected.
+Use `--no-statusline` to disable it explicitly.
 
 ---
 
@@ -356,6 +369,9 @@ kill-after: 60
 
 # Random seed for mutant selection
 seed: 42
+
+# Disable the terminal status line even when stdout is a TTY
+no-statusline: false
 
 # Mutation operators to use. Omit to use all operators.
 # Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI

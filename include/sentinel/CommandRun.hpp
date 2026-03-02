@@ -207,6 +207,11 @@ class CommandRun : public Command {
   args::Flag mInit;
 
   /**
+   * @brief flag to disable the terminal status line
+   */
+  args::Flag mNoStatusLine;
+
+  /**
    * @brief build directory
    */
   args::ValueFlag<std::string> mBuildDir;

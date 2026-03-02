@@ -29,6 +29,7 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SentinelConfig.hpp"
+#include "sentinel/StatusLine.hpp"
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
@@ -43,12 +44,17 @@ namespace sentinel {
 static const char* cCommandRunLoggerName = "CommandRun";
 static std::experimental::filesystem::path backupDirForSH;
 static std::experimental::filesystem::path sourceRootForSH;
+static StatusLine* gStatusLineForSH = nullptr;
 
 static void signalHandler(int signum) {
   namespace fs = std::experimental::filesystem;
 
   if (!backupDirForSH.empty() && fs::exists(backupDirForSH) && fs::is_directory(backupDirForSH)) {
     CommandRun::restoreBackup(backupDirForSH.string(), sourceRootForSH.string());
+  }
+  if (gStatusLineForSH != nullptr) {
+    gStatusLineForSH->disable();
+    gStatusLineForSH = nullptr;
   }
   std::cout.flush();
   if (signum != SIGUSR1) {
@@ -141,6 +147,9 @@ static const char* const kYamlTemplate =
     "# Random seed for mutant selection\n"
     "# seed: 42\n"
     "\n"
+    "# Disable the terminal status line even when stdout is a TTY\n"
+    "# no-statusline: false\n"
+    "\n"
     "# Mutation operators to use. Omit to use all operators.\n"
     "# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI\n"
     "# operator:\n"
@@ -157,6 +166,8 @@ CommandRun::CommandRun(args::Subparser& parser) :
     mConfigFile(parser, "PATH", "Path to a YAML configuration file (default: sentinel.yaml in current directory)", {"config"}),
     mInit(parser, "init", "Generate a sentinel.yaml configuration template in the current directory and exit",
           {"init"}),
+    mNoStatusLine(parser, "no-statusline", "Disable the terminal status line even when stdout is a TTY",
+                  {"no-statusline"}),
     mBuildDir(parser, "PATH", "Build command output directory", {'b', "build-dir"}, "."),
     mCompileDbDir(parser, "PATH", "Path to directory containing compile_commands.json file", {"compiledb"}),
     mScope(parser, "SCOPE", "Diff scope, one of ['commit', 'all'].", {'s', "scope"}, "all"),
@@ -248,12 +259,14 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
                                       const std::vector<std::string>& coverageFiles,
                                       const std::string& generator, size_t timeout, size_t killAfter,
                                       unsigned seed, const std::vector<std::string>& operators,
-                                      const std::string& outputDir, bool verbose, bool debug) {
+                                      const std::string& outputDir, bool verbose, bool debug,
+                                      bool noStatusLine) {
   YAML::Emitter out;
   out << YAML::BeginMap;
   out << YAML::Key << "source-root" << YAML::Value << sourceRoot;
   out << YAML::Key << "verbose" << YAML::Value << verbose;
   out << YAML::Key << "debug" << YAML::Value << debug;
+  out << YAML::Key << "no-statusline" << YAML::Value << noStatusLine;
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
@@ -313,6 +326,9 @@ int CommandRun::run() {
   }
 
   namespace fs = std::experimental::filesystem;
+
+  StatusLine statusLine;
+  gStatusLineForSH = &statusLine;
 
   // ── STEP 1: Workspace setup ─────────────────────────────────────────────────
 
@@ -488,6 +504,15 @@ int CommandRun::run() {
   logger->info(fmt::format("Resuming: {}", resuming ? "yes" : "no"));
   logger->info(fmt::format("{0:-^{1}}", "", 50));
 
+  bool disableStatusLine = static_cast<bool>(mNoStatusLine) || (mConfig && mConfig->noStatusLine.value_or(false));
+  if (resuming) {
+    disableStatusLine = activeConfig.noStatusLine.value_or(false);
+  }
+  if (!disableStatusLine) {
+    statusLine.enable();
+  }
+  statusLine.setPhase(StatusLine::Phase::BUILD_ORIG);
+
   auto cmdPrefix = fmt::format("cd \"{}\" && ", buildDir.string());
 
   for (const auto& filename : coverageFiles) {
@@ -519,6 +544,7 @@ int CommandRun::run() {
 
       // test
       logger->info("Running tests ...");
+      statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
       fs::remove_all(testResultDir);
       Subprocess firstTestProc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
                                (ws.getOriginalDir() / "test.log").string());
@@ -561,7 +587,8 @@ int CommandRun::run() {
       ws.saveConfig(buildWorkspaceYaml(sourceRoot.string(), buildDirStr, compileDbStr, scope, targetFileExts,
                                        diffPatterns, excludePaths, mutantLimit, buildCmd, testCmd, testResultDirStr,
                                        testResultFileExts, coverageFiles, generatorStr, mTimeLimit, mKillAfter,
-                                       randomSeed, operators, outputDirStr, mIsVerbose.Get(), mIsDebug.Get()));
+                                       randomSeed, operators, outputDirStr, mIsVerbose.Get(), mIsDebug.Get(),
+                                       disableStatusLine));
     }
 
     // Restore any leftover backup from a previously interrupted run
@@ -574,7 +601,9 @@ int CommandRun::run() {
     if (resuming) {
       indexedMutants = ws.loadMutants();
       logger->info(fmt::format("Loaded {} mutants from workspace.", indexedMutants.size()));
+      statusLine.setTotalMutants(indexedMutants.size());
     } else {
+      statusLine.setPhase(StatusLine::Phase::POPULATE);
       logger->info("Populating mutants ...");
       auto repo =
           std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
@@ -603,6 +632,7 @@ int CommandRun::run() {
         id++;
       }
       logger->info(fmt::format("{0:-^{1}}", "", 50));
+      statusLine.setTotalMutants(indexedMutants.size());
     }
 
     // ── STEP 5: Mutant loop ─────────────────────────────────────────────────────
@@ -612,6 +642,8 @@ int CommandRun::run() {
     sentinel::Evaluator evaluator(ws.getOriginalResultsDir().string(), sourceRoot.string());
     CoverageInfo cov(coverageFiles);
 
+    statusLine.setPhase(StatusLine::Phase::MUTANT);
+
     for (auto& [id, m] : indexedMutants) {
       // Already completed in a previous run: inject stored result and skip
       if (ws.isDone(id)) {
@@ -619,6 +651,9 @@ int CommandRun::run() {
         evaluator.injectResult(prevResult);
         logger->info(fmt::format("Mutant #{} already completed ({}). Skipping.", id,
                                  MutationStateToStr(prevResult.getMutationState())));
+        statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
+                                 m.getFirst().line);
+        statusLine.recordResult(static_cast<int>(prevResult.getMutationState()));
         continue;
       }
 
@@ -639,6 +674,9 @@ int CommandRun::run() {
 
       // Mark as in-progress
       ws.setLock(id);
+
+      statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
+                               m.getFirst().line);
 
       // Mutate
       std::stringstream buf;
@@ -690,6 +728,7 @@ int CommandRun::run() {
       // Mark as complete
       ws.clearLock(id);
       ws.setDone(id, result);
+      statusLine.recordResult(static_cast<int>(result.getMutationState()));
 
       // Clear temp actual dir
       fs::remove_all(actualDir);
@@ -697,6 +736,7 @@ int CommandRun::run() {
 
     // ── STEP 6: Report ──────────────────────────────────────────────────────────
 
+    statusLine.setPhase(StatusLine::Phase::REPORT);
     fs::create_directories(outputDir);
     outputDir = fs::canonical(outputDir);
 
@@ -718,6 +758,8 @@ int CommandRun::run() {
     throw;
   }
 
+  statusLine.disable();
+  gStatusLineForSH = nullptr;
   std::raise(SIGUSR1);
   return 0;
 }

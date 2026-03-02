@@ -192,6 +192,11 @@ If sentinel.yaml already exists, prompts for confirmation before overwriting.
 .TP
 --config=[PATH]
 Path to a YAML configuration file. If not specified, sentinel.yaml in the current directory is used automatically when present.
+.TP
+--no-statusline
+Disable the terminal status line even when stdout is a TTY.
+By default, a live status line is shown at the bottom of the terminal displaying the current phase, mutant progress, result counters, mutation score, and elapsed time.
+The status line is automatically suppressed when output is piped or redirected.
 .SH CONFIGURATION FILE
 Sentinel supports a YAML configuration file (\fBsentinel.yaml\fR) as an alternative to passing all options on the command line.
 When \fBsentinel run\fR is invoked, it automatically looks for \fBsentinel.yaml\fR in the current working directory.
@@ -269,6 +274,9 @@ Random seed for mutant selection.
 .TP
 \fBoperator\fR
 List of mutation operators to use (AOR, BOR, LCR, ROR, SDL, SOR, UOI). Omit to use all.
+.TP
+\fBno-statusline\fR
+Disable the terminal status line even when stdout is a TTY (boolean).
 .SH REPORTING BUGS
 sentinel issue tracker: <https://github.com/shift-left-test/sentinel/issues>
 .SH SEE ALSO
