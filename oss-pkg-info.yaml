@@ -14,3 +14,8 @@ Open Source Software Package:
   source: https://github.com/leethomason/tinyxml2
   license : Zlib
   copyright : Lee Thomason (www.grinninglizard.com)
+- name: yaml-cpp
+  version: 0.9.0
+  source: https://github.com/jbeder/yaml-cpp
+  license : MIT
+  copyright : Copyright (c) 2008-2015 Jesse Beder.
