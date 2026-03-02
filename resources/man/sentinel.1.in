@@ -1,161 +1,216 @@
 .\" DO NOT MODIFY THIS FILE!
 .TH man 1 "11 Nov 2020" "@sentinel_VERSION@" "sentinel manual"
 .SH NAME
-sentinel \- the mutation testing tool
+sentinel \- mutation testing tool for C/C++ projects
 .SH SYNOPSIS
 sentinel [SOURCE_ROOT_PATH] {OPTIONS}
 .SH DESCRIPTION
-sentinel is the mutation testing tool for C/C++ projects.
-.SH OPTIONS
-.SS sentinel [SOURCE_ROOT_PATH] {OPTIONS}
-Run mutation test in standalone mode
-.TP
-SOURCE_ROOT_PATH
-source root directory.
-.TP
--v, --verbose
-Verbosity
-.TP
--w[PATH], --workspace=[PATH]
-Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
-.TP
--o[PATH], --output-dir=[PATH]
-Directory for saving output. If output-dir is not given, pass generating output file.
-.TP
--b[PATH], --build-dir=[PATH]
-Directory where compile_commands.json file exists. Default: .
-.TP
---test-result-dir=[PATH]
-Test command output directory
-.TP
---build-command=[SH_CMD]
-Shell command to build source
-.TP
---test-command=[SH_CMD]
-Shell command to execute test
-.TP
---generator=[gen]
-Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default: uniform
-.TP
---test-result-extention=[EXTENSION...]
-Test command output file extensions.
-.TP
--t[EXTENSION...], --extension=[EXTENSION...]
-Extentions of source file which could be mutated.
-.TP
--e[PATH...], --exclude=[PATH...]
-exclude file or path
-.TP
---coverage=[COV.INFO...]
-lcov-format coverage result file
-.TP
--s[SCOPE], --scope=[SCOPE]
-Diff scope, one of ['commit', 'all']. Default: all
-.TP
--l[COUNT], --limit=[COUNT]
-Maximum generated mutable count. Default: 10
-.TP
---timeout=[TIME_SEC]
-Time limit (sec) for test-command. If 0, there is no time limit. If auto, time limit is automatically set using test execution time of the original code. Default: auto
-.TP
---kill-after=[TIME_SEC]
-Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0. Default: 60
-.TP
---seed=[SEED]
-Select random seed. Default: random
-.TP
---init
-Generate a sentinel.yaml configuration template in the current directory and exit.
-If sentinel.yaml already exists, prompts for confirmation before overwriting.
-.TP
---config=[PATH]
-Path to a YAML configuration file. If not specified, sentinel.yaml in the current directory is used automatically when present.
-.TP
---no-statusline
-Disable the terminal status line even when stdout is a TTY.
-By default, a live status line is shown at the bottom of the terminal displaying the current phase, mutant progress, result counters, mutation score, and elapsed time.
-The status line is automatically suppressed when output is piped or redirected.
-.SH CONFIGURATION FILE
-Sentinel supports a YAML configuration file (\fBsentinel.yaml\fR) as an alternative to passing all options on the command line.
-When \fBsentinel\fR is invoked, it automatically looks for \fBsentinel.yaml\fR in the current working directory.
-Use \fB--config\fR to specify a different file.
+sentinel runs a full mutation testing pipeline on a C/C++ project.
+It seeds small, deliberate faults (mutants) into the source code, rebuilds the project,
+runs the test suite, and reports which mutants were caught (killed) and which survived.
 .PP
-CLI arguments always take priority over values in the configuration file.
+The mutation score — killed / (killed + survived) — measures how thoroughly the tests
+cover the code under mutation.
+.SH POSITIONAL ARGUMENT
+.TP
+\fBSOURCE_ROOT_PATH\fR
+Root of the source tree to test. Defaults to the current directory.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display the help menu.
+.TP
+\fB\-\-version\fR
+Print the program version and exit.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Enable verbose output (INFO level and above).
+.TP
+\fB\-\-debug\fR
+Enable debug output (all log levels).
+.TP
+\fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
+Directory for all run artifacts. Default: \fB./sentinel_workspace\fR
+.TP
+\fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
+Directory to write HTML/XML reports.
+.TP
+\fB\-\-cwd\fR=\fIPATH\fR
+Change to this directory before running.
+.SS Run options
+.TP
+\fB\-\-config\fR=\fIPATH\fR
+Path to a YAML config file. When omitted, \fBsentinel.yaml\fR in the
+current directory is used automatically if it exists.
+.TP
+\fB\-\-init\fR
+Write a \fBsentinel.yaml\fR config template to the current directory and exit.
+Prompts for confirmation if the file already exists.
+.TP
+\fB\-\-no\-statusline\fR
+Disable the live status line shown at the bottom of the terminal in TTY mode.
+.SS Build & test options
+.TP
+\fB\-b\fR \fIPATH\fR, \fB\-\-build\-dir\fR=\fIPATH\fR
+Build output directory. Also searched for \fBcompile_commands.json\fR by default.
+Default: \fB.\fR
+.TP
+\fB\-\-compiledb\fR=\fIPATH\fR
+Directory containing \fBcompile_commands.json\fR. Overrides \fB\-\-build\-dir\fR
+for Clang compilation database lookup.
+.TP
+\fB\-\-build\-command\fR=\fICMD\fR
+Shell command to build the project. \fBRequired.\fR
+.TP
+\fB\-\-test\-command\fR=\fICMD\fR
+Shell command to run the test suite. \fBRequired.\fR
+.TP
+\fB\-\-test\-result\-dir\fR=\fIPATH\fR
+Directory where the test command writes its result files. \fBRequired.\fR
+.TP
+\fB\-\-test\-result\-extension\fR=\fIEXT\fR
+File extension of test result files (repeatable). Default: \fBxml\fR
+.TP
+\fB\-\-timeout\fR=\fISEC\fR
+Test time limit in seconds. \fB0\fR = no limit,
+\fBauto\fR = 2\(mu the measured baseline run time. Default: \fBauto\fR
+.TP
+\fB\-\-kill\-after\fR=\fISEC\fR
+Seconds to wait after \fB\-\-timeout\fR before sending SIGKILL to the test process.
+\fB0\fR = disabled. Default: \fB60\fR
+.SS Mutation options
+.TP
+\fB\-s\fR \fISCOPE\fR, \fB\-\-scope\fR=\fISCOPE\fR
+Mutation scope: \fBcommit\fR limits mutation to lines changed in the latest git commit;
+\fBall\fR mutates the entire codebase. Default: \fBall\fR
+.TP
+\fB\-t\fR \fIEXT\fR, \fB\-\-extension\fR=\fIEXT\fR
+Source file extension to mutate (repeatable).
+Default: \fBcxx cpp cc c c++ cu\fR
+.TP
+\fB\-p\fR \fIPATTERN\fR, \fB\-\-pattern\fR=\fIPATTERN\fR
+Path or glob pattern to constrain the mutation scope (repeatable).
+.TP
+\fB\-e\fR \fIPATTERN\fR, \fB\-\-exclude\fR=\fIPATTERN\fR
+Exclude files/directories matching an fnmatch-style pattern (repeatable).
+.TP
+\fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
+Maximum number of mutants to generate. Default: \fB10\fR
+.TP
+\fB\-\-generator\fR=\fITYPE\fR
+Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR
+.TP
+\fB\-\-seed\fR=\fIN\fR
+Random seed for mutant selection. Default: random.
+.TP
+\fB\-\-operator\fR=\fIOP\fR
+Mutation operator to apply (repeatable). Valid values:
+\fBAOR\fR, \fBBOR\fR, \fBLCR\fR, \fBROR\fR, \fBSDL\fR, \fBSOR\fR, \fBUOI\fR.
+Defaults to all operators when omitted.
+.TP
+\fB\-\-coverage\fR=\fIFILE\fR
+lcov coverage info file (repeatable). When given, only source lines covered by
+tests are considered for mutation.
+.SH MUTATION OPERATORS
+.TP
+\fBAOR\fR \(em Arithmetic Operator Replacement
+Replaces arithmetic operators: \fB+\fR \fB\-\fR \fB*\fR \fB/\fR \fB%\fR
+.TP
+\fBBOR\fR \(em Bitwise Operator Replacement
+Replaces bitwise operators: \fB&\fR \fB|\fR \fB^\fR
+.TP
+\fBLCR\fR \(em Logical Connector Replacement
+Replaces logical operators: \fB&&\fR \fB||\fR
+.TP
+\fBROR\fR \(em Relational Operator Replacement
+Replaces relational operators: \fB<\fR \fB<=\fR \fB>\fR \fB>=\fR \fB==\fR \fB!=\fR
+.TP
+\fBSDL\fR \(em Statement Deletion
+Deletes a statement body.
+.TP
+\fBSOR\fR \(em Shift Operator Replacement
+Replaces shift operators: \fB<<\fR \fB>>\fR
+.TP
+\fBUOI\fR \(em Unary Operator Insertion
+Inserts a unary operator before a variable reference.
+.SH CONFIGURATION FILE
+sentinel supports a YAML configuration file (\fBsentinel.yaml\fR) as an alternative
+to passing all options on the command line.
+When invoked, sentinel automatically looks for \fBsentinel.yaml\fR in the current
+working directory. Use \fB\-\-config\fR to specify a different file.
+.PP
+CLI arguments always take priority over values in the configuration file:
+.IP
+CLI argument  >  sentinel.yaml  >  built-in default
 .PP
 Supported keys (all optional):
 .TP
 \fBsource-root\fR
 Source root directory.
 .TP
-\fBverbose\fR
-Enable verbose logging (boolean).
-.TP
-\fBdebug\fR
-Enable debug logging (boolean).
+\fBverbose\fR / \fBdebug\fR
+Enable verbose or debug logging (boolean).
 .TP
 \fBworkspace\fR
-Workspace directory for all run artifacts.
+Directory for all run artifacts.
 .TP
 \fBoutput-dir\fR
-Directory for output reports.
+Directory to write HTML/XML reports.
 .TP
 \fBcwd\fR
 Change to this directory before running.
 .TP
-\fBbuild-dir\fR
-Build command output directory.
+\fBconfig\fR
+Path to a YAML config file.
 .TP
-\fBcompiledb\fR
-Explicit path to directory containing compile_commands.json.
+\fBbuild-dir\fR / \fBcompiledb\fR
+Build output directory / directory containing compile_commands.json.
+.TP
+\fBbuild-command\fR / \fBtest-command\fR
+Shell commands to build the project and run the test suite.
+.TP
+\fBtest-result-dir\fR / \fBtest-result-extension\fR
+Test result directory and file extensions.
+.TP
+\fBtimeout\fR / \fBkill-after\fR
+Test time limit (seconds or \fBauto\fR) and post-timeout SIGKILL delay.
 .TP
 \fBscope\fR
-Diff scope: \fBcommit\fR or \fBall\fR.
+Mutation scope: \fBcommit\fR or \fBall\fR.
 .TP
 \fBextension\fR
 List of source file extensions to mutate.
 .TP
-\fBpattern\fR
-List of paths or glob patterns to constrain the diff.
+\fBpattern\fR / \fBexclude\fR
+Lists of paths/patterns to include or exclude.
 .TP
-\fBexclude\fR
-List of fnmatch-style patterns to exclude from mutation.
-.TP
-\fBlimit\fR
-Maximum number of mutants to generate.
-.TP
-\fBbuild-command\fR
-Shell command to build the source.
-.TP
-\fBtest-command\fR
-Shell command to execute tests.
-.TP
-\fBtest-result-dir\fR
-Directory containing test command output.
-.TP
-\fBtest-result-extension\fR
-List of file extensions of test output files.
+\fBlimit\fR / \fBgenerator\fR / \fBseed\fR / \fBoperator\fR
+Mutant count limit, selection strategy, random seed, and operator list.
 .TP
 \fBcoverage\fR
-List of lcov-format coverage result files.
-.TP
-\fBgenerator\fR
-Mutant generator type: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR.
-.TP
-\fBtimeout\fR
-Time limit (seconds) for the test command. \fB0\fR = no limit, \fBauto\fR = auto-detect.
-.TP
-\fBkill-after\fR
-Seconds after timeout before SIGKILL is sent. \fB0\fR = disabled.
-.TP
-\fBseed\fR
-Random seed for mutant selection.
-.TP
-\fBoperator\fR
-List of mutation operators to use (AOR, BOR, LCR, ROR, SDL, SOR, UOI). Omit to use all.
+List of lcov coverage info files.
 .TP
 \fBno-statusline\fR
-Disable the terminal status line even when stdout is a TTY (boolean).
+Disable the terminal status line (boolean).
+.SH EXAMPLES
+Run mutation testing on a CMake project:
+.PP
+.nf
+sentinel /path/to/project \\
+  --build-command="cmake --build build" \\
+  --test-command="ctest --test-dir build" \\
+  --test-result-dir=build/test-results \\
+  --scope=commit \\
+  --limit=50
+.fi
+.PP
+Generate a config file template:
+.PP
+.nf
+sentinel --init
+.fi
 .SH REPORTING BUGS
 sentinel issue tracker: <https://github.com/shift-left-test/sentinel/issues>
 .SH SEE ALSO
-sentinel repository: <https://github.com/shift-left-test/sentinel>, Mutation Testing on Wikipedia: <https://en.wikipedia.org/wiki/Mutation_testing>
+sentinel repository: <https://github.com/shift-left-test/sentinel>,
+Mutation Testing on Wikipedia: <https://en.wikipedia.org/wiki/Mutation_testing>

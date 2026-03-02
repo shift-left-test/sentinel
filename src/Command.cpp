@@ -16,12 +16,12 @@ namespace sentinel {
 const char* cCommandLoggerName = "Command";
 
 Command::Command(args::Group& parser) :
-    mSourceRoot(parser, "SOURCE_ROOT_PATH", "source root directory.", "."),
-    mIsVerbose(parser, "verbose", "Show verbose messages (INFO and above).", {'v', "verbose"}),
-    mIsDebug(parser, "debug", "Show debug messages (all log levels).", {"debug"}),
-    mWorkDir(parser, "PATH", "Sentinel workspace directory for all run artifacts.", {'w', "workspace"}, "./sentinel_workspace"),
-    mOutputDir(parser, "PATH", "Directory for saving output.", {'o', "output-dir"}, ""),
-    mCwd(parser, "PATH", "Change the current working directory before running.", {"cwd"}, "") {}
+    mSourceRoot(parser, "SOURCE_ROOT_PATH", "Root of the source tree to test.", "."),
+    mIsVerbose(parser, "verbose", "Enable verbose output (INFO level and above).", {'v', "verbose"}),
+    mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}),
+    mWorkDir(parser, "PATH", "Directory for all run artifacts.", {'w', "workspace"}, "./sentinel_workspace"),
+    mOutputDir(parser, "PATH", "Directory to write HTML/XML reports.", {'o', "output-dir"}, ""),
+    mCwd(parser, "PATH", "Change to this directory before running.", {"cwd"}, "") {}
 
 void Command::init() {
   namespace fs = std::experimental::filesystem;

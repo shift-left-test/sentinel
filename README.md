@@ -14,8 +14,6 @@
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Workflow Overview](#workflow-overview)
-  - [Command Reference](#command-reference)
 - [Configuration File](#configuration-file)
 - [Mutation Operators](#mutation-operators)
 - [Supported Test Runners](#supported-test-runners)
@@ -26,18 +24,18 @@
 
 ## About
 
-Mutation testing is a technique to evaluate and improve the quality of a test suite. It works by injecting small, deliberate faults (mutants) into the source code and checking whether the existing tests can detect them.
+Mutation testing evaluates the quality of a test suite by injecting small, deliberate faults (*mutants*) into the source code and checking whether the tests detect them.
 
-**Benefits for developers:**
-- Measure the effectiveness of a test suite using the *mutation score*
-- Identify weak spots in tests and get guidance on writing better test cases
+**Benefits:**
+- Measure test effectiveness with a *mutation score* (killed / (killed + survived))
+- Identify undertested code paths and guide test improvements
 
 Sentinel makes mutation testing practical for C/C++ projects by:
-- Supporting diverse configuration options
-- Limiting mutation scope to committed changes (to reduce cost)
+- Integrating with git to limit mutations to changed lines (`--scope=commit`)
 - Automatically generating HTML/XML reports
+- Supporting resume after interruption
 
-> For more background, see [Mutation testing on Wikipedia](https://en.wikipedia.org/wiki/Mutation_testing).
+> For background, see [Mutation testing on Wikipedia](https://en.wikipedia.org/wiki/Mutation_testing).
 
 ---
 
@@ -56,9 +54,10 @@ cd sentinel && cmake . && make all -j && make package
 sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
 # 3. Run mutation testing on your project
-sentinel run /path/to/your/project \
+sentinel /path/to/your/project \
   --build-command="make" \
-  --test-command="make test"
+  --test-command="make test" \
+  --test-result-dir=./test-results
 ```
 
 ---
@@ -102,287 +101,99 @@ sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
 ## Usage
 
-### Workflow Overview
-
-Sentinel provides individual commands for each phase of mutation testing. You can either run them step by step or use the `run` command to execute the entire pipeline at once.
-
 ```
-populate → mutate → evaluate → report
-    ↑                               ↑
-find mutants                 generate report
-
-          OR use: sentinel run
-          (runs all steps automatically)
+sentinel [SOURCE_ROOT_PATH] {OPTIONS}
 ```
 
-| Step       | Command    | Description                                      |
-|------------|------------|--------------------------------------------------|
-| 1. Find    | `populate` | Identify mutable locations in the source code    |
-| 2. Apply   | `mutate`   | Apply a single mutant to the source              |
-| 3. Check   | `evaluate` | Compare test results with and without the mutant |
-| 4. Report  | `report`   | Generate an HTML/XML report from results         |
-| All-in-one | `run`      | Execute all steps in standalone mode             |
+Sentinel builds the project, runs the test suite once to establish a baseline, then applies each mutant in turn and checks whether the tests catch it.
 
-### Command Reference
-
-#### `run` — All-in-one mutation test
+### Example
 
 ```bash
-sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
-```
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Source root directory | |
-| `-v, --verbose` | Enable verbose output | |
-| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
-| `-o, --output-dir=PATH` | Directory for output files | |
-| `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
-| `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
-| `--build-command=CMD` | Shell command to build the source | |
-| `--test-command=CMD` | Shell command to run tests | |
-| `--test-result-dir=PATH` | Directory for test output files | |
-| `--test-result-extension=EXT` | File extensions of test output | |
-| `-t, --extension=EXT` | Source file extensions to mutate | |
-| `-e, --exclude=PATTERN` | Exclude paths matching fnmatch-style patterns | |
-| `--coverage=COV.INFO` | lcov-format coverage file | |
-| `-s, --scope=SCOPE` | Diff scope: `commit` or `all` | `all` |
-| `-l, --limit=COUNT` | Maximum number of mutants to generate | `10` |
-| `--generator=TYPE` | Mutant generator: `uniform`, `random`, or `weighted` | `uniform` |
-| `--seed=SEED` | Random seed | random |
-| `--timeout=SEC` | Time limit for test command; `0` = no limit, `auto` = auto-detect | `auto` |
-| `--kill-after=SEC` | Send SIGKILL this many seconds after timeout; `0` = disabled | `60` |
-| `--config=PATH` | Path to a YAML configuration file | `sentinel.yaml` (auto-detected) |
-| `--init` | Generate a `sentinel.yaml` configuration template and exit | |
-| `--no-statusline` | Disable the terminal status line even when stdout is a TTY | |
-
-**Example:**
-
-```bash
-sentinel run ./my-project \
+sentinel ./my-project \
   --build-command="cmake --build build" \
   --test-command="ctest --test-dir build" \
+  --test-result-dir=./build/test-results \
   --scope=commit \
   --limit=50 \
-  --exclude="*/test/*" "*/third_party/*"
+  --exclude="*/third_party/*" "*/test/*"
 ```
 
-**Terminal Status Line:**
+### Terminal Status Line
 
-When stdout is a TTY, `sentinel run` displays a live status line pinned to the bottom row of the terminal.
-It shows the current phase, mutant progress, result counters, mutation score, and elapsed time:
+When stdout is a TTY, Sentinel displays a live status line at the bottom of the terminal:
 
 ```
  Phase:MUTANT     [42/150] | AOR  sample.cpp:10 | K:30 S:8 B:2 T:1 R:0 | Score:73.2% | Elapsed:00:42:17
 ```
 
-The status line is automatically suppressed when output is piped or redirected.
-Use `--no-statusline` to disable it explicitly.
+It is suppressed automatically when output is piped or redirected. Use `--no-statusline` to disable it explicitly.
+
+### Resume
+
+If Sentinel is interrupted, rerun it with the same `--workspace` path. It will detect the previous run and prompt to resume.
 
 ---
 
-#### `populate` — Find mutable locations
+### Option Reference
 
-Scans the source tree and generates a list of mutable locations.
-
-```bash
-sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
-```
+#### General
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Source root directory | |
-| `-v, --verbose` | Enable verbose output | |
-| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
-| `-o, --output-dir=PATH` | Directory for output files | `.` |
-| `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
-| `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
-| `-s, --scope=SCOPE` | Diff scope: `commit` or `all` | `all` |
-| `-t, --extension=EXT` | Source file extensions to mutate | |
-| `-e, --exclude=PATTERN` | Exclude paths matching fnmatch-style patterns | |
-| `-l, --limit=COUNT` | Maximum number of mutants to generate | `10` |
-| `--mutants-file-name=PATH` | Output file name for mutant list | `mutables.db` |
-| `--generator=TYPE` | Mutant generator: `uniform`, `random`, or `weighted` | `uniform` |
-| `--seed=SEED` | Random seed | `1942447250` |
+| `SOURCE_ROOT_PATH` | Root of the source tree to test | `.` |
+| `-v, --verbose` | Enable verbose output (INFO level and above) | |
+| `--debug` | Enable debug output (all log levels) | |
+| `-w, --workspace=PATH` | Directory for all run artifacts | `./sentinel_workspace` |
+| `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
+| `--cwd=PATH` | Change to this directory before running | |
 
----
-
-#### `mutate` — Apply a mutant
-
-Applies a single mutant to the source code. The original file is backed up in `workspace`.
-
-```bash
-sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
-```
+#### Run options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Source root directory | |
-| `-v, --verbose` | Enable verbose output | |
-| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
-| `-o, --output-dir=PATH` | Directory for output files | `.` |
-| `-m, --mutant=MUTANT` | Mutant string to apply | |
+| `--config=PATH` | YAML config file path | `sentinel.yaml` (auto-detected) |
+| `--init` | Write a `sentinel.yaml` config template and exit | |
+| `--no-statusline` | Disable the live terminal status line | |
 
----
-
-#### `evaluate` — Compare test results
-
-Compares test results before and after a mutant is applied to determine if the mutant was killed.
-
-```bash
-sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
-```
+#### Build & test options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Source root directory | |
-| `-v, --verbose` | Enable verbose output | |
-| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
-| `-o, --output-dir=PATH` | Directory for output files | `.` |
-| `-m, --mutant=MUTANT` | Mutant string | |
-| `-e, --expected=PATH` | Expected (baseline) test result directory | |
-| `-a, --actual=PATH` | Actual (mutated) test result directory | |
-| `--evaluation-file=PATH` | Output filename for evaluation results | `EvaluationResults` |
-| `--test-state=STATE` | Test state to evaluate: `success`, `build_failure`, `timeout`, `uncovered` | `success` |
+| `-b, --build-dir=PATH` | Build output directory (also searched for `compile_commands.json`) | `.` |
+| `--compiledb=PATH` | Directory containing `compile_commands.json` (overrides `--build-dir`) | |
+| `--build-command=CMD` | Shell command to build the project | **required** |
+| `--test-command=CMD` | Shell command to run tests | **required** |
+| `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
+| `--test-result-extension=EXT` | File extension of test result files (repeatable) | `xml` |
+| `--timeout=SEC` | Test time limit; `0` = no limit, `auto` = 2× baseline run time | `auto` |
+| `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
----
-
-#### `report` — Generate a report
-
-Creates an HTML or XML mutation test report from the evaluation results.
-
-```bash
-sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
-```
+#### Mutation options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Source root directory | |
-| `-v, --verbose` | Enable verbose output | |
-| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
-| `-o, --output-dir=PATH` | Directory for output files (omit to skip file generation) | |
-| `--evaluation-file=PATH` | Mutation test result file to read | |
+| `-s, --scope=SCOPE` | `commit` (changed lines only) or `all` (entire codebase) | `all` |
+| `-t, --extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
+| `-p, --pattern=PATTERN` | Paths or glob patterns to constrain the mutation scope (repeatable) | |
+| `-e, --exclude=PATTERN` | Exclude files/directories matching fnmatch-style patterns (repeatable) | |
+| `-l, --limit=N` | Maximum number of mutants to generate | `10` |
+| `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
+| `--seed=N` | Random seed for mutant selection | random |
+| `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |
+| `--coverage=FILE` | lcov coverage info file; limits mutation to covered lines (repeatable) | |
 
 ---
 
 ## Configuration File
 
-Sentinel supports a YAML configuration file (`sentinel.yaml`) as an alternative to passing all options on the command line. This is especially useful for projects with many options or for sharing a consistent configuration across team members.
+Sentinel supports a YAML configuration file (`sentinel.yaml`) as an alternative to passing all options on the command line.
 
-### Auto-detection
+When invoked, Sentinel looks for `sentinel.yaml` in the current working directory automatically. Use `--config` to specify a different file, or run `sentinel --init` to generate a template.
 
-When `sentinel run` is invoked, Sentinel automatically looks for `sentinel.yaml` in the **current working directory**. To specify a different file, use the `--config` option:
-
-```bash
-sentinel run --config=/path/to/myconfig.yaml
+**Precedence:**
 ```
-
-### Precedence
-
-CLI arguments always take priority over values in the configuration file:
-
-```
-CLI argument  >  sentinel.yaml value  >  built-in default
-```
-
-### Full Template
-
-The following template lists every supported key. All keys are optional — omit any key to use the built-in default or rely on the corresponding CLI option.
-
-```yaml
-# sentinel.yaml — full configuration template
-
-# --- Shared options (all commands) ---
-
-# Source root directory (equivalent to SOURCE_ROOT_PATH positional argument)
-source-root: ./
-
-# Enable verbose logging
-verbose: false
-
-# Enable debug logging
-debug: false
-
-# Workspace directory for all run artifacts
-workspace: ./sentinel_workspace
-
-# Directory for output reports
-output-dir: ./sentinel_output
-
-# Change to this directory before running
-cwd: .
-
-# --- sentinel run options ---
-
-# Build command output directory (contains compile_commands.json by default)
-build-dir: .
-
-# Explicit path to directory containing compile_commands.json (overrides build-dir for DB lookup)
-compiledb: .
-
-# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase)
-scope: all
-
-# Source file extensions to mutate
-extension:
-  - cpp
-  - cxx
-  - cc
-  - c
-  - c++
-  - cu
-
-# Paths or glob patterns to constrain the diff
-pattern: []
-
-# Paths excluded from mutation (fnmatch-style patterns)
-exclude: []
-
-# Maximum number of mutants to generate
-limit: 10
-
-# Shell command to build the source
-build-command: make
-
-# Shell command to execute tests
-test-command: make test
-
-# Directory containing test command output
-test-result-dir: ./test-results
-
-# File extensions of test output files
-test-result-extension:
-  - xml
-
-# lcov-format coverage result files
-coverage: []
-
-# Mutant generator type: 'uniform', 'random', or 'weighted'
-generator: uniform
-
-# Time limit (seconds) for the test command.
-# 0 = no limit, 'auto' = automatically determined from baseline run time.
-timeout: auto
-
-# Seconds to wait after timeout before sending SIGKILL. 0 = disabled.
-kill-after: 60
-
-# Random seed for mutant selection
-seed: 42
-
-# Disable the terminal status line even when stdout is a TTY
-no-statusline: false
-
-# Mutation operators to use. Omit to use all operators.
-# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI
-operator:
-  - AOR
-  - BOR
-  - LCR
-  - ROR
-  - SDL
-  - SOR
-  - UOI
+CLI argument  >  sentinel.yaml  >  built-in default
 ```
 
 ### Minimal Example
@@ -401,11 +212,107 @@ exclude:
   - "*/test/*"
 ```
 
+### Full Template
+
+Run `sentinel --init` to write a fully commented template to the current directory, or see the template below.
+
+```yaml
+# sentinel.yaml — full configuration template
+# CLI arguments always take priority over values in this file.
+
+# Root of the source tree to test
+# source-root: ./
+
+# Enable verbose or debug logging
+# verbose: false
+# debug: false
+
+# Directory for all run artifacts
+# workspace: ./sentinel_workspace
+
+# Directory to write HTML/XML reports
+# output-dir: ./sentinel_output
+
+# Change to this directory before running
+# cwd: .
+
+# --- Build & test ---
+
+# Build output directory (also searched for compile_commands.json by default)
+# build-dir: .
+
+# Directory containing compile_commands.json (overrides build-dir)
+# compiledb: .
+
+# Shell command to build the project
+# build-command: make
+
+# Shell command to run tests
+# test-command: make test
+
+# Directory where the test command writes result files
+# test-result-dir: ./test-results
+
+# File extensions of test result files
+# test-result-extension:
+#   - xml
+
+# Test time limit in seconds (0 = no limit, auto = 2x baseline run time)
+# timeout: auto
+
+# Seconds after timeout before sending SIGKILL (0 = disabled)
+# kill-after: 60
+
+# --- Mutation ---
+
+# Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)
+# scope: all
+
+# Source file extensions to mutate
+# extension:
+#   - cpp
+#   - cxx
+#   - cc
+#   - c
+#   - c++
+#   - cu
+
+# Paths or glob patterns to constrain the mutation scope
+# pattern: []
+
+# Exclude files/directories matching fnmatch-style patterns
+# exclude: []
+
+# Maximum number of mutants to generate
+# limit: 10
+
+# Mutant selection strategy: 'uniform', 'random', or 'weighted'
+# generator: uniform
+
+# Random seed for mutant selection
+# seed: 42
+
+# Mutation operators to apply (defaults to all)
+# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI
+# operator:
+#   - AOR
+#   - BOR
+#   - LCR
+#   - ROR
+#   - SDL
+#   - SOR
+#   - UOI
+
+# lcov coverage info files; limits mutation to covered lines
+# coverage: []
+
+# Disable the terminal status line even when stdout is a TTY
+# no-statusline: false
+```
+
 ---
 
 ## Mutation Operators
-
-Sentinel supports the following mutation operators:
 
 | Operator | Name | Description | Example |
 |----------|------|-------------|---------|
@@ -413,7 +320,7 @@ Sentinel supports the following mutation operators:
 | **BOR** | Bitwise Operator Replacement | Replaces bitwise operators | `a & b` → `a \| b` |
 | **LCR** | Logical Connector Replacement | Replaces logical operators | `a && b` → `a \|\| b` |
 | **ROR** | Relational Operator Replacement | Replaces relational operators | `a < b` → `a > b` |
-| **SDL** | Statement Deletion | Deletes a statement | `return x;` → *(deleted)* |
+| **SDL** | Statement Deletion | Deletes a statement body | `return x;` → *(deleted)* |
 | **SOR** | Shift Operator Replacement | Replaces shift operators | `a << b` → `a >> b` |
 | **UOI** | Unary Operator Insertion | Inserts a unary operator | `x` → `-x` |
 
@@ -434,6 +341,7 @@ To build with tests and static analysis enabled:
 ```bash
 cmake -DENABLE_TEST=ON .
 make all -j
+./test/unittest
 ```
 
 This enables:

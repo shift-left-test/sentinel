@@ -17,284 +17,259 @@
 namespace sentinel {
 
 /**
- * @brief sentinel commandline 'run' subcommand class.
+ * @brief Runs the full mutation testing pipeline in standalone mode.
+ *
+ * Orchestrates all phases: build, baseline test, mutant generation,
+ * per-mutant build/test/evaluate, and report generation.
  */
 class CommandRun : public Command {
  public:
   /**
-   * @brief constructor
+   * @brief Constructor — registers all command-line options with @p parser.
    */
   explicit CommandRun(args::Group& parser);
 
+  /**
+   * @brief Loads the YAML config file and applies @c --cwd / log-level settings.
+   *
+   * Called before run(). Handles @c --init early exit.
+   */
   void init() override;
 
+  /**
+   * @brief Executes the mutation testing pipeline.
+   *
+   * @return 0 on success, non-zero on error.
+   */
   int run() override;
 
   /**
-   * @brief restore changed file by copying file from backup folder
-   *        to source folder
+   * @brief Restores source files modified by a mutant from the backup directory.
    *
-   * @param backup location
-   * @param srcRoot source location
+   * @param backup  Path to the backup directory containing original files.
+   * @param srcRoot Path to the source root where files are restored.
    */
   static void restoreBackup(const std::string& backup, const std::string& srcRoot);
 
  protected:
   /**
-   * @brief set signal handler
+   * @brief Installs signal handlers that restore the backup on abnormal exit.
    */
   virtual void setSignalHandler();
 
   /**
-   * @brief path to the YAML configuration file (--config option)
+   * @brief Option group for run-control flags (--config, --init, --no-statusline).
+   */
+  args::Group mGroupRunCtrl;
+
+  /**
+   * @brief Option group for build and test flags.
+   */
+  args::Group mGroupBuildTest;
+
+  /**
+   * @brief Option group for mutation-related flags.
+   */
+  args::Group mGroupMutation;
+
+  /**
+   * @brief Path to the YAML configuration file supplied via --config.
    */
   args::ValueFlag<std::string> mConfigFile;
 
   /**
-   * @brief configuration loaded from the YAML file (populated in init())
+   * @brief Configuration loaded from the YAML file; populated in init().
    */
   std::optional<SentinelConfig> mConfig;
 
   /**
-   * @brief copy test results file with given extensions from FROM to TO
+   * @brief Copies test result files with the given extensions from @p from to @p to.
    *
-   * @param from location
-   * @param to location
-   * @param exts extensions
+   * @param from Source directory containing test result files.
+   * @param to   Destination directory to copy files into.
+   * @param exts File extensions to copy (e.g. {"xml", "XML"}).
    */
   void copyTestReportTo(const std::string& from, const std::string& to, const std::vector<std::string>& exts);
 
   /**
-   * @brief preprocess working directory
+   * @brief Ensures @p target exists as a directory and returns its canonical path.
    *
-   * @param target directory
-   * @param targetExists or not
-   * @param isFilledDir or not
-   * @return absolute path of target directory
+   * @param target      Directory path to prepare.
+   * @param targetExists Set to @c true if the directory already existed, @c false otherwise.
+   * @param isFilledDir  When @c false, throws if the directory is non-empty.
+   * @return Canonical absolute path of @p target.
    */
   std::string preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir);
 
   /**
-   * @brief return source root path
-   * @return source root path
+   * @brief Returns the resolved source root path (CLI > YAML > default).
    */
   virtual std::string getSourceRoot();
 
   /**
-   * @brief build directory
-   * @return build directory
+   * @brief Returns the resolved build directory path.
    */
   virtual std::string getBuildDir();
 
   /**
-   * @brief get directory containing compile_commands.json file
-   * @return directory containing compile_commands.json file
+   * @brief Returns the directory that contains compile_commands.json.
    */
   virtual std::string getCompileDbDir();
 
   /**
-   * @brief get work directory
-   * @return work directory
+   * @brief Returns the resolved workspace directory path.
    */
   virtual std::string getWorkDir();
 
   /**
-   * @brief get output directory
-   * @return output directory
+   * @brief Returns the resolved report output directory path.
    */
   virtual std::string getOutputDir();
 
   /**
-   * @brief get test result directory
-   * @return test result directory
+   * @brief Returns the directory where the test command writes result files.
    */
   virtual std::string getTestResultDir();
 
   /**
-   * @brief get build command
-   * @return build command
+   * @brief Returns the shell command used to build the project.
    */
   virtual std::string getBuildCmd();
 
   /**
-   * @brief get test command
-   * @return test command
+   * @brief Returns the shell command used to run the test suite.
    */
   virtual std::string getTestCmd();
 
   /**
-   * @brief get mutant generator type
-   * @return mutant generator type
+   * @brief Returns the mutant selection strategy name (uniform/random/weighted).
    */
   virtual std::string getGenerator();
 
   /**
-   * @brief get test result file extensions
-   * @return test result file extension list
+   * @brief Returns the list of test result file extensions to collect.
    */
   virtual std::vector<std::string> getTestResultFileExts();
 
   /**
-   * @brief get file extensions as target for mutation
-   * @return target file extension list
+   * @brief Returns the list of source file extensions eligible for mutation.
    */
   virtual std::vector<std::string> getTargetFileExts();
 
   /**
-   * @brief get paths or pattersn to constrain diff
-   * @return list of paths or patterns
+   * @brief Returns the list of paths or glob patterns that constrain the mutation scope.
    */
   virtual std::vector<std::string> getPatterns();
 
   /**
-   * @brief get excluded paths
-   * @return list of excluded paths
+   * @brief Returns the list of fnmatch-style patterns for paths excluded from mutation.
    */
   virtual std::vector<std::string> getExcludePaths();
 
   /**
-   * @brief get coverage files
-   * @return list of coverage files
+   * @brief Returns the list of lcov coverage info files.
    */
   virtual std::vector<std::string> getCoverageFiles();
 
   /**
-   * @brief get mutation scope
-   * @return mutation scope
+   * @brief Returns the mutation scope ("commit" or "all").
    */
   virtual std::string getScope();
 
   /**
-   * @brief get maximum number of mutant to be generated
-   * @return mutant limit
+   * @brief Returns the maximum number of mutants to generate.
    */
   virtual size_t getMutantLimit();
 
   /**
-   * @brief get test timeout
-   * @return test timeout
+   * @brief Returns the test time limit string ("auto", "0", or a positive integer).
    */
   virtual std::string getTestTimeLimit();
 
   /**
-   * @brief get duration after which SIGKILL is sent to timeout-ed test process
-   * @return time after which test process is killed forcefully
+   * @brief Returns the post-timeout SIGKILL delay in seconds as a string.
    */
   virtual std::string getKillAfter();
 
   /**
-   * @brief get random seed
-   * @return random seed
+   * @brief Returns the random seed for mutant selection.
    */
   virtual unsigned getSeed();
 
   /**
-   * @brief get selected mutation operators
-   * @return list of operator names (empty means all operators)
+   * @brief Returns the list of mutation operator names to apply.
+   *
+   * An empty list means all operators are used.
    */
   virtual std::vector<std::string> getOperators();
 
   /**
-   * @brief get verbose status
-   * @return verbose status
+   * @brief Returns whether verbose output is enabled.
    */
   virtual bool getVerbose();
 
- protected:
-  /**
-   * @brief flag to generate a sentinel.yaml configuration template and exit
-   */
+  // Run control options (registered to mGroupRunCtrl)
+
+  /** @brief Flag: write a sentinel.yaml template and exit. */
   args::Flag mInit;
 
-  /**
-   * @brief flag to disable the terminal status line
-   */
+  /** @brief Flag: disable the live terminal status line. */
   args::Flag mNoStatusLine;
 
-  /**
-   * @brief build directory
-   */
+  // Build & test options (registered to mGroupBuildTest)
+
+  /** @brief Build output directory; default location for compile_commands.json. */
   args::ValueFlag<std::string> mBuildDir;
 
-  /**
-   * @brief directory containing compile_commands.json file
-   */
+  /** @brief Explicit directory containing compile_commands.json. */
   args::ValueFlag<std::string> mCompileDbDir;
 
-  /**
-   * @brief test result directory
-   */
-  args::ValueFlag<std::string> mTestResultDir;
-
-  /**
-   * @brief build command
-   */
+  /** @brief Shell command to build the project. */
   args::ValueFlag<std::string> mBuildCmd;
 
-  /**
-   * @brief test command
-   */
+  /** @brief Shell command to run the test suite. */
   args::ValueFlag<std::string> mTestCmd;
 
-  /**
-   * @brief mutant generator type
-   */
-  args::ValueFlag<std::string> mGenerator;
+  /** @brief Directory where the test command writes result files. */
+  args::ValueFlag<std::string> mTestResultDir;
 
-  /**
-   * @brief extensions of test result files
-   */
+  /** @brief File extensions of test result files to collect. */
   args::ValueFlagList<std::string> mTestResultFileExts;
 
-  /**
-   * @brief target file extensions for mutation
-   */
-  args::ValueFlagList<std::string> mExtensions;
-
-  /**
-   * @brief paths or patterns to constrain diff
-   */
-  args::ValueFlagList<std::string> mPatterns;
-
-  /**
-   * @brief paths excluded from mutation
-   */
-  args::ValueFlagList<std::string> mExcludes;
-
-  /**
-   * @brief list of coverage files
-   */
-  args::ValueFlagList<std::string> mCoverageFiles;
-
-  /**
-   * @brief mutation scope
-   */
-  args::ValueFlag<std::string> mScope;
-
-  /**
-   * @brief maximum number of mutants to be generated
-   */
-  args::ValueFlag<size_t> mLimit;
-
-  /**
-   * @brief test timeout
-   */
+  /** @brief Test time limit as a string ("auto", "0", or seconds). */
   args::ValueFlag<std::string> mTimeLimitStr;
 
-  /**
-   * @brief time after which SIGKILL is sent to timeout-ed test process
-   */
+  /** @brief Seconds to wait after timeout before sending SIGKILL. */
   args::ValueFlag<std::string> mKillAfterStr;
 
-  /**
-   * @brief random seed
-   */
+  // Mutation options (registered to mGroupMutation)
+
+  /** @brief Mutation scope: "commit" or "all". */
+  args::ValueFlag<std::string> mScope;
+
+  /** @brief Source file extensions to mutate. */
+  args::ValueFlagList<std::string> mExtensions;
+
+  /** @brief Paths or glob patterns to constrain the mutation scope. */
+  args::ValueFlagList<std::string> mPatterns;
+
+  /** @brief fnmatch-style patterns for paths excluded from mutation. */
+  args::ValueFlagList<std::string> mExcludes;
+
+  /** @brief Maximum number of mutants to generate. */
+  args::ValueFlag<size_t> mLimit;
+
+  /** @brief Mutant selection strategy: "uniform", "random", or "weighted". */
+  args::ValueFlag<std::string> mGenerator;
+
+  /** @brief Random seed for mutant selection. */
   args::ValueFlag<unsigned> mSeed;
 
-  /**
-   * @brief selected mutation operators
-   */
+  /** @brief Mutation operators to apply; empty means all operators. */
   args::ValueFlagList<std::string> mOperators;
+
+  /** @brief lcov coverage info files; limits mutation to covered lines. */
+  args::ValueFlagList<std::string> mCoverageFiles;
 };
 
 }  // namespace sentinel
