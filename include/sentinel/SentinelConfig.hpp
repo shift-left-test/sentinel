@@ -70,6 +70,8 @@ struct SentinelConfig {
   std::optional<std::vector<std::string>> operators;
   /// Disable the terminal status line even when stdout is a TTY (--no-statusline).
   std::optional<bool> noStatusLine;
+  /// Suppress build/test log output to terminal; show only status line progress (--silent).
+  std::optional<bool> silent;
 
   /**
    * @brief Load configuration from a YAML file.

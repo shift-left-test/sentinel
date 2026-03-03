@@ -23,10 +23,11 @@ class Subprocess {
    * @param sec       Timeout in seconds (0 = no timeout).
    * @param secForKill  Seconds after timeout before SIGKILL (0 = disabled).
    * @param logFile   If non-empty, tee stdout/stderr to this file path.
+   * @param silent    If true, suppress stdout/stderr output to terminal (still written to logFile).
    * @throw runtime_error when another Subprocess already running.
    */
   explicit Subprocess(const std::string& cmd, std::size_t sec = 0, std::size_t secForKill = 0,
-                      const std::string& logFile = "");
+                      const std::string& logFile = "", bool silent = false);
 
   /**
    * @brief excute cmd
@@ -55,6 +56,7 @@ class Subprocess {
   std::size_t mSec;
   std::size_t mSecForKill;
   std::string mLogFile;
+  bool mSilent = false;
   bool mTimedOut = false;
   int mStatus = -1;
   static pid_t childPid;

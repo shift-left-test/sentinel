@@ -117,6 +117,9 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["no-statusline"]) {
       cfg.noStatusLine = root["no-statusline"].as<bool>();
     }
+    if (root["silent"]) {
+      cfg.silent = root["silent"].as<bool>();
+    }
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }

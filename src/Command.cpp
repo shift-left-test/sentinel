@@ -17,7 +17,8 @@ const char* cCommandLoggerName = "Command";
 
 Command::Command(args::Group& parser) :
     mSourceRoot(parser, "SOURCE_ROOT_PATH", "Root of the source tree to test.", "."),
-    mIsVerbose(parser, "verbose", "Enable verbose output (INFO level and above).", {'v', "verbose"}),
+    mIsVerbose(parser, "verbose", "Enable verbose output (INFO level and above).", {"verbose"}),
+    mSilent(parser, "silent", "Suppress build/test subprocess output to the terminal.", {"silent"}),
     mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}),
     mWorkDir(parser, "PATH", "Directory for all run artifacts.", {'w', "workspace"}, "./sentinel_workspace"),
     mOutputDir(parser, "PATH", "Directory to write HTML/XML reports.", {'o', "output-dir"}, ""),

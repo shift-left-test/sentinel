@@ -49,6 +49,11 @@ Prompts for confirmation if the file already exists.
 .TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
+.TP
+\fB\-\-silent\fR
+Suppress build/test log output to the terminal.
+The status line still shows overall progress. Useful for keeping the terminal clean
+during long runs. Build and test output is still written to the workspace log files.
 .SS Build & test options
 .TP
 \fB\-b\fR \fIPATH\fR, \fB\-\-build\-dir\fR=\fIPATH\fR
@@ -192,6 +197,9 @@ List of lcov coverage info files.
 .TP
 \fBno-statusline\fR
 Disable the terminal status line (boolean).
+.TP
+\fBsilent\fR
+Suppress build/test log output to the terminal (boolean).
 .SH EXAMPLES
 Run mutation testing on a CMake project:
 .PP

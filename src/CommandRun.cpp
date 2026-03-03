@@ -150,6 +150,9 @@ static const char* const kYamlTemplate =
     "# Disable the terminal status line even when stdout is a TTY\n"
     "# no-statusline: false\n"
     "\n"
+    "# Suppress build/test log output to the terminal (status line still shows progress)\n"
+    "# silent: false\n"
+    "\n"
     "# Mutation operators to use. Omit to use all operators.\n"
     "# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI\n"
     "# operator:\n"
@@ -268,13 +271,14 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
                                       const std::string& generator, size_t timeout, size_t killAfter,
                                       unsigned seed, const std::vector<std::string>& operators,
                                       const std::string& outputDir, bool verbose, bool debug,
-                                      bool noStatusLine) {
+                                      bool noStatusLine, bool silent) {
   YAML::Emitter out;
   out << YAML::BeginMap;
   out << YAML::Key << "source-root" << YAML::Value << sourceRoot;
   out << YAML::Key << "verbose" << YAML::Value << verbose;
   out << YAML::Key << "debug" << YAML::Value << debug;
   out << YAML::Key << "no-statusline" << YAML::Value << noStatusLine;
+  out << YAML::Key << "silent" << YAML::Value << silent;
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
@@ -427,6 +431,12 @@ int CommandRun::run() {
     outputDirStr = getOutputDir();
   }
 
+  // Determine silent mode (suppress build/test subprocess output to terminal)
+  bool silent = mSilent.Get() || (mConfig && mConfig->silent.value_or(false));
+  if (resuming) {
+    silent = activeConfig.silent.value_or(false);
+  }
+
   // Validate required options
   if (buildCmd.empty()) {
     throw InvalidArgumentException("Option --build-command is required to be not empty");
@@ -543,7 +553,7 @@ int CommandRun::run() {
 
       // build
       logger->info("Building original source code ...");
-      Subprocess origBuildProc(cmdPrefix + buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string());
+      Subprocess origBuildProc(cmdPrefix + buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
       if (!origBuildProc.isSuccessfulExit()) {
         throw std::runtime_error("Build FAIL.");
@@ -555,7 +565,7 @@ int CommandRun::run() {
       statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
       fs::remove_all(testResultDir);
       Subprocess firstTestProc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
-                               (ws.getOriginalDir() / "test.log").string());
+                               (ws.getOriginalDir() / "test.log").string(), silent);
 
       auto start = std::chrono::steady_clock::now();
       firstTestProc.execute();
@@ -596,7 +606,7 @@ int CommandRun::run() {
                                        diffPatterns, excludePaths, mutantLimit, buildCmd, testCmd, testResultDirStr,
                                        testResultFileExts, coverageFiles, generatorStr, mTimeLimit, mKillAfter,
                                        randomSeed, operators, outputDirStr, mIsVerbose.Get(), mIsDebug.Get(),
-                                       disableStatusLine));
+                                       disableStatusLine, silent));
     }
 
     // Restore any leftover backup from a previously interrupted run
@@ -695,7 +705,7 @@ int CommandRun::run() {
 
       // Build
       logger->info(fmt::format("Building mutant #{} ...", id));
-      Subprocess buildProc(cmdPrefix + buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string());
+      Subprocess buildProc(cmdPrefix + buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string(), silent);
       buildProc.execute();
       std::string testState = "success";
       bool buildSuccess = buildProc.isSuccessfulExit();
@@ -705,7 +715,7 @@ int CommandRun::run() {
         logger->info("Building SUCCESS. Testing ...");
         fs::remove_all(testResultDir);
         Subprocess proc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
-                        (ws.getMutantDir(id) / "test.log").string());
+                        (ws.getMutantDir(id) / "test.log").string(), silent);
         proc.execute();
         bool testTimeout = proc.isTimedOut();
         if (testTimeout) {

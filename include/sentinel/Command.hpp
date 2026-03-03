@@ -51,6 +51,11 @@ class Command {
   args::Flag mIsVerbose;
 
   /**
+   * @brief silent option — suppress build/test subprocess output to terminal
+   */
+  args::Flag mSilent;
+
+  /**
    * @brief debug option
    */
   args::Flag mIsDebug;

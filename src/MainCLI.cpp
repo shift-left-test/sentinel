@@ -20,7 +20,7 @@ int MainCLI(int argc, char** argv) {
                               "https://github.com/shift-left-test/sentinel");
 
   args::HelpFlag h(parser, "help", "Display this help menu.", {'h', "help"});
-  args::HelpFlag v(parser, "version", "Display the program version.", {"version"});
+  args::HelpFlag v(parser, "version", "Display the program version.", {'v', "version"});
 
   sentinel::CommandRun mainCommand(parser);
 

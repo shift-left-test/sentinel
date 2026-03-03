@@ -155,6 +155,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--config=PATH` | YAML config file path | `sentinel.yaml` (auto-detected) |
 | `--init` | Write a `sentinel.yaml` config template and exit | |
 | `--no-statusline` | Disable the live terminal status line | |
+| `--silent` | Suppress build/test log output; status line still shows progress | |
 
 #### Build & test options
 
@@ -308,6 +309,9 @@ Run `sentinel --init` to write a fully commented template to the current directo
 
 # Disable the terminal status line even when stdout is a TTY
 # no-statusline: false
+
+# Suppress build/test log output to the terminal (status line still shows progress)
+# silent: false
 ```
 
 ---

@@ -24,8 +24,9 @@ std::size_t Subprocess::killAfter;
 bool Subprocess::timedOut;
 int Subprocess::pendSig;
 
-Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill, const std::string& logFile) :
-    mCmd(cmd), mSec(sec), mSecForKill(secForKill), mLogFile(logFile) {
+Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill, const std::string& logFile,
+                       bool silent) :
+    mCmd(cmd), mSec(sec), mSecForKill(secForKill), mLogFile(logFile), mSilent(silent) {
   if (Subprocess::childPid != 0) {
     throw std::runtime_error("Another subprocess is running. (Problem with sentinel logic)");
   }
@@ -138,7 +139,9 @@ int Subprocess::execute() {
     while (waitpid(pid, &status, WNOHANG) == 0) {
       auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
       if (nb > 0) {
-        std::cout << std::string(static_cast<char*>(buffer), nb);
+        if (!mSilent) {
+          std::cout << std::string(static_cast<char*>(buffer), nb);
+        }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);
         }
@@ -149,7 +152,9 @@ int Subprocess::execute() {
     {
       ssize_t nb = 0;
       while ((nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ)) > 0) {
-        std::cout << std::string(static_cast<char*>(buffer), nb);
+        if (!mSilent) {
+          std::cout << std::string(static_cast<char*>(buffer), nb);
+        }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);
         }
