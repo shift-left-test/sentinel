@@ -15,7 +15,7 @@ namespace sentinel {
 
 const char* cCommandLoggerName = "Command";
 
-Command::Command(args::Subparser& parser) :
+Command::Command(args::Group& parser) :
     mSourceRoot(parser, "SOURCE_ROOT_PATH", "source root directory.", "."),
     mIsVerbose(parser, "verbose", "Show verbose messages (INFO and above).", {'v', "verbose"}),
     mIsDebug(parser, "debug", "Show debug messages (all log levels).", {"debug"}),

@@ -3,133 +3,11 @@
 .SH NAME
 sentinel \- the mutation testing tool
 .SH SYNOPSIS
-sentinel COMMAND {OPTIONS}
+sentinel [SOURCE_ROOT_PATH] {OPTIONS}
 .SH DESCRIPTION
 sentinel is the mutation testing tool for C/C++ projects.
-.SH COMMAND
-.SS
-populate
-Identify mutable test targets and application methods in 'git' and print a list
-.SS
-mutate
-Apply the selected 'mutable' to the source. The original file is backed up in 'workspace'
-.SS
-evaluate
-Compare the test result with mutable applied and the test result not applied
-.SS
-report
-Create a mutation test report based on the'evaluate' result and source code
-.SS
-run
-Run mutation test in standalone mode
-.SS
--h, --help
-Display help menu. Use 'sentinal COMMAND --help' to see help for each command.
 .SH OPTIONS
-.SS populate: sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
-Identify mutable test targets and application methods in 'git' and print a list
-.TP
-SOURCE_ROOT_PATH
-source root directory.
-.TP
--v, --verbose
-Verbosity
-.TP
--w[PATH], --workspace=[PATH]
-Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
-.TP
--o[PATH], --output-dir=[PATH]
-Directory for saving output. Default: .
-.TP
--b[PATH], --build-dir=[PATH]
-Directory where compile_commands.json file exists. Default: .
-.TP
--s[SCOPE], --scope=[SCOPE]
-Diff scope, one of ['commit', 'all']. Default: all
-.TP
--t[EXTENSION...],
-.TP
---extension=[EXTENSION...]
-Extentions of source file which could be mutated.
-.TP
--e[PATH...], --exclude=[PATH...]
-exclude file or path
-.TP
--l[COUNT], --limit=[COUNT]
-Maximum generated mutable count. Default: 10
-.TP
---mutants-file-name=[PATH]
-Populated result file name which will be created at output-dir. Default: mutables.db
-.TP
---generator=[gen]
-Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default: uniform
-.TP
---seed=[SEED]
-Select random seed. Default: 1942447250
-.SS mutate: sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
-Apply the selected 'mutable' to the source. The original file is backed up in 'workspace'
-.TP
-SOURCE_ROOT_PATH
-source root directory.
-.TP
--v, --verbose
-Verbosity
-.TP
--w[PATH], --workspace=[PATH]
-Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
-.TP
--o[PATH], --output-dir=[PATH]
-Directory for saving output. Default: .
-.TP
--m[MUTANT], --mutant=[MUTANT]
-Mutant string
-.SS evaluate: sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
-Compare the test result with mutable applied and the test result not applied
-.TP
-SOURCE_ROOT_PATH
-source root directory.
-.TP
--v, --verbose
-Verbosity
-.TP
--w[PATH], --workspace=[PATH]
-Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
-.TP
--o[PATH], --output-dir=[PATH]
-Directory for saving output. Default: .
-.TP
--m[mutant], --mutant=[mutant]
-Mutant string
-.TP
--e[PATH], --expected=[PATH]
-Expected result directory
-.TP
--a[PATH], --actual=[PATH]
-Actual result directory
-.TP
---evaluation-file=[FILEPATH]
-Evaluated output filename which will be joined with output-dir. Default: EvaluationResults
-.TP
---test-state=[TEST_STUATE]
-Select the state of the test to be evaluated, one of ['success', 'build_failure', 'timeout', 'uncovered']. Default: success
-.SS report: sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
-Create a mutation test report based on the'evaluate' result and source code
-.TP
-SOURCE_ROOT_PATH
-source root directory.
-.TP
--v, --verbose
-Verbosity
-.TP
--w[PATH], --workspace=[PATH]
-Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
-.TP
--o[PATH], --output-dir=[PATH]
-Directory for saving output. If output-dir is not given, pass generating output file.
-.TP
---evaluation-file=[PATH]
-Mutation test result file
-.SS run: sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
+.SS sentinel [SOURCE_ROOT_PATH] {OPTIONS}
 Run mutation test in standalone mode
 .TP
 SOURCE_ROOT_PATH
@@ -199,7 +77,7 @@ By default, a live status line is shown at the bottom of the terminal displaying
 The status line is automatically suppressed when output is piped or redirected.
 .SH CONFIGURATION FILE
 Sentinel supports a YAML configuration file (\fBsentinel.yaml\fR) as an alternative to passing all options on the command line.
-When \fBsentinel run\fR is invoked, it automatically looks for \fBsentinel.yaml\fR in the current working directory.
+When \fBsentinel\fR is invoked, it automatically looks for \fBsentinel.yaml\fR in the current working directory.
 Use \fB--config\fR to specify a different file.
 .PP
 CLI arguments always take priority over values in the configuration file.

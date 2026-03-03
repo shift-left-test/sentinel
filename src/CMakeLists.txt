@@ -16,8 +16,7 @@ build_static_library(
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp util/Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
-       Command.cpp CommandPopulate.cpp CommandMutate.cpp CommandEvaluate.cpp
-       CommandReport.cpp CommandRun.cpp SentinelConfig.cpp MainCLI.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
+       Command.cpp CommandRun.cpp SentinelConfig.cpp MainCLI.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt yaml-cpp ${LIBGIT2_LIBRARIES} stdc++fs args

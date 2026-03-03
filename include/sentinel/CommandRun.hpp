@@ -24,7 +24,7 @@ class CommandRun : public Command {
   /**
    * @brief constructor
    */
-  explicit CommandRun(args::Subparser& parser);
+  explicit CommandRun(args::Group& parser);
 
   void init() override;
 

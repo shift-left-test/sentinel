@@ -161,7 +161,7 @@ static const char* const kYamlTemplate =
     "#   - SOR\n"
     "#   - UOI\n";
 
-CommandRun::CommandRun(args::Subparser& parser) :
+CommandRun::CommandRun(args::Group& parser) :
     Command(parser),
     mConfigFile(parser, "PATH", "Path to a YAML configuration file (default: sentinel.yaml in current directory)", {"config"}),
     mInit(parser, "init", "Generate a sentinel.yaml configuration template in the current directory and exit",

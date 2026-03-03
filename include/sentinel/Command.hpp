@@ -20,7 +20,7 @@ class Command {
   /**
    * @brief constructor
    */
-  explicit Command(args::Subparser& parser);
+  explicit Command(args::Group& parser);
   /**
    * @brief destructor
    */
