@@ -310,4 +310,121 @@ TEST_F(GitRepositoryTest, testIsTarget) {
   EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));
 }
 
+// ---------------------------------------------------------------------------
+// Multi-repo tests (Android-style workspace with multiple nested git repos)
+// ---------------------------------------------------------------------------
+
+TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedRepos) {
+  // Create a workspace directory that is NOT itself a git repo.
+  // Two nested git repos live inside it (simulates an Android repo workspace).
+  fs::path multiRoot = fs::temp_directory_path() / "SENTINEL_MULTIREPO_TEST_DIR";
+  fs::remove_all(multiRoot);
+  fs::create_directories(multiRoot);
+
+  fs::path compA = multiRoot / "comp_a";
+  fs::path compB = multiRoot / "comp_b";
+
+  // Repo A: two commits so "commit" scope yields the delta of the second commit.
+  auto repoA = std::make_shared<GitHarness>(compA);
+  repoA->addFile("a.cpp", "int funcA() {\n    return 1;\n}\n");
+  repoA->stageFile({"a.cpp"});
+  repoA->commit("init A");
+  repoA->addCode("a.cpp", "int extra = 42;\n", 3, 1);
+  repoA->stageFile({"a.cpp"});
+  repoA->commit("add extra");
+
+  // Repo B: same pattern.
+  auto repoB = std::make_shared<GitHarness>(compB);
+  repoB->addFile("b.cpp", "int funcB() {\n    return 2;\n}\n");
+  repoB->stageFile({"b.cpp"});
+  repoB->commit("init B");
+  repoB->addCode("b.cpp", "int extra2 = 99;\n", 3, 1);
+  repoB->stageFile({"b.cpp"});
+  repoB->commit("add extra2");
+
+  // multiRoot has no .git; getSourceLines must still find both nested repos.
+  GitRepository gitRepo(multiRoot);
+  SourceLines sourceLines = gitRepo.getSourceLines("commit");
+
+  // Each repo contributes exactly 1 changed line (the inserted line 3).
+  EXPECT_EQ(sourceLines.size(), 2u);
+
+  fs::path fileA = fs::canonical(compA / "a.cpp");
+  fs::path fileB = fs::canonical(compB / "b.cpp");
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(fileA, 3)), 1);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(fileB, 3)), 1);
+
+  fs::remove_all(multiRoot);
+}
+
+TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedReposAllScope) {
+  // Same workspace layout, scope "all" — every line of every tracked file is returned.
+  fs::path multiRoot = fs::temp_directory_path() / "SENTINEL_MULTIREPO_ALL_TEST_DIR";
+  fs::remove_all(multiRoot);
+  fs::create_directories(multiRoot);
+
+  fs::path compA = multiRoot / "comp_a";
+  fs::path compB = multiRoot / "comp_b";
+
+  auto repoA = std::make_shared<GitHarness>(compA);
+  repoA->addFile("a.cpp", "int funcA() {\n    return 1;\n}\n");
+  repoA->stageFile({"a.cpp"});
+  repoA->commit("init A");
+
+  auto repoB = std::make_shared<GitHarness>(compB);
+  repoB->addFile("b.cpp", "int funcB() {\n    return 2;\n}\n");
+  repoB->stageFile({"b.cpp"});
+  repoB->commit("init B");
+
+  GitRepository gitRepo(multiRoot);
+  SourceLines sourceLines = gitRepo.getSourceLines("all");
+
+  // a.cpp has 3 lines, b.cpp has 3 lines → 6 total.
+  EXPECT_EQ(sourceLines.size(), 6u);
+
+  // Lines from both files must be present.
+  fs::path fileA = fs::canonical(compA / "a.cpp");
+  fs::path fileB = fs::canonical(compB / "b.cpp");
+  EXPECT_GT(std::count_if(sourceLines.begin(), sourceLines.end(),
+                          [&](const SourceLine& sl) { return sl.getPath() == fileA; }),
+            0);
+  EXPECT_GT(std::count_if(sourceLines.begin(), sourceLines.end(),
+                          [&](const SourceLine& sl) { return sl.getPath() == fileB; }),
+            0);
+
+  fs::remove_all(multiRoot);
+}
+
+TEST_F(GitRepositoryTest, testSourceRootFilterExcludesSiblingDirs) {
+  // sourceRoot is a subdirectory of the single git repo.
+  // Files in sibling directories of sourceRoot must NOT appear in source lines.
+  fs::path subdir = repo_name / "target_subdir";
+  fs::path sibling = repo_name / "sibling_subdir";
+  fs::create_directories(subdir);
+  fs::create_directories(sibling);
+
+  repo->addFile("target_subdir/foo.cpp", "int a = 1;\n");
+  repo->addFile("sibling_subdir/bar.cpp", "int b = 2;\n");
+  repo->stageFile({"target_subdir/foo.cpp", "sibling_subdir/bar.cpp"});
+  repo->commit("add files");
+
+  // Use target_subdir as sourceRoot — sibling_subdir/bar.cpp must be excluded.
+  GitRepository gitRepo(subdir);
+  SourceLines sourceLines = gitRepo.getSourceLines("all");
+
+  bool hasFoo = false;
+  bool hasBar = false;
+  for (const auto& sl : sourceLines) {
+    std::string p = sl.getPath().string();
+    if (p.find("foo.cpp") != std::string::npos) {
+      hasFoo = true;
+    }
+    if (p.find("bar.cpp") != std::string::npos) {
+      hasBar = true;
+    }
+  }
+  EXPECT_TRUE(hasFoo);
+  EXPECT_FALSE(hasBar);
+}
+
 }  // namespace sentinel
