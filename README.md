@@ -15,7 +15,6 @@
 - [Installation](#installation)
 - [Usage](#usage)
   - [Workflow Overview](#workflow-overview)
-  - [GUI Mode](#gui-mode)
   - [Command Reference](#command-reference)
 - [Mutation Operators](#mutation-operators)
 - [Supported Test Runners](#supported-test-runners)
@@ -122,14 +121,6 @@ find mutants                 generate report
 | 3. Check   | `evaluate` | Compare test results with and without the mutant |
 | 4. Report  | `report`   | Generate an HTML/XML report from results         |
 | All-in-one | `run`      | Execute all steps in standalone mode             |
-
-### GUI Mode
-
-The easiest way to get started is the text-based UI, which guides you through all options interactively:
-
-```bash
-sentinel gui
-```
 
 ### Command Reference
 

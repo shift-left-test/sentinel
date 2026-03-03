@@ -6,7 +6,6 @@
 #include <fmt/core.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <term.h>
 #include <experimental/filesystem>
 #include <algorithm>
 #include <chrono>

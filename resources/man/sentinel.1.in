@@ -23,9 +23,6 @@ Create a mutation test report based on the'evaluate' result and source code
 run
 Run mutation test in standalone mode
 .SS
-gui
-Run sentinel in GUI mode
-.SS
 -h, --help
 Display help menu. Use 'sentinal COMMAND --help' to see help for each command.
 .SH OPTIONS
@@ -188,8 +185,6 @@ Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is no
 .TP
 --seed=[SEED]
 Select random seed. Default: random
-.SS gui: sentinel gui
-Run sentinel in GUI mode
 .SH REPORTING BUGS
 sentinel issue tracker: <https://github.com/shift-left-test/sentinel/issues>
 .SH SEE ALSO
