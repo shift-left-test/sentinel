@@ -328,11 +328,11 @@ TEST_F(MainCLITest, testCommandPopulate) {
   EXPECT_EQ("", err);
   auto mdbContent = readFile(SAMPLE_DIR / "work" / "m.db");
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(ROR,{},lessThanOrEqual,2,12,2,14,<)a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,11,19,11,20,(--(i)))a1f4", SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,9,10,28,0)a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,7,11,7,15,(--(from)))a1f4", SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,7,11,7,15,(++(from)))a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,34,10,35,>=)a1f4", SAMPLE_PATH.string())));
 }
 
 TEST_F(MainCLITest, testCommandMutate) {

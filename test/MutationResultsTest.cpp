@@ -82,4 +82,29 @@ TEST_F(MutationResultsTest, testSaveAndLoad) {
   EXPECT_TRUE(MRs2[1].compare(MR2));
 }
 
+TEST_F(MutationResultsTest, testGetMutationStateReturnsAllStates) {
+  Mutant M("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  EXPECT_EQ(MutationState::KILLED, MutationResult(M, "t1", "", MutationState::KILLED).getMutationState());
+  EXPECT_EQ(MutationState::SURVIVED, MutationResult(M, "", "", MutationState::SURVIVED).getMutationState());
+  EXPECT_EQ(MutationState::RUNTIME_ERROR, MutationResult(M, "", "t2", MutationState::RUNTIME_ERROR).getMutationState());
+  EXPECT_EQ(MutationState::BUILD_FAILURE, MutationResult(M, "", "", MutationState::BUILD_FAILURE).getMutationState());
+  EXPECT_EQ(MutationState::TIMEOUT, MutationResult(M, "", "", MutationState::TIMEOUT).getMutationState());
+}
+
+TEST_F(MutationResultsTest, testGetDetectedReturnsTrueOnlyForKilled) {
+  Mutant M("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  EXPECT_TRUE(MutationResult(M, "t1", "", MutationState::KILLED).getDetected());
+  EXPECT_FALSE(MutationResult(M, "", "", MutationState::SURVIVED).getDetected());
+  EXPECT_FALSE(MutationResult(M, "", "t2", MutationState::RUNTIME_ERROR).getDetected());
+  EXPECT_FALSE(MutationResult(M, "", "", MutationState::BUILD_FAILURE).getDetected());
+  EXPECT_FALSE(MutationResult(M, "", "", MutationState::TIMEOUT).getDetected());
+}
+
+TEST_F(MutationResultsTest, testGetKillingTestAndErrorTest) {
+  Mutant M("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr(M, "killerTest", "errorTest", MutationState::RUNTIME_ERROR);
+  EXPECT_EQ("killerTest", mr.getKillingTest());
+  EXPECT_EQ("errorTest", mr.getErrorTest());
+}
+
 }  // namespace sentinel

@@ -16,7 +16,7 @@ build_test_program(
        MutationFactoryTest.cpp EvaluatorTest.cpp CoverageInfoTest.cpp
        GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp ReportTest.cpp
        ContainerTest.cpp RandomMutantGeneratorTest.cpp
-       WeightedMutantGeneratorTest.cpp MainCLITest.cpp
+       WeightedMutantGeneratorTest.cpp MainCLITest.cpp SourceLineTest.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS} ${CMAKE_DL_LIBS}
 )

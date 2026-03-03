@@ -163,6 +163,23 @@ class ResultTest : public ::testing::Test {
 </testsuite>
 )asdf";
 
+  std::string TC5_CTEST =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuite tests="2" name="MyCtestSuite">
+  <testcase status="run" name="CT1" />
+  <testcase status="run" name="CT2" />
+</testsuite>
+)";
+  std::string TC5_CTEST_FAIL =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<testsuite tests="2" name="MyCtestSuite">
+  <testcase status="run" name="CT1" />
+  <testcase status="fail" name="CT2">
+    <failure message="assertion failed" type="" />
+  </testcase>
+</testsuite>
+)";
+
  private:
   std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
@@ -335,6 +352,42 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   delete mut;
   Logger::setDefaultLevel(Logger::Level::OFF);
   Logger::getLogger("Result")->setLevel(Logger::Level::OFF);
+}
+
+TEST_F(ResultTest, testResultWithCTestFormatSurvived) {
+  auto CTEST_ORI_DIR = BASE / "ctest_ori_dir";
+  fs::create_directories(CTEST_ORI_DIR);
+  auto CTEST_MUT_DIR = BASE / "ctest_mut_dir_survived";
+  fs::create_directories(CTEST_MUT_DIR);
+
+  MAKE_RESULT_XML(CTEST_ORI_DIR, TC5_CTEST);
+  MAKE_RESULT_XML(CTEST_MUT_DIR, TC5_CTEST);
+  Result ori(CTEST_ORI_DIR);
+  Result mut(CTEST_MUT_DIR);
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::SURVIVED);
+  EXPECT_EQ("", killingTest);
+  EXPECT_EQ("", errorTest);
+}
+
+TEST_F(ResultTest, testResultWithCTestFormatKilled) {
+  auto CTEST_ORI_DIR2 = BASE / "ctest_ori_dir2";
+  fs::create_directories(CTEST_ORI_DIR2);
+  auto CTEST_MUT_DIR2 = BASE / "ctest_mut_dir_killed";
+  fs::create_directories(CTEST_MUT_DIR2);
+
+  MAKE_RESULT_XML(CTEST_ORI_DIR2, TC5_CTEST);
+  MAKE_RESULT_XML(CTEST_MUT_DIR2, TC5_CTEST_FAIL);
+  Result ori(CTEST_ORI_DIR2);
+  Result mut(CTEST_MUT_DIR2);
+
+  std::string killingTest;
+  std::string errorTest;
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
+  EXPECT_EQ("CT2", killingTest);
+  EXPECT_EQ("", errorTest);
 }
 
 TEST_F(ResultTest, testResultWithWrongResultFmt) {

@@ -132,4 +132,75 @@ TEST_F(MutantsTest, testLoad) {
   }
 }
 
+TEST_F(MutantsTest, testDefaultConstructorCreatesEmptyMutant) {
+  Mutant m;
+  EXPECT_EQ("", m.getOperator());
+  EXPECT_EQ("", m.getQualifiedFunction());
+  EXPECT_EQ("", m.getClass());
+  EXPECT_EQ("", m.getFunction());
+  EXPECT_EQ(0u, m.getFirst().line);
+  EXPECT_EQ(0u, m.getFirst().column);
+  EXPECT_EQ(0u, m.getLast().line);
+  EXPECT_EQ(0u, m.getLast().column);
+  EXPECT_EQ("", m.getToken());
+}
+
+TEST_F(MutantsTest, testGetClassAndFunctionWithSimpleName) {
+  Mutant m("AOR", NORMAL_FILENAME, "myFunc", 1, 0, 1, 5, "+");
+  EXPECT_EQ("", m.getClass());
+  EXPECT_EQ("myFunc", m.getFunction());
+  EXPECT_EQ("myFunc", m.getQualifiedFunction());
+}
+
+TEST_F(MutantsTest, testGetClassAndFunctionWithQualifiedName) {
+  // "MyClass::myMethod" → class="MyClass:", function="myMethod"
+  Mutant m("AOR", NORMAL_FILENAME, "MyClass::myMethod", 1, 0, 1, 5, "+");
+  EXPECT_EQ("MyClass:", m.getClass());
+  EXPECT_EQ("myMethod", m.getFunction());
+  EXPECT_EQ("MyClass::myMethod", m.getQualifiedFunction());
+}
+
+TEST_F(MutantsTest, testGetClassAndFunctionWithDeepQualifiedName) {
+  // "A::B::foo" → class="A::B:", function="foo"
+  Mutant m("AOR", NORMAL_FILENAME, "A::B::foo", 1, 0, 1, 5, "+");
+  EXPECT_EQ("A::B:", m.getClass());
+  EXPECT_EQ("foo", m.getFunction());
+  EXPECT_EQ("A::B::foo", m.getQualifiedFunction());
+}
+
+TEST_F(MutantsTest, testEqualityOperator) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 == m2);
+  EXPECT_FALSE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentOperator) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("BOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 != m2);
+  EXPECT_FALSE(m1 == m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentLocation) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 5, 6, 7, 8, "+");
+  EXPECT_TRUE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testLessThanOperator) {
+  // operator< compares str() which includes qualifiedFunction field
+  Mutant m1("AOR", NORMAL_FILENAME, "aaa", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "zzz", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testStrContainsExpectedFields) {
+  Mutant m("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  std::string s = m.str();
+  EXPECT_NE(std::string::npos, s.find("AOR,"));
+  EXPECT_NE(std::string::npos, s.find(",foo,1,2,3,4,+"));
+}
+
 }  // namespace sentinel

@@ -120,4 +120,32 @@ TEST_F(ContainerTest, testSplit) {
   EXPECT_EQ(1, splitted[1]);
 }
 
+TEST_F(ContainerTest, testErase) {
+  integers.erase(integers.begin());
+  EXPECT_EQ(N - 1, integers.size());
+  EXPECT_EQ(1, integers[0]);
+}
+
+TEST_F(ContainerTest, testUnique) {
+  none.push_back(3);
+  none.push_back(1);
+  none.push_back(2);
+  none.push_back(1);
+  none.push_back(3);
+  none.unique();
+  EXPECT_EQ(3, none.size());
+  EXPECT_EQ(1, none[0]);
+  EXPECT_EQ(2, none[1]);
+  EXPECT_EQ(3, none[2]);
+}
+
+TEST_F(ContainerTest, testShuffleWithSameSeedProducesSameResult) {
+  auto c1 = integers;
+  auto c2 = integers;
+  c1.shuffle(42);
+  c2.shuffle(42);
+  EXPECT_EQ(c1, c2);
+  EXPECT_NE(integers, c1);
+}
+
 }  // namespace sentinel
