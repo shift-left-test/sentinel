@@ -183,8 +183,15 @@ int CommandRun::run() {
       }
 
       if (!fs::is_empty(testResultDirStr)) {
-        throw InvalidArgumentException(fmt::format("The given test result path is not empty: {0}",
-                                                   testResultDirStr));
+        fmt::print("The given test result path is not empty: {0}\nDelete and continue? [y/N] ",
+                   testResultDirStr);
+        std::string answer;
+        std::getline(std::cin, answer);
+        if (answer != "y" && answer != "Y") {
+          throw InvalidArgumentException(fmt::format("The given test result path is not empty: {0}",
+                                                     testResultDirStr));
+        }
+        fs::remove_all(testResultDirStr);
       }
     }
     fs::create_directories(testResultDirStr);
