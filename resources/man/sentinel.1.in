@@ -12,7 +12,7 @@ populate
 Identify mutable test targets and application methods in 'git' and print a list
 .SS
 mutate
-Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
+Apply the selected 'mutable' to the source. The original file is backed up in 'workspace'
 .SS
 evaluate
 Compare the test result with mutable applied and the test result not applied
@@ -35,8 +35,8 @@ source root directory.
 -v, --verbose
 Verbosity
 .TP
--w[PATH], --work-dir=[PATH]
-Sentinel temporary working directory. Default: ./sentinel_tmp
+-w[PATH], --workspace=[PATH]
+Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
 .TP
 -o[PATH], --output-dir=[PATH]
 Directory for saving output. Default: .
@@ -67,7 +67,7 @@ Select mutant generator type, one of ['uniform', 'random', 'weighted']. Default:
 --seed=[SEED]
 Select random seed. Default: 1942447250
 .SS mutate: sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
-Apply the selected 'mutable' to the source. The original file is backed up in 'work-dir'
+Apply the selected 'mutable' to the source. The original file is backed up in 'workspace'
 .TP
 SOURCE_ROOT_PATH
 source root directory.
@@ -75,8 +75,8 @@ source root directory.
 -v, --verbose
 Verbosity
 .TP
--w[PATH], --work-dir=[PATH]
-Sentinel temporary working directory. Default: ./sentinel_tmp
+-w[PATH], --workspace=[PATH]
+Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
 .TP
 -o[PATH], --output-dir=[PATH]
 Directory for saving output. Default: .
@@ -92,8 +92,8 @@ source root directory.
 -v, --verbose
 Verbosity
 .TP
--w[PATH], --work-dir=[PATH]
-Sentinel temporary working directory. Default: ./sentinel_tmp
+-w[PATH], --workspace=[PATH]
+Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
 .TP
 -o[PATH], --output-dir=[PATH]
 Directory for saving output. Default: .
@@ -121,8 +121,8 @@ source root directory.
 -v, --verbose
 Verbosity
 .TP
--w[PATH], --work-dir=[PATH]
-Sentinel temporary working directory. Default: ./sentinel_tmp
+-w[PATH], --workspace=[PATH]
+Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
 .TP
 -o[PATH], --output-dir=[PATH]
 Directory for saving output. If output-dir is not given, pass generating output file.
@@ -138,8 +138,8 @@ source root directory.
 -v, --verbose
 Verbosity
 .TP
--w[PATH], --work-dir=[PATH]
-Sentinel temporary working directory. Default: ./sentinel_tmp
+-w[PATH], --workspace=[PATH]
+Sentinel workspace directory for all run artifacts. Default: ./sentinel_workspace
 .TP
 -o[PATH], --output-dir=[PATH]
 Directory for saving output. If output-dir is not given, pass generating output file.
@@ -210,8 +210,8 @@ Enable verbose logging (boolean).
 \fBdebug\fR
 Enable debug logging (boolean).
 .TP
-\fBwork-dir\fR
-Temporary working directory.
+\fBworkspace\fR
+Workspace directory for all run artifacts.
 .TP
 \fBoutput-dir\fR
 Directory for output reports.

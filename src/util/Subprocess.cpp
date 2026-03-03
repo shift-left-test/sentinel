@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cstring>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -23,8 +24,8 @@ std::size_t Subprocess::killAfter;
 bool Subprocess::timedOut;
 int Subprocess::pendSig;
 
-Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill) :
-    mCmd(cmd), mSec(sec), mSecForKill(secForKill) {
+Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill, const std::string& logFile) :
+    mCmd(cmd), mSec(sec), mSecForKill(secForKill), mLogFile(logFile) {
   if (Subprocess::childPid != 0) {
     throw std::runtime_error("Another subprocess is running. (Problem with sentinel logic)");
   }
@@ -125,6 +126,12 @@ int Subprocess::execute() {
     // Alarm setting
     alarm(mSec);
 
+    // Open log file for tee output (optional)
+    std::ofstream logStream;
+    if (!mLogFile.empty()) {
+      logStream.open(mLogFile, std::ios::out | std::ios::trunc);
+    }
+
     const int MAXBUFSZ = 100;
     char buffer[MAXBUFSZ];
 
@@ -132,6 +139,20 @@ int Subprocess::execute() {
       auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
       if (nb > 0) {
         std::cout << std::string(static_cast<char*>(buffer), nb);
+        if (logStream.is_open()) {
+          logStream.write(static_cast<char*>(buffer), nb);
+        }
+      }
+    }
+
+    // Drain any data remaining in the pipe after the child exited
+    {
+      ssize_t nb = 0;
+      while ((nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ)) > 0) {
+        std::cout << std::string(static_cast<char*>(buffer), nb);
+        if (logStream.is_open()) {
+          logStream.write(static_cast<char*>(buffer), nb);
+        }
       }
     }
 

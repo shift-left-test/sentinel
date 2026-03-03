@@ -428,6 +428,7 @@ TEST_F(MainCLITest, testCommandRun) {
   addArg(SAMPLE_DIR.c_str());
   addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
+  addArg(fmt::format("--workspace={}", (SAMPLE_BASE / "workspace").string()).c_str());
   addArg(fmt::format("--test-result-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());
   addArg(fmt::format("--build-command={}", "make").c_str());
   addArg(fmt::format("--test-command={}", R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());

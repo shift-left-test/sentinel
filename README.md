@@ -135,7 +135,7 @@ sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
 |--------|-------------|---------|
 | `SOURCE_ROOT_PATH` | Source root directory | |
 | `-v, --verbose` | Enable verbose output | |
-| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory for output files | |
 | `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
 | `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
@@ -180,7 +180,7 @@ sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
 |--------|-------------|---------|
 | `SOURCE_ROOT_PATH` | Source root directory | |
 | `-v, --verbose` | Enable verbose output | |
-| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory for output files | `.` |
 | `-b, --build-dir=PATH` | Directory containing `compile_commands.json` | `.` |
 | `--compiledb=PATH` | Path to directory containing `compile_commands.json` | |
@@ -196,7 +196,7 @@ sentinel populate [SOURCE_ROOT_PATH] {OPTIONS}
 
 #### `mutate` — Apply a mutant
 
-Applies a single mutant to the source code. The original file is backed up in `work-dir`.
+Applies a single mutant to the source code. The original file is backed up in `workspace`.
 
 ```bash
 sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
@@ -206,7 +206,7 @@ sentinel mutate [SOURCE_ROOT_PATH] {OPTIONS}
 |--------|-------------|---------|
 | `SOURCE_ROOT_PATH` | Source root directory | |
 | `-v, --verbose` | Enable verbose output | |
-| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory for output files | `.` |
 | `-m, --mutant=MUTANT` | Mutant string to apply | |
 
@@ -224,7 +224,7 @@ sentinel evaluate [SOURCE_ROOT_PATH] {OPTIONS}
 |--------|-------------|---------|
 | `SOURCE_ROOT_PATH` | Source root directory | |
 | `-v, --verbose` | Enable verbose output | |
-| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory for output files | `.` |
 | `-m, --mutant=MUTANT` | Mutant string | |
 | `-e, --expected=PATH` | Expected (baseline) test result directory | |
@@ -246,7 +246,7 @@ sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
 |--------|-------------|---------|
 | `SOURCE_ROOT_PATH` | Source root directory | |
 | `-v, --verbose` | Enable verbose output | |
-| `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
+| `-w, --workspace=PATH` | Workspace directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory for output files (omit to skip file generation) | |
 | `--evaluation-file=PATH` | Mutation test result file to read | |
 
@@ -290,8 +290,8 @@ verbose: false
 # Enable debug logging
 debug: false
 
-# Temporary working directory
-work-dir: ./sentinel_tmp
+# Workspace directory for all run artifacts
+workspace: ./sentinel_workspace
 
 # Directory for output reports
 output-dir: ./sentinel_output

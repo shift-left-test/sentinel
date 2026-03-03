@@ -52,8 +52,8 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["debug"]) {
       cfg.debug = root["debug"].as<bool>();
     }
-    if (root["work-dir"]) {
-      cfg.workDir = root["work-dir"].as<std::string>();
+    if (root["workspace"]) {
+      cfg.workDir = root["workspace"].as<std::string>();
     }
     if (root["output-dir"]) {
       cfg.outputDir = root["output-dir"].as<std::string>();

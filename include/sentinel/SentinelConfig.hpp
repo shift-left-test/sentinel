@@ -26,7 +26,7 @@ struct SentinelConfig {
   std::optional<bool> verbose;
   /// Enable debug logging (--debug).
   std::optional<bool> debug;
-  /// Working directory for sentinel run artifacts (--work-dir).
+  /// Workspace directory for sentinel run artifacts (--workspace).
   std::optional<std::string> workDir;
   /// Directory for output reports (--output-dir).
   std::optional<std::string> outputDir;

@@ -44,7 +44,7 @@ TEST_F(SentinelConfigTest, testLoadCompleteConfig) {
 source-root: ./src
 verbose: true
 debug: false
-work-dir: ./work
+workspace: ./work
 output-dir: ./out
 cwd: /tmp
 build-dir: ./build

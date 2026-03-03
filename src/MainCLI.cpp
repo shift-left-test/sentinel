@@ -42,7 +42,7 @@ int MainCLI(int argc, char** argv) {
                          });
   args::Command mutate(commands, "mutate",
                        "Apply the selected 'mutable' to the source. "
-                       "The original file is backed up in 'work-dir'",
+                       "The original file is backed up in 'workspace'",
                        [&](args::Subparser& subParser) {
                          mainCommand = std::make_unique<sentinel::CommandMutate>(subParser);
                          subParser.Parse();

@@ -106,6 +106,10 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualRe
   return ret;
 }
 
+void Evaluator::injectResult(const MutationResult& result) {
+  mMutationResults.push_back(result);
+}
+
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
                                                        const std::experimental::filesystem::path& ActualResultDir,
                                                        const std::experimental::filesystem::path& evalFilePath,

@@ -19,7 +19,7 @@ Command::Command(args::Subparser& parser) :
     mSourceRoot(parser, "SOURCE_ROOT_PATH", "source root directory.", "."),
     mIsVerbose(parser, "verbose", "Show verbose messages (INFO and above).", {'v', "verbose"}),
     mIsDebug(parser, "debug", "Show debug messages (all log levels).", {"debug"}),
-    mWorkDir(parser, "PATH", "Sentinel temporary working directory.", {'w', "work-dir"}, "./sentinel_tmp"),
+    mWorkDir(parser, "PATH", "Sentinel workspace directory for all run artifacts.", {'w', "workspace"}, "./sentinel_workspace"),
     mOutputDir(parser, "PATH", "Directory for saving output.", {'o', "output-dir"}, ""),
     mCwd(parser, "PATH", "Change the current working directory before running.", {"cwd"}, "") {}
 

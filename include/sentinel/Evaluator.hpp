@@ -59,6 +59,15 @@ class Evaluator {
                                               const std::string& testState);
 
   /**
+   * @brief Directly inject a previously computed MutationResult (used on resume).
+   *
+   * Adds @p result to the internal results list without re-running any comparison.
+   *
+   * @param result  MutationResult deserialized from a prior run.
+   */
+  void injectResult(const MutationResult& result);
+
+  /**
    * @brief Return mutation results
    *
    * @return MutationResults

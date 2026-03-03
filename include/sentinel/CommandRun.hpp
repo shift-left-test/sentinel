@@ -16,13 +16,6 @@
 
 namespace sentinel {
 
-extern bool workDirExists;
-extern bool backupDirExists;
-extern bool expectedDirExists;
-extern bool actualDirExists;
-extern std::experimental::filesystem::path workDirForSH;
-extern std::experimental::filesystem::path sourceRootForSH;
-
 /**
  * @brief sentinel commandline 'run' subcommand class.
  */
