@@ -8,9 +8,11 @@
 
 #include <cstddef>
 #include <experimental/filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 #include "sentinel/Command.hpp"
+#include "sentinel/SentinelConfig.hpp"
 
 namespace sentinel {
 
@@ -31,6 +33,8 @@ class CommandRun : public Command {
    */
   explicit CommandRun(args::Subparser& parser);
 
+  void init() override;
+
   int run() override;
 
   /**
@@ -47,6 +51,16 @@ class CommandRun : public Command {
    * @brief set signal handler
    */
   virtual void setSignalHandler();
+
+  /**
+   * @brief path to the YAML configuration file (--config option)
+   */
+  args::ValueFlag<std::string> mConfigFile;
+
+  /**
+   * @brief configuration loaded from the YAML file (populated in init())
+   */
+  std::optional<SentinelConfig> mConfig;
 
   /**
    * @brief copy test results file with given extensions from FROM to TO
@@ -194,6 +208,11 @@ class CommandRun : public Command {
   virtual bool getVerbose();
 
  protected:
+  /**
+   * @brief flag to generate a sentinel.yaml configuration template and exit
+   */
+  args::Flag mInit;
+
   /**
    * @brief build directory
    */

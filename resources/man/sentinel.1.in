@@ -185,6 +185,90 @@ Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is no
 .TP
 --seed=[SEED]
 Select random seed. Default: random
+.TP
+--init
+Generate a sentinel.yaml configuration template in the current directory and exit.
+If sentinel.yaml already exists, prompts for confirmation before overwriting.
+.TP
+--config=[PATH]
+Path to a YAML configuration file. If not specified, sentinel.yaml in the current directory is used automatically when present.
+.SH CONFIGURATION FILE
+Sentinel supports a YAML configuration file (\fBsentinel.yaml\fR) as an alternative to passing all options on the command line.
+When \fBsentinel run\fR is invoked, it automatically looks for \fBsentinel.yaml\fR in the current working directory.
+Use \fB--config\fR to specify a different file.
+.PP
+CLI arguments always take priority over values in the configuration file.
+.PP
+Supported keys (all optional):
+.TP
+\fBsource-root\fR
+Source root directory.
+.TP
+\fBverbose\fR
+Enable verbose logging (boolean).
+.TP
+\fBdebug\fR
+Enable debug logging (boolean).
+.TP
+\fBwork-dir\fR
+Temporary working directory.
+.TP
+\fBoutput-dir\fR
+Directory for output reports.
+.TP
+\fBcwd\fR
+Change to this directory before running.
+.TP
+\fBbuild-dir\fR
+Build command output directory.
+.TP
+\fBcompiledb\fR
+Explicit path to directory containing compile_commands.json.
+.TP
+\fBscope\fR
+Diff scope: \fBcommit\fR or \fBall\fR.
+.TP
+\fBextension\fR
+List of source file extensions to mutate.
+.TP
+\fBpattern\fR
+List of paths or glob patterns to constrain the diff.
+.TP
+\fBexclude\fR
+List of fnmatch-style patterns to exclude from mutation.
+.TP
+\fBlimit\fR
+Maximum number of mutants to generate.
+.TP
+\fBbuild-command\fR
+Shell command to build the source.
+.TP
+\fBtest-command\fR
+Shell command to execute tests.
+.TP
+\fBtest-result-dir\fR
+Directory containing test command output.
+.TP
+\fBtest-result-extension\fR
+List of file extensions of test output files.
+.TP
+\fBcoverage\fR
+List of lcov-format coverage result files.
+.TP
+\fBgenerator\fR
+Mutant generator type: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR.
+.TP
+\fBtimeout\fR
+Time limit (seconds) for the test command. \fB0\fR = no limit, \fBauto\fR = auto-detect.
+.TP
+\fBkill-after\fR
+Seconds after timeout before SIGKILL is sent. \fB0\fR = disabled.
+.TP
+\fBseed\fR
+Random seed for mutant selection.
+.TP
+\fBoperator\fR
+List of mutation operators to use (AOR, BOR, LCR, ROR, SDL, SOR, UOI). Omit to use all.
 .SH REPORTING BUGS
 sentinel issue tracker: <https://github.com/shift-left-test/sentinel/issues>
 .SH SEE ALSO

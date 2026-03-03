@@ -16,6 +16,7 @@
 - [Usage](#usage)
   - [Workflow Overview](#workflow-overview)
   - [Command Reference](#command-reference)
+- [Configuration File](#configuration-file)
 - [Mutation Operators](#mutation-operators)
 - [Supported Test Runners](#supported-test-runners)
 - [Development](#development)
@@ -151,6 +152,8 @@ sentinel run [SOURCE_ROOT_PATH] {OPTIONS}
 | `--seed=SEED` | Random seed | random |
 | `--timeout=SEC` | Time limit for test command; `0` = no limit, `auto` = auto-detect | `auto` |
 | `--kill-after=SEC` | Send SIGKILL this many seconds after timeout; `0` = disabled | `60` |
+| `--config=PATH` | Path to a YAML configuration file | `sentinel.yaml` (auto-detected) |
+| `--init` | Generate a `sentinel.yaml` configuration template and exit | |
 
 **Example:**
 
@@ -246,6 +249,141 @@ sentinel report [SOURCE_ROOT_PATH] {OPTIONS}
 | `-w, --work-dir=PATH` | Temporary working directory | `./sentinel_tmp` |
 | `-o, --output-dir=PATH` | Directory for output files (omit to skip file generation) | |
 | `--evaluation-file=PATH` | Mutation test result file to read | |
+
+---
+
+## Configuration File
+
+Sentinel supports a YAML configuration file (`sentinel.yaml`) as an alternative to passing all options on the command line. This is especially useful for projects with many options or for sharing a consistent configuration across team members.
+
+### Auto-detection
+
+When `sentinel run` is invoked, Sentinel automatically looks for `sentinel.yaml` in the **current working directory**. To specify a different file, use the `--config` option:
+
+```bash
+sentinel run --config=/path/to/myconfig.yaml
+```
+
+### Precedence
+
+CLI arguments always take priority over values in the configuration file:
+
+```
+CLI argument  >  sentinel.yaml value  >  built-in default
+```
+
+### Full Template
+
+The following template lists every supported key. All keys are optional — omit any key to use the built-in default or rely on the corresponding CLI option.
+
+```yaml
+# sentinel.yaml — full configuration template
+
+# --- Shared options (all commands) ---
+
+# Source root directory (equivalent to SOURCE_ROOT_PATH positional argument)
+source-root: ./
+
+# Enable verbose logging
+verbose: false
+
+# Enable debug logging
+debug: false
+
+# Temporary working directory
+work-dir: ./sentinel_tmp
+
+# Directory for output reports
+output-dir: ./sentinel_output
+
+# Change to this directory before running
+cwd: .
+
+# --- sentinel run options ---
+
+# Build command output directory (contains compile_commands.json by default)
+build-dir: .
+
+# Explicit path to directory containing compile_commands.json (overrides build-dir for DB lookup)
+compiledb: .
+
+# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase)
+scope: all
+
+# Source file extensions to mutate
+extension:
+  - cpp
+  - cxx
+  - cc
+  - c
+  - c++
+  - cu
+
+# Paths or glob patterns to constrain the diff
+pattern: []
+
+# Paths excluded from mutation (fnmatch-style patterns)
+exclude: []
+
+# Maximum number of mutants to generate
+limit: 10
+
+# Shell command to build the source
+build-command: make
+
+# Shell command to execute tests
+test-command: make test
+
+# Directory containing test command output
+test-result-dir: ./test-results
+
+# File extensions of test output files
+test-result-extension:
+  - xml
+
+# lcov-format coverage result files
+coverage: []
+
+# Mutant generator type: 'uniform', 'random', or 'weighted'
+generator: uniform
+
+# Time limit (seconds) for the test command.
+# 0 = no limit, 'auto' = automatically determined from baseline run time.
+timeout: auto
+
+# Seconds to wait after timeout before sending SIGKILL. 0 = disabled.
+kill-after: 60
+
+# Random seed for mutant selection
+seed: 42
+
+# Mutation operators to use. Omit to use all operators.
+# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI
+operator:
+  - AOR
+  - BOR
+  - LCR
+  - ROR
+  - SDL
+  - SOR
+  - UOI
+```
+
+### Minimal Example
+
+```yaml
+# sentinel.yaml
+source-root: ./src
+build-dir: ./build
+build-command: cmake --build build
+test-command: ctest --test-dir build
+test-result-dir: ./build/test-results
+scope: commit
+limit: 50
+exclude:
+  - "*/third_party/*"
+  - "*/test/*"
+```
 
 ---
 

@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -25,6 +26,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/MutationFactory.hpp"
+#include "sentinel/SentinelConfig.hpp"
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Subprocess.hpp"
@@ -73,8 +75,106 @@ static void signalHandler(int signum) {
   }
 }
 
+static const char* const kYamlTemplate =
+    "# sentinel.yaml — full configuration template\n"
+    "#\n"
+    "# Uncomment and edit the options you need.\n"
+    "# CLI arguments always take priority over values in this file.\n"
+    "\n"
+    "# --- Shared options (all commands) ---\n"
+    "\n"
+    "# Source root directory (equivalent to SOURCE_ROOT_PATH positional argument)\n"
+    "# source-root: ./\n"
+    "\n"
+    "# Enable verbose logging\n"
+    "# verbose: false\n"
+    "\n"
+    "# Enable debug logging\n"
+    "# debug: false\n"
+    "\n"
+    "# Temporary working directory\n"
+    "# work-dir: ./sentinel_tmp\n"
+    "\n"
+    "# Directory for output reports\n"
+    "# output-dir: ./sentinel_output\n"
+    "\n"
+    "# Change to this directory before running\n"
+    "# cwd: .\n"
+    "\n"
+    "# --- sentinel run options ---\n"
+    "\n"
+    "# Build command output directory (contains compile_commands.json by default)\n"
+    "# build-dir: .\n"
+    "\n"
+    "# Explicit path to directory containing compile_commands.json\n"
+    "# compiledb: .\n"
+    "\n"
+    "# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase)\n"
+    "# scope: all\n"
+    "\n"
+    "# Source file extensions to mutate\n"
+    "# extension:\n"
+    "#   - cpp\n"
+    "#   - cxx\n"
+    "#   - cc\n"
+    "#   - c\n"
+    "#   - c++\n"
+    "#   - cu\n"
+    "\n"
+    "# Paths or glob patterns to constrain the diff\n"
+    "# pattern: []\n"
+    "\n"
+    "# Paths excluded from mutation (fnmatch-style patterns)\n"
+    "# exclude: []\n"
+    "\n"
+    "# Maximum number of mutants to generate\n"
+    "# limit: 10\n"
+    "\n"
+    "# Shell command to build the source\n"
+    "# build-command: make\n"
+    "\n"
+    "# Shell command to execute tests\n"
+    "# test-command: make test\n"
+    "\n"
+    "# Directory containing test command output\n"
+    "# test-result-dir: ./test-results\n"
+    "\n"
+    "# File extensions of test output files\n"
+    "# test-result-extension:\n"
+    "#   - xml\n"
+    "\n"
+    "# lcov-format coverage result files\n"
+    "# coverage: []\n"
+    "\n"
+    "# Mutant generator type: 'uniform', 'random', or 'weighted'\n"
+    "# generator: uniform\n"
+    "\n"
+    "# Time limit (seconds) for the test command.\n"
+    "# 0 = no limit, 'auto' = automatically determined from baseline run time.\n"
+    "# timeout: auto\n"
+    "\n"
+    "# Seconds to wait after timeout before sending SIGKILL. 0 = disabled.\n"
+    "# kill-after: 60\n"
+    "\n"
+    "# Random seed for mutant selection\n"
+    "# seed: 42\n"
+    "\n"
+    "# Mutation operators to use. Omit to use all operators.\n"
+    "# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI\n"
+    "# operator:\n"
+    "#   - AOR\n"
+    "#   - BOR\n"
+    "#   - LCR\n"
+    "#   - ROR\n"
+    "#   - SDL\n"
+    "#   - SOR\n"
+    "#   - UOI\n";
+
 CommandRun::CommandRun(args::Subparser& parser) :
     Command(parser),
+    mConfigFile(parser, "PATH", "Path to a YAML configuration file (default: sentinel.yaml in current directory)", {"config"}),
+    mInit(parser, "init", "Generate a sentinel.yaml configuration template in the current directory and exit",
+          {"init"}),
     mBuildDir(parser, "PATH", "Build command output directory", {'b', "build-dir"}, "."),
     mCompileDbDir(parser, "PATH", "Path to directory containing compile_commands.json file", {"compiledb"}),
     mScope(parser, "SCOPE", "Diff scope, one of ['commit', 'all'].", {'s', "scope"}, "all"),
@@ -105,12 +205,76 @@ CommandRun::CommandRun(args::Subparser& parser) :
                "Can be specified multiple times. Defaults to all operators.",
                {"operator"}) {}
 
+void CommandRun::init() {
+  namespace fs = std::experimental::filesystem;
+
+  if (!mInit) {
+    // Determine config file path (resolved in the original CWD, before --cwd takes effect).
+    std::string configPath;
+    if (mConfigFile) {
+      configPath = mConfigFile.Get();
+      if (!fs::exists(configPath)) {
+        throw std::runtime_error(fmt::format("Config file not found: {}", configPath));
+      }
+    } else if (fs::exists("sentinel.yaml")) {
+      configPath = "sentinel.yaml";
+    }
+
+    // Load YAML config if a file was found or explicitly specified.
+    if (!configPath.empty()) {
+      mConfig = SentinelConfig::loadFromFile(configPath);
+    }
+
+    // Apply YAML cwd if CLI did not specify --cwd.
+    if (!mCwd && mConfig && mConfig->cwd && !mConfig->cwd->empty()) {
+      std::error_code ec;
+      fs::current_path(*mConfig->cwd, ec);
+      if (ec) {
+        throw std::runtime_error(fmt::format("Failed to change directory to '{}': {}", *mConfig->cwd, ec.message()));
+      }
+    }
+  }
+
+  // Call base init: applies CLI --cwd and sets log level from CLI -v/--debug.
+  Command::init();
+
+  // Apply YAML log level only if CLI did not set verbose or debug.
+  if (!mInit && !mIsDebug && !mIsVerbose && mConfig) {
+    if (mConfig->debug.value_or(false)) {
+      sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::DEBUG);
+    } else if (mConfig->verbose.value_or(false)) {
+      sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::VERBOSE);
+    }
+  }
+}
+
 void CommandRun::setSignalHandler() {
   signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
                                     signalHandler);
 }
 
 int CommandRun::run() {
+  if (mInit) {
+    static const char* const kConfigFileName = "sentinel.yaml";
+    namespace fs = std::experimental::filesystem;
+    if (fs::exists(kConfigFileName)) {
+      fmt::print("'{}' already exists. Overwrite? [y/N] ", kConfigFileName);
+      std::string answer;
+      std::getline(std::cin, answer);
+      if (answer != "y" && answer != "Y") {
+        fmt::print("Aborted.\n");
+        return 0;
+      }
+    }
+    std::ofstream out(kConfigFileName);
+    if (!out) {
+      throw std::runtime_error(fmt::format("Failed to create '{}'", kConfigFileName));
+    }
+    out << kYamlTemplate;
+    fmt::print("Generated '{}'\n", kConfigFileName);
+    return 0;
+  }
+
   namespace fs = std::experimental::filesystem;
   workDirForSH = fs::current_path() / getWorkDir();
   stopRun = false;
@@ -510,78 +674,192 @@ std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targe
 }
 
 std::string CommandRun::getSourceRoot() {
+  if (mSourceRoot) {
+    return mSourceRoot.Get();
+  }
+  if (mConfig && mConfig->sourceRoot) {
+    return *mConfig->sourceRoot;
+  }
   return mSourceRoot.Get();
 }
 
 std::string CommandRun::getBuildDir() {
+  if (mBuildDir) {
+    return mBuildDir.Get();
+  }
+  if (mConfig && mConfig->buildDir) {
+    return *mConfig->buildDir;
+  }
   return mBuildDir.Get();
 }
 
 std::string CommandRun::getWorkDir() {
+  if (mWorkDir) {
+    return mWorkDir.Get();
+  }
+  if (mConfig && mConfig->workDir) {
+    return *mConfig->workDir;
+  }
   return mWorkDir.Get();
 }
 
 std::string CommandRun::getOutputDir() {
+  if (mOutputDir) {
+    return mOutputDir.Get();
+  }
+  if (mConfig && mConfig->outputDir) {
+    return *mConfig->outputDir;
+  }
   return mOutputDir.Get();
 }
 
 std::string CommandRun::getTestResultDir() {
+  if (mTestResultDir) {
+    return mTestResultDir.Get();
+  }
+  if (mConfig && mConfig->testResultDir) {
+    return *mConfig->testResultDir;
+  }
   return mTestResultDir.Get();
 }
 
 std::string CommandRun::getCompileDbDir() {
+  if (mCompileDbDir) {
+    return mCompileDbDir.Get();
+  }
+  if (mConfig && mConfig->compileDbDir) {
+    return *mConfig->compileDbDir;
+  }
   return mCompileDbDir.Get();
 }
 
 std::string CommandRun::getBuildCmd() {
+  if (mBuildCmd) {
+    return mBuildCmd.Get();
+  }
+  if (mConfig && mConfig->buildCmd) {
+    return *mConfig->buildCmd;
+  }
   return mBuildCmd.Get();
 }
 
 std::string CommandRun::getTestCmd() {
+  if (mTestCmd) {
+    return mTestCmd.Get();
+  }
+  if (mConfig && mConfig->testCmd) {
+    return *mConfig->testCmd;
+  }
   return mTestCmd.Get();
 }
 
 std::string CommandRun::getGenerator() {
+  if (mGenerator) {
+    return mGenerator.Get();
+  }
+  if (mConfig && mConfig->generator) {
+    return *mConfig->generator;
+  }
   return mGenerator.Get();
 }
 
 std::vector<std::string> CommandRun::getTestResultFileExts() {
+  if (mTestResultFileExts) {
+    return mTestResultFileExts.Get();
+  }
+  if (mConfig && mConfig->testResultFileExts) {
+    return *mConfig->testResultFileExts;
+  }
   return mTestResultFileExts.Get();
 }
 
 std::vector<std::string> CommandRun::getTargetFileExts() {
+  if (mExtensions) {
+    return mExtensions.Get();
+  }
+  if (mConfig && mConfig->extensions) {
+    return *mConfig->extensions;
+  }
   return mExtensions.Get();
 }
 
 std::vector<std::string> CommandRun::getPatterns() {
+  if (mPatterns) {
+    return mPatterns.Get();
+  }
+  if (mConfig && mConfig->patterns) {
+    return *mConfig->patterns;
+  }
   return mPatterns.Get();
 }
 
 std::vector<std::string> CommandRun::getExcludePaths() {
+  if (mExcludes) {
+    return mExcludes.Get();
+  }
+  if (mConfig && mConfig->excludes) {
+    return *mConfig->excludes;
+  }
   return mExcludes.Get();
 }
 
 std::vector<std::string> CommandRun::getCoverageFiles() {
+  if (mCoverageFiles) {
+    return mCoverageFiles.Get();
+  }
+  if (mConfig && mConfig->coverageFiles) {
+    return *mConfig->coverageFiles;
+  }
   return mCoverageFiles.Get();
 }
 
 std::string CommandRun::getScope() {
+  if (mScope) {
+    return mScope.Get();
+  }
+  if (mConfig && mConfig->scope) {
+    return *mConfig->scope;
+  }
   return mScope.Get();
 }
 
 size_t CommandRun::getMutantLimit() {
+  if (mLimit) {
+    return mLimit.Get();
+  }
+  if (mConfig && mConfig->limit) {
+    return *mConfig->limit;
+  }
   return mLimit.Get();
 }
 
 std::string CommandRun::getTestTimeLimit() {
+  if (mTimeLimitStr) {
+    return mTimeLimitStr.Get();
+  }
+  if (mConfig && mConfig->timeLimit) {
+    return *mConfig->timeLimit;
+  }
   return mTimeLimitStr.Get();
 }
 
 std::string CommandRun::getKillAfter() {
+  if (mKillAfterStr) {
+    return mKillAfterStr.Get();
+  }
+  if (mConfig && mConfig->killAfter) {
+    return *mConfig->killAfter;
+  }
   return mKillAfterStr.Get();
 }
 
 unsigned CommandRun::getSeed() {
+  if (mSeed) {
+    return mSeed.Get();
+  }
+  if (mConfig && mConfig->seed) {
+    return *mConfig->seed;
+  }
   return mSeed.Get();
 }
 
@@ -590,6 +868,12 @@ bool CommandRun::getVerbose() {
 }
 
 std::vector<std::string> CommandRun::getOperators() {
+  if (mOperators) {
+    return mOperators.Get();
+  }
+  if (mConfig && mConfig->operators) {
+    return *mConfig->operators;
+  }
   return mOperators.Get();
 }
 
