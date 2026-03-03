@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 
@@ -38,6 +39,13 @@ class MutantGenerator {
   virtual Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) = 0;
 
   /**
+   * @brief Set mutation operators to use. If empty, all operators are used.
+   *
+   * @param ops list of operator names (e.g. "AOR", "BOR")
+   */
+  void setOperators(const std::vector<std::string>& ops) { mSelectedOperators = ops; }
+
+  /**
    * @brief Return a new mutant generator instance based on the specified options
    *
    * @param generator name
@@ -46,6 +54,12 @@ class MutantGenerator {
    */
   static std::shared_ptr<MutantGenerator> getInstance(const std::string& generator,
                                                       const std::string& directory);
+
+ protected:
+  /**
+   * @brief list of operator names to use (empty means all operators)
+   */
+  std::vector<std::string> mSelectedOperators;
 };
 
 }  // namespace sentinel

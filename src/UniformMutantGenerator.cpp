@@ -73,7 +73,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
           Mutants localMutables;
           clang::tooling::ClangTool tool(*db, filename);
           tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-          tool.run(myNewFrontendActionFactory(&localMutables, lines).get());
+          tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
           return localMutables;
         }));
   }
@@ -151,16 +151,20 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
 }
 
 UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
-                                                               const std::vector<std::size_t>& targetLines) :
+                                                               const std::vector<std::size_t>& targetLines,
+                                                               const std::vector<std::string>& selectedOps) :
     mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
   std::sort(mTargetLines.begin(), mTargetLines.end());
-  mMutationOperators.push_back(new AOR(Context));
-  mMutationOperators.push_back(new BOR(Context));
-  mMutationOperators.push_back(new ROR(Context));
-  mMutationOperators.push_back(new SOR(Context));
-  mMutationOperators.push_back(new LCR(Context));
-  mMutationOperators.push_back(new SDL(Context));
-  mMutationOperators.push_back(new UOI(Context));
+  auto include = [&selectedOps](const std::string& name) {
+    return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
+  };
+  if (include("AOR")) mMutationOperators.push_back(new AOR(Context));
+  if (include("BOR")) mMutationOperators.push_back(new BOR(Context));
+  if (include("ROR")) mMutationOperators.push_back(new ROR(Context));
+  if (include("SOR")) mMutationOperators.push_back(new SOR(Context));
+  if (include("LCR")) mMutationOperators.push_back(new LCR(Context));
+  if (include("SDL")) mMutationOperators.push_back(new SDL(Context));
+  if (include("UOI")) mMutationOperators.push_back(new UOI(Context));
 }
 
 UniformMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
@@ -206,24 +210,26 @@ bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
 UniformMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
                                                                  Mutants* mutables,
-                                                                 const std::vector<std::size_t>& targetLines) :
-    mMutants(mutables), mTargetLines(targetLines) {
+                                                                 const std::vector<std::size_t>& targetLines,
+                                                                 const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
 }
 
-void UniformMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext &Context) {
-  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines);
+void UniformMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
+  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mSelectedOps);
   mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
 }
 
 UniformMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
-                                                                   const std::vector<std::size_t>& targetLines) :
-    mMutants(mutables), mTargetLines(targetLines) {
+                                                                   const std::vector<std::size_t>& targetLines,
+                                                                   const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
 }
 
 std::unique_ptr<clang::ASTConsumer> UniformMutantGenerator::GenerateMutantAction::CreateASTConsumer(
     clang::CompilerInstance& CI, llvm::StringRef InFile) {
   CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines));
+  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mSelectedOps));
 }
 
 void UniformMutantGenerator::GenerateMutantAction::ExecuteAction() {
@@ -232,28 +238,31 @@ void UniformMutantGenerator::GenerateMutantAction::ExecuteAction() {
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory> UniformMutantGenerator::myNewFrontendActionFactory(
-    Mutants* mutables, const std::vector<std::size_t>& targetLines) {
+    Mutants* mutables, const std::vector<std::size_t>& targetLines, const std::vector<std::string>& selectedOps) {
   class SimpleFrontendActionFactory : public clang::tooling::FrontendActionFactory {
    public:
-    explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines) :
-        mMutants(mutables), mTargetLines(targetLines) {}
+    explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines,
+                                         const std::vector<std::string>& selectedOps) :
+        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {}
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {
-      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines);
+      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines, mSelectedOps);
     }
 #else
     clang::FrontendAction* create() override {
-      return new GenerateMutantAction(mMutants, mTargetLines);
+      return new GenerateMutantAction(mMutants, mTargetLines, mSelectedOps);
     }
 #endif
 
    private:
     Mutants* mMutants;
     const std::vector<std::size_t>& mTargetLines;
+    const std::vector<std::string>& mSelectedOps;
   };
 
-  return std::unique_ptr<clang::tooling::FrontendActionFactory>(new SimpleFrontendActionFactory(mutables, targetLines));
+  return std::unique_ptr<clang::tooling::FrontendActionFactory>(
+      new SimpleFrontendActionFactory(mutables, targetLines, selectedOps));
 }
 
 }  // namespace sentinel

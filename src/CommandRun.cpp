@@ -99,7 +99,11 @@ CommandRun::CommandRun(args::Subparser& parser) :
         parser, "TIME_SEC",
         R"asdf(Send SIGKILL if test-command is still running after timeout. If 0, SIGKILL is not sent. This option has no meaning when timeout is set 0.)asdf",
         {"kill-after"}, "60"),
-    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()) {}
+    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()),
+    mOperators(parser, "OPERATOR",
+               "Mutation operator to use (AOR, BOR, LCR, ROR, SDL, SOR, UOI). "
+               "Can be specified multiple times. Defaults to all operators.",
+               {"operator"}) {}
 
 void CommandRun::setSignalHandler() {
   signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
@@ -321,6 +325,16 @@ int CommandRun::run() {
     std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(randomSeed));
 
     std::shared_ptr<MutantGenerator> generator = MutantGenerator::getInstance(generatorStr, compileDbDir);
+
+    static const std::vector<std::string> kValidOperators = {"AOR", "BOR", "LCR", "ROR", "SDL", "SOR", "UOI"};
+    auto selectedOps = getOperators();
+    for (const auto& op : selectedOps) {
+      if (std::find(kValidOperators.begin(), kValidOperators.end(), op) == kValidOperators.end()) {
+        throw InvalidArgumentException(
+            fmt::format("Invalid operator: '{}'. Valid operators: AOR, BOR, LCR, ROR, SDL, SOR, UOI", op));
+      }
+    }
+    generator->setOperators(selectedOps);
 
     logger->info(fmt::format("Generator: {}", generatorStr));
     sentinel::MutationFactory mutationFactory(generator);
@@ -573,6 +587,10 @@ unsigned CommandRun::getSeed() {
 
 bool CommandRun::getVerbose() {
   return mIsVerbose.Get();
+}
+
+std::vector<std::string> CommandRun::getOperators() {
+  return mOperators.Get();
 }
 
 }  // namespace sentinel

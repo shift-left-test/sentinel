@@ -85,7 +85,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
           Mutants localMutables;
           clang::tooling::ClangTool tool(*db, filename);
           tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-          tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm).get());
+          tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
           return std::make_pair(std::move(localMutables), std::move(ldm));
         }));
   }
@@ -179,19 +179,23 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 }
 
 WeightedMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
-                                                                const SourceLines& targetLines, DepthMap* depthMap) :
+                                                                const SourceLines& targetLines, DepthMap* depthMap,
+                                                                const std::vector<std::string>& selectedOps) :
     mContext(Context),
     mSrcMgr(Context->getSourceManager()),
     mMutants(mutables),
     mTargetLines(targetLines),
     mDepthMap(depthMap) {
-  mMutationOperators.push_back(new AOR(Context));
-  mMutationOperators.push_back(new BOR(Context));
-  mMutationOperators.push_back(new ROR(Context));
-  mMutationOperators.push_back(new SOR(Context));
-  mMutationOperators.push_back(new LCR(Context));
-  mMutationOperators.push_back(new SDL(Context));
-  mMutationOperators.push_back(new UOI(Context));
+  auto include = [&selectedOps](const std::string& name) {
+    return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
+  };
+  if (include("AOR")) mMutationOperators.push_back(new AOR(Context));
+  if (include("BOR")) mMutationOperators.push_back(new BOR(Context));
+  if (include("ROR")) mMutationOperators.push_back(new ROR(Context));
+  if (include("SOR")) mMutationOperators.push_back(new SOR(Context));
+  if (include("LCR")) mMutationOperators.push_back(new LCR(Context));
+  if (include("SDL")) mMutationOperators.push_back(new SDL(Context));
+  if (include("UOI")) mMutationOperators.push_back(new UOI(Context));
 }
 
 WeightedMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
@@ -289,25 +293,28 @@ int WeightedMutantGenerator::SentinelASTVisitor::getDepth(clang::Stmt* s) {
 WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
                                                                   Mutants* mutables,
                                                                   const SourceLines& targetLines,
-                                                                  DepthMap* depthMap) :
-    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
+                                                                  DepthMap* depthMap,
+                                                                  const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
 }
 
-void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext &Context) {
-  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mDepthMap);
+void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
+  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mDepthMap, mSelectedOps);
   mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
 }
 
 WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
                                                                     const SourceLines& targetLines,
-                                                                    DepthMap* depthMap) :
-    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {
+                                                                    DepthMap* depthMap,
+                                                                    const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
 }
 
 std::unique_ptr<clang::ASTConsumer> WeightedMutantGenerator::GenerateMutantAction::CreateASTConsumer(
     clang::CompilerInstance& CI, llvm::StringRef InFile) {
   CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap));
+  return std::unique_ptr<clang::ASTConsumer>(
+      new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap, mSelectedOps));
 }
 
 void WeightedMutantGenerator::GenerateMutantAction::ExecuteAction() {
@@ -316,19 +323,21 @@ void WeightedMutantGenerator::GenerateMutantAction::ExecuteAction() {
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory> WeightedMutantGenerator::myNewFrontendActionFactory(
-    Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap) {
+    Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap,
+    const std::vector<std::string>& selectedOps) {
   class SimpleFrontendActionFactory : public clang::tooling::FrontendActionFactory {
    public:
-    SimpleFrontendActionFactory(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap) :
-        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap) {}
+    SimpleFrontendActionFactory(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap,
+                                const std::vector<std::string>& selectedOps) :
+        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {}
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {
-      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines, mDepthMap);
+      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines, mDepthMap, mSelectedOps);
     }
 #else
     clang::FrontendAction* create() override {
-      return new GenerateMutantAction(mMutants, mTargetLines, mDepthMap);
+      return new GenerateMutantAction(mMutants, mTargetLines, mDepthMap, mSelectedOps);
     }
 #endif
 
@@ -336,10 +345,11 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> WeightedMutantGenerator::
     Mutants* mMutants;
     const SourceLines& mTargetLines;
     DepthMap* mDepthMap;
+    const std::vector<std::string>& mSelectedOps;
   };
 
   return std::unique_ptr<clang::tooling::FrontendActionFactory>(
-      new SimpleFrontendActionFactory(mutables, targetLines, depthMap));
+      new SimpleFrontendActionFactory(mutables, targetLines, depthMap, selectedOps));
 }
 
 }  // namespace sentinel

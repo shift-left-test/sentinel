@@ -38,7 +38,11 @@ CommandPopulate::CommandPopulate(args::Subparser& parser) :
                      {"mutants-file-name"}, "mutables.db"),
     mGenerator(parser, "GEN", "Select mutant generator type, one of ['uniform', 'random', 'weighted'].", {"generator"},
                "uniform"),
-    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()) {}
+    mSeed(parser, "SEED", "Select random seed.", {"seed"}, std::random_device {}()),
+    mOperators(parser, "OPERATOR",
+               "Mutation operator to use (AOR, BOR, LCR, ROR, SDL, SOR, UOI). "
+               "Can be specified multiple times. Defaults to all operators.",
+               {"operator"}) {}
 
 int CommandPopulate::run() {
   namespace fs = std::experimental::filesystem;
@@ -66,6 +70,9 @@ int CommandPopulate::run() {
   logger->verbose(fmt::format("limit:{}", mLimit.Get()));
   logger->verbose(fmt::format("generator:{}", mGenerator.Get()));
   logger->verbose(fmt::format("random seed:{}", mSeed.Get()));
+  for (auto& op : mOperators.Get()) {
+    logger->verbose(fmt::format("operator:{}", op));
+  }
   auto repo =
       std::make_unique<sentinel::GitRepository>(sourceRoot, mExtensions.Get(), mPatterns.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());
@@ -75,6 +82,15 @@ int CommandPopulate::run() {
 
   std::string compileDbDir = (mCompileDbDir.Get().empty()) ? mBuildDir.Get() : mCompileDbDir.Get();
   std::shared_ptr<MutantGenerator> generator = MutantGenerator::getInstance(mGenerator.Get(), compileDbDir);
+
+  static const std::vector<std::string> kValidOperators = {"AOR", "BOR", "LCR", "ROR", "SDL", "SOR", "UOI"};
+  for (const auto& op : mOperators.Get()) {
+    if (std::find(kValidOperators.begin(), kValidOperators.end(), op) == kValidOperators.end()) {
+      throw InvalidArgumentException(
+          fmt::format("Invalid operator: '{}'. Valid operators: AOR, BOR, LCR, ROR, SDL, SOR, UOI", op));
+    }
+  }
+  generator->setOperators(mOperators.Get());
 
   sentinel::MutationFactory mutationFactory(generator);
 

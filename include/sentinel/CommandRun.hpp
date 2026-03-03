@@ -182,6 +182,12 @@ class CommandRun : public Command {
   virtual unsigned getSeed();
 
   /**
+   * @brief get selected mutation operators
+   * @return list of operator names (empty means all operators)
+   */
+  virtual std::vector<std::string> getOperators();
+
+  /**
    * @brief get verbose status
    * @return verbose status
    */
@@ -267,6 +273,11 @@ class CommandRun : public Command {
    * @brief random seed
    */
   args::ValueFlag<unsigned> mSeed;
+
+  /**
+   * @brief selected mutation operators
+   */
+  args::ValueFlagList<std::string> mOperators;
 };
 
 }  // namespace sentinel

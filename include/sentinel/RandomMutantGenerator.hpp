@@ -56,11 +56,13 @@ class RandomMutantGenerator : public MutantGenerator {
     /**
      * @brief Default constructor
      *
-     * @param CI Clang compiler management object
+     * @param Context Clang AST context
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
+     * @param selectedOps list of operator names to use (empty means all)
      */
-    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables, const std::vector<std::size_t>& targetLines);
+    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables, const std::vector<std::size_t>& targetLines,
+                       const std::vector<std::string>& selectedOps);
 
     /**
      * @brief Default destructor
@@ -85,10 +87,13 @@ class RandomMutantGenerator : public MutantGenerator {
     /**
      * @brief Default constructor
      *
-     * @param CI Clang compiler management object
+     * @param CI Clang compiler instance
+     * @param mutables list of generated mutables
+     * @param targetLines list of target line numbers
+     * @param selectedOps list of operator names to use (empty means all)
      */
     SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
-                        const std::vector<std::size_t>& targetLines);
+                        const std::vector<std::size_t>& targetLines, const std::vector<std::string>& selectedOps);
 
     /**
      * @brief A callback function triggered when ASTs for translation unit
@@ -102,6 +107,7 @@ class RandomMutantGenerator : public MutantGenerator {
     // SentinelASTVisitor mVisitor;
     Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
+    std::vector<std::string> mSelectedOps;
   };
 
   /**
@@ -113,9 +119,11 @@ class RandomMutantGenerator : public MutantGenerator {
      * @brief Default constructor
      *
      * @param mutables list of generated mutables (output)
-     * @param mTargetLines list of target line numbers
+     * @param targetLines list of target line numbers
+     * @param selectedOps list of operator names to use (empty means all)
      */
-    GenerateMutantAction(Mutants* mutables, const std::vector<std::size_t>& targetLines);
+    GenerateMutantAction(Mutants* mutables, const std::vector<std::size_t>& targetLines,
+                         const std::vector<std::string>& selectedOps);
 
     /**
      * @brief Create an ASTConsumer object to identify mutation locations
@@ -132,15 +140,18 @@ class RandomMutantGenerator : public MutantGenerator {
    private:
     Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
+    std::vector<std::string> mSelectedOps;
   };
 
   /**
    * @brief Returns a new FrontendActionFactory for GenerateMutantAction
    *
    * @param mutables list of generated mutables
+   * @param targetLines list of target line numbers
+   * @param selectedOps list of operator names to use (empty means all)
    */
   std::unique_ptr<clang::tooling::FrontendActionFactory> myNewFrontendActionFactory(
-      Mutants* mutables, const std::vector<std::size_t>& targetLines);
+      Mutants* mutables, const std::vector<std::size_t>& targetLines, const std::vector<std::string>& selectedOps);
 };
 
 }  // namespace sentinel
