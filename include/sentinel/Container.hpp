@@ -24,6 +24,9 @@ namespace sentinel {
 template <typename T>
 class Container {
  public:
+  /** @brief Element type */
+  using value_type = T;
+
   /**
    * @brief Default constructor
    */
@@ -256,13 +259,13 @@ void Container<T>::push_back(const typename std::vector<T>::value_type& object) 
 
 template <typename T>
 void Container<T>::push_back(typename std::vector<T>::value_type&& object) {
-  mData.push_back(object);
+  mData.push_back(std::move(object));
 }
 
 template <typename T>
 template <class... Args>
 void Container<T>::emplace_back(Args&&... args) {
-  mData.emplace_back(args...);
+  mData.emplace_back(std::forward<Args>(args)...);
 }
 
 template <typename T>

@@ -10,10 +10,12 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <future>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <random>
+#include <set>
 #include <string>
 #include <vector>
 #include "sentinel/Mutants.hpp"
@@ -34,6 +36,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
 }
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
+  namespace fs = std::experimental::filesystem;
   Mutants mutables;
 
   std::string errorMsg;
@@ -49,47 +52,94 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
 
   for (const auto& sourceLine : sourceLines) {
     std::string filename = sourceLine.getPath();
-    auto it = targetLines.find(filename);
-
-    if (it == targetLines.end()) {
-      targetLines[filename] = std::vector<std::size_t>();
-    }
-
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
   auto logger = Logger::getLogger(cUniformGeneratorLoggerName);
   logger->info(fmt::format("random seed: {}", randomSeed));
 
+  // Launch one async task per file so Clang AST parsing runs in parallel.
+  // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
+  // and restore it after all tasks complete to neutralise the side effect.
+  auto savedCwd = fs::current_path();
+  auto* db = compileDb.get();
+  std::vector<std::future<Mutants>> futures;
+  futures.reserve(targetLines.size());
+
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
-    clang::tooling::ClangTool tool(*compileDb, file.first);
-    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-
-    tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
+    futures.push_back(
+        std::async(std::launch::async, [db, filename = file.first, lines = file.second, this]() {
+          Mutants localMutables;
+          clang::tooling::ClangTool tool(*db, filename);
+          tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+          tool.run(myNewFrontendActionFactory(&localMutables, lines).get());
+          return localMutables;
+        }));
   }
 
-  // Randomly select one Mutant on each target line
-  Mutants temp_storage;
-  for (const auto& line : sourceLines) {
-    std::vector<Mutant> temp;
-    auto pred = [&](const auto& m) {
-      return std::experimental::filesystem::equivalent(m.getPath(), line.getPath()) &&
-             m.getFirst().line <= line.getLineNumber() && m.getLast().line >= line.getLineNumber();
-    };
-    std::copy_if(mutables.begin(), mutables.end(), std::back_inserter(temp), pred);
+  for (auto& fut : futures) {
+    auto localMutables = fut.get();
+    std::copy(localMutables.begin(), localMutables.end(), std::back_inserter(mutables));
+  }
+  fs::current_path(savedCwd);
 
-    if (temp.empty()) {
+  // Pre-group mutants by canonical file path, sorted by first.line for binary search.
+  // Mutant::mPath is already canonical (set in Mutant constructor).
+  std::map<std::string, std::vector<const Mutant*>> mutantsByFile;
+  for (const auto& m : mutables) {
+    mutantsByFile[m.getPath().string()].push_back(&m);
+  }
+  for (auto& entry : mutantsByFile) {
+    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
+      return a->getFirst().line < b->getFirst().line;
+    });
+  }
+
+  // Randomly select one Mutant on each target line.
+  // Cache canonical path per unique source path to avoid repeated fs::canonical() calls.
+  std::map<std::string, std::string> pathCache;
+  std::set<Mutant> selectedSet;
+  Mutants temp_storage;
+  std::mt19937 rng(randomSeed);
+
+  for (const auto& line : sourceLines) {
+    std::string rawPath = line.getPath().string();
+    auto emplaceResult = pathCache.emplace(rawPath, std::string{});
+    if (emplaceResult.second) {
+      emplaceResult.first->second = fs::canonical(rawPath).string();
+    }
+    const std::string& canonPath = emplaceResult.first->second;
+    std::size_t targetLine = line.getLineNumber();
+
+    auto fileIt = mutantsByFile.find(canonPath);
+    if (fileIt == mutantsByFile.end()) {
       continue;
     }
 
-    std::shuffle(std::begin(temp), std::end(temp), std::mt19937(randomSeed));
-    // find first element of temp that is not in temp_storage
-    auto it = std::find_if(temp.begin(), temp.end(), [&](const Mutant& a) {
-      return std::find(temp_storage.begin(), temp_storage.end(), a) == temp_storage.end();
-    });
-    if (it != temp.end()) {
-      temp_storage.push_back(*it);
+    const auto& fileVec = fileIt->second;
+
+    // Binary search: upper_bound finds end of mutants with first.line <= targetLine
+    auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
+        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+
+    // Filter: only keep mutants where last.line >= targetLine
+    std::vector<const Mutant*> candidates;
+    std::copy_if(fileVec.begin(), endIt, std::back_inserter(candidates),
+        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+
+    if (candidates.empty()) {
+      continue;
+    }
+
+    std::shuffle(candidates.begin(), candidates.end(), rng);
+
+    // find first candidate not already in selectedSet
+    for (const auto* candidate : candidates) {
+      if (selectedSet.insert(*candidate).second) {
+        temp_storage.push_back(*candidate);
+        break;
+      }
     }
 
     if (temp_storage.size() == maxMutants) {
@@ -97,12 +147,13 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
     }
   }
 
-  return Mutants(temp_storage.begin(), temp_storage.end());
+  return temp_storage;
 }
 
 UniformMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
                                                                const std::vector<std::size_t>& targetLines) :
     mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
+  std::sort(mTargetLines.begin(), mTargetLines.end());
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -137,9 +188,10 @@ bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
-  bool containTargetLine = std::any_of(
-      mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](std::size_t lineNum) { return lineNum >= startLineNum && lineNum <= endLineNum; });
+
+  // Binary search: check if any sorted target line falls in [startLineNum, endLineNum]
+  auto lo = std::lower_bound(mTargetLines.begin(), mTargetLines.end(), startLineNum);
+  bool containTargetLine = lo != mTargetLines.end() && *lo <= endLineNum;
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {

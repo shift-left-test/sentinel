@@ -14,10 +14,12 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <future>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <random>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,6 +41,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 }
 
 Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
+  namespace fs = std::experimental::filesystem;
   Mutants mutables;
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
@@ -54,26 +57,45 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 
   for (const auto& sourceLine : sourceLines) {
     std::string filename = sourceLine.getPath();
-    auto it = targetLines.find(filename);
-
-    if (it == targetLines.end()) {
-      targetLines[filename] = SourceLines();
-    }
-
     targetLines[filename].push_back(sourceLine);
-    depthMap[sourceLine] = -1;
   }
 
   auto logger = Logger::getLogger(cWeightedGeneratorLoggerName);
   logger->info(fmt::format("random seed: {}", randomSeed));
 
+  // Launch one async task per file so Clang AST parsing runs in parallel.
+  // Each task receives its own per-file DepthMap slice; results are merged after all tasks finish.
+  // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
+  // and restore it after all tasks complete to neutralise the side effect.
+  using FileResult = std::pair<Mutants, DepthMap>;
+  auto savedCwd = fs::current_path();
+  auto* db = compileDb.get();
+  std::vector<std::future<FileResult>> futures;
+  futures.reserve(targetLines.size());
+
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
-    clang::tooling::ClangTool tool(*compileDb, file.first);
-    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-
-    tool.run(myNewFrontendActionFactory(&mutables, file.second, &depthMap).get());
+    DepthMap localDm;
+    for (const auto& sl : file.second) {
+      localDm[sl] = -1;
+    }
+    futures.push_back(std::async(
+        std::launch::async,
+        [db, filename = file.first, fileLines = file.second, ldm = std::move(localDm), this]() mutable {
+          Mutants localMutables;
+          clang::tooling::ClangTool tool(*db, filename);
+          tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+          tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm).get());
+          return std::make_pair(std::move(localMutables), std::move(ldm));
+        }));
   }
+
+  for (auto& fut : futures) {
+    auto result = fut.get();
+    std::copy(result.first.begin(), result.first.end(), std::back_inserter(mutables));
+    depthMap.insert(result.second.begin(), result.second.end());
+  }
+  fs::current_path(savedCwd);
 
   // Sort the depthMap in order of descending depth.
   auto cmp = [](const std::pair<SourceLine, int>& a, const std::pair<SourceLine, int>& b) {
@@ -85,32 +107,66 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   std::copy(depthMap.begin(), depthMap.end(), std::back_inserter(sortedDepthMap));
   std::sort(sortedDepthMap.begin(), sortedDepthMap.end(), cmp);
 
+  // Pre-group mutants by canonical file path, sorted by first.line for binary search.
+  // Mutant::mPath is already canonical (set in Mutant constructor).
+  std::map<std::string, std::vector<const Mutant*>> mutantsByFile;
+  for (const auto& m : mutables) {
+    mutantsByFile[m.getPath().string()].push_back(&m);
+  }
+  for (auto& entry : mutantsByFile) {
+    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
+      return a->getFirst().line < b->getFirst().line;
+    });
+  }
+
+  // Cache canonical path per unique source path to avoid repeated fs::canonical() calls.
+  std::map<std::string, std::string> pathCache;
+
   // Select one Mutant on each target line
+  std::set<Mutant> selectedSet;
   Mutants temp_storage;
+  std::mt19937 rng(randomSeed);
   for (const auto& it : sortedDepthMap) {
     auto line = it.first;
 
-    // Collect all mutants that can be generated on this target line.
-    std::vector<Mutant> temp;
-    auto pred = [&](const auto& m) {
-      return std::experimental::filesystem::equivalent(m.getPath(), line.getPath()) &&
-             m.getFirst().line <= line.getLineNumber() && m.getLast().line >= line.getLineNumber();
-    };
-    std::copy_if(mutables.begin(), mutables.end(), std::back_inserter(temp), pred);
+    std::string rawPath = line.getPath().string();
+    auto emplaceResult = pathCache.emplace(rawPath, std::string{});
+    if (emplaceResult.second) {
+      emplaceResult.first->second = fs::canonical(rawPath).string();
+    }
+    const std::string& canonPath = emplaceResult.first->second;
+    std::size_t targetLine = line.getLineNumber();
+
+    auto fileIt = mutantsByFile.find(canonPath);
+    if (fileIt == mutantsByFile.end()) {
+      continue;
+    }
+
+    const auto& fileVec = fileIt->second;
+
+    // Binary search: upper_bound finds end of mutants with first.line <= targetLine
+    auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
+        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+
+    // Filter: only keep mutants where last.line >= targetLine
+    std::vector<const Mutant*> candidates;
+    std::copy_if(fileVec.begin(), endIt, std::back_inserter(candidates),
+        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
 
     // Continue if there are no generatable mutants.
-    if (temp.empty()) {
+    if (candidates.empty()) {
       continue;
     }
 
     // Randomly select one mutant.
-    std::shuffle(std::begin(temp), std::end(temp), std::mt19937(randomSeed));
-    // find first element of temp that is not in temp_storage
-    auto itr = std::find_if(temp.begin(), temp.end(), [&](const Mutant& a) {
-      return std::find(temp_storage.begin(), temp_storage.end(), a) == temp_storage.end();
-    });
-    if (itr != temp.end()) {
-      temp_storage.push_back(*itr);
+    std::shuffle(candidates.begin(), candidates.end(), rng);
+
+    // find first candidate not already in selectedSet
+    for (const auto* candidate : candidates) {
+      if (selectedSet.insert(*candidate).second) {
+        temp_storage.push_back(*candidate);
+        break;
+      }
     }
 
     // Break if maximum number of mutants is reached.
@@ -119,7 +175,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     }
   }
 
-  return Mutants(temp_storage.begin(), temp_storage.end());
+  return temp_storage;
 }
 
 WeightedMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,

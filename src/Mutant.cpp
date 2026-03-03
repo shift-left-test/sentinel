@@ -67,7 +67,7 @@ std::string Mutant::getFunction() const {
 }
 
 std::string Mutant::getQualifiedFunction() const {
-  return mFunction;
+  return mQualifiedFunction;
 }
 
 Location Mutant::getFirst() const {

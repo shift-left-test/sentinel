@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <future>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -34,6 +35,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
 }
 
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
+  namespace fs = std::experimental::filesystem;
   Mutants mutables;
 
   std::string errorMsg;
@@ -49,39 +51,59 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
 
   for (const auto& sourceLine : sourceLines) {
     std::string filename = sourceLine.getPath();
-    auto it = targetLines.find(filename);
-
-    if (it == targetLines.end()) {
-      targetLines[filename] = std::vector<std::size_t>();
-    }
-
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
   auto logger = Logger::getLogger(cRandomGeneratorLoggerName);
   logger->info(fmt::format("random seed: {}", randomSeed));
 
+  // Launch one async task per file so Clang AST parsing runs in parallel.
+  // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
+  // and restore it after all tasks complete to neutralise the side effect.
+  auto savedCwd = fs::current_path();
+  auto* db = compileDb.get();
+  std::vector<std::future<Mutants>> futures;
+  futures.reserve(targetLines.size());
+
   for (const auto& file : targetLines) {
     logger->info(fmt::format("Checking for mutants in {}", file.first));
-    clang::tooling::ClangTool tool(*compileDb, file.first);
-    tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-
-    tool.run(myNewFrontendActionFactory(&mutables, file.second).get());
+    futures.push_back(
+        std::async(std::launch::async, [db, filename = file.first, lines = file.second, this]() {
+          Mutants localMutables;
+          clang::tooling::ClangTool tool(*db, filename);
+          tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+          tool.run(myNewFrontendActionFactory(&localMutables, lines).get());
+          return localMutables;
+        }));
   }
+
+  for (auto& fut : futures) {
+    auto localMutables = fut.get();
+    std::copy(localMutables.begin(), localMutables.end(), std::back_inserter(mutables));
+  }
+  fs::current_path(savedCwd);
 
   mutables.unique();
 
-  if (mutables.size() <= maxMutants) {
-    return Mutants(mutables.begin(), mutables.end());
+  std::size_t n = mutables.size();
+  if (n <= maxMutants) {
+    return mutables;
   }
 
-  mutables.shuffle(randomSeed);
+  // Partial Fisher-Yates: only O(maxMutants) swaps instead of a full O(n) shuffle.
+  std::mt19937 rng(randomSeed);
+  for (std::size_t i = 0; i < maxMutants; ++i) {
+    std::uniform_int_distribution<std::size_t> dist(i, n - 1);
+    std::size_t j = dist(rng);
+    std::swap(mutables[i], mutables[j]);
+  }
   return Mutants(mutables.begin(), mutables.begin() + maxMutants);
 }
 
 RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
                                                               const std::vector<std::size_t>& targetLines) :
     mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
+  std::sort(mTargetLines.begin(), mTargetLines.end());
   mMutationOperators.push_back(new AOR(Context));
   mMutationOperators.push_back(new BOR(Context));
   mMutationOperators.push_back(new ROR(Context));
@@ -117,9 +139,10 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
 
   std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
   std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
-  bool containTargetLine = std::any_of(
-      mTargetLines.begin(), mTargetLines.end(),
-      [startLineNum, endLineNum](std::size_t lineNum) { return lineNum >= startLineNum && lineNum <= endLineNum; });
+
+  // Binary search: check if any sorted target line falls in [startLineNum, endLineNum]
+  auto lo = std::lower_bound(mTargetLines.begin(), mTargetLines.end(), startLineNum);
+  bool containTargetLine = lo != mTargetLines.end() && *lo <= endLineNum;
 
   if (containTargetLine) {
     for (auto m : mMutationOperators) {

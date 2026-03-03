@@ -208,9 +208,9 @@ add_test(
 --------------------------------------------------------------
 File                                               #mutation
 --------------------------------------------------------------
-sample.cpp                                                10
+sample.cpp                                                 3
 --------------------------------------------------------------
-TOTAL                                                     10
+TOTAL                                                      3
 --------------------------------------------------------------)a1f4";
 
   std::string MUTATION_POPULATION_REPORT2 =
@@ -246,14 +246,9 @@ Timeout                                                              3
 ----------------------------------------------------------------------------------
 File                                                 #killed #mutation       cov
 ----------------------------------------------------------------------------------
-sample.cpp                                                 1         2       50%
+sample.cpp                                                 3         3      100%
 ----------------------------------------------------------------------------------
-TOTAL                                                      1         2       50%
-----------------------------------------------------------------------------------
-Ignored Mutation
-Build Failure                                                        0
-Runtime Error                                                        0
-Timeout                                                              1
+TOTAL                                                      3         3      100%
 ----------------------------------------------------------------------------------)a1f4z0";
 
   std::string EXPECTED_RESULT =
@@ -318,9 +313,9 @@ TEST_F(MainCLITest, testCommandPopulate) {
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "work").string()).c_str());
   addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
   addArg("-sall");
-  addArg("-l10");
+  addArg("-l3");
   addArg("--seed=0");
-  addArg("--generator=random");
+  addArg("--generator=uniform");
   addArg("--mutants-file-name=m.db");
   addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
 
@@ -333,11 +328,11 @@ TEST_F(MainCLITest, testCommandPopulate) {
   EXPECT_EQ("", err);
   auto mdbContent = readFile(SAMPLE_DIR / "work" / "m.db");
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(SOR,{},sumOfEvenPositiveNumber,10,23,10,25,>>)a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(ROR,{},lessThanOrEqual,2,12,2,14,<)a1f4", SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(ROR,{},lessThanOrEqual,2,10,2,16,0)a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(ROR,{},sumOfEvenPositiveNumber,10,9,10,28,0)a1f4", SAMPLE_PATH.string())));
   EXPECT_TRUE(sentinel::string::contains(
-      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,11,19,11,20,(++(i)))a1f4", SAMPLE_PATH.string())));
+      mdbContent, fmt::format(R"a1f4(UOI,{},sumOfEvenPositiveNumber,7,11,7,15,(++(from)))a1f4", SAMPLE_PATH.string())));
 }
 
 TEST_F(MainCLITest, testCommandMutate) {
@@ -446,15 +441,16 @@ TEST_F(MainCLITest, testCommandRun) {
   captureStdout();
   sentinel::MainCLI(getArgc(), getArgv());
   auto out = capturedStdout();
+
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
   EXPECT_TRUE(
-      sentinel::string::contains(out, R"(UOI : sample.cpp (9:26-9:27 -> (--(i)))........................... TIMEOUT)"));
+      sentinel::string::contains(out, R"(ROR : sample.cpp (10:17-10:19 -> >)............................... KILLED)"));
   EXPECT_TRUE(
-      sentinel::string::contains(out, R"(ROR : sample.cpp (10:34-10:35 -> <)............................... KILLED)"));
+      sentinel::string::contains(out, R"(UOI : sample.cpp (9:29-9:31 -> (--(to))).......................... KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(
-      out, R"(ROR : sample.cpp (10:34-10:35 -> >=).............................. SURVIVED)"));
+      out, R"(UOI : sample.cpp (10:32-10:33 -> (++(i)))......................... KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 

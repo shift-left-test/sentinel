@@ -259,6 +259,9 @@ inline const char* boolToString(bool b) {
 template <typename T>
 T stringToInt(const std::string& s) {
   std::string str = string::trim(s);
+  if (str.empty()) {
+    throw InvalidArgumentException("Can't convert empty string");
+  }
   if (str.at(0) == '+') {
     str = str.replace(0, 1, "");
   }
