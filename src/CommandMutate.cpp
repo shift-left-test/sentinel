@@ -31,10 +31,8 @@ int CommandMutate::run() {
   std::istringstream iss(mMutantStr.Get());
   iss >> m;
 
-  if (mIsVerbose.Get()) {
-    logger->info(fmt::format("mutant: {}", mMutantStr.Get()));
-    logger->info(fmt::format("backup dir: {}", workDir.string()));
-  }
+  logger->verbose(fmt::format("mutant: {}", mMutantStr.Get()));
+  logger->verbose(fmt::format("backup dir: {}", workDir.string()));
 
   sentinel::GitRepository repository(sourceRoot);
   repository.getSourceTree()->modify(m, workDir);

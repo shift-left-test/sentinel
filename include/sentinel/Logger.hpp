@@ -22,10 +22,11 @@ class Logger {
   enum class Level : int {
     ALL = 0,
     DEBUG = 1,
-    INFO = 2,
-    WARN = 3,
-    ERROR = 4,
-    OFF = 5,
+    VERBOSE = 2,
+    INFO = 3,
+    WARN = 4,
+    ERROR = 5,
+    OFF = 6,
   };
 
   /**
@@ -58,6 +59,13 @@ class Logger {
    * @param message to log
    */
   void debug(const std::string& message);
+
+  /**
+   * @brief Log a verbose message
+   *
+   * @param message to log
+   */
+  void verbose(const std::string& message);
 
   /**
    * @brief Log an information message

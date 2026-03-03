@@ -23,6 +23,9 @@ class LoggerTest : public ::testing::Test {
     Logger::setDefaultLevel(Logger::Level::ALL);
     all = Logger::getLogger("all");
 
+    Logger::setDefaultLevel(Logger::Level::VERBOSE);
+    verboseLogger = Logger::getLogger("verboseLogger");
+
     Logger::setDefaultLevel(Logger::Level::INFO);
     logger = Logger::getLogger("logger");
 
@@ -53,6 +56,7 @@ class LoggerTest : public ::testing::Test {
   std::shared_ptr<Logger> off;
   std::shared_ptr<Logger> debug;
   std::shared_ptr<Logger> all;
+  std::shared_ptr<Logger> verboseLogger;
   std::shared_ptr<Logger> logger;
 
  private:
@@ -70,6 +74,30 @@ TEST_F(LoggerTest, testDebugWithInfoLevel) {
   captureStdout();
   logger->debug("hello world");
   EXPECT_STREQ("", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testVerboseWithInfoLevel) {
+  captureStdout();
+  logger->verbose("hello world");
+  EXPECT_STREQ("", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testDebugWithVerboseLevel) {
+  captureStdout();
+  verboseLogger->debug("hello world");
+  EXPECT_STREQ("", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testVerboseWithVerboseLevel) {
+  captureStdout();
+  verboseLogger->verbose("hello world");
+  EXPECT_STREQ("verboseLogger [VERBOSE] hello world\n", capturedStdout().c_str());
+}
+
+TEST_F(LoggerTest, testInfoWithVerboseLevel) {
+  captureStdout();
+  verboseLogger->info("hello world");
+  EXPECT_STREQ("verboseLogger [INFO] hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testInfoWithInfoLevel) {
@@ -100,10 +128,11 @@ TEST_F(LoggerTest, testLogsWithAllLevel) {
   captureStdout();
   captureStderr();
   all->debug("D");
+  all->verbose("V");
   all->info("I");
   all->warn("W");
   all->error("E");
-  EXPECT_STREQ("all [DEBUG] D\nall [INFO] I\n", capturedStdout().c_str());
+  EXPECT_STREQ("all [DEBUG] D\nall [VERBOSE] V\nall [INFO] I\n", capturedStdout().c_str());
   EXPECT_STREQ("all [WARN] W\nall [ERROR] E\n", capturedStderr().c_str());
 }
 

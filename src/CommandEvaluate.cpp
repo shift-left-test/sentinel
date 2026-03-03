@@ -54,9 +54,7 @@ int CommandEvaluate::run() {
   std::istringstream iss(mMutantStr.Get());
   iss >> m;
 
-  if (mIsVerbose.Get()) {
-    logger->info(fmt::format("mutant: {}", mMutantStr));
-  }
+  logger->verbose(fmt::format("mutant: {}", mMutantStr));
 
   sentinel::Evaluator evaluator(mExpectedDir.Get(), sourceRoot);
 

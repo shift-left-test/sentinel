@@ -51,6 +51,11 @@ class Command {
   args::Flag mIsVerbose;
 
   /**
+   * @brief debug option
+   */
+  args::Flag mIsDebug;
+
+  /**
    * @brief internal working directory
    */
   args::ValueFlag<std::string> mWorkDir;

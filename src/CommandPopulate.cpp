@@ -53,21 +53,19 @@ int CommandPopulate::run() {
   fs::path outputDir = fs::canonical(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandPopulateLoggerName);
-  if (mIsVerbose.Get()) {
-    logger->info(fmt::format("source root:{}", sourceRoot.string()));
-    for (auto& exclude : mExcludes.Get()) {
-      logger->info(fmt::format("exclude:{}", exclude));
-    }
-    for (auto& extension : mExtensions.Get()) {
-      logger->info(fmt::format("extension:{}", extension));
-    }
-    for (auto& pattern : mPatterns.Get()) {
-      logger->info(fmt::format("pattern:{}", pattern));
-    }
-    logger->info(fmt::format("limit:{}", mLimit.Get()));
-    logger->info(fmt::format("generator:{}", mGenerator.Get()));
-    logger->info(fmt::format("random seed:{}", mSeed.Get()));
+  logger->verbose(fmt::format("source root:{}", sourceRoot.string()));
+  for (auto& exclude : mExcludes.Get()) {
+    logger->verbose(fmt::format("exclude:{}", exclude));
   }
+  for (auto& extension : mExtensions.Get()) {
+    logger->verbose(fmt::format("extension:{}", extension));
+  }
+  for (auto& pattern : mPatterns.Get()) {
+    logger->verbose(fmt::format("pattern:{}", pattern));
+  }
+  logger->verbose(fmt::format("limit:{}", mLimit.Get()));
+  logger->verbose(fmt::format("generator:{}", mGenerator.Get()));
+  logger->verbose(fmt::format("random seed:{}", mSeed.Get()));
   auto repo =
       std::make_unique<sentinel::GitRepository>(sourceRoot, mExtensions.Get(), mPatterns.Get(), mExcludes.Get());
   sentinel::SourceLines sourceLines = repo->getSourceLines(mScope.Get());

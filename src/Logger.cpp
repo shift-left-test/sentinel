@@ -43,6 +43,8 @@ std::string Logger::format(Logger::Level level, const std::string& message) {
   std::string levelText;
   if (level == Level::DEBUG) {
     levelText = "DEBUG";
+  } else if (level == Level::VERBOSE) {
+    levelText = "VERBOSE";
   } else if (level == Level::INFO) {
     levelText = "INFO";
   } else if (level == Level::WARN) {
@@ -61,6 +63,13 @@ bool Logger::isAllowed(Logger::Level level) {
 
 void Logger::debug(const std::string& message) {
   auto level = Level::DEBUG;
+  if (isAllowed(level)) {
+    std::cout << format(level, message) << std::endl;
+  }
+}
+
+void Logger::verbose(const std::string& message) {
+  auto level = Level::VERBOSE;
   if (isAllowed(level)) {
     std::cout << format(level, message) << std::endl;
   }
