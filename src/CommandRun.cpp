@@ -500,27 +500,25 @@ int CommandRun::run() {
   fs::path outputDir = emptyOutputDir ? fs::absolute(".") : fs::absolute(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandRunLoggerName);
-  logger->info(fmt::format("{0:-^{1}}", "", 50));
-  logger->info(fmt::format("Source root: \"{}\"", sourceRoot.string()));
-  logger->info(fmt::format("Build dir: \"{}\"", buildDir.string()));
-  logger->info(fmt::format("compiledb dir: \"{}\"", compileDbStr));
-  logger->info(fmt::format("Build cmd: \"{}\"", buildCmd));
-  logger->info(fmt::format("Test cmd: \"{}\"", testCmd));
-  logger->info(fmt::format("Test result dir: \"{}\"", testResultDir.string()));
-  logger->info(fmt::format("Test result extension: \"{}\"", sentinel::string::join(", ", testResultFileExts)));
-  logger->info(fmt::format("Time limit for test: {}s", std::to_string(mTimeLimit)));
-  logger->info(fmt::format("Kill after time limit: {}s", std::to_string(mKillAfter)));
-  logger->info(fmt::format("Extentions of source: {}", sentinel::string::join(", ", targetFileExts)));
-  logger->info(fmt::format("Exclude patterns: {}", sentinel::string::join(", ", excludePaths)));
-  logger->info(fmt::format("Patterns: {}", sentinel::string::join(", ", diffPatterns)));
-  logger->info(fmt::format("Coverage files: {}", sentinel::string::join(", ", coverageFiles)));
-  logger->info(fmt::format("Diff scope: {}", scope));
-  logger->info(fmt::format("Generator: {}", generatorStr));
-  logger->info(fmt::format("Max generated mutable: {}", std::to_string(mutantLimit)));
-  logger->info(fmt::format("Random seed: {}", std::to_string(randomSeed)));
-  logger->info(fmt::format("Workspace: \"{}\"", ws.getRoot().string()));
-  logger->info(fmt::format("Resuming: {}", resuming ? "yes" : "no"));
-  logger->info(fmt::format("{0:-^{1}}", "", 50));
+  logger->verbose(fmt::format("source root:        {}", sourceRoot.string()));
+  logger->verbose(fmt::format("build dir:          {}", buildDir.string()));
+  logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
+  logger->verbose(fmt::format("build cmd:          {}", buildCmd));
+  logger->verbose(fmt::format("test cmd:           {}", testCmd));
+  logger->verbose(fmt::format("test result dir:    {}", testResultDir.string()));
+  logger->verbose(fmt::format("test result exts:   {}", sentinel::string::join(", ", testResultFileExts)));
+  logger->verbose(fmt::format("timeout:            {}s", mTimeLimit));
+  logger->verbose(fmt::format("kill-after:         {}s", mKillAfter));
+  logger->verbose(fmt::format("source extensions:  {}", sentinel::string::join(", ", targetFileExts)));
+  logger->verbose(fmt::format("exclude patterns:   {}", sentinel::string::join(", ", excludePaths)));
+  logger->verbose(fmt::format("patterns:           {}", sentinel::string::join(", ", diffPatterns)));
+  logger->verbose(fmt::format("coverage files:     {}", sentinel::string::join(", ", coverageFiles)));
+  logger->verbose(fmt::format("scope:              {}", scope));
+  logger->verbose(fmt::format("generator:          {}", generatorStr));
+  logger->verbose(fmt::format("mutant limit:       {}", mutantLimit));
+  logger->verbose(fmt::format("random seed:        {}", randomSeed));
+  logger->verbose(fmt::format("workspace:          {}", ws.getRoot().string()));
+  logger->verbose(fmt::format("resuming:           {}", resuming ? "yes" : "no"));
 
   bool disableStatusLine = static_cast<bool>(mNoStatusLine) || (mConfig && mConfig->noStatusLine.value_or(false));
   if (resuming) {
@@ -552,16 +550,15 @@ int CommandRun::run() {
       }
 
       // build
-      logger->info("Building original source code ...");
+      logger->info("Building original source code...");
       Subprocess origBuildProc(cmdPrefix + buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
       if (!origBuildProc.isSuccessfulExit()) {
         throw std::runtime_error("Build FAIL.");
       }
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // test
-      logger->info("Running tests ...");
+      logger->info("Running original tests...");
       statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
       fs::remove_all(testResultDir);
       Subprocess firstTestProc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
@@ -579,7 +576,7 @@ int CommandRun::run() {
         } else {
           mTimeLimit = static_cast<size_t>(ceil(diffSecs * 2.0));
         }
-        logger->info(fmt::format("Time limit for test is set to {}(s)", mTimeLimit));
+        logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", mTimeLimit, diffSecs));
       }
 
       if (firstTestProc.isTimedOut()) {
@@ -622,7 +619,7 @@ int CommandRun::run() {
       statusLine.setTotalMutants(indexedMutants.size());
     } else {
       statusLine.setPhase(StatusLine::Phase::POPULATE);
-      logger->info("Populating mutants ...");
+      logger->info("Generating mutants...");
       auto repo =
           std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
       sentinel::SourceLines sourceLines = repo->getSourceLines(scope);
@@ -644,12 +641,11 @@ int CommandRun::run() {
 
       int id = 1;
       for (auto& m : mutants) {
-        logger->info(fmt::format("mutant: {}", m.str()));
+        logger->verbose(fmt::format("mutant: {}", m.str()));
         ws.createMutant(id, m);
         indexedMutants.emplace_back(id, m);
         id++;
       }
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
       statusLine.setTotalMutants(indexedMutants.size());
     }
 
@@ -662,13 +658,16 @@ int CommandRun::run() {
 
     statusLine.setPhase(StatusLine::Phase::MUTANT);
 
+    size_t totalMutants = indexedMutants.size();
+    logger->info(fmt::format("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s"));
+
     for (auto& [id, m] : indexedMutants) {
       // Already completed in a previous run: inject stored result and skip
       if (ws.isDone(id)) {
         MutationResult prevResult = ws.getDoneResult(id);
         evaluator.injectResult(prevResult);
-        logger->info(fmt::format("Mutant #{} already completed ({}). Skipping.", id,
-                                 MutationStateToStr(prevResult.getMutationState())));
+        logger->verbose(fmt::format("Mutant #{} already done: {}. Skipping.", id,
+                                    MutationStateToStr(prevResult.getMutationState())));
         statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                                  m.getFirst().line);
         statusLine.recordResult(static_cast<int>(prevResult.getMutationState()));
@@ -677,16 +676,22 @@ int CommandRun::run() {
 
       // Interrupted mid-mutation in a previous run: restore source before re-running
       if (ws.isLocked(id)) {
-        logger->info(fmt::format("Mutant #{} was interrupted. Restoring source.", id));
+        logger->info(fmt::format("Mutant #{} was interrupted mid-run. Restoring source...", id));
         restoreBackup(ws.getBackupDir().string(), sourceRoot.string());
         ws.clearLock(id);
       }
+
+      // Progress indicator (always visible at INFO level)
+      logger->info(fmt::format("[{}/{}] {} @ {}:{}",
+                               id, totalMutants,
+                               m.getOperator(),
+                               m.getPath().filename().string(),
+                               m.getFirst().line));
 
       // Coverage check
       if (!coverageFiles.empty() && !cov.cover(m.getPath().string(), m.getFirst().line)) {
         MutationResult result = evaluator.compare(m, actualDir.string(), "uncovered");
         ws.setDone(id, result);
-        logger->info(fmt::format("{0:-^{1}}", "", 50));
         continue;
       }
 
@@ -699,12 +704,11 @@ int CommandRun::run() {
       // Mutate
       std::stringstream buf;
       buf << m;
-      logger->info(fmt::format("Creating mutant #{0} : {1}", std::to_string(id), buf.str()));
+      logger->verbose(fmt::format("Applying: {}", buf.str()));
       repo->getSourceTree()->modify(m, ws.getBackupDir().string());
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // Build
-      logger->info(fmt::format("Building mutant #{} ...", id));
+      logger->verbose(fmt::format("Building mutant #{}...", id));
       Subprocess buildProc(cmdPrefix + buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string(), silent);
       buildProc.execute();
       std::string testState = "success";
@@ -712,7 +716,7 @@ int CommandRun::run() {
 
       if (buildSuccess) {
         // Test
-        logger->info("Building SUCCESS. Testing ...");
+        logger->verbose("Build OK, running tests...");
         fs::remove_all(testResultDir);
         Subprocess proc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
                         (ws.getMutantDir(id) / "test.log").string(), silent);
@@ -720,7 +724,7 @@ int CommandRun::run() {
         bool testTimeout = proc.isTimedOut();
         if (testTimeout) {
           testState = "timeout";
-          logger->info("Timeout when executing test command.");
+          logger->warn("Test timed out.");
           fs::remove_all(actualDir);
           fs::remove_all(testResultDir);
         } else {
@@ -729,19 +733,15 @@ int CommandRun::run() {
         }
       } else {
         testState = "build_failure";
-        logger->info("Building FAIL.");
+        logger->verbose("Build failed.");
       }
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // Evaluate
-      logger->info("Evaluating mutant test results ...");
       MutationResult result = evaluator.compare(m, actualDir.string(), testState);
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // Restore source
-      logger->info("Restoring source code ...");
+      logger->verbose("Restoring source...");
       restoreBackup(ws.getBackupDir().string(), sourceRoot.string());
-      logger->info(fmt::format("{0:-^{1}}", "", 50));
 
       // Mark as complete
       ws.clearLock(id);
@@ -759,15 +759,13 @@ int CommandRun::run() {
     outputDir = fs::canonical(outputDir);
 
     if (!emptyOutputDir) {
-      logger->info(fmt::format("Writing Report to {}", outputDir.string()));
+      logger->info(fmt::format("Writing report to {}...", outputDir.string()));
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.save(outputDir);
       sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), sourceRoot);
       htmlReport.save(outputDir);
-      logger->info("Print Summary Report");
       htmlReport.printSummary();
     } else {
-      logger->info("Print Summary Report");
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
     }

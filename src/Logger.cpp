@@ -15,10 +15,10 @@
 namespace sentinel {
 
 static std::map<std::string, std::shared_ptr<Logger>> loggers;
-static Logger::Level defaultLevel = Logger::Level::OFF;
+static Logger::Level defaultLevel = Logger::Level::INFO;
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
-  return getLogger(name, "{name} [{level}] {message}");
+  return getLogger(name, "[{level}] {message}");
 }
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name, const std::string& format) {
@@ -42,17 +42,17 @@ Logger::Logger(const std::string& name, const std::string& format, Logger::Level
 std::string Logger::format(Logger::Level level, const std::string& message) {
   std::string levelText;
   if (level == Level::DEBUG) {
-    levelText = "DEBUG";
+    levelText = "debug";
   } else if (level == Level::VERBOSE) {
-    levelText = "VERBOSE";
+    levelText = "verbose";
   } else if (level == Level::INFO) {
-    levelText = "INFO";
+    levelText = "info";
   } else if (level == Level::WARN) {
-    levelText = "WARN";
+    levelText = "warn";
   } else if (level == Level::ERROR) {
-    levelText = "ERROR";
+    levelText = "error";
   } else {
-    levelText = "UNKNOWN";
+    levelText = "?";
   }
   return fmt::format(mFormat, fmt::arg("name", mName), fmt::arg("level", levelText), fmt::arg("message", message));
 }

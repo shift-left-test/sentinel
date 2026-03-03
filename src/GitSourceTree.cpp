@@ -35,7 +35,7 @@ void GitSourceTree::modify(const Mutant& info, const std::experimental::filesyst
     fs::create_directories(newBackupPath);
   }
   fs::copy(targetFilename, newBackupPath, fs::copy_options::overwrite_existing);
-  logger->info(fmt::format("backup: {}", newBackupPath.string()));
+  logger->verbose(fmt::format("backup: {}", newBackupPath.string()));
 
   // Apply mutation
   std::ifstream originalFile(targetFilename);

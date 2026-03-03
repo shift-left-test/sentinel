@@ -36,24 +36,24 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualRe
 
   if (testState == "build_failure") {
     state = MutationState::BUILD_FAILURE;
-    mLogger->info(fmt::format("Build failure - ignore({})", ActualResultDir));
+    mLogger->verbose(fmt::format("build failure ({})", ActualResultDir));
   } else if (testState == "timeout") {
     state = MutationState::TIMEOUT;
-    mLogger->info(fmt::format("Timeout - ignore({})", ActualResultDir));
+    mLogger->verbose(fmt::format("timeout ({})", ActualResultDir));
   } else if (testState == "uncovered") {
     state = MutationState::SURVIVED;
-    mLogger->info("Mutated code line uncovered by test cases - ignore");
+    mLogger->verbose("uncovered by tests - survived");
   } else if (testState == "success") {
     Result mActualResult(ActualResultDir);
-    mLogger->info(fmt::format("Load Actual Result: {}", ActualResultDir));
+    mLogger->verbose(fmt::format("comparing results: {}", ActualResultDir));
     state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
   } else {
     throw InvalidArgumentException(fmt::format("Invalid value for testState : {0}", testState));
   }
-  mLogger->info(fmt::format("Mutant: {}", mut.str()));
-  mLogger->info(fmt::format("killing TC: {}", killingTC));
-  mLogger->info(fmt::format("error TC: {}", errorTC));
-  mLogger->info(fmt::format("Mutation State: {}", MutationStateToStr(state)));
+  mLogger->verbose(fmt::format("mutant: {}", mut.str()));
+  mLogger->verbose(fmt::format("killing TC: {}", killingTC));
+  mLogger->verbose(fmt::format("error TC: {}", errorTC));
+  mLogger->verbose(fmt::format("state: {}", MutationStateToStr(state)));
 
   fs::path relPath;
 
@@ -129,7 +129,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
   outFile << ret << std::endl;
   outFile.close();
 
-  mLogger->info(fmt::format("Save MutationResult: {}", outDir.string()));
+  mLogger->verbose(fmt::format("saved mutation result: {}", outDir.string()));
 
   return ret;
 }

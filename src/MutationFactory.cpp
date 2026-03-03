@@ -26,7 +26,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger("populate");
-  logger->info(fmt::format("random seed: {}", randomSeed));
+  logger->debug(fmt::format("random seed: {}", randomSeed));
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
   // Count number of mutants generated in each file
@@ -71,8 +71,8 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
-  logger->info(fmt::format("source lines: {}", sourceLines.size()));
-  logger->info(fmt::format("generated mutables count: {}", mutables.size()));
+  logger->verbose(fmt::format("source lines: {}", sourceLines.size()));
+  logger->verbose(fmt::format("generated mutants: {}", mutables.size()));
 
   return mutables;
 }

@@ -15,7 +15,9 @@ namespace sentinel {
 class LoggerTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    Logger::setDefaultLevel(Logger::Level::OFF);
     off = Logger::getLogger("off");
+    off->setLevel(Logger::Level::OFF);
 
     Logger::setDefaultLevel(Logger::Level::DEBUG);
     debug = Logger::getLogger("debug");
@@ -91,37 +93,37 @@ TEST_F(LoggerTest, testDebugWithVerboseLevel) {
 TEST_F(LoggerTest, testVerboseWithVerboseLevel) {
   captureStdout();
   verboseLogger->verbose("hello world");
-  EXPECT_STREQ("verboseLogger [VERBOSE] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("[verbose] hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testInfoWithVerboseLevel) {
   captureStdout();
   verboseLogger->info("hello world");
-  EXPECT_STREQ("verboseLogger [INFO] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("[info] hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testInfoWithInfoLevel) {
   captureStdout();
   logger->info("hello world");
-  EXPECT_STREQ("logger [INFO] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("[info] hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testWarnWithInfoLevel) {
   captureStderr();
   logger->warn("hello world");
-  EXPECT_STREQ("logger [WARN] hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("[warn] hello world\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testErrorWithInfoLevel) {
   captureStderr();
   logger->error("hello world");
-  EXPECT_STREQ("logger [ERROR] hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("[error] hello world\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testDebugWithDebugLevel) {
   captureStdout();
   debug->debug("hello world");
-  EXPECT_STREQ("debug [DEBUG] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("[debug] hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithAllLevel) {
@@ -132,8 +134,8 @@ TEST_F(LoggerTest, testLogsWithAllLevel) {
   all->info("I");
   all->warn("W");
   all->error("E");
-  EXPECT_STREQ("all [DEBUG] D\nall [VERBOSE] V\nall [INFO] I\n", capturedStdout().c_str());
-  EXPECT_STREQ("all [WARN] W\nall [ERROR] E\n", capturedStderr().c_str());
+  EXPECT_STREQ("[debug] D\n[verbose] V\n[info] I\n", capturedStdout().c_str());
+  EXPECT_STREQ("[warn] W\n[error] E\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithOffLevelSet) {
@@ -151,7 +153,7 @@ TEST_F(LoggerTest, testLogWithDifferentFormat) {
   logger = Logger::getLogger("another", "{name}:{level}:{message}");
   captureStdout();
   logger->info("hello world");
-  EXPECT_STREQ("another:INFO:hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("another:info:hello world\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testLogWithEmptyFormat) {
@@ -171,7 +173,7 @@ TEST_F(LoggerTest, testLoggersAreShared) {
   captureStdout();
   logger1->info("1");
   logger2->info("2");
-  EXPECT_STREQ("shared:INFO:1\nshared:INFO:2\n", capturedStdout().c_str());
+  EXPECT_STREQ("shared:info:1\nshared:info:2\n", capturedStdout().c_str());
 }
 
 TEST_F(LoggerTest, testSetLevelChangesGlobalLogLevel) {
@@ -184,7 +186,7 @@ TEST_F(LoggerTest, testSetLevelChangesGlobalLogLevel) {
 
   captureStdout();
   logger->debug("1");
-  EXPECT_STREQ("another2 [DEBUG] 1\n", capturedStdout().c_str());
+  EXPECT_STREQ("[debug] 1\n", capturedStdout().c_str());
 }
 
 }  // namespace sentinel
