@@ -692,6 +692,9 @@ int CommandRun::run() {
       if (!coverageFiles.empty() && !cov.cover(m.getPath().string(), m.getFirst().line)) {
         MutationResult result = evaluator.compare(m, actualDir.string(), "uncovered");
         ws.setDone(id, result);
+        statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
+                                 m.getFirst().line);
+        statusLine.recordResult(static_cast<int>(result.getMutationState()));
         continue;
       }
 
