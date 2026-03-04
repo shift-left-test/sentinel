@@ -12,6 +12,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/GitSourceTree.hpp"
@@ -114,7 +115,7 @@ class DiffData {
   std::string mGitWorkdir;
 };
 
-static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData& d) {  // NOLINT
+static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData* diffData) {
   SafeGit2ObjPtr<git_diff, git_diff_free> diff;
 
   if (git_diff_tree_to_workdir_with_index(diff.getPtr(), static_cast<git_repository*>(repo),
@@ -138,7 +139,7 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
           },
           [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void* payload) {
             // each_line_cb
-            auto d = reinterpret_cast<DiffData*>(payload);  // NOLINT
+            auto d = reinterpret_cast<DiffData*>(payload);
             auto logger = Logger::getLogger(cGitRepositoryLoggerName);
             logger->debug(fmt::format("{}:{}:{}", line->origin, delta->new_file.path, line->new_lineno));
 
@@ -147,7 +148,7 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
             }
             return 0;
           },
-          &d) != 0) {
+          diffData) != 0) {
     throw RepositoryException("Failed to diff iterate");
   }
 }
@@ -159,7 +160,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
  * continues into subdirectories so that arbitrarily-nested multi-repo
  * layouts (e.g. Android repo) are discovered fully.
  */
-static std::vector<std::experimental::filesystem::path> collectGitRepos(const std::experimental::filesystem::path& dir) {
+static std::vector<std::experimental::filesystem::path> collectGitRepos(
+    const std::experimental::filesystem::path& dir) {
   namespace fs = std::experimental::filesystem;
   std::vector<fs::path> result;
   if (!fs::is_directory(dir)) {
@@ -193,7 +195,7 @@ static std::vector<std::experimental::filesystem::path> collectGitRepos(const st
  * Extracted from getSourceLines() so it can be called for each repo in a
  * multi-repo walk without duplicating the commit-traversal logic.
  */
-static void applyDiffScope(git_repository* repo, const std::string& scope, git_diff_options* opts, DiffData& d,
+static void applyDiffScope(git_repository* repo, const std::string& scope, git_diff_options* opts, DiffData* d,
                             const std::string& gitWorkdir) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
@@ -379,7 +381,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     git_diff_options opts = buildOpts(cstrs);
     DiffData d(this, gitWorkdir);
     try {
-      applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, d, gitWorkdir);
+      applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
     } catch (const RepositoryException& e) {
       logger->warn(fmt::format("diff failed for {}: {}", gitWorkdir, e.what()));
       continue;
@@ -405,7 +407,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
         git_diff_options opts = buildOpts(cstrs);
         DiffData d(this, gitWorkdir);
         try {
-          applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, d, gitWorkdir);
+          applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
         } catch (const RepositoryException& e) {
           if (repoPaths.empty()) {
             throw;  // Only repo available; propagate so the caller sees the error.

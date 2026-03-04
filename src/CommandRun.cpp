@@ -554,7 +554,7 @@ int CommandRun::run() {
       Subprocess origBuildProc(cmdPrefix + buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
       if (!origBuildProc.isSuccessfulExit()) {
-        throw std::runtime_error("Build FAIL.");
+        throw std::runtime_error("Build failed.");
       }
 
       // test

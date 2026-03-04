@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <string>
 #include "sentinel/SourceLine.hpp"
 
 namespace fs = std::experimental::filesystem;

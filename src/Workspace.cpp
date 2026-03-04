@@ -4,9 +4,9 @@
  */
 
 #include <fmt/core.h>
+#include <experimental/filesystem>
 #include <algorithm>
 #include <cctype>
-#include <experimental/filesystem>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -113,7 +113,8 @@ std::vector<std::pair<int, Mutant>> Workspace::loadMutants() const {
       continue;
     }
     const std::string name = entry.path().filename().string();
-    if (name.empty() || !std::all_of(name.begin(), name.end(), [](unsigned char c) { return std::isdigit(c) != 0; })) {
+    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
+    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
       continue;
     }
 
