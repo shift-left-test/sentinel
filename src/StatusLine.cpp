@@ -100,6 +100,8 @@ void StatusLine::setScrollRegion() {
   if (!mEnabled) {
     return;
   }
+  // Clear screen
+  std::cout << "\033[2J\033[H" << std::flush;
   // Reserve last row for status line by setting scroll region to rows 1 through R-1
   std::cout << fmt::format("\033[1;{}r", mTermRows - 1);
   std::cout.flush();
