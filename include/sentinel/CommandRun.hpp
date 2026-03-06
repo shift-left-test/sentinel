@@ -218,22 +218,22 @@ class CommandRun : public Command {
 
   // Build & test options (registered to mGroupBuildTest)
 
-  /** @brief Build output directory; default location for compile_commands.json. */
+  /** @brief Shell command to build the project. */
+  args::ValueFlag<std::string> mBuildCmd;
+
+  /** @brief Path to the test binary directory. */
   args::ValueFlag<std::string> mBuildDir;
 
   /** @brief Explicit directory containing compile_commands.json. */
   args::ValueFlag<std::string> mCompileDbDir;
 
-  /** @brief Shell command to build the project. */
-  args::ValueFlag<std::string> mBuildCmd;
-
   /** @brief Shell command to run the test suite. */
   args::ValueFlag<std::string> mTestCmd;
 
-  /** @brief Directory where the test command writes result files. */
+  /** @brief Path to the test report directory. */
   args::ValueFlag<std::string> mTestResultDir;
 
-  /** @brief File extensions of test result files to collect. */
+  /** @brief File extension of the test report. */
   args::ValueFlagList<std::string> mTestResultFileExts;
 
   /** @brief Test time limit as a string ("auto", "0", or seconds). */

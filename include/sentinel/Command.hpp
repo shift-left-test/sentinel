@@ -41,9 +41,24 @@ class Command {
 
  protected:
   /**
+   * @brief current working directory
+   */
+  args::ValueFlag<std::string> mCwd;
+
+  /**
    * @brief source root directory
    */
   args::ValueFlag<std::string> mSourceRoot;
+
+  /**
+   * @brief output directory
+   */
+  args::ValueFlag<std::string> mOutputDir;
+
+  /**
+   * @brief internal working directory
+   */
+  args::ValueFlag<std::string> mWorkDir;
 
   /**
    * @brief verbose option
@@ -59,21 +74,6 @@ class Command {
    * @brief debug option
    */
   args::Flag mIsDebug;
-
-  /**
-   * @brief internal working directory
-   */
-  args::ValueFlag<std::string> mWorkDir;
-
-  /**
-   * @brief output directory
-   */
-  args::ValueFlag<std::string> mOutputDir;
-
-  /**
-   * @brief current working directory
-   */
-  args::ValueFlag<std::string> mCwd;
 };
 
 }  // namespace sentinel
