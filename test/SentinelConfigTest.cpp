@@ -46,7 +46,6 @@ verbose: true
 debug: false
 workspace: ./work
 output-dir: ./out
-cwd: /tmp
 compiledb-dir: ./build
 scope: commit
 extension:
@@ -89,9 +88,6 @@ operator:
 
   ASSERT_TRUE(cfg.outputDir.has_value());
   EXPECT_EQ((mTmpDir / "out").string(), *cfg.outputDir);
-
-  ASSERT_TRUE(cfg.cwd.has_value());
-  EXPECT_EQ("/tmp", *cfg.cwd);  // absolute path — not modified
 
   ASSERT_TRUE(cfg.compileDbDir.has_value());
   EXPECT_EQ((mTmpDir / "build").string(), *cfg.compileDbDir);
@@ -170,7 +166,6 @@ limit: 20
   EXPECT_FALSE(cfg.debug.has_value());
   EXPECT_FALSE(cfg.workDir.has_value());
   EXPECT_FALSE(cfg.outputDir.has_value());
-  EXPECT_FALSE(cfg.cwd.has_value());
   EXPECT_FALSE(cfg.compileDbDir.has_value());
   EXPECT_FALSE(cfg.scope.has_value());
   EXPECT_FALSE(cfg.extensions.has_value());

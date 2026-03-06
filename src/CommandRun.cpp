@@ -91,9 +91,6 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Build & test options ---\n"
     "\n"
-    "# Change to this directory before running (default: current directory)\n"
-    "# cwd: .\n"
-    "\n"
     "# Source root directory (default: .)\n"
     "# source-dir: .\n"
     "\n"
@@ -182,7 +179,6 @@ CommandRun::CommandRun(args::Group& parser) :
           {"init"}),
     mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
                   {"no-statusline"}),
-    mCwd(mGroupBuildTest, "PATH", "Change working directory to PATH before running.", {"cwd"}, ""),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
     mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project [required]", {"build-command"}),
     mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",
@@ -223,7 +219,7 @@ void CommandRun::init() {
   namespace fs = std::experimental::filesystem;
 
   if (!mInit) {
-    // Determine config file path (resolved in the original CWD, before --cwd takes effect).
+    // Determine config file path.
     std::string configPath;
     if (mConfigFile) {
       configPath = mConfigFile.Get();
@@ -234,27 +230,18 @@ void CommandRun::init() {
       configPath = "sentinel.yaml";
     }
 
-    // Load YAML config if a file was found or explicitly specified.
+    // Load YAML config if a file was found or explicitly specified,
+    // then chdir to the config file's directory so that all relative paths
+    // in sentinel.yaml and subsequent CLI options share a consistent base.
     if (!configPath.empty()) {
       mConfig = SentinelConfig::loadFromFile(configPath);
-    }
-
-    // Apply YAML cwd if CLI did not specify --cwd.
-    if (!mCwd && mConfig && mConfig->cwd && !mConfig->cwd->empty()) {
+      fs::path configDir = fs::absolute(fs::path(configPath)).parent_path();
       std::error_code ec;
-      fs::current_path(*mConfig->cwd, ec);
+      fs::current_path(configDir, ec);
       if (ec) {
-        throw std::runtime_error(fmt::format("Failed to change directory to '{}': {}", *mConfig->cwd, ec.message()));
+        throw std::runtime_error(
+            fmt::format("Failed to change directory to '{}': {}", configDir.string(), ec.message()));
       }
-    }
-  }
-
-  // Apply CLI --cwd (takes priority over YAML cwd).
-  if (mCwd && !mCwd.Get().empty()) {
-    std::error_code ec;
-    fs::current_path(mCwd.Get(), ec);
-    if (ec) {
-      throw std::runtime_error(fmt::format("Failed to change directory to '{}': {}", mCwd.Get(), ec.message()));
     }
   }
 
@@ -826,7 +813,6 @@ int CommandRun::run() {
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
     }
-
   } catch (...) {
     std::raise(SIGUSR1);
     throw;

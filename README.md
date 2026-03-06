@@ -164,7 +164,6 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--cwd=PATH` | Change to this directory before running | |
 | `--source-dir=PATH` | Root of the source tree to test | `.` |
 | `--build-command=CMD` | Shell command to build the project | **required** |
 | `--compiledb-dir=PATH` | Directory containing `compile_commands.json` | `.` |
@@ -195,6 +194,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 Sentinel supports a YAML configuration file (`sentinel.yaml`) as an alternative to passing all options on the command line.
 
 When invoked, Sentinel looks for `sentinel.yaml` in the current working directory automatically. Use `--config` to specify a different file, or run `sentinel --init` to generate a template.
+
+All relative paths in `sentinel.yaml` are resolved relative to the file's own location. Sentinel also changes to that directory before executing build and test commands, so paths in the config and shell commands share the same base.
 
 **Precedence:**
 ```
@@ -248,9 +249,6 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # no-statusline: false
 
 # --- Build & test options ---
-
-# Change to this directory before running (default: current directory)
-# cwd: .
 
 # Source root directory (default: .)
 # source-dir: .

@@ -82,10 +82,6 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["output-dir"]) {
       cfg.outputDir = root["output-dir"].as<std::string>();
     }
-    if (root["cwd"]) {
-      cfg.cwd = root["cwd"].as<std::string>();
-    }
-
     // CommandRun-specific options
     if (root["compiledb-dir"]) {
       cfg.compileDbDir = root["compiledb-dir"].as<std::string>();
@@ -161,7 +157,6 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
   resolvePath(cfg.sourceDir);
   resolvePath(cfg.workDir);
   resolvePath(cfg.outputDir);
-  resolvePath(cfg.cwd);
   resolvePath(cfg.compileDbDir);
   resolvePath(cfg.testResultDir);
 

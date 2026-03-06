@@ -30,7 +30,7 @@ class CommandRun : public Command {
   explicit CommandRun(args::Group& parser);
 
   /**
-   * @brief Loads the YAML config file and applies @c --cwd / log-level settings.
+   * @brief Loads the YAML config file and applies log-level settings.
    *
    * Called before run(). Handles @c --init early exit.
    */
@@ -212,9 +212,6 @@ class CommandRun : public Command {
   args::Flag mNoStatusLine;
 
   // Build & test options (registered to mGroupBuildTest)
-
-  /** @brief Change working directory to this path before running. */
-  args::ValueFlag<std::string> mCwd;
 
   /** @brief Path to the root of the source tree. */
   args::ValueFlag<std::string> mSourceDir;

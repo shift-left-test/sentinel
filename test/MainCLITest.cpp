@@ -233,7 +233,8 @@ TEST_F(MainCLITest, testCommandRun) {
   Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
   fs::remove_all(SAMPLE_DIR / "testresult");
 
-  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
+  addArg(fmt::format("--config={}", (SAMPLE_DIR / "sentinel.yaml").string()).c_str());
   addArg(fmt::format("--source-dir={}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
@@ -269,8 +270,8 @@ TEST_F(MainCLITest, testCommandRun) {
 TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
   // Pre-create sentinel.yaml with recognisable content.
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+  std::experimental::filesystem::current_path(SAMPLE_DIR);
 
-  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
   addArg("--init");
   addArg("--force");
 
@@ -287,8 +288,8 @@ TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
 
 TEST_F(MainCLITest, testInitPromptAbortsOnNo) {
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+  std::experimental::filesystem::current_path(SAMPLE_DIR);
 
-  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
   addArg("--init");
 
   std::istringstream fakeInput("n\n");
@@ -306,8 +307,8 @@ TEST_F(MainCLITest, testInitPromptAbortsOnNo) {
 
 TEST_F(MainCLITest, testInitPromptOverwritesOnY) {
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+  std::experimental::filesystem::current_path(SAMPLE_DIR);
 
-  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
   addArg("--init");
 
   std::istringstream fakeInput("y\n");

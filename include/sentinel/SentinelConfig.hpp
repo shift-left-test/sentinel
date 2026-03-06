@@ -30,8 +30,6 @@ struct SentinelConfig {
   std::optional<std::string> workDir;
   /// Directory for output reports (--output-dir).
   std::optional<std::string> outputDir;
-  /// Change to this directory before running (--cwd).
-  std::optional<std::string> cwd;
 
   // CommandRun-specific options
   /// Path to directory containing compile_commands.json (--compiledb-dir).

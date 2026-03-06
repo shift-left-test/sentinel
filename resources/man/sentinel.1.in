@@ -44,8 +44,11 @@ and delete a non-empty test report directory.
 .SS Run options
 .TP
 \fB\-\-config\fR=\fIPATH\fR
-Path to a YAML config file. When omitted, \fBsentinel.yaml\fR in the
-current directory is used automatically if it exists.
+Path to a YAML config file. When specified, sentinel changes to the
+config file's directory before running, so all relative paths in the
+config and build/test commands are resolved from that location.
+When omitted, \fBsentinel.yaml\fR in the current directory is used
+automatically if it exists.
 .TP
 \fB\-\-init\fR
 Write a \fBsentinel.yaml\fR config template to the current directory and exit.
@@ -54,9 +57,6 @@ Prompts for confirmation if the file already exists.
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
 .SS Build & test options
-.TP
-\fB\-\-cwd\fR=\fIPATH\fR
-Change to this directory before running.
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR
 Root of the source tree to test. Default: \fB.\fR
@@ -162,6 +162,10 @@ to passing all options on the command line.
 When invoked, sentinel automatically looks for \fBsentinel.yaml\fR in the current
 working directory. Use \fB\-\-config\fR to specify a different file.
 .PP
+All relative paths in \fBsentinel.yaml\fR are resolved relative to the file's own
+location. sentinel also changes to that directory before executing build and test
+commands, so paths in the config and shell commands share the same base.
+.PP
 CLI arguments always take priority over values in the configuration file:
 .IP
 CLI argument  >  sentinel.yaml  >  built-in default
@@ -179,9 +183,6 @@ Directory for all run artifacts.
 .TP
 \fBoutput-dir\fR
 Directory to write HTML/XML reports.
-.TP
-\fBcwd\fR
-Change to this directory before running.
 .TP
 \fBsilent\fR
 Suppress build/test log output to the terminal (boolean).
