@@ -1,8 +1,8 @@
 #!/bin/bash
-
-cmake . -DENABLE_TEST=ON || exit 1
-make doc || exit 1
-make all -j || exit 1
-ctest --output-on-failure || exit 1
-make coverage
-make package
+set -e
+cmake -S . -B out -DENABLE_TEST=ON
+cmake --build out --target doc
+cmake --build out --target all -j
+ctest --test-dir out --output-on-failure
+cmake --build out --target coverage
+cmake --build out --target package

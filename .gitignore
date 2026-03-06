@@ -301,3 +301,4 @@ _CPack_Packages/
 *.deb
 resources/man/sentinel.1
 include/sentinel/version.hpp
+out/
