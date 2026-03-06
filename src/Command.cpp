@@ -17,7 +17,7 @@ const char* cCommandLoggerName = "Command";
 
 Command::Command(args::Group& parser) :
     mCwd(parser, "PATH", "Change working directory to this path before running.", {"cwd"}, ""),
-    mSourceRoot(parser, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
+    mSourceDir(parser, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
     mOutputDir(parser, "PATH", "Path to the directory to write mutation test reports (HTML/XML).",
                {'o', "output-dir"}, ""),
     mWorkDir(parser, "PATH", "Path to the workspace directory for run artifacts.",

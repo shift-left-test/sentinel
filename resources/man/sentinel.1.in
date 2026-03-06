@@ -3,7 +3,7 @@
 .SH NAME
 sentinel \- mutation testing tool for C/C++ projects
 .SH SYNOPSIS
-sentinel [SOURCE_ROOT_PATH] {OPTIONS}
+sentinel {OPTIONS}
 .SH DESCRIPTION
 sentinel runs a full mutation testing pipeline on a C/C++ project.
 It seeds small, deliberate faults (mutants) into the source code, rebuilds the project,
@@ -11,19 +11,18 @@ runs the test suite, and reports which mutants were caught (killed) and which su
 .PP
 The mutation score — killed / (killed + survived) — measures how thoroughly the tests
 cover the code under mutation.
-.SH POSITIONAL ARGUMENT
-.TP
-\fBSOURCE_ROOT_PATH\fR
-Root of the source tree to test. Defaults to the current directory.
 .SH OPTIONS
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Display the help menu.
 .TP
-\fB\-\-version\fR
+\fB\-v\fR, \fB\-\-version\fR
 Print the program version and exit.
 .TP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-\-source\-dir\fR=\fIPATH\fR
+Root of the source tree to test. Default: \fB.\fR
+.TP
+\fB\-\-verbose\fR
 Enable verbose output (INFO level and above).
 .TP
 \fB\-\-debug\fR
@@ -37,6 +36,11 @@ Directory to write HTML/XML reports.
 .TP
 \fB\-\-cwd\fR=\fIPATH\fR
 Change to this directory before running.
+.TP
+\fB\-\-silent\fR
+Suppress build/test log output to the terminal.
+The status line still shows overall progress. Useful for keeping the terminal clean
+during long runs. Build and test output is still written to the workspace log files.
 .SS Run options
 .TP
 \fB\-\-config\fR=\fIPATH\fR
@@ -49,31 +53,25 @@ Prompts for confirmation if the file already exists.
 .TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
-.TP
-\fB\-\-silent\fR
-Suppress build/test log output to the terminal.
-The status line still shows overall progress. Useful for keeping the terminal clean
-during long runs. Build and test output is still written to the workspace log files.
 .SS Build & test options
-.TP
-\fB\-b\fR \fIPATH\fR, \fB\-\-build\-dir\fR=\fIPATH\fR
-Build output directory. Also searched for \fBcompile_commands.json\fR by default.
-Default: \fB.\fR
-.TP
-\fB\-\-compiledb\fR=\fIPATH\fR
-Directory containing \fBcompile_commands.json\fR. Overrides \fB\-\-build\-dir\fR
-for Clang compilation database lookup.
 .TP
 \fB\-\-build\-command\fR=\fICMD\fR
 Shell command to build the project. \fBRequired.\fR
 .TP
+\fB\-b\fR \fIPATH\fR, \fB\-\-binary\-dir\fR=\fIPATH\fR
+Build output directory. Also searched for \fBcompile_commands.json\fR by default.
+Default: \fB.\fR
+.TP
+\fB\-\-compiledb\fR=\fIPATH\fR
+Directory containing \fBcompile_commands.json\fR.
+.TP
 \fB\-\-test\-command\fR=\fICMD\fR
 Shell command to run the test suite. \fBRequired.\fR
 .TP
-\fB\-\-test\-result\-dir\fR=\fIPATH\fR
+\fB\-\-test\-report\-dir\fR=\fIPATH\fR
 Directory where the test command writes its result files. \fBRequired.\fR
 .TP
-\fB\-\-test\-result\-extension\fR=\fIEXT\fR
+\fB\-\-test\-report\-extension\fR=\fIEXT\fR
 File extension of test result files (repeatable). Default: \fBxml\fR
 .TP
 \fB\-\-timeout\fR=\fISEC\fR
@@ -116,6 +114,23 @@ Defaults to all operators when omitted.
 \fB\-\-coverage\fR=\fIFILE\fR
 lcov coverage info file (repeatable). When given, only source lines covered by
 tests are considered for mutation.
+.SH COVERAGE-GUIDED MUTATION
+The \fB\-\-coverage\fR option accepts an lcov coverage info file and restricts mutation
+to source lines that are actually executed by the test suite.
+This reduces the number of mutants and focuses testing on covered code.
+The option can be repeated to merge multiple coverage files.
+.PP
+After running the tests with coverage instrumentation enabled, generate the coverage info
+file with lcov:
+.PP
+.nf
+lcov --capture --directory . --output-file coverage.info
+
+# (Optional) Remove system and third-party paths
+lcov --remove coverage.info '/usr/*' '*/third_party/*' --output-file coverage.info
+.fi
+.PP
+Then pass it to sentinel via \fB\-\-coverage=coverage.info\fR.
 .SH MUTATION OPERATORS
 .TP
 \fBAOR\fR \(em Arithmetic Operator Replacement
@@ -150,8 +165,8 @@ CLI argument  >  sentinel.yaml  >  built-in default
 .PP
 Supported keys (all optional):
 .TP
-\fBsource-root\fR
-Source root directory.
+\fBsource-dir\fR
+Root of the source tree to test.
 .TP
 \fBverbose\fR / \fBdebug\fR
 Enable verbose or debug logging (boolean).
@@ -165,16 +180,19 @@ Directory to write HTML/XML reports.
 \fBcwd\fR
 Change to this directory before running.
 .TP
-\fBconfig\fR
-Path to a YAML config file.
+\fBsilent\fR
+Suppress build/test log output to the terminal (boolean).
 .TP
-\fBbuild-dir\fR / \fBcompiledb\fR
+\fBno-statusline\fR
+Disable the terminal status line (boolean).
+.TP
+\fBbinary-dir\fR / \fBcompiledb\fR
 Build output directory / directory containing compile_commands.json.
 .TP
 \fBbuild-command\fR / \fBtest-command\fR
 Shell commands to build the project and run the test suite.
 .TP
-\fBtest-result-dir\fR / \fBtest-result-extension\fR
+\fBtest-report-dir\fR / \fBtest-report-extension\fR
 Test result directory and file extensions.
 .TP
 \fBtimeout\fR / \fBkill-after\fR
@@ -194,20 +212,15 @@ Mutant count limit, selection strategy, random seed, and operator list.
 .TP
 \fBcoverage\fR
 List of lcov coverage info files.
-.TP
-\fBno-statusline\fR
-Disable the terminal status line (boolean).
-.TP
-\fBsilent\fR
-Suppress build/test log output to the terminal (boolean).
 .SH EXAMPLES
 Run mutation testing on a CMake project:
 .PP
 .nf
-sentinel /path/to/project \\
+sentinel \\
+  --source-dir=/path/to/project \\
   --build-command="cmake --build build" \\
   --test-command="ctest --test-dir build" \\
-  --test-result-dir=build/test-results \\
+  --test-report-dir=build/test-results \\
   --scope=commit \\
   --limit=50
 .fi

@@ -41,7 +41,7 @@ class SentinelConfigTest : public ::testing::Test {
 
 TEST_F(SentinelConfigTest, testLoadCompleteConfig) {
   writeFile("sentinel.yaml", R"(
-source-root: ./src
+source-dir: ./src
 verbose: true
 debug: false
 workspace: ./work
@@ -76,8 +76,8 @@ operator:
 
   auto cfg = SentinelConfig::loadFromFile(configPath("sentinel.yaml"));
 
-  ASSERT_TRUE(cfg.sourceRoot.has_value());
-  EXPECT_EQ("./src", *cfg.sourceRoot);
+  ASSERT_TRUE(cfg.sourceDir.has_value());
+  EXPECT_EQ("./src", *cfg.sourceDir);
 
   ASSERT_TRUE(cfg.verbose.has_value());
   EXPECT_TRUE(*cfg.verbose);
@@ -169,7 +169,7 @@ limit: 20
   EXPECT_EQ(20u, *cfg.limit);
 
   // Unspecified fields must remain empty optionals
-  EXPECT_FALSE(cfg.sourceRoot.has_value());
+  EXPECT_FALSE(cfg.sourceDir.has_value());
   EXPECT_FALSE(cfg.verbose.has_value());
   EXPECT_FALSE(cfg.debug.has_value());
   EXPECT_FALSE(cfg.workDir.has_value());

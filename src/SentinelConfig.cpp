@@ -43,8 +43,8 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
 
   try {
     // Shared with Command base class
-    if (root["source-root"]) {
-      cfg.sourceRoot = root["source-root"].as<std::string>();
+    if (root["source-dir"]) {
+      cfg.sourceDir = root["source-dir"].as<std::string>();
     }
     if (root["verbose"]) {
       cfg.verbose = root["verbose"].as<bool>();

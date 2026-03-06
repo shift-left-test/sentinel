@@ -104,7 +104,7 @@ class CommandRun : public Command {
   /**
    * @brief Returns the resolved source root path (CLI > YAML > default).
    */
-  virtual std::string getSourceRoot();
+  virtual std::string getSourceDir();
 
   /**
    * @brief Returns the resolved build directory path.

@@ -48,7 +48,7 @@ class Command {
   /**
    * @brief source root directory
    */
-  args::ValueFlag<std::string> mSourceRoot;
+  args::ValueFlag<std::string> mSourceDir;
 
   /**
    * @brief output directory

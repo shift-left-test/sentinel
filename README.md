@@ -15,6 +15,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration File](#configuration-file)
+- [Coverage-Guided Mutation](#coverage-guided-mutation)
 - [Mutation Operators](#mutation-operators)
 - [Supported Test Runners](#supported-test-runners)
 - [Development](#development)
@@ -54,10 +55,11 @@ cd sentinel && cmake . && make all -j && make package
 sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
 # 3. Run mutation testing on your project
-sentinel /path/to/your/project \
+sentinel \
+  --source-dir=/path/to/your/project \
   --build-command="make" \
   --test-command="make test" \
-  --test-result-dir=./test-results
+  --test-report-dir=./test-results
 ```
 
 ---
@@ -102,7 +104,7 @@ sudo apt-get install ./sentinel-0.4.8-amd64.deb
 ## Usage
 
 ```
-sentinel [SOURCE_ROOT_PATH] {OPTIONS}
+sentinel {OPTIONS}
 ```
 
 Sentinel builds the project, runs the test suite once to establish a baseline, then applies each mutant in turn and checks whether the tests catch it.
@@ -110,13 +112,15 @@ Sentinel builds the project, runs the test suite once to establish a baseline, t
 ### Example
 
 ```bash
-sentinel ./my-project \
+sentinel \
+  --source-dir=./my-project \
   --build-command="cmake --build build" \
   --test-command="ctest --test-dir build" \
-  --test-result-dir=./build/test-results \
+  --test-report-dir=./build/test-results \
   --scope=commit \
   --limit=50 \
-  --exclude="*/third_party/*" "*/test/*"
+  --exclude="*/third_party/*" \
+  --exclude="*/test/*"
 ```
 
 ### Terminal Status Line
@@ -141,8 +145,9 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `SOURCE_ROOT_PATH` | Root of the source tree to test | `.` |
-| `-v, --verbose` | Enable verbose output (INFO level and above) | |
+| `--source-dir=PATH` | Root of the source tree to test | `.` |
+| `--verbose` | Enable verbose output (INFO level and above) | |
+| `--silent` | Suppress build/test log output; status line still shows progress | |
 | `--debug` | Enable debug output (all log levels) | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
@@ -155,18 +160,17 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--config=PATH` | YAML config file path | `sentinel.yaml` (auto-detected) |
 | `--init` | Write a `sentinel.yaml` config template and exit | |
 | `--no-statusline` | Disable the live terminal status line | |
-| `--silent` | Suppress build/test log output; status line still shows progress | |
 
 #### Build & test options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-b, --build-dir=PATH` | Build output directory (also searched for `compile_commands.json`) | `.` |
-| `--compiledb=PATH` | Directory containing `compile_commands.json` (overrides `--build-dir`) | |
 | `--build-command=CMD` | Shell command to build the project | **required** |
+| `-b, --binary-dir=PATH` | Build output directory (also searched for `compile_commands.json`) | `.` |
+| `--compiledb=PATH` | Directory containing `compile_commands.json` | |
 | `--test-command=CMD` | Shell command to run tests | **required** |
-| `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
-| `--test-result-extension=EXT` | File extension of test result files (repeatable) | `xml` |
+| `--test-report-dir=PATH` | Directory where the test command writes result files | **required** |
+| `--test-report-extension=EXT` | File extension of test result files (repeatable) | `xml` |
 | `--timeout=SEC` | Test time limit; `0` = no limit, `auto` = 2× baseline run time | `auto` |
 | `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
@@ -201,11 +205,11 @@ CLI argument  >  sentinel.yaml  >  built-in default
 
 ```yaml
 # sentinel.yaml
-source-root: ./src
-build-dir: ./build
+source-dir: ./src
+binary-dir: ./build
 build-command: cmake --build build
 test-command: ctest --test-dir build
-test-result-dir: ./build/test-results
+test-report-dir: ./build/test-results
 scope: commit
 limit: 50
 exclude:
@@ -219,57 +223,69 @@ Run `sentinel --init` to write a fully commented template to the current directo
 
 ```yaml
 # sentinel.yaml — full configuration template
+#
+# Uncomment and edit the options you need.
 # CLI arguments always take priority over values in this file.
 
-# Root of the source tree to test
-# source-root: ./
-
-# Enable verbose or debug logging
-# verbose: false
-# debug: false
-
-# Directory for all run artifacts
-# workspace: ./sentinel_workspace
-
-# Directory to write HTML/XML reports
-# output-dir: ./sentinel_output
-
-# Change to this directory before running
+# Change to this directory before running (default: current directory)
 # cwd: .
 
-# --- Build & test ---
+# Source root directory (default: .)
+# source-dir: .
 
-# Build output directory (also searched for compile_commands.json by default)
-# build-dir: .
+# Directory for output reports (default: none)
+# output-dir: ./sentinel_output
 
-# Directory containing compile_commands.json (overrides build-dir)
-# compiledb: .
+# Workspace directory for all sentinel run artifacts (default: ./sentinel_workspace)
+# workspace: ./sentinel_workspace
 
-# Shell command to build the project
+# Enable verbose logging (default: false)
+# verbose: false
+
+# Suppress build/test log output to the terminal; status line still shows progress (default: false)
+# silent: false
+
+# Enable debug logging (default: false)
+# debug: false
+
+# --- Run options ---
+
+# Disable the terminal status line even when stdout is a TTY (default: false)
+# no-statusline: false
+
+# --- Build & test options ---
+
+# Shell command to build the source
 # build-command: make
 
-# Shell command to run tests
+# Path to the test binary directory (default: .)
+# binary-dir: .
+
+# Explicit path to directory containing compile_commands.json
+# compiledb: .
+
+# Shell command to execute tests
 # test-command: make test
 
-# Directory where the test command writes result files
-# test-result-dir: ./test-results
+# Path to the test report directory
+# test-report-dir: ./test-results
 
-# File extensions of test result files
-# test-result-extension:
+# File extension of the test report (default: xml)
+# test-report-extension:
 #   - xml
 
-# Test time limit in seconds (0 = no limit, auto = 2x baseline run time)
+# Test time limit in seconds (default: auto — 2x baseline run time; 0 = no limit)
 # timeout: auto
 
-# Seconds after timeout before sending SIGKILL (0 = disabled)
+# Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
 # kill-after: 60
 
-# --- Mutation ---
+# --- Mutation options ---
 
-# Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)
+# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)
 # scope: all
 
-# Source file extensions to mutate
+# Source file extensions to mutate (default: cxx cpp cc c c++ cu)
 # extension:
 #   - cpp
 #   - cxx
@@ -278,22 +294,22 @@ Run `sentinel --init` to write a fully commented template to the current directo
 #   - c++
 #   - cu
 
-# Paths or glob patterns to constrain the mutation scope
+# Paths or glob patterns to constrain the diff (default: none — entire source)
 # pattern: []
 
-# Exclude files/directories matching fnmatch-style patterns
+# Paths excluded from mutation; fnmatch-style patterns (default: none)
 # exclude: []
 
-# Maximum number of mutants to generate
+# Maximum number of mutants to generate (default: 10)
 # limit: 10
 
-# Mutant selection strategy: 'uniform', 'random', or 'weighted'
+# Mutant generator type: 'uniform', 'random', or 'weighted' (default: uniform)
 # generator: uniform
 
-# Random seed for mutant selection
-# seed: 42
+# Random seed for mutant selection (default: auto — picked randomly)
+# seed: auto
 
-# Mutation operators to apply (defaults to all)
+# Mutation operators to use; omit to use all operators (default: all)
 # Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI
 # operator:
 #   - AOR
@@ -304,15 +320,32 @@ Run `sentinel --init` to write a fully commented template to the current directo
 #   - SOR
 #   - UOI
 
-# lcov coverage info files; limits mutation to covered lines
+# lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
-
-# Disable the terminal status line even when stdout is a TTY
-# no-statusline: false
-
-# Suppress build/test log output to the terminal (status line still shows progress)
-# silent: false
 ```
+
+---
+
+## Coverage-Guided Mutation
+
+The `--coverage` option accepts an lcov coverage info file and restricts mutation to source lines that are actually executed by the test suite. This reduces the number of mutants and focuses testing on covered code.
+
+After running the tests with coverage instrumentation enabled, generate the coverage info file with lcov:
+
+```bash
+lcov --capture --directory . --output-file coverage.info
+
+# (Optional) Remove system and third-party paths
+lcov --remove coverage.info '/usr/*' '*/third_party/*' --output-file coverage.info
+```
+
+Then pass it to Sentinel:
+
+```bash
+sentinel --coverage=coverage.info ...
+```
+
+The `--coverage` option can be repeated to merge multiple coverage files.
 
 ---
 

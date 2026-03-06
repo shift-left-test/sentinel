@@ -20,8 +20,8 @@ namespace sentinel {
  */
 struct SentinelConfig {
   // Shared with Command base class
-  /// Path to the source root directory (--source-root).
-  std::optional<std::string> sourceRoot;
+  /// Path to the source root directory (--source-dir).
+  std::optional<std::string> sourceDir;
   /// Enable verbose logging (--verbose).
   std::optional<bool> verbose;
   /// Enable debug logging (--debug).

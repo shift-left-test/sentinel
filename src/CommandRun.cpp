@@ -69,41 +69,65 @@ static const char* const kYamlTemplate =
     "# Uncomment and edit the options you need.\n"
     "# CLI arguments always take priority over values in this file.\n"
     "\n"
-    "# --- Shared options (all commands) ---\n"
-    "\n"
-    "# Source root directory (equivalent to --source-dir CLI option)\n"
-    "# source-root: ./\n"
-    "\n"
-    "# Enable verbose logging\n"
-    "# verbose: false\n"
-    "\n"
-    "# Suppress build/test log output to the terminal (status line still shows progress)\n"
-    "# silent: false\n"
-    "\n"
-    "# Enable debug logging\n"
-    "# debug: false\n"
-    "\n"
-    "# Workspace directory for all sentinel run artifacts\n"
-    "# workspace: ./sentinel_workspace\n"
-    "\n"
-    "# Directory for output reports\n"
-    "# output-dir: ./sentinel_output\n"
-    "\n"
-    "# Change to this directory before running\n"
+    "# Change to this directory before running (default: current directory)\n"
     "# cwd: .\n"
     "\n"
-    "# --- sentinel run options ---\n"
+    "# Source root directory (default: .)\n"
+    "# source-dir: .\n"
     "\n"
-    "# Path to the test binary directory\n"
+    "# Directory for output reports (default: none)\n"
+    "# output-dir: ./sentinel_output\n"
+    "\n"
+    "# Workspace directory for all sentinel run artifacts (default: ./sentinel_workspace)\n"
+    "# workspace: ./sentinel_workspace\n"
+    "\n"
+    "# Enable verbose logging (default: false)\n"
+    "# verbose: false\n"
+    "\n"
+    "# Suppress build/test log output to the terminal; status line still shows progress (default: false)\n"
+    "# silent: false\n"
+    "\n"
+    "# Enable debug logging (default: false)\n"
+    "# debug: false\n"
+    "\n"
+    "# --- Run options ---\n"
+    "\n"
+    "# Disable the terminal status line even when stdout is a TTY (default: false)\n"
+    "# no-statusline: false\n"
+    "\n"
+    "# --- Build & test options ---\n"
+    "\n"
+    "# Shell command to build the source\n"
+    "# build-command: make\n"
+    "\n"
+    "# Path to the test binary directory (default: .)\n"
     "# binary-dir: .\n"
     "\n"
     "# Explicit path to directory containing compile_commands.json\n"
     "# compiledb: .\n"
     "\n"
-    "# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase)\n"
+    "# Shell command to execute tests\n"
+    "# test-command: make test\n"
+    "\n"
+    "# Path to the test report directory\n"
+    "# test-report-dir: ./test-results\n"
+    "\n"
+    "# File extension of the test report (default: xml)\n"
+    "# test-report-extension:\n"
+    "#   - xml\n"
+    "\n"
+    "# Test time limit in seconds (default: auto — 2x baseline run time; 0 = no limit)\n"
+    "# timeout: auto\n"
+    "\n"
+    "# Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)\n"
+    "# kill-after: 60\n"
+    "\n"
+    "# --- Mutation options ---\n"
+    "\n"
+    "# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)\n"
     "# scope: all\n"
     "\n"
-    "# Source file extensions to mutate\n"
+    "# Source file extensions to mutate (default: cxx cpp cc c c++ cu)\n"
     "# extension:\n"
     "#   - cpp\n"
     "#   - cxx\n"
@@ -112,48 +136,22 @@ static const char* const kYamlTemplate =
     "#   - c++\n"
     "#   - cu\n"
     "\n"
-    "# Paths or glob patterns to constrain the diff\n"
+    "# Paths or glob patterns to constrain the diff (default: none — entire source)\n"
     "# pattern: []\n"
     "\n"
-    "# Paths excluded from mutation (fnmatch-style patterns)\n"
+    "# Paths excluded from mutation; fnmatch-style patterns (default: none)\n"
     "# exclude: []\n"
     "\n"
-    "# Maximum number of mutants to generate\n"
+    "# Maximum number of mutants to generate (default: 10)\n"
     "# limit: 10\n"
     "\n"
-    "# Shell command to build the source\n"
-    "# build-command: make\n"
-    "\n"
-    "# Shell command to execute tests\n"
-    "# test-command: make test\n"
-    "\n"
-    "# Path to the test report directory\n"
-    "# test-report-dir: ./test-results\n"
-    "\n"
-    "# File extension of the test report\n"
-    "# test-report-extension:\n"
-    "#   - xml\n"
-    "\n"
-    "# lcov-format coverage result files\n"
-    "# coverage: []\n"
-    "\n"
-    "# Mutant generator type: 'uniform', 'random', or 'weighted'\n"
+    "# Mutant generator type: 'uniform', 'random', or 'weighted' (default: uniform)\n"
     "# generator: uniform\n"
     "\n"
-    "# Time limit (seconds) for the test command.\n"
-    "# 0 = no limit, 'auto' = automatically determined from baseline run time.\n"
-    "# timeout: auto\n"
-    "\n"
-    "# Seconds to wait after timeout before sending SIGKILL. 0 = disabled.\n"
-    "# kill-after: 60\n"
-    "\n"
-    "# Random seed for mutant selection ('auto' = pick randomly)\n"
+    "# Random seed for mutant selection (default: auto — picked randomly)\n"
     "# seed: auto\n"
     "\n"
-    "# Disable the terminal status line even when stdout is a TTY\n"
-    "# no-statusline: false\n"
-    "\n"
-    "# Mutation operators to use. Omit to use all operators.\n"
+    "# Mutation operators to use; omit to use all operators (default: all)\n"
     "# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI\n"
     "# operator:\n"
     "#   - AOR\n"
@@ -162,7 +160,10 @@ static const char* const kYamlTemplate =
     "#   - ROR\n"
     "#   - SDL\n"
     "#   - SOR\n"
-    "#   - UOI\n";
+    "#   - UOI\n"
+    "\n"
+    "# lcov-format coverage result files; limits mutation to covered lines only (default: none)\n"
+    "# coverage: []\n";
 
 CommandRun::CommandRun(args::Group& parser) :
     Command(parser),
@@ -274,7 +275,7 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
                                       bool noStatusLine, bool silent) {
   YAML::Emitter out;
   out << YAML::BeginMap;
-  out << YAML::Key << "source-root" << YAML::Value << sourceRoot;
+  out << YAML::Key << "source-dir" << YAML::Value << sourceRoot;
   out << YAML::Key << "verbose" << YAML::Value << verbose;
   out << YAML::Key << "debug" << YAML::Value << debug;
   out << YAML::Key << "no-statusline" << YAML::Value << noStatusLine;
@@ -391,7 +392,7 @@ int CommandRun::run() {
   std::string outputDirStr;
 
   if (resuming) {
-    sourceRootStr = activeConfig.sourceRoot.value_or(".");
+    sourceRootStr = activeConfig.sourceDir.value_or(".");
     buildDirStr = activeConfig.buildDir.value_or(".");
     compileDbStr = activeConfig.compileDbDir.value_or("");
     buildCmd = activeConfig.buildCmd.value_or("");
@@ -411,7 +412,7 @@ int CommandRun::run() {
     operators = activeConfig.operators.value_or(std::vector<std::string>{});
     outputDirStr = activeConfig.outputDir.value_or("");
   } else {
-    sourceRootStr = getSourceRoot();
+    sourceRootStr = getSourceDir();
     buildDirStr = getBuildDir();
     compileDbStr = getCompileDbDir();
     buildCmd = getBuildCmd();
@@ -848,14 +849,14 @@ std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targe
   return fs::canonical(target).string();
 }
 
-std::string CommandRun::getSourceRoot() {
-  if (mSourceRoot) {
-    return mSourceRoot.Get();
+std::string CommandRun::getSourceDir() {
+  if (mSourceDir) {
+    return mSourceDir.Get();
   }
-  if (mConfig && mConfig->sourceRoot) {
-    return *mConfig->sourceRoot;
+  if (mConfig && mConfig->sourceDir) {
+    return *mConfig->sourceDir;
   }
-  return mSourceRoot.Get();
+  return mSourceDir.Get();
 }
 
 std::string CommandRun::getBuildDir() {
