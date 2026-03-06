@@ -260,8 +260,38 @@ GitRepository::GitRepository(const std::string& path, const std::vector<std::str
   logger->debug(fmt::format("patterns: {}", string::join(", ", patterns)));
   mPatterns = patterns;
 
+  // Warn about --pattern values that are absolute paths outside source-dir.
+  // isTargetPath() rejects files outside sourceRoot, so such patterns produce no mutants.
+  // This commonly happens in multi-repo setups where the pattern points to a different
+  // git repository.
+  for (const auto& pattern : mPatterns) {
+    fs::path p(pattern);
+    if (p.is_absolute()) {
+      auto mm = std::mismatch(mSourceRoot.begin(), mSourceRoot.end(), p.begin(), p.end());
+      if (mm.first != mSourceRoot.end()) {
+        logger->warn(fmt::format(
+            "--pattern '{}' is outside source-dir '{}'. "
+            "Files from a different git repository are excluded from mutation.",
+            pattern, mSourceRoot.string()));
+      }
+    }
+  }
+
   logger->debug(fmt::format("excludes: {}", string::join(", ", excludes)));
   mExcludes = excludes;
+
+  // Warn about --exclude patterns that are relative paths without a leading wildcard.
+  // Exclusion is matched against canonical absolute file paths using fnmatch(), so a
+  // pattern like "build/" will never match "/absolute/path/to/build/foo.cpp".
+  // Use "*/build/*" or "*build*" instead.
+  for (const auto& excl : mExcludes) {
+    if (!excl.empty() && excl.front() != '/' && excl.front() != '*') {
+      logger->warn(fmt::format(
+          "--exclude '{}': relative pattern without a leading '*' will not match absolute "
+          "file paths. Did you mean '*/{}/*'?",
+          excl, excl));
+    }
+  }
 }
 
 GitRepository::~GitRepository() {
@@ -289,6 +319,7 @@ bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path
   {
     auto mm = std::mismatch(mSourceRoot.begin(), mSourceRoot.end(), canonicalPath.begin(), canonicalPath.end());
     if (mm.first != mSourceRoot.end()) {
+      logger->debug(fmt::format("skipped (outside source-dir): {}", canonicalPath.string()));
       return false;
     }
   }

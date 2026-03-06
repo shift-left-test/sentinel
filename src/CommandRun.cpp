@@ -546,6 +546,15 @@ int CommandRun::run() {
     }
   }
 
+  // Warn if compile_commands.json is absent from --compiledb-dir.
+  // Check before the build so the user knows early; the build step may generate it.
+  if (!fs::exists(fs::path(compileDbStr) / "compile_commands.json")) {
+    logger->warn(fmt::format(
+        "--compiledb-dir '{}' does not contain compile_commands.json. "
+        "Mutant generation will fail unless the build step creates it.",
+        compileDbStr));
+  }
+
   try {
     // ── STEP 3: Original build & test ──────────────────────────────────────────
     // Skip if resuming and original results already exist.
@@ -630,6 +639,16 @@ int CommandRun::run() {
       auto repo =
           std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
       sentinel::SourceLines sourceLines = repo->getSourceLines(scope);
+      if (sourceLines.empty()) {
+        if (scope == "commit") {
+          logger->warn("No changed source lines found (scope=commit). "
+                       "Make sure there are uncommitted modifications in the source tree. "
+                       "Use --scope all to mutate the entire codebase.");
+        } else {
+          logger->warn("No source lines found to mutate. "
+                       "Check --source-dir, --pattern, and --extension options.");
+        }
+      }
       std::shuffle(std::begin(sourceLines), std::end(sourceLines), std::mt19937(randomSeed));
 
       auto generator = MutantGenerator::getInstance(generatorStr, compileDbStr);
