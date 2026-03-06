@@ -696,6 +696,11 @@ int CommandRun::run() {
         id++;
       }
       statusLine.setTotalMutants(indexedMutants.size());
+      if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
+        fmt::print("Note: mutant count capped at {} of {} candidates (--limit {}). "
+                   "Use --limit 0 to evaluate all mutants.\n",
+                   mutantLimit, candidateCount, mutantLimit);
+      }
     }
 
     // ── STEP 5: Mutant loop ─────────────────────────────────────────────────────
@@ -822,11 +827,6 @@ int CommandRun::run() {
       xmlReport.printSummary();
     }
 
-    if (!resuming && mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-      fmt::print("Note: mutant count capped at {} of {} candidates (--limit {}). "
-                 "Use --limit 0 to evaluate all mutants.\n",
-                 mutantLimit, candidateCount, mutantLimit);
-    }
   } catch (...) {
     std::raise(SIGUSR1);
     throw;
