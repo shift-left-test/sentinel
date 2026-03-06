@@ -233,8 +233,9 @@ TEST_F(MainCLITest, testCommandRun) {
   Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
   fs::remove_all(SAMPLE_DIR / "testresult");
 
+  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("--source-dir={}", SAMPLE_DIR.string()).c_str());
-  addArg(fmt::format("-b{}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()).c_str());
   addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
   addArg(fmt::format("--workspace={}", (SAMPLE_BASE / "workspace").string()).c_str());
   addArg(fmt::format("--test-report-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());

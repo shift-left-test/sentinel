@@ -107,11 +107,6 @@ class CommandRun : public Command {
   virtual std::string getSourceDir();
 
   /**
-   * @brief Returns the resolved build directory path.
-   */
-  virtual std::string getBuildDir();
-
-  /**
    * @brief Returns the directory that contains compile_commands.json.
    */
   virtual std::string getCompileDbDir();
@@ -218,13 +213,16 @@ class CommandRun : public Command {
 
   // Build & test options (registered to mGroupBuildTest)
 
+  /** @brief Change working directory to this path before running. */
+  args::ValueFlag<std::string> mCwd;
+
+  /** @brief Path to the root of the source tree. */
+  args::ValueFlag<std::string> mSourceDir;
+
   /** @brief Shell command to build the project. */
   args::ValueFlag<std::string> mBuildCmd;
 
-  /** @brief Path to the test binary directory. */
-  args::ValueFlag<std::string> mBuildDir;
-
-  /** @brief Explicit directory containing compile_commands.json. */
+  /** @brief Directory containing compile_commands.json. */
   args::ValueFlag<std::string> mCompileDbDir;
 
   /** @brief Shell command to run the test suite. */

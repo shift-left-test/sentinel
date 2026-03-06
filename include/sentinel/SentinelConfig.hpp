@@ -34,9 +34,7 @@ struct SentinelConfig {
   std::optional<std::string> cwd;
 
   // CommandRun-specific options
-  /// Path to the test binary directory (--binary-dir).
-  std::optional<std::string> buildDir;
-  /// Path to directory containing compile_commands.json (--compiledb).
+  /// Path to directory containing compile_commands.json (--compiledb-dir).
   std::optional<std::string> compileDbDir;
   /// Diff scope, one of ['commit', 'all'] (--scope).
   std::optional<std::string> scope;

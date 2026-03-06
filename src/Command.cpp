@@ -16,8 +16,6 @@ namespace sentinel {
 const char* cCommandLoggerName = "Command";
 
 Command::Command(args::Group& parser) :
-    mCwd(parser, "PATH", "Change working directory to this path before running.", {"cwd"}, ""),
-    mSourceDir(parser, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
     mOutputDir(parser, "PATH", "Path to the directory to write mutation test reports (HTML/XML).",
                {'o', "output-dir"}, ""),
     mWorkDir(parser, "PATH", "Path to the workspace directory for run artifacts.",
@@ -27,16 +25,6 @@ Command::Command(args::Group& parser) :
     mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}) {}
 
 void Command::init() {
-  namespace fs = std::experimental::filesystem;
-
-  if (!mCwd.Get().empty()) {
-    std::error_code ec;
-    fs::current_path(mCwd.Get(), ec);
-    if (ec) {
-      throw std::runtime_error(fmt::format("Failed to change directory to '{}': {}", mCwd.Get(), ec.message()));
-    }
-  }
-
   if (mIsDebug.Get()) {
     sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::DEBUG);
   } else if (mIsVerbose.Get()) {

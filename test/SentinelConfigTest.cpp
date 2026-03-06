@@ -47,8 +47,7 @@ debug: false
 workspace: ./work
 output-dir: ./out
 cwd: /tmp
-binary-dir: ./build
-compiledb: ./build
+compiledb-dir: ./build
 scope: commit
 extension:
   - cpp
@@ -77,7 +76,7 @@ operator:
   auto cfg = SentinelConfig::loadFromFile(configPath("sentinel.yaml"));
 
   ASSERT_TRUE(cfg.sourceDir.has_value());
-  EXPECT_EQ("./src", *cfg.sourceDir);
+  EXPECT_EQ((mTmpDir / "src").string(), *cfg.sourceDir);
 
   ASSERT_TRUE(cfg.verbose.has_value());
   EXPECT_TRUE(*cfg.verbose);
@@ -86,19 +85,16 @@ operator:
   EXPECT_FALSE(*cfg.debug);
 
   ASSERT_TRUE(cfg.workDir.has_value());
-  EXPECT_EQ("./work", *cfg.workDir);
+  EXPECT_EQ((mTmpDir / "work").string(), *cfg.workDir);
 
   ASSERT_TRUE(cfg.outputDir.has_value());
-  EXPECT_EQ("./out", *cfg.outputDir);
+  EXPECT_EQ((mTmpDir / "out").string(), *cfg.outputDir);
 
   ASSERT_TRUE(cfg.cwd.has_value());
-  EXPECT_EQ("/tmp", *cfg.cwd);
-
-  ASSERT_TRUE(cfg.buildDir.has_value());
-  EXPECT_EQ("./build", *cfg.buildDir);
+  EXPECT_EQ("/tmp", *cfg.cwd);  // absolute path — not modified
 
   ASSERT_TRUE(cfg.compileDbDir.has_value());
-  EXPECT_EQ("./build", *cfg.compileDbDir);
+  EXPECT_EQ((mTmpDir / "build").string(), *cfg.compileDbDir);
 
   ASSERT_TRUE(cfg.scope.has_value());
   EXPECT_EQ("commit", *cfg.scope);
@@ -122,13 +118,13 @@ operator:
   EXPECT_EQ("ctest", *cfg.testCmd);
 
   ASSERT_TRUE(cfg.testResultDir.has_value());
-  EXPECT_EQ("./results", *cfg.testResultDir);
+  EXPECT_EQ((mTmpDir / "results").string(), *cfg.testResultDir);
 
   ASSERT_TRUE(cfg.testResultFileExts.has_value());
   EXPECT_EQ(std::vector<std::string>({"xml"}), *cfg.testResultFileExts);
 
   ASSERT_TRUE(cfg.coverageFiles.has_value());
-  EXPECT_EQ(std::vector<std::string>({"coverage.info"}), *cfg.coverageFiles);
+  EXPECT_EQ(std::vector<std::string>({(mTmpDir / "coverage.info").string()}), *cfg.coverageFiles);
 
   ASSERT_TRUE(cfg.generator.has_value());
   EXPECT_EQ("random", *cfg.generator);
@@ -163,7 +159,7 @@ limit: 20
   EXPECT_EQ("ctest --verbose", *cfg.testCmd);
 
   ASSERT_TRUE(cfg.testResultDir.has_value());
-  EXPECT_EQ("./test-results", *cfg.testResultDir);
+  EXPECT_EQ((mTmpDir / "test-results").string(), *cfg.testResultDir);
 
   ASSERT_TRUE(cfg.limit.has_value());
   EXPECT_EQ(20u, *cfg.limit);
@@ -175,7 +171,6 @@ limit: 20
   EXPECT_FALSE(cfg.workDir.has_value());
   EXPECT_FALSE(cfg.outputDir.has_value());
   EXPECT_FALSE(cfg.cwd.has_value());
-  EXPECT_FALSE(cfg.buildDir.has_value());
   EXPECT_FALSE(cfg.compileDbDir.has_value());
   EXPECT_FALSE(cfg.scope.has_value());
   EXPECT_FALSE(cfg.extensions.has_value());

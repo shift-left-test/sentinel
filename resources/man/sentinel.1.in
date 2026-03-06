@@ -19,9 +19,6 @@ Display the help menu.
 \fB\-v\fR, \fB\-\-version\fR
 Print the program version and exit.
 .TP
-\fB\-\-source\-dir\fR=\fIPATH\fR
-Root of the source tree to test. Default: \fB.\fR
-.TP
 \fB\-\-verbose\fR
 Enable verbose output (INFO level and above).
 .TP
@@ -33,9 +30,6 @@ Directory for all run artifacts. Default: \fB./sentinel_workspace\fR
 .TP
 \fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
 Directory to write HTML/XML reports.
-.TP
-\fB\-\-cwd\fR=\fIPATH\fR
-Change to this directory before running.
 .TP
 \fB\-\-silent\fR
 Suppress build/test log output to the terminal.
@@ -55,15 +49,18 @@ Prompts for confirmation if the file already exists.
 Disable the live status line shown at the bottom of the terminal in TTY mode.
 .SS Build & test options
 .TP
+\fB\-\-cwd\fR=\fIPATH\fR
+Change to this directory before running.
+.TP
+\fB\-\-source\-dir\fR=\fIPATH\fR
+Root of the source tree to test. Default: \fB.\fR
+.TP
 \fB\-\-build\-command\fR=\fICMD\fR
 Shell command to build the project. \fBRequired.\fR
 .TP
-\fB\-b\fR \fIPATH\fR, \fB\-\-binary\-dir\fR=\fIPATH\fR
-Build output directory. Also searched for \fBcompile_commands.json\fR by default.
-Default: \fB.\fR
-.TP
-\fB\-\-compiledb\fR=\fIPATH\fR
+\fB\-\-compiledb\-dir\fR=\fIPATH\fR
 Directory containing \fBcompile_commands.json\fR.
+Default: \fB.\fR
 .TP
 \fB\-\-test\-command\fR=\fICMD\fR
 Shell command to run the test suite. \fBRequired.\fR
@@ -186,8 +183,8 @@ Suppress build/test log output to the terminal (boolean).
 \fBno-statusline\fR
 Disable the terminal status line (boolean).
 .TP
-\fBbinary-dir\fR / \fBcompiledb\fR
-Build output directory / directory containing compile_commands.json.
+\fBcompiledb-dir\fR
+Directory containing compile_commands.json.
 .TP
 \fBbuild-command\fR / \fBtest-command\fR
 Shell commands to build the project and run the test suite.

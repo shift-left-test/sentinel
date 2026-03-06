@@ -41,16 +41,6 @@ class Command {
 
  protected:
   /**
-   * @brief current working directory
-   */
-  args::ValueFlag<std::string> mCwd;
-
-  /**
-   * @brief source root directory
-   */
-  args::ValueFlag<std::string> mSourceDir;
-
-  /**
    * @brief output directory
    */
   args::ValueFlag<std::string> mOutputDir;

@@ -145,13 +145,11 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--source-dir=PATH` | Root of the source tree to test | `.` |
 | `--verbose` | Enable verbose output (INFO level and above) | |
 | `--silent` | Suppress build/test log output; status line still shows progress | |
 | `--debug` | Enable debug output (all log levels) | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
-| `--cwd=PATH` | Change to this directory before running | |
 
 #### Run options
 
@@ -165,9 +163,10 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--cwd=PATH` | Change to this directory before running | |
+| `--source-dir=PATH` | Root of the source tree to test | `.` |
 | `--build-command=CMD` | Shell command to build the project | **required** |
-| `-b, --binary-dir=PATH` | Build output directory (also searched for `compile_commands.json`) | `.` |
-| `--compiledb=PATH` | Directory containing `compile_commands.json` | |
+| `--compiledb-dir=PATH` | Directory containing `compile_commands.json` | `.` |
 | `--test-command=CMD` | Shell command to run tests | **required** |
 | `--test-report-dir=PATH` | Directory where the test command writes result files | **required** |
 | `--test-report-extension=EXT` | File extension of test result files (repeatable) | `xml` |
@@ -206,7 +205,7 @@ CLI argument  >  sentinel.yaml  >  built-in default
 ```yaml
 # sentinel.yaml
 source-dir: ./src
-binary-dir: ./build
+compiledb-dir: ./build
 build-command: cmake --build build
 test-command: ctest --test-dir build
 test-report-dir: ./build/test-results
@@ -226,12 +225,6 @@ Run `sentinel --init` to write a fully commented template to the current directo
 #
 # Uncomment and edit the options you need.
 # CLI arguments always take priority over values in this file.
-
-# Change to this directory before running (default: current directory)
-# cwd: .
-
-# Source root directory (default: .)
-# source-dir: .
 
 # Directory for output reports (default: none)
 # output-dir: ./sentinel_output
@@ -255,14 +248,17 @@ Run `sentinel --init` to write a fully commented template to the current directo
 
 # --- Build & test options ---
 
+# Change to this directory before running (default: current directory)
+# cwd: .
+
+# Source root directory (default: .)
+# source-dir: .
+
 # Shell command to build the source
 # build-command: make
 
-# Path to the test binary directory (default: .)
-# binary-dir: .
-
-# Explicit path to directory containing compile_commands.json
-# compiledb: .
+# Path to directory containing compile_commands.json (default: .)
+# compiledb-dir: .
 
 # Shell command to execute tests
 # test-command: make test

@@ -69,12 +69,6 @@ static const char* const kYamlTemplate =
     "# Uncomment and edit the options you need.\n"
     "# CLI arguments always take priority over values in this file.\n"
     "\n"
-    "# Change to this directory before running (default: current directory)\n"
-    "# cwd: .\n"
-    "\n"
-    "# Source root directory (default: .)\n"
-    "# source-dir: .\n"
-    "\n"
     "# Directory for output reports (default: none)\n"
     "# output-dir: ./sentinel_output\n"
     "\n"
@@ -97,14 +91,17 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Build & test options ---\n"
     "\n"
+    "# Change to this directory before running (default: current directory)\n"
+    "# cwd: .\n"
+    "\n"
+    "# Source root directory (default: .)\n"
+    "# source-dir: .\n"
+    "\n"
     "# Shell command to build the source\n"
     "# build-command: make\n"
     "\n"
-    "# Path to the test binary directory (default: .)\n"
-    "# binary-dir: .\n"
-    "\n"
-    "# Explicit path to directory containing compile_commands.json\n"
-    "# compiledb: .\n"
+    "# Path to directory containing compile_commands.json (default: .)\n"
+    "# compiledb-dir: .\n"
     "\n"
     "# Shell command to execute tests\n"
     "# test-command: make test\n"
@@ -176,11 +173,11 @@ CommandRun::CommandRun(args::Group& parser) :
           {"init"}),
     mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
                   {"no-statusline"}),
+    mCwd(mGroupBuildTest, "PATH", "Change working directory to PATH before running.", {"cwd"}, ""),
+    mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
     mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project", {"build-command"}),
-    mBuildDir(mGroupBuildTest, "PATH", "Path to the test binary directory",
-              {'b', "binary-dir"}, "."),
     mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",
-                  {"compiledb"}),
+                  {"compiledb-dir"}, "."),
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory",
                    {"test-report-dir"}),
@@ -240,7 +237,16 @@ void CommandRun::init() {
     }
   }
 
-  // Call base init: applies CLI --cwd and sets log level from CLI -v/--debug.
+  // Apply CLI --cwd (takes priority over YAML cwd).
+  if (mCwd && !mCwd.Get().empty()) {
+    std::error_code ec;
+    fs::current_path(mCwd.Get(), ec);
+    if (ec) {
+      throw std::runtime_error(fmt::format("Failed to change directory to '{}': {}", mCwd.Get(), ec.message()));
+    }
+  }
+
+  // Call base init: sets log level from CLI -v/--debug.
   Command::init();
 
   // Apply YAML log level only if CLI did not set verbose or debug.
@@ -260,7 +266,7 @@ void CommandRun::setSignalHandler() {
 
 // Build YAML content for workspace/sentinel.yaml from all resolved run options.
 // The timeout value must already be computed (no "auto").
-static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::string& buildDir,
+static std::string buildWorkspaceYaml(const std::string& sourceRoot,
                                       const std::string& compileDbDir, const std::string& scope,
                                       const std::vector<std::string>& extensions,
                                       const std::vector<std::string>& patterns,
@@ -283,8 +289,7 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
-  out << YAML::Key << "binary-dir" << YAML::Value << buildDir;
-  out << YAML::Key << "compiledb" << YAML::Value << compileDbDir;
+  out << YAML::Key << "compiledb-dir" << YAML::Value << compileDbDir;
   out << YAML::Key << "scope" << YAML::Value << scope;
   out << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : extensions) out << e;
@@ -372,7 +377,6 @@ int CommandRun::run() {
   // In fresh mode they come from CLI > project sentinel.yaml > defaults.
 
   std::string sourceRootStr;
-  std::string buildDirStr;
   std::string compileDbStr;
   std::string buildCmd;
   std::string testCmd;
@@ -393,8 +397,7 @@ int CommandRun::run() {
 
   if (resuming) {
     sourceRootStr = activeConfig.sourceDir.value_or(".");
-    buildDirStr = activeConfig.buildDir.value_or(".");
-    compileDbStr = activeConfig.compileDbDir.value_or("");
+    compileDbStr = activeConfig.compileDbDir.value_or(".");
     buildCmd = activeConfig.buildCmd.value_or("");
     testCmd = activeConfig.testCmd.value_or("");
     testResultDirStr = activeConfig.testResultDir.value_or("");
@@ -413,7 +416,6 @@ int CommandRun::run() {
     outputDirStr = activeConfig.outputDir.value_or("");
   } else {
     sourceRootStr = getSourceDir();
-    buildDirStr = getBuildDir();
     compileDbStr = getCompileDbDir();
     buildCmd = getBuildCmd();
     testCmd = getTestCmd();
@@ -470,12 +472,9 @@ int CommandRun::run() {
   backupDirForSH = ws.getBackupDir();
   setSignalHandler();
 
-  fs::path buildDir = fs::canonical(buildDirStr);
-  if (compileDbStr.empty()) {
-    compileDbStr = buildDirStr;
-  }
+  compileDbStr = fs::absolute(compileDbStr).string();
 
-  // testResultDir: validation in fresh mode; ensure exists for both modes
+  // testResultDir: validation in fresh mode
   if (!resuming) {
     if (fs::exists(testResultDirStr)) {
       if (!fs::is_directory(testResultDirStr)) {
@@ -494,15 +493,13 @@ int CommandRun::run() {
       }
     }
   }
-  fs::create_directories(testResultDirStr);
-  fs::path testResultDir = fs::canonical(testResultDirStr);
+  fs::path testResultDir = fs::absolute(testResultDirStr);
 
   bool emptyOutputDir = outputDirStr.empty();
   fs::path outputDir = emptyOutputDir ? fs::absolute(".") : fs::absolute(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandRunLoggerName);
   logger->verbose(fmt::format("source root:        {}", sourceRoot.string()));
-  logger->verbose(fmt::format("build dir:          {}", buildDir.string()));
   logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
   logger->verbose(fmt::format("build cmd:          {}", buildCmd));
   logger->verbose(fmt::format("test cmd:           {}", testCmd));
@@ -530,7 +527,6 @@ int CommandRun::run() {
   }
   statusLine.setPhase(StatusLine::Phase::BUILD_ORIG);
 
-  auto cmdPrefix = fmt::format("cd \"{}\" && ", buildDir.string());
 
   for (const auto& filename : coverageFiles) {
     if (!fs::exists(filename)) {
@@ -545,14 +541,9 @@ int CommandRun::run() {
                     fs::exists(ws.getOriginalResultsDir()) && !fs::is_empty(ws.getOriginalResultsDir());
 
     if (!origDone) {
-      if (access(buildDir.c_str(), X_OK) != 0) {
-        throw std::runtime_error(
-            fmt::format("fail to change dir {} (cause: {})", buildDir.c_str(), std::strerror(errno)));
-      }
-
       // build
       logger->info("Building original source code...");
-      Subprocess origBuildProc(cmdPrefix + buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
+      Subprocess origBuildProc(buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
       if (!origBuildProc.isSuccessfulExit()) {
         throw std::runtime_error("Build failed.");
@@ -562,7 +553,7 @@ int CommandRun::run() {
       logger->info("Running original tests...");
       statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
       fs::remove_all(testResultDir);
-      Subprocess firstTestProc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
+      Subprocess firstTestProc(testCmd, mTimeLimit, mKillAfter,
                                (ws.getOriginalDir() / "test.log").string(), silent);
 
       auto start = std::chrono::steady_clock::now();
@@ -600,10 +591,13 @@ int CommandRun::run() {
 
       // Save workspace config now that the baseline phase is complete.
       // From this point on, hasPreviousRun() will return true and resume is possible.
-      ws.saveConfig(buildWorkspaceYaml(sourceRoot.string(), buildDirStr, compileDbStr, scope, targetFileExts,
-                                       diffPatterns, excludePaths, mutantLimit, buildCmd, testCmd, testResultDirStr,
-                                       testResultFileExts, coverageFiles, generatorStr, mTimeLimit, mKillAfter,
-                                       randomSeed, operators, outputDirStr, mIsVerbose.Get(), mIsDebug.Get(),
+      ws.saveConfig(buildWorkspaceYaml(sourceRoot.string(), compileDbStr, scope, targetFileExts,
+                                       diffPatterns, excludePaths, mutantLimit,
+                                       buildCmd, testCmd, testResultDir.string(),
+                                       testResultFileExts, coverageFiles, generatorStr,
+                                       mTimeLimit, mKillAfter, randomSeed, operators,
+                                       emptyOutputDir ? std::string{} : outputDir.string(),
+                                       mIsVerbose.Get(), mIsDebug.Get(),
                                        disableStatusLine, silent));
     }
 
@@ -713,7 +707,7 @@ int CommandRun::run() {
 
       // Build
       logger->verbose(fmt::format("Building mutant #{}...", id));
-      Subprocess buildProc(cmdPrefix + buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string(), silent);
+      Subprocess buildProc(buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string(), silent);
       buildProc.execute();
       std::string testState = "success";
       bool buildSuccess = buildProc.isSuccessfulExit();
@@ -722,7 +716,7 @@ int CommandRun::run() {
         // Test
         logger->verbose("Build OK, running tests...");
         fs::remove_all(testResultDir);
-        Subprocess proc(cmdPrefix + testCmd, mTimeLimit, mKillAfter,
+        Subprocess proc(testCmd, mTimeLimit, mKillAfter,
                         (ws.getMutantDir(id) / "test.log").string(), silent);
         proc.execute();
         bool testTimeout = proc.isTimedOut();
@@ -857,16 +851,6 @@ std::string CommandRun::getSourceDir() {
     return *mConfig->sourceDir;
   }
   return mSourceDir.Get();
-}
-
-std::string CommandRun::getBuildDir() {
-  if (mBuildDir) {
-    return mBuildDir.Get();
-  }
-  if (mConfig && mConfig->buildDir) {
-    return *mConfig->buildDir;
-  }
-  return mBuildDir.Get();
 }
 
 std::string CommandRun::getWorkDir() {
