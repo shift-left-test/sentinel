@@ -178,6 +178,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     }
   }
 
+  mCandidateCount = mutables.size();
   return temp_storage;
 }
 

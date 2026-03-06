@@ -150,6 +150,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
     }
   }
 
+  mCandidateCount = mutables.size();
   return temp_storage;
 }
 

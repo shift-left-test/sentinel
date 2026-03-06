@@ -90,6 +90,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   mutables.unique();
 
   std::size_t n = mutables.size();
+  mCandidateCount = n;
   if (n <= maxMutants) {
     return mutables;
   }

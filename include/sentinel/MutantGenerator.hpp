@@ -55,11 +55,23 @@ class MutantGenerator {
   static std::shared_ptr<MutantGenerator> getInstance(const std::string& generator,
                                                       const std::string& directory);
 
+  /**
+   * @brief Return the total number of candidate mutants found before the limit was applied.
+   *
+   * @return candidate count from the last populate() call
+   */
+  std::size_t getCandidateCount() const { return mCandidateCount; }
+
  protected:
   /**
    * @brief list of operator names to use (empty means all operators)
    */
   std::vector<std::string> mSelectedOperators;
+
+  /**
+   * @brief total candidates found before limit was applied; set by each populate() implementation
+   */
+  std::size_t mCandidateCount = 0;
 };
 
 }  // namespace sentinel

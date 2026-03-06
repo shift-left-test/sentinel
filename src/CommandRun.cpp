@@ -142,14 +142,23 @@ static const char* const kYamlTemplate =
     "# Maximum number of mutants to generate (default: 10)\n"
     "# limit: 10\n"
     "\n"
-    "# Mutant generator type: 'uniform', 'random', or 'weighted' (default: uniform)\n"
+    "# Mutant selection strategy (default: uniform)\n"
+    "#   uniform  - one mutant per operator per source line\n"
+    "#   random   - randomly sampled from all possible mutants\n"
+    "#   weighted - samples more mutants from complex code\n"
     "# generator: uniform\n"
     "\n"
     "# Random seed for mutant selection (default: auto — picked randomly)\n"
     "# seed: auto\n"
     "\n"
     "# Mutation operators to use; omit to use all operators (default: all)\n"
-    "# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI\n"
+    "#   AOR - Arithmetic Operator Replacement  (+, -, *, /)\n"
+    "#   BOR - Bitwise Operator Replacement      (&, |, ^)\n"
+    "#   LCR - Logical Connector Replacement     (&&, ||)\n"
+    "#   ROR - Relational Operator Replacement   (<, >, ==, !=)\n"
+    "#   SDL - Statement Deletion\n"
+    "#   SOR - Shift Operator Replacement        (<<, >>)\n"
+    "#   UOI - Unary Operator Insertion          (-x, !x)\n"
     "# operator:\n"
     "#   - AOR\n"
     "#   - BOR\n"
@@ -175,11 +184,11 @@ CommandRun::CommandRun(args::Group& parser) :
                   {"no-statusline"}),
     mCwd(mGroupBuildTest, "PATH", "Change working directory to PATH before running.", {"cwd"}, ""),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
-    mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project", {"build-command"}),
+    mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project [required]", {"build-command"}),
     mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",
                   {"compiledb-dir"}, "."),
-    mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
-    mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory",
+    mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests [required]", {"test-command"}),
+    mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory [required]",
                    {"test-report-dir"}),
     mTestResultFileExts(mGroupBuildTest, "EXT", "File extension of the test report",
                         {"test-report-extension"}, {"xml", "XML"}),
@@ -198,11 +207,14 @@ CommandRun::CommandRun(args::Group& parser) :
     mExcludes(mGroupMutation, "EXPR", "Exclude files/directories matching fnmatch-style patterns",
               {'e', "exclude"}),
     mLimit(mGroupMutation, "N", "Maximum number of mutants to generate", {'l', "limit"}, 10),
-    mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: 'uniform', 'random', or 'weighted'",
+    mGenerator(mGroupMutation, "TYPE",
+               "Mutant selection strategy: uniform=one per operator per line, "
+               "random=fully random, weighted=complex-code-first (default: uniform)",
                {"generator"}, "uniform"),
     mSeed(mGroupMutation, "N", "Random seed for mutant selection ('auto' = pick randomly)", {"seed"}, "auto"),
     mOperators(mGroupMutation, "OP",
-               "Mutation operators to apply (AOR BOR LCR ROR SDL SOR UOI); defaults to all",
+               "Mutation operators to apply (default: all). "
+               "AOR=Arithmetic BOR=Bitwise LCR=Logical ROR=Relational SDL=StmtDel SOR=Shift UOI=Unary",
                {"operator"}),
     mCoverageFiles(mGroupMutation, "FILE",
                    "lcov coverage info file; limits mutation to covered lines only", {"coverage"}) {}
@@ -363,10 +375,10 @@ int CommandRun::run() {
   if (ws.hasPreviousRun()) {
     bool resume = mYes.Get();
     if (!resume) {
-      fmt::print("Previous run found in '{}'. Resume? [Y/n] ", workDirPath.string());
+      fmt::print("Previous run found in '{}'. Resume? [y/N] ", workDirPath.string());
       std::string answer;
       std::getline(std::cin, answer);
-      resume = (answer.empty() || answer == "Y" || answer == "y");
+      resume = (answer == "y" || answer == "Y");
     }
     if (resume) {
       resuming = true;
@@ -511,6 +523,13 @@ int CommandRun::run() {
   fs::path outputDir = emptyOutputDir ? fs::absolute(".") : fs::absolute(outputDirStr);
 
   auto logger = Logger::getLogger(cCommandRunLoggerName);
+
+  if (resuming) {
+    logger->warn(fmt::format("Resuming with saved config: {}. "
+                             "New CLI options and sentinel.yaml changes are ignored.",
+                             (ws.getRoot() / "sentinel.yaml").string()));
+  }
+
   logger->verbose(fmt::format("source root:        {}", sourceRoot.string()));
   logger->verbose(fmt::format("build cmd:          {}", buildCmd));
   logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
@@ -546,9 +565,11 @@ int CommandRun::run() {
     }
   }
 
-  // Warn if compile_commands.json is absent from --compiledb-dir.
+  // Warn if compile_commands.json is absent from an explicitly specified --compiledb-dir.
+  // Only warn when the user explicitly set the option (CLI or YAML); skip for the default value.
   // Check before the build so the user knows early; the build step may generate it.
-  if (!fs::exists(fs::path(compileDbStr) / "compile_commands.json")) {
+  bool compileDbDirExplicit = mCompileDbDir || (!resuming && mConfig && mConfig->compileDbDir.has_value());
+  if (compileDbDirExplicit && !fs::exists(fs::path(compileDbStr) / "compile_commands.json")) {
     logger->warn(fmt::format(
         "--compiledb-dir '{}' does not contain compile_commands.json. "
         "Mutant generation will fail unless the build step creates it.",
@@ -628,6 +649,7 @@ int CommandRun::run() {
     // ── STEP 4: Populate or reload mutants ─────────────────────────────────────
 
     std::vector<std::pair<int, Mutant>> indexedMutants;
+    std::size_t candidateCount = 0;
 
     if (resuming) {
       indexedMutants = ws.loadMutants();
@@ -664,6 +686,7 @@ int CommandRun::run() {
 
       sentinel::MutationFactory mutationFactory(generator);
       auto mutants = mutationFactory.populate(sourceRoot, sourceLines, mutantLimit, randomSeed);
+      candidateCount = generator->getCandidateCount();
 
       int id = 1;
       for (auto& m : mutants) {
@@ -797,6 +820,12 @@ int CommandRun::run() {
     } else {
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
+    }
+
+    if (!resuming && mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
+      fmt::print("Note: mutant count capped at {} of {} candidates (--limit {}). "
+                 "Use --limit 0 to evaluate all mutants.\n",
+                 mutantLimit, candidateCount, mutantLimit);
     }
   } catch (...) {
     std::raise(SIGUSR1);
