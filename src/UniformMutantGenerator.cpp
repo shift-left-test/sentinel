@@ -13,6 +13,7 @@
 #include <future>
 #include <iostream>
 #include <map>
+#include <thread>
 #include <memory>
 #include <random>
 #include <set>
@@ -58,29 +59,31 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
   auto logger = Logger::getLogger(cUniformGeneratorLoggerName);
   logger->info(fmt::format("random seed: {}", randomSeed));
 
-  // Launch one async task per file so Clang AST parsing runs in parallel.
+  // Launch async tasks in batches capped at hardware_concurrency to avoid overloading the system.
   // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
   // and restore it after all tasks complete to neutralise the side effect.
+  unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
   auto savedCwd = fs::current_path();
   auto* db = compileDb.get();
-  std::vector<std::future<Mutants>> futures;
-  futures.reserve(targetLines.size());
 
-  for (const auto& file : targetLines) {
-    logger->info(fmt::format("Checking for mutants in {}", file.first));
-    futures.push_back(
-        std::async(std::launch::async, [db, filename = file.first, lines = file.second, this]() {
-          Mutants localMutables;
-          clang::tooling::ClangTool tool(*db, filename);
-          tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-          tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
-          return localMutables;
-        }));
-  }
-
-  for (auto& fut : futures) {
-    auto localMutables = fut.get();
-    std::copy(localMutables.begin(), localMutables.end(), std::back_inserter(mutables));
+  auto fileIt = targetLines.begin();
+  while (fileIt != targetLines.end()) {
+    std::vector<std::future<Mutants>> futures;
+    for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
+      logger->info(fmt::format("Checking for mutants in {}", fileIt->first));
+      futures.push_back(
+          std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
+            Mutants localMutables;
+            clang::tooling::ClangTool tool(*db, filename);
+            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+            tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
+            return localMutables;
+          }));
+    }
+    for (auto& fut : futures) {
+      auto localMutables = fut.get();
+      std::copy(localMutables.begin(), localMutables.end(), std::back_inserter(mutables));
+    }
   }
   fs::current_path(savedCwd);
 

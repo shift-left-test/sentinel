@@ -17,6 +17,7 @@
 #include <future>
 #include <iostream>
 #include <map>
+#include <thread>
 #include <memory>
 #include <random>
 #include <set>
@@ -63,37 +64,39 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   auto logger = Logger::getLogger(cWeightedGeneratorLoggerName);
   logger->info(fmt::format("random seed: {}", randomSeed));
 
-  // Launch one async task per file so Clang AST parsing runs in parallel.
+  // Launch async tasks in batches capped at hardware_concurrency to avoid overloading the system.
   // Each task receives its own per-file DepthMap slice; results are merged after all tasks finish.
   // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
   // and restore it after all tasks complete to neutralise the side effect.
   using FileResult = std::pair<Mutants, DepthMap>;
+  unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
   auto savedCwd = fs::current_path();
   auto* db = compileDb.get();
-  std::vector<std::future<FileResult>> futures;
-  futures.reserve(targetLines.size());
 
-  for (const auto& file : targetLines) {
-    logger->info(fmt::format("Checking for mutants in {}", file.first));
-    DepthMap localDm;
-    for (const auto& sl : file.second) {
-      localDm[sl] = -1;
+  auto fileIt = targetLines.begin();
+  while (fileIt != targetLines.end()) {
+    std::vector<std::future<FileResult>> futures;
+    for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
+      logger->info(fmt::format("Checking for mutants in {}", fileIt->first));
+      DepthMap localDm;
+      for (const auto& sl : fileIt->second) {
+        localDm[sl] = -1;
+      }
+      futures.push_back(std::async(
+          std::launch::async,
+          [db, filename = fileIt->first, fileLines = fileIt->second, ldm = std::move(localDm), this]() mutable {
+            Mutants localMutables;
+            clang::tooling::ClangTool tool(*db, filename);
+            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+            tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
+            return std::make_pair(std::move(localMutables), std::move(ldm));
+          }));
     }
-    futures.push_back(std::async(
-        std::launch::async,
-        [db, filename = file.first, fileLines = file.second, ldm = std::move(localDm), this]() mutable {
-          Mutants localMutables;
-          clang::tooling::ClangTool tool(*db, filename);
-          tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-          tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
-          return std::make_pair(std::move(localMutables), std::move(ldm));
-        }));
-  }
-
-  for (auto& fut : futures) {
-    auto result = fut.get();
-    std::copy(result.first.begin(), result.first.end(), std::back_inserter(mutables));
-    depthMap.insert(result.second.begin(), result.second.end());
+    for (auto& fut : futures) {
+      auto result = fut.get();
+      std::copy(result.first.begin(), result.first.end(), std::back_inserter(mutables));
+      depthMap.insert(result.second.begin(), result.second.end());
+    }
   }
   fs::current_path(savedCwd);
 
