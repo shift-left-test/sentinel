@@ -236,6 +236,33 @@ void CommandRun::init() {
     if (!configPath.empty()) {
       mConfig = SentinelConfig::loadFromFile(configPath);
       fs::path configDir = fs::absolute(fs::path(configPath)).parent_path();
+
+      // Before changing directory, resolve any CLI-provided relative paths to
+      // absolute paths so they remain valid after the chdir.
+      if (configDir != fs::current_path()) {
+        auto toAbs = [](args::ValueFlag<std::string>& flag) {
+          if (flag) {
+            fs::path p(flag.Get());
+            if (p.is_relative()) {
+              flag.Get() = fs::absolute(p).string();
+            }
+          }
+        };
+        toAbs(mOutputDir);
+        toAbs(mWorkDir);
+        toAbs(mSourceDir);
+        toAbs(mCompileDbDir);
+        toAbs(mTestResultDir);
+        if (mCoverageFiles) {
+          for (auto& f : mCoverageFiles.Get()) {
+            fs::path p(f);
+            if (p.is_relative()) {
+              f = fs::absolute(p).string();
+            }
+          }
+        }
+      }
+
       std::error_code ec;
       fs::current_path(configDir, ec);
       if (ec) {
