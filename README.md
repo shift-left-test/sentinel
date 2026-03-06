@@ -148,6 +148,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--verbose` | Enable verbose output (INFO level and above) | |
 | `--silent` | Suppress build/test log output; status line still shows progress | |
 | `--debug` | Enable debug output (all log levels) | |
+| `-y, --yes` | Auto-answer yes to all confirmation prompts (non-interactive mode) | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./sentinel_workspace` |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
 

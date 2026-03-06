@@ -264,4 +264,64 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 
+// ── --yes option tests ────────────────────────────────────────────────────────
+
+TEST_F(MainCLITest, testYesOptionSkipsInitOverwritePrompt) {
+  // Pre-create sentinel.yaml with recognisable content.
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+
+  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
+  addArg("--init");
+  addArg("--yes");
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  capturedStdout();  // discard
+
+  // File must have been overwritten with the template (not the original stub).
+  std::string content = readFile(SAMPLE_DIR / "sentinel.yaml");
+  EXPECT_FALSE(sentinel::string::contains(content, "# original"));
+  // Template always contains "build-command".
+  EXPECT_TRUE(sentinel::string::contains(content, "build-command"));
+}
+
+TEST_F(MainCLITest, testInitPromptAbortsOnNo) {
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+
+  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
+  addArg("--init");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  capturedStdout();  // discard
+  std::cin.rdbuf(origCin);
+
+  // File must NOT have been overwritten.
+  std::string content = readFile(SAMPLE_DIR / "sentinel.yaml");
+  EXPECT_TRUE(sentinel::string::contains(content, "# original"));
+}
+
+TEST_F(MainCLITest, testInitPromptOverwritesOnY) {
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
+
+  addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
+  addArg("--init");
+
+  std::istringstream fakeInput("y\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  capturedStdout();  // discard
+  std::cin.rdbuf(origCin);
+
+  // File must have been overwritten with the template.
+  std::string content = readFile(SAMPLE_DIR / "sentinel.yaml");
+  EXPECT_FALSE(sentinel::string::contains(content, "# original"));
+  EXPECT_TRUE(sentinel::string::contains(content, "build-command"));
+}
+
 }  // namespace sentinel

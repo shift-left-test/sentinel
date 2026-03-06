@@ -5,8 +5,8 @@
 
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
-#include <algorithm>
 #include <experimental/filesystem>
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>

@@ -64,6 +64,11 @@ class Command {
    * @brief debug option
    */
   args::Flag mIsDebug;
+
+  /**
+   * @brief yes option — auto-answer yes to all prompts
+   */
+  args::Flag mYes;
 };
 
 }  // namespace sentinel

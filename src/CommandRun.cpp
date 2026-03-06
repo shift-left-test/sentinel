@@ -326,10 +326,14 @@ int CommandRun::run() {
     static const char* const kConfigFileName = "sentinel.yaml";
     namespace fs = std::experimental::filesystem;
     if (fs::exists(kConfigFileName)) {
-      fmt::print("'{}' already exists. Overwrite? [y/N] ", kConfigFileName);
-      std::string answer;
-      std::getline(std::cin, answer);
-      if (answer != "y" && answer != "Y") {
+      bool overwrite = mYes.Get();
+      if (!overwrite) {
+        fmt::print("'{}' already exists. Overwrite? [y/N] ", kConfigFileName);
+        std::string answer;
+        std::getline(std::cin, answer);
+        overwrite = (answer == "y" || answer == "Y");
+      }
+      if (!overwrite) {
         fmt::print("Aborted.\n");
         return 0;
       }
@@ -357,10 +361,14 @@ int CommandRun::run() {
   SentinelConfig activeConfig;
 
   if (ws.hasPreviousRun()) {
-    fmt::print("Previous run found in '{}'. Resume? [Y/n] ", workDirPath.string());
-    std::string answer;
-    std::getline(std::cin, answer);
-    if (answer.empty() || answer == "Y" || answer == "y") {
+    bool resume = mYes.Get();
+    if (!resume) {
+      fmt::print("Previous run found in '{}'. Resume? [Y/n] ", workDirPath.string());
+      std::string answer;
+      std::getline(std::cin, answer);
+      resume = (answer.empty() || answer == "Y" || answer == "y");
+    }
+    if (resume) {
       resuming = true;
       activeConfig = SentinelConfig::loadFromFile((ws.getRoot() / "sentinel.yaml").string());
       fmt::print("Resuming previous run.\n");
@@ -482,10 +490,14 @@ int CommandRun::run() {
             fmt::format("The given test result path is not a directory: {0}", testResultDirStr));
       }
       if (!fs::is_empty(testResultDirStr)) {
-        fmt::print("The given test result path is not empty: {0}\nDelete and continue? [y/N] ", testResultDirStr);
-        std::string answer;
-        std::getline(std::cin, answer);
-        if (answer != "y" && answer != "Y") {
+        bool deleteDir = mYes.Get();
+        if (!deleteDir) {
+          fmt::print("The given test result path is not empty: {0}\nDelete and continue? [y/N] ", testResultDirStr);
+          std::string answer;
+          std::getline(std::cin, answer);
+          deleteDir = (answer == "y" || answer == "Y");
+        }
+        if (!deleteDir) {
           throw InvalidArgumentException(
               fmt::format("The given test result path is not empty: {0}", testResultDirStr));
         }

@@ -22,7 +22,8 @@ Command::Command(args::Group& parser) :
              {'w', "workspace"}, "./sentinel_workspace"),
     mIsVerbose(parser, "verbose", "Enable verbose output (INFO level and above).", {"verbose"}),
     mSilent(parser, "silent", "Suppress build/test subprocess output to the terminal.", {"silent"}),
-    mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}) {}
+    mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}),
+    mYes(parser, "yes", "Auto-answer yes to all confirmation prompts.", {'y', "yes"}) {}
 
 void Command::init() {
   if (mIsDebug.Get()) {
