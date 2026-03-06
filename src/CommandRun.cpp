@@ -500,21 +500,21 @@ int CommandRun::run() {
 
   auto logger = Logger::getLogger(cCommandRunLoggerName);
   logger->verbose(fmt::format("source root:        {}", sourceRoot.string()));
-  logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
   logger->verbose(fmt::format("build cmd:          {}", buildCmd));
+  logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
   logger->verbose(fmt::format("test cmd:           {}", testCmd));
   logger->verbose(fmt::format("test result dir:    {}", testResultDir.string()));
   logger->verbose(fmt::format("test result exts:   {}", sentinel::string::join(", ", testResultFileExts)));
   logger->verbose(fmt::format("timeout:            {}s", mTimeLimit));
   logger->verbose(fmt::format("kill-after:         {}s", mKillAfter));
-  logger->verbose(fmt::format("source extensions:  {}", sentinel::string::join(", ", targetFileExts)));
-  logger->verbose(fmt::format("exclude patterns:   {}", sentinel::string::join(", ", excludePaths)));
-  logger->verbose(fmt::format("patterns:           {}", sentinel::string::join(", ", diffPatterns)));
-  logger->verbose(fmt::format("coverage files:     {}", sentinel::string::join(", ", coverageFiles)));
   logger->verbose(fmt::format("scope:              {}", scope));
-  logger->verbose(fmt::format("generator:          {}", generatorStr));
+  logger->verbose(fmt::format("source extensions:  {}", sentinel::string::join(", ", targetFileExts)));
+  logger->verbose(fmt::format("patterns:           {}", sentinel::string::join(", ", diffPatterns)));
+  logger->verbose(fmt::format("exclude patterns:   {}", sentinel::string::join(", ", excludePaths)));
   logger->verbose(fmt::format("mutant limit:       {}", mutantLimit));
+  logger->verbose(fmt::format("generator:          {}", generatorStr));
   logger->verbose(fmt::format("random seed:        {}", randomSeed));
+  logger->verbose(fmt::format("coverage files:     {}", sentinel::string::join(", ", coverageFiles)));
   logger->verbose(fmt::format("workspace:          {}", ws.getRoot().string()));
   logger->verbose(fmt::format("resuming:           {}", resuming ? "yes" : "no"));
 
