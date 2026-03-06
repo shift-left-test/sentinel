@@ -338,7 +338,7 @@ int CommandRun::run() {
     static const char* const kConfigFileName = "sentinel.yaml";
     namespace fs = std::experimental::filesystem;
     if (fs::exists(kConfigFileName)) {
-      bool overwrite = mYes.Get();
+      bool overwrite = mForce.Get();
       if (!overwrite) {
         fmt::print("'{}' already exists. Overwrite? [y/N] ", kConfigFileName);
         std::string answer;
@@ -373,8 +373,8 @@ int CommandRun::run() {
   SentinelConfig activeConfig;
 
   if (ws.hasPreviousRun()) {
-    bool resume = mYes.Get();
-    if (!resume) {
+    bool resume = !mForce.Get();
+    if (resume) {
       fmt::print("Previous run found in '{}'. Resume? [y/N] ", workDirPath.string());
       std::string answer;
       std::getline(std::cin, answer);
@@ -502,7 +502,7 @@ int CommandRun::run() {
             fmt::format("The given test result path is not a directory: {0}", testResultDirStr));
       }
       if (!fs::is_empty(testResultDirStr)) {
-        bool deleteDir = mYes.Get();
+        bool deleteDir = mForce.Get();
         if (!deleteDir) {
           fmt::print("The given test result path is not empty: {0}\nDelete and continue? [y/N] ", testResultDirStr);
           std::string answer;

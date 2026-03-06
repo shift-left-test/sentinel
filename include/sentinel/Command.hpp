@@ -66,9 +66,9 @@ class Command {
   args::Flag mIsDebug;
 
   /**
-   * @brief yes option — auto-answer yes to all prompts
+   * @brief force option — skip all prompts and start fresh
    */
-  args::Flag mYes;
+  args::Flag mForce;
 };
 
 }  // namespace sentinel

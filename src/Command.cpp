@@ -23,7 +23,7 @@ Command::Command(args::Group& parser) :
     mIsVerbose(parser, "verbose", "Enable verbose output (INFO level and above).", {"verbose"}),
     mSilent(parser, "silent", "Suppress build/test subprocess output to the terminal.", {"silent"}),
     mIsDebug(parser, "debug", "Enable debug output (all log levels).", {"debug"}),
-    mYes(parser, "yes", "Auto-answer yes to all confirmation prompts.", {'y', "yes"}) {}
+    mForce(parser, "force", "Skip all prompts and start fresh, overwriting any previous state.", {'f', "force"}) {}
 
 void Command::init() {
   if (mIsDebug.Get()) {

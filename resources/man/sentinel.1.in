@@ -36,9 +36,10 @@ Suppress build/test log output to the terminal.
 The status line still shows overall progress. Useful for keeping the terminal clean
 during long runs. Build and test output is still written to the workspace log files.
 .TP
-\fB\-y\fR, \fB\-\-yes\fR
-Auto-answer yes to all confirmation prompts. Useful for non-interactive or scripted runs.
-Affected prompts: overwrite \fBsentinel.yaml\fR on \fB\-\-init\fR, resume a previous run,
+\fB\-f\fR, \fB\-\-force\fR
+Skip all confirmation prompts and start fresh, overwriting any previous state.
+Useful for non-interactive or scripted runs.
+Affected prompts: overwrite \fBsentinel.yaml\fR on \fB\-\-init\fR, skip resume and start fresh,
 and delete a non-empty test report directory.
 .SS Run options
 .TP

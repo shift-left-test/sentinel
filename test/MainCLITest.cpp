@@ -264,15 +264,15 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 
-// ── --yes option tests ────────────────────────────────────────────────────────
+// ── --force option tests ───────────────────────────────────────────────────────
 
-TEST_F(MainCLITest, testYesOptionSkipsInitOverwritePrompt) {
+TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
   // Pre-create sentinel.yaml with recognisable content.
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
 
   addArg(fmt::format("--cwd={}", SAMPLE_DIR.string()).c_str());
   addArg("--init");
-  addArg("--yes");
+  addArg("--force");
 
   captureStdout();
   sentinel::MainCLI(getArgc(), getArgv());
