@@ -161,7 +161,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
  * layouts (e.g. Android repo) are discovered fully.
  */
 static std::vector<std::experimental::filesystem::path> collectGitRepos(
-    const std::experimental::filesystem::path& dir) {
+    const std::experimental::filesystem::path& dir,
+    const std::vector<std::experimental::filesystem::path>& skipDirs) {
   namespace fs = std::experimental::filesystem;
   std::vector<fs::path> result;
   if (!fs::is_directory(dir)) {
@@ -174,13 +175,32 @@ static std::vector<std::experimental::filesystem::path> collectGitRepos(
 
   try {
     for (const auto& entry : fs::directory_iterator(dir)) {
+      // Skip symlinks: following them risks infinite loops (self-referential
+      // links) and traversal outside the source root.
+      if (fs::is_symlink(entry.path())) {
+        continue;
+      }
       if (!fs::is_directory(entry.path())) {
         continue;
       }
-      if (entry.path().filename() == ".git") {
-        continue;  // never recurse into .git itself
+      // Skip hidden directories (e.g. .git, .cache, .ccache, .github).
+      // They never contain nested source repos and traversing them is wasteful.
+      if (!entry.path().filename().string().empty() &&
+          entry.path().filename().string().front() == '.') {
+        continue;
       }
-      auto sub = collectGitRepos(entry.path());
+      // Skip sentinel-managed directories (workspace, output, etc.)
+      bool skip = false;
+      for (const auto& sd : skipDirs) {
+        if (entry.path() == sd) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) {
+        continue;
+      }
+      auto sub = collectGitRepos(entry.path(), skipDirs);
       result.insert(result.end(), sub.begin(), sub.end());
     }
   } catch (const fs::filesystem_error&) {
@@ -268,6 +288,15 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
+void GitRepository::addSkipDir(const fs::path& dir) {
+  try {
+    mSkipDirs.push_back(fs::canonical(dir));
+  } catch (const fs::filesystem_error&) {
+    // Directory does not exist yet; store as-is so it takes effect if created later.
+    mSkipDirs.push_back(fs::absolute(dir));
+  }
+}
+
 bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
   fs::path canonicalPath;
@@ -323,7 +352,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
 
   // Step 1: find all git repos directly at or below sourceRoot (multi-repo support).
   // In Android-style workspaces there is no top-level .git; each component has its own.
-  std::vector<fs::path> repoPaths = collectGitRepos(getSourceRoot());
+  std::vector<fs::path> repoPaths = collectGitRepos(getSourceRoot(), mSkipDirs);
 
   // Step 2: also probe upward for an enclosing repo.  This handles the case where
   // sourceRoot is a subdirectory inside a single git repo without nested repos.

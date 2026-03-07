@@ -68,11 +68,24 @@ class GitRepository : public Repository {
    */
   bool isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension = true);
 
+  /**
+   * @brief Add a directory to skip during git repository discovery.
+   *
+   * Any directory matching @p dir (by canonical path) will not be traversed
+   * when searching for nested git repositories in getSourceLines().  Use this
+   * to prevent sentinel-managed directories (workspace, output, etc.) from
+   * being scanned unnecessarily.
+   *
+   * @param dir absolute or relative path of the directory to skip
+   */
+  void addSkipDir(const std::experimental::filesystem::path& dir);
+
  private:
   std::experimental::filesystem::path mSourceRoot;
   std::vector<std::string> mExtensions;
   std::vector<std::string> mPatterns;
   std::vector<std::string> mExcludes;
+  std::vector<std::experimental::filesystem::path> mSkipDirs;
 };
 
 }  // namespace sentinel

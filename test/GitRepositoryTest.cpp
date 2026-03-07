@@ -427,4 +427,39 @@ TEST_F(GitRepositoryTest, testSourceRootFilterExcludesSiblingDirs) {
   EXPECT_FALSE(hasBar);
 }
 
+TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
+  // Simulate a workspace directory that contains a nested git repo.
+  // Without addSkipDir the nested repo is discovered and contributes source lines.
+  // With addSkipDir the workspace is not traversed and those lines are absent.
+  fs::path workspaceDir = repo_name / "sentinel_workspace";
+  fs::path nestedRepoDir = workspaceDir / "nested";
+
+  // GitHarness creates the directory internally; do not pre-create nestedRepoDir.
+  auto nestedRepo = std::make_shared<GitHarness>(nestedRepoDir.string());
+  nestedRepo->addFile("backup.cpp", "int backup() {\n    return 0;\n}\n");
+  nestedRepo->stageFile({"backup.cpp"});
+  nestedRepo->commit("nested init");
+
+  // Without skipDir: nested repo's source lines are visible.
+  {
+    GitRepository gitRepo(repo_name);
+    SourceLines lines = gitRepo.getSourceLines("all");
+    bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {
+      return sl.getPath().string().find("sentinel_workspace") != std::string::npos;
+    });
+    EXPECT_TRUE(hasNestedFile);
+  }
+
+  // With addSkipDir: workspace is not traversed, nested lines absent.
+  {
+    GitRepository gitRepo(repo_name);
+    gitRepo.addSkipDir(workspaceDir);
+    SourceLines lines = gitRepo.getSourceLines("all");
+    bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {
+      return sl.getPath().string().find("sentinel_workspace") != std::string::npos;
+    });
+    EXPECT_FALSE(hasNestedFile);
+  }
+}
+
 }  // namespace sentinel

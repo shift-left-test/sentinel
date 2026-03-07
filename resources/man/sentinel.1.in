@@ -57,7 +57,8 @@ Prompts for confirmation if the file already exists.
 \fB\-\-dry\-run\fR
 Run only the build, test, and mutant-generation phases, then print a readiness
 summary and exit without evaluating any mutants.
-A temporary workspace is used so the real workspace directory is left untouched.
+The workspace is preserved so that the next \fBsentinel\fR invocation (without \fB\-\-dry\-run\fR)
+resumes directly at the evaluation phase, skipping build and populate.
 Pass \fB\-\-verbose\fR together with \fB\-\-dry\-run\fR to also list all generated mutants.
 .TP
 \fB\-\-no\-statusline\fR

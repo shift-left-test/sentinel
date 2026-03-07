@@ -63,30 +63,36 @@ static void signalHandler(int signum) {
   }
 }
 
-/**
- * @brief RAII guard that deletes the temporary workspace created for a dry run on scope exit.
- */
-struct DryRunGuard {
-  /** @brief Path to the temporary directory to remove on destruction. */
-  std::experimental::filesystem::path dir;
+// Formats a duration in seconds into a human-readable string.
+static std::string formatDuration(double secs) {
+  if (secs < 60.0) return fmt::format("~{:.0f}s", secs);
+  if (secs < 3600.0)
+    return fmt::format("~{:.0f}m {:.0f}s", std::floor(secs / 60.0), std::fmod(secs, 60.0));
+  return fmt::format("~{:.0f}h {:.0f}m",
+                     std::floor(secs / 3600.0), std::fmod(secs, 3600.0) / 60.0);
+}
 
-  /** @brief Removes the temporary directory if it was set. */
-  ~DryRunGuard() {
-    if (!dir.empty()) {
-      std::error_code ec;
-      std::experimental::filesystem::remove_all(dir, ec);
-    }
-  }
-};
-
-// Creates a temporary directory for a dry-run and returns its path.
-static std::experimental::filesystem::path createDryRunWorkspace() {
+// Validates that the test result directory exists and contains result files.
+// In normal mode throws on failure; in dry-run mode returns false instead.
+static bool validateTestResultDir(const std::experimental::filesystem::path& dir,
+                                   const std::string& dirStr, bool dryRun) {
   namespace fs = std::experimental::filesystem;
-  auto tmpl = (fs::temp_directory_path() / "sentinel_dryrun_XXXXXX").string();
-  if (!mkdtemp(&tmpl[0])) {
-    throw std::runtime_error("Failed to create temporary workspace for dry run.");
+  if (!fs::exists(dir)) {
+    if (!dryRun)
+      throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", dirStr));
+    return false;
   }
-  return fs::path(tmpl);
+  if (!fs::is_directory(dir)) {
+    if (!dryRun)
+      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}", dir.c_str()));
+    return false;
+  }
+  if (fs::is_empty(dir)) {
+    if (!dryRun)
+      throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", dir.c_str()));
+    return false;
+  }
+  return true;
 }
 
 // Prints the dry-run summary to stdout.
@@ -96,7 +102,10 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
                                 double baselineSecs, size_t timeLimit,
                                 const std::string& timeLimitStr,
                                 const std::vector<std::pair<int, Mutant>>& indexedMutants,
-                                std::size_t candidateCount, bool verbose) {
+                                std::size_t candidateCount, bool verbose,
+                                bool buildOK, bool testOK,
+                                const std::string& workspaceDir,
+                                const std::vector<std::string>& operators) {
   fmt::print("\n=== Sentinel Dry Run ===\n");
   fmt::print("  source-dir:    {}\n", sourceRoot.string());
   fmt::print("  build-command: {}\n", buildCmd);
@@ -104,29 +113,63 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
   fmt::print("  scope:         {}\n", scope);
   fmt::print("  limit:         {}\n",
              mutantLimit == 0 ? std::string("unlimited") : std::to_string(mutantLimit));
+  fmt::print("  operators:     {}\n",
+             operators.empty() ? std::string("all")
+                               : sentinel::string::join(", ", operators));
+  fmt::print("  workspace:     {}\n", workspaceDir);
   fmt::print("\n");
-  fmt::print("  [OK] Original build\n");
-  if (timeLimitStr == "auto") {
-    fmt::print("  [OK] Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
-               baselineSecs, timeLimit);
-  } else {
-    fmt::print("  [OK] Original tests  (timeout: {}s)\n", timeLimit);
+
+  fmt::print("  {}  Original build\n", buildOK ? "[OK]  " : "[FAIL]");
+  if (!buildOK) {
+    fmt::print("  [ -- ]  Original tests  (skipped)\n");
+    fmt::print("  [ -- ]  Mutants         (skipped)\n");
+    fmt::print("\nDry run failed. Fix the issues above before running mutation testing.\n");
+    return;
   }
-  if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-    fmt::print("  [OK] Mutants: {} of {} candidates (capped at --limit {})\n",
+
+  if (timeLimitStr == "auto") {
+    fmt::print("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
+               testOK ? "[OK]  " : "[FAIL]", baselineSecs, timeLimit);
+  } else {
+    fmt::print("  {}  Original tests  (timeout: {}s)\n",
+               testOK ? "[OK]  " : "[FAIL]", timeLimit);
+  }
+  if (!testOK) {
+    fmt::print("  [ -- ]  Mutants         (skipped)\n");
+    fmt::print("\nDry run failed. Fix the issues above before running mutation testing.\n");
+    return;
+  }
+
+  if (indexedMutants.empty()) {
+    fmt::print("  [WARN]  Mutants: 0 — nothing to evaluate.\n");
+    fmt::print("          Check --scope, --pattern, --extension settings.\n");
+  } else if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
+    fmt::print("  [OK]    Mutants: {} of {} candidates (capped at --limit {})\n",
                indexedMutants.size(), candidateCount, mutantLimit);
   } else {
-    fmt::print("  [OK] Mutants: {}{}\n", indexedMutants.size(),
+    fmt::print("  [OK]    Mutants: {}{}\n", indexedMutants.size(),
                candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount)
                                   : std::string{});
   }
+
+  if (!indexedMutants.empty() && baselineSecs > 0.0) {
+    double estimated = baselineSecs * static_cast<double>(indexedMutants.size());
+    fmt::print("          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)\n",
+               formatDuration(estimated), indexedMutants.size(),
+               indexedMutants.size() == 1 ? "" : "s", baselineSecs);
+  }
+
   if (verbose) {
     for (const auto& [id, m] : indexedMutants) {
-      fmt::print("         [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
+      fmt::print("          [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
                  m.getPath().filename().string(), m.getFirst().line);
     }
   }
-  fmt::print("\nReady to run. Remove --dry-run to start mutation testing.\n");
+
+  if (!indexedMutants.empty()) {
+    fmt::print("\nWorkspace saved. Remove --dry-run to start mutation testing\n");
+    fmt::print("(the workspace will be reused — build and populate steps are skipped).\n");
+  }
 }
 
 static const char* const kYamlTemplate =
@@ -446,7 +489,6 @@ int CommandRun::run() {
   namespace fs = std::experimental::filesystem;
 
   bool dryRun = static_cast<bool>(mDryRun);
-  DryRunGuard dryRunGuard;
 
   StatusLine statusLine;
   gStatusLineForSH = &statusLine;
@@ -454,13 +496,6 @@ int CommandRun::run() {
   // ── STEP 1: Workspace setup ─────────────────────────────────────────────────
 
   fs::path workDirPath = fs::absolute(getWorkDir());
-
-  if (dryRun) {
-    // Use a throwaway temp directory so the real workspace is untouched.
-    dryRunGuard.dir = createDryRunWorkspace();
-    workDirPath = dryRunGuard.dir;
-  }
-
   Workspace ws(workDirPath);
 
   bool resuming = false;
@@ -574,7 +609,7 @@ int CommandRun::run() {
         mTimeLimit = sentinel::string::stringToInt<size_t>(timeLimitStr);
       } catch (...) {
         throw InvalidArgumentException(fmt::format(
-            R"a1s2(Failed to read timeout option value({}). Please execute "sentinel run --help" and check valid option value.)a1s2",
+            R"a1s2(Failed to read timeout option value({}). Please execute "sentinel --help" and check valid option value.)a1s2",
             timeLimitStr));
       }
     }
@@ -764,6 +799,8 @@ int CommandRun::run() {
   }
 
   double baselineSecs = 0.0;
+  bool dryRunBuildOK = true;
+  bool dryRunTestOK = true;
 
   try {
     // ── STEP 3: Original build & test ──────────────────────────────────────────
@@ -777,60 +814,58 @@ int CommandRun::run() {
       Subprocess origBuildProc(buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
       if (!origBuildProc.isSuccessfulExit()) {
-        throw std::runtime_error("Build failed.");
+        if (!dryRun) throw std::runtime_error("Build failed.");
+        dryRunBuildOK = false;
       }
 
-      // test
-      logger->info("Running original tests...");
-      statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
-      fs::remove_all(testResultDir);
-      Subprocess firstTestProc(testCmd, mTimeLimit, mKillAfter,
-                               (ws.getOriginalDir() / "test.log").string(), silent);
+      if (!dryRun || dryRunBuildOK) {
+        // test
+        logger->info("Running original tests...");
+        statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
+        fs::remove_all(testResultDir);
+        Subprocess firstTestProc(testCmd, mTimeLimit, mKillAfter,
+                                 (ws.getOriginalDir() / "test.log").string(), silent);
 
-      auto start = std::chrono::steady_clock::now();
-      firstTestProc.execute();
+        auto start = std::chrono::steady_clock::now();
+        firstTestProc.execute();
 
-      if (!resuming && timeLimitStr == "auto") {
-        auto end = std::chrono::steady_clock::now();
-        auto diff = end - start;
-        auto diffSecs = std::chrono::duration<double>(diff).count();
-        baselineSecs = diffSecs;
-        if (diffSecs < 1.0) {
-          mTimeLimit = 1;
-        } else {
-          mTimeLimit = static_cast<size_t>(ceil(diffSecs * 2.0));
+        if (!resuming && timeLimitStr == "auto") {
+          auto end = std::chrono::steady_clock::now();
+          auto diff = end - start;
+          auto diffSecs = std::chrono::duration<double>(diff).count();
+          baselineSecs = diffSecs;
+          if (diffSecs < 1.0) {
+            mTimeLimit = 1;
+          } else {
+            mTimeLimit = static_cast<size_t>(ceil(diffSecs * 2.0));
+          }
+          logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", mTimeLimit, diffSecs));
         }
-        logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", mTimeLimit, diffSecs));
-      }
 
-      if (firstTestProc.isTimedOut()) {
-        throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
-      }
+        if (firstTestProc.isTimedOut()) {
+          if (!dryRun) throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
+          dryRunTestOK = false;
+        }
+        if (dryRunTestOK && !validateTestResultDir(testResultDir, testResultDirStr, dryRun)) {
+          dryRunTestOK = false;
+        }
 
-      if (!fs::exists(testResultDir)) {
-        throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", testResultDirStr));
-      }
-      if (!fs::is_directory(testResultDir)) {
-        throw InvalidArgumentException(
-            fmt::format("The test result path is not a directory: {0}", testResultDir.c_str()));
-      }
-      if (fs::is_empty(testResultDir)) {
-        throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", testResultDir.c_str()));
-      }
+        if (dryRunTestOK) {
+          // Copy baseline test results to workspace/original/results/
+          copyTestReportTo(testResultDir.string(), ws.getOriginalResultsDir().string(), testResultFileExts);
 
-      // Copy baseline test results to workspace/original/results/
-      copyTestReportTo(testResultDir.string(), ws.getOriginalResultsDir().string(), testResultFileExts);
-
-      // Save workspace config now that the baseline phase is complete.
-      // From this point on, hasPreviousRun() will return true and resume is possible.
-      ws.saveConfig(buildWorkspaceYaml(sourceRoot.string(), compileDbStr, scope, targetFileExts,
-                                       diffPatterns, excludePaths, mutantLimit,
-                                       buildCmd, testCmd, testResultDir.string(),
-                                       testResultFileExts, coverageFiles, generatorStr,
-                                       mTimeLimit, mKillAfter, randomSeed, operators,
-                                       emptyOutputDir ? std::string{} : outputDir.string(),
-                                       mIsVerbose.Get(), mIsDebug.Get(),
-                                       disableStatusLine, silent));
+          // Save workspace config now that the baseline phase is complete.
+          // From this point on, hasPreviousRun() will return true and resume is possible.
+          ws.saveConfig(buildWorkspaceYaml(sourceRoot.string(), compileDbStr, scope, targetFileExts,
+                                           diffPatterns, excludePaths, mutantLimit,
+                                           buildCmd, testCmd, testResultDir.string(),
+                                           testResultFileExts, coverageFiles, generatorStr,
+                                           mTimeLimit, mKillAfter, randomSeed, operators,
+                                           emptyOutputDir ? std::string{} : outputDir.string(),
+                                           mIsVerbose.Get(), mIsDebug.Get(),
+                                           disableStatusLine, silent));
+        }
+      }  // end if (!dryRun || dryRunBuildOK)
     }
 
     // Restore any leftover backup from a previously interrupted run
@@ -845,7 +880,7 @@ int CommandRun::run() {
       indexedMutants = ws.loadMutants();
       logger->info(fmt::format("Loaded {} mutants from workspace.", indexedMutants.size()));
       statusLine.setTotalMutants(indexedMutants.size());
-    } else {
+    } else if (!dryRun || (dryRunBuildOK && dryRunTestOK)) {
       statusLine.setPhase(StatusLine::Phase::POPULATE);
       logger->info("Generating mutants...");
       auto repo =
@@ -900,9 +935,10 @@ int CommandRun::run() {
       gStatusLineForSH = nullptr;
       printDryRunSummary(sourceRoot, buildCmd, testCmd, scope, mutantLimit,
                          baselineSecs, mTimeLimit, timeLimitStr,
-                         indexedMutants, candidateCount, getVerbose());
+                         indexedMutants, candidateCount, getVerbose(),
+                         dryRunBuildOK, dryRunTestOK, workDirPath.string(), operators);
       std::raise(SIGUSR1);
-      return 0;
+      return (dryRunBuildOK && dryRunTestOK) ? 0 : 1;
     }
 
     // ── STEP 5: Mutant loop ─────────────────────────────────────────────────────
