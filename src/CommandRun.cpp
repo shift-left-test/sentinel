@@ -63,6 +63,72 @@ static void signalHandler(int signum) {
   }
 }
 
+/**
+ * @brief RAII guard that deletes the temporary workspace created for a dry run on scope exit.
+ */
+struct DryRunGuard {
+  /** @brief Path to the temporary directory to remove on destruction. */
+  std::experimental::filesystem::path dir;
+
+  /** @brief Removes the temporary directory if it was set. */
+  ~DryRunGuard() {
+    if (!dir.empty()) {
+      std::error_code ec;
+      std::experimental::filesystem::remove_all(dir, ec);
+    }
+  }
+};
+
+// Creates a temporary directory for a dry-run and returns its path.
+static std::experimental::filesystem::path createDryRunWorkspace() {
+  namespace fs = std::experimental::filesystem;
+  auto tmpl = (fs::temp_directory_path() / "sentinel_dryrun_XXXXXX").string();
+  if (!mkdtemp(&tmpl[0])) {
+    throw std::runtime_error("Failed to create temporary workspace for dry run.");
+  }
+  return fs::path(tmpl);
+}
+
+// Prints the dry-run summary to stdout.
+static void printDryRunSummary(const std::experimental::filesystem::path& sourceRoot,
+                                const std::string& buildCmd, const std::string& testCmd,
+                                const std::string& scope, size_t mutantLimit,
+                                double baselineSecs, size_t timeLimit,
+                                const std::string& timeLimitStr,
+                                const std::vector<std::pair<int, Mutant>>& indexedMutants,
+                                std::size_t candidateCount, bool verbose) {
+  fmt::print("\n=== Sentinel Dry Run ===\n");
+  fmt::print("  source-dir:    {}\n", sourceRoot.string());
+  fmt::print("  build-command: {}\n", buildCmd);
+  fmt::print("  test-command:  {}\n", testCmd);
+  fmt::print("  scope:         {}\n", scope);
+  fmt::print("  limit:         {}\n",
+             mutantLimit == 0 ? std::string("unlimited") : std::to_string(mutantLimit));
+  fmt::print("\n");
+  fmt::print("  [OK] Original build\n");
+  if (timeLimitStr == "auto") {
+    fmt::print("  [OK] Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
+               baselineSecs, timeLimit);
+  } else {
+    fmt::print("  [OK] Original tests  (timeout: {}s)\n", timeLimit);
+  }
+  if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
+    fmt::print("  [OK] Mutants: {} of {} candidates (capped at --limit {})\n",
+               indexedMutants.size(), candidateCount, mutantLimit);
+  } else {
+    fmt::print("  [OK] Mutants: {}{}\n", indexedMutants.size(),
+               candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount)
+                                  : std::string{});
+  }
+  if (verbose) {
+    for (const auto& [id, m] : indexedMutants) {
+      fmt::print("         [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
+                 m.getPath().filename().string(), m.getFirst().line);
+    }
+  }
+  fmt::print("\nReady to run. Remove --dry-run to start mutation testing.\n");
+}
+
 static const char* const kYamlTemplate =
     "# sentinel.yaml — full configuration template\n"
     "#\n"
@@ -177,6 +243,9 @@ CommandRun::CommandRun(args::Group& parser) :
                 {"config"}),
     mInit(mGroupRunCtrl, "init", "Write a sentinel.yaml config template to the current directory and exit",
           {"init"}),
+    mDryRun(mGroupRunCtrl, "dry-run",
+            "Build, test, and generate mutants then exit; prints a readiness summary without evaluating mutants",
+            {"dry-run"}),
     mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
                   {"no-statusline"}),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
@@ -376,12 +445,22 @@ int CommandRun::run() {
 
   namespace fs = std::experimental::filesystem;
 
+  bool dryRun = static_cast<bool>(mDryRun);
+  DryRunGuard dryRunGuard;
+
   StatusLine statusLine;
   gStatusLineForSH = &statusLine;
 
   // ── STEP 1: Workspace setup ─────────────────────────────────────────────────
 
   fs::path workDirPath = fs::absolute(getWorkDir());
+
+  if (dryRun) {
+    // Use a throwaway temp directory so the real workspace is untouched.
+    dryRunGuard.dir = createDryRunWorkspace();
+    workDirPath = dryRunGuard.dir;
+  }
+
   Workspace ws(workDirPath);
 
   bool resuming = false;
@@ -684,6 +763,8 @@ int CommandRun::run() {
     }
   }
 
+  double baselineSecs = 0.0;
+
   try {
     // ── STEP 3: Original build & test ──────────────────────────────────────────
     // Skip if resuming and original results already exist.
@@ -713,6 +794,7 @@ int CommandRun::run() {
         auto end = std::chrono::steady_clock::now();
         auto diff = end - start;
         auto diffSecs = std::chrono::duration<double>(diff).count();
+        baselineSecs = diffSecs;
         if (diffSecs < 1.0) {
           mTimeLimit = 1;
         } else {
@@ -768,6 +850,7 @@ int CommandRun::run() {
       logger->info("Generating mutants...");
       auto repo =
           std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
+      repo->addSkipDir(workDirPath);
       sentinel::SourceLines sourceLines = repo->getSourceLines(scope);
       if (sourceLines.empty()) {
         if (scope == "commit") {
@@ -810,10 +893,23 @@ int CommandRun::run() {
       }
     }
 
+    // ── DRY-RUN EXIT ────────────────────────────────────────────────────────────
+
+    if (dryRun) {
+      statusLine.disable();
+      gStatusLineForSH = nullptr;
+      printDryRunSummary(sourceRoot, buildCmd, testCmd, scope, mutantLimit,
+                         baselineSecs, mTimeLimit, timeLimitStr,
+                         indexedMutants, candidateCount, getVerbose());
+      std::raise(SIGUSR1);
+      return 0;
+    }
+
     // ── STEP 5: Mutant loop ─────────────────────────────────────────────────────
 
     fs::path actualDir = ws.getRoot() / "actual";
     auto repo = std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
+    repo->addSkipDir(workDirPath);
     sentinel::Evaluator evaluator(ws.getOriginalResultsDir().string(), sourceRoot.string());
     CoverageInfo cov(coverageFiles);
 

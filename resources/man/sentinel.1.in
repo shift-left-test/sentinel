@@ -54,6 +54,12 @@ automatically if it exists.
 Write a \fBsentinel.yaml\fR config template to the current directory and exit.
 Prompts for confirmation if the file already exists.
 .TP
+\fB\-\-dry\-run\fR
+Run only the build, test, and mutant-generation phases, then print a readiness
+summary and exit without evaluating any mutants.
+A temporary workspace is used so the real workspace directory is left untouched.
+Pass \fB\-\-verbose\fR together with \fB\-\-dry\-run\fR to also list all generated mutants.
+.TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
 .SS Build & test options

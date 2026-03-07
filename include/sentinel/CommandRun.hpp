@@ -216,6 +216,12 @@ class CommandRun : public Command {
   /** @brief Flag: write a sentinel.yaml template and exit. */
   args::Flag mInit;
 
+  /**
+   * @brief Flag: perform only the build, test, and mutant-generation phases,
+   *        then print a readiness summary and exit without evaluating any mutants.
+   */
+  args::Flag mDryRun;
+
   /** @brief Flag: disable the live terminal status line. */
   args::Flag mNoStatusLine;
 
