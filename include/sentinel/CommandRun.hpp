@@ -7,7 +7,7 @@
 #define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
 #include <cstddef>
-#include <experimental/filesystem>
+#include <experimental/filesystem>  // NOLINT(build/include_order)
 #include <optional>
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@ class CommandRun : public Command {
   /**
    * @brief Constructor — registers all command-line options with @p parser.
    */
-  explicit CommandRun(args::Group& parser);
+  explicit CommandRun(args::Group& parser);  // NOLINT(runtime/references)
 
   /**
    * @brief Loads the YAML config file and applies log-level settings.
@@ -56,6 +56,14 @@ class CommandRun : public Command {
    * @brief Installs signal handlers that restore the backup on abnormal exit.
    */
   virtual void setSignalHandler();
+
+  /**
+   * @brief Set by init() when --config causes a working-directory change.
+   *
+   * Holds the absolute path of the new working directory so that run() can
+   * include it in the pre-run configuration warning output.
+   */
+  std::optional<std::string> mChangedToDir;
 
   /**
    * @brief Option group for run-control flags (--config, --init, --no-statusline).

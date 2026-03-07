@@ -202,6 +202,24 @@ sample.cpp                                                 3         3      100%
 TOTAL                                                      3         3      100%
 ----------------------------------------------------------------------------------)a1f4z0";
 
+  // Sets up the minimum CLI args needed to reach the pre-run warning block
+  // without running a real cmake/make project.  The run aborts early when the
+  // user responds "n" to the warning prompt, so no build infrastructure is
+  // needed.  The sentinel.yaml config is placed in SAMPLE_DIR and the cwd is
+  // changed to SAMPLE_DIR so that no "working directory changed" warning fires.
+  void setUpMinimalRunArgs() {
+    namespace fs = std::experimental::filesystem;
+    fs::current_path(SAMPLE_DIR);
+    writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
+    addArg("--config=sentinel.yaml");
+    addArg(fmt::format("--source-dir={}", SAMPLE_DIR.string()).c_str());
+    addArg(fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()).c_str());
+    addArg(fmt::format("--workspace={}", (SAMPLE_BASE / "workspace").string()).c_str());
+    addArg(fmt::format("--test-report-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());
+    addArg("--build-command=make");
+    addArg("--test-command=make test");
+  }
+
  private:
   std::vector<char*> argVector;
   std::shared_ptr<CaptureHelper> mStdoutCapture;
@@ -248,6 +266,7 @@ TEST_F(MainCLITest, testCommandRun) {
   addArg("--seed=1");
   addArg("--generator=random");
   addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
+  addArg("--force");
 
   captureStdout();
   sentinel::MainCLI(getArgc(), getArgv());
@@ -263,6 +282,7 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(sentinel::string::contains(
       out, R"(UOI : sample.cpp (10:32-10:33 -> (++(i)))......................... KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
+  EXPECT_TRUE(sentinel::string::contains(out, "Note: mutant count capped at 3 of"));
 }
 
 // ── --force option tests ───────────────────────────────────────────────────────
@@ -323,6 +343,127 @@ TEST_F(MainCLITest, testInitPromptOverwritesOnY) {
   std::string content = readFile(SAMPLE_DIR / "sentinel.yaml");
   EXPECT_FALSE(sentinel::string::contains(content, "# original"));
   EXPECT_TRUE(sentinel::string::contains(content, "build-command"));
+}
+
+// ── Pre-run configuration warning tests ──────────────────────────────────────
+
+TEST_F(MainCLITest, testPreRunWarnLimitZeroAbortsOnNo) {
+  setUpMinimalRunArgs();
+  addArg("--limit=0");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "all candidate mutants will be evaluated"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarnTimeoutZeroAbortsOnNo) {
+  setUpMinimalRunArgs();
+  addArg("--timeout=0");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "no per-mutant test time limit"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarnExcludeTrailingSlashAbortsOnNo) {
+  setUpMinimalRunArgs();
+  addArg("--exclude=build/");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "ends with '/'"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarnExcludeNoWildcardAbortsOnNo) {
+  setUpMinimalRunArgs();
+  addArg("--exclude=build");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "relative pattern without a leading '*'"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarnPatternAbsoluteOutsideSrcAbortsOnNo) {
+  setUpMinimalRunArgs();
+  // Absolute path outside SAMPLE_DIR triggers the "outside source-dir" warning.
+  addArg("--pattern=/tmp/other_repo/file.cpp");
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "is an absolute path outside source-dir"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarnPatternAbsoluteInsideSrcAbortsOnNo) {
+  namespace fs = std::experimental::filesystem;
+  setUpMinimalRunArgs();
+  // Absolute path inside SAMPLE_DIR triggers the "git pathspec" warning.
+  addArg(fmt::format("--pattern={}", (SAMPLE_DIR / "file.cpp").string()).c_str());
+
+  std::istringstream fakeInput("n\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_TRUE(sentinel::string::contains(out, "is an absolute path"));
+  EXPECT_TRUE(sentinel::string::contains(out, "consider using a relative path"));
+  EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+TEST_F(MainCLITest, testPreRunWarningProceedsOnYes) {
+  // With "y" the run proceeds past the warning block and must NOT print "Aborted.".
+  // The build will fail (no real project), but that is acceptable here.
+  setUpMinimalRunArgs();
+  addArg("--timeout=0");
+
+  std::istringstream fakeInput("y\n");
+  std::streambuf* origCin = std::cin.rdbuf(fakeInput.rdbuf());
+
+  captureStdout();
+  try {
+    sentinel::MainCLI(getArgc(), getArgv());
+  } catch (...) {}
+  auto out = capturedStdout();
+  std::cin.rdbuf(origCin);
+
+  EXPECT_FALSE(sentinel::string::contains(out, "Aborted."));
 }
 
 }  // namespace sentinel

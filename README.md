@@ -156,7 +156,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--config=PATH` | YAML config file path | `sentinel.yaml` (auto-detected) |
+| `--config=PATH` | YAML config file path. When the config is in a different directory, sentinel changes to that location before running; a pre-run warning is shown. | `sentinel.yaml` (auto-detected) |
 | `--init` | Write a `sentinel.yaml` config template and exit | |
 | `--no-statusline` | Disable the live terminal status line | |
 
@@ -170,7 +170,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--test-command=CMD` | Shell command to run tests | **required** |
 | `--test-report-dir=PATH` | Directory where the test command writes result files | **required** |
 | `--test-report-extension=EXT` | File extension of test result files (repeatable) | `xml` |
-| `--timeout=SEC` | Test time limit; `0` = no limit, `auto` = 2× baseline run time | `auto` |
+| `--timeout=SEC` | Test time limit; `0` = no limit (triggers pre-run warning), `auto` = 2× baseline run time | `auto` |
 | `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
 #### Mutation options
@@ -179,9 +179,9 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `-s, --scope=SCOPE` | `commit` (changed lines only) or `all` (entire codebase) | `all` |
 | `-t, --extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
-| `-p, --pattern=PATTERN` | Paths or glob patterns to constrain the mutation scope (repeatable) | |
-| `-e, --exclude=PATTERN` | Exclude files/directories matching fnmatch-style patterns (repeatable) | |
-| `-l, --limit=N` | Maximum number of mutants to generate | `10` |
+| `-p, --pattern=PATTERN` | Git pathspec patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Absolute paths trigger a pre-run warning. | |
+| `-e, --exclude=PATTERN` | fnmatch patterns matched against canonical absolute file paths (repeatable). Patterns without a leading `*` or ending in `/` trigger a pre-run warning. | |
+| `-l, --limit=N` | Maximum number of mutants to generate; `0` = evaluate all candidates (triggers pre-run warning) | `10` |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--seed=N` | Random seed for mutant selection | random |
 | `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |

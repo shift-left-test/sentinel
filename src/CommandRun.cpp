@@ -240,6 +240,7 @@ void CommandRun::init() {
       // Before changing directory, resolve any CLI-provided relative paths to
       // absolute paths so they remain valid after the chdir.
       if (configDir != fs::current_path()) {
+        mChangedToDir = configDir.string();
         auto toAbs = [](args::ValueFlag<std::string>& flag) {
           if (flag) {
             fs::path p(flag.Get());
@@ -536,6 +537,110 @@ int CommandRun::run() {
   bool emptyOutputDir = outputDirStr.empty();
   fs::path outputDir = emptyOutputDir ? fs::absolute(".") : fs::absolute(outputDirStr);
 
+  // ── Pre-run configuration validation ────────────────────────────────────────
+  // Collect potentially problematic settings and ask the user to confirm before
+  // starting the (potentially hours-long) pipeline.
+  if (!resuming) {
+    // Source labels: distinguish CLI flags from sentinel.yaml keys.
+    const std::string limitSrc   = mLimit        ? "--limit (CLI)"   : "limit (sentinel.yaml)";
+    const std::string timeoutSrc = mTimeLimitStr  ? "--timeout (CLI)" : "timeout (sentinel.yaml)";
+    const std::string patternSrc = mPatterns      ? "--pattern (CLI)" : "pattern (sentinel.yaml)";
+    const std::string excludeSrc = mExcludes      ? "--exclude (CLI)" : "exclude (sentinel.yaml)";
+
+    std::vector<std::string> warnings;
+
+    // Working-directory change caused by --config pointing to a different directory.
+    if (mChangedToDir) {
+      warnings.push_back(fmt::format(
+          "--config (CLI): working directory changed to '{}'. "
+          "All relative paths and commands run from that location.",
+          *mChangedToDir));
+    }
+
+    // limit=0: evaluates every candidate mutant, which may take hours.
+    if (mutantLimit == 0) {
+      warnings.push_back(fmt::format(
+          "{}: 0 — all candidate mutants will be evaluated. "
+          "This may take a very long time.",
+          limitSrc));
+    }
+
+    // timeout=0: no per-mutant time cap; a hanging test blocks the run forever.
+    if (timeLimitStr == "0") {
+      warnings.push_back(fmt::format(
+          "{}: 0 — no per-mutant test time limit. "
+          "A hanging test will block the run indefinitely.",
+          timeoutSrc));
+    }
+
+    // --pattern checks (git pathspec, matched against repo-relative paths).
+    for (const auto& pat : diffPatterns) {
+      fs::path p(pat);
+      if (p.is_absolute()) {
+        auto mm = std::mismatch(sourceRoot.begin(), sourceRoot.end(), p.begin(), p.end());
+        if (mm.first != sourceRoot.end()) {
+          // Absolute path outside the source root: likely a different repository.
+          warnings.push_back(fmt::format(
+              "{}: '{}' is an absolute path outside source-dir '{}'. "
+              "It likely points to a different repository and will produce no mutants.",
+              patternSrc, pat, sourceRoot.string()));
+        } else {
+          // Absolute path inside the source root: git pathspec expects repo-relative paths.
+          warnings.push_back(fmt::format(
+              "{}: '{}' is an absolute path. "
+              "Git pathspec uses paths relative to the repository root; "
+              "consider using a relative path instead.",
+              patternSrc, pat));
+        }
+      }
+    }
+
+    // --exclude checks (fnmatch, matched against canonical absolute file paths).
+    for (const auto& excl : excludePaths) {
+      fs::path p(excl);
+      if (p.is_absolute()) {
+        auto mm = std::mismatch(sourceRoot.begin(), sourceRoot.end(), p.begin(), p.end());
+        if (mm.first != sourceRoot.end()) {
+          // Absolute path outside the source root: will never match a source file.
+          warnings.push_back(fmt::format(
+              "{}: '{}' is an absolute path outside source-dir '{}'. "
+              "It likely points to a different repository and will never match any source file.",
+              excludeSrc, excl, sourceRoot.string()));
+        }
+      } else if (!excl.empty() && excl.back() == '/') {
+        // Trailing slash: fnmatch matches against file paths, which never end with '/'.
+        warnings.push_back(fmt::format(
+            "{}: '{}' ends with '/'. "
+            "Patterns are matched against file paths, not directories. "
+            "Did you mean '{}*'?",
+            excludeSrc, excl, excl));
+      } else if (!excl.empty() && excl.front() != '*') {
+        // Relative path without a leading wildcard: fnmatch matches against the full
+        // absolute path, so a bare name like 'build' never matches '/abs/path/build/foo.cpp'.
+        warnings.push_back(fmt::format(
+            "{}: '{}' is a relative pattern without a leading '*'. "
+            "Patterns are matched against absolute file paths. "
+            "Did you mean '*/{}/*'?",
+            excludeSrc, excl, excl));
+      }
+    }
+
+    if (!warnings.empty() && !mForce.Get()) {
+      std::cout << "\nConfiguration warnings:\n";
+      for (const auto& w : warnings) {
+        std::cout << fmt::format("  [!] {}\n", w);
+      }
+      std::cout << "\nProceed? [y/N] ";
+      std::cout.flush();
+      std::string answer;
+      std::getline(std::cin, answer);
+      if (answer != "y" && answer != "Y") {
+        std::cout << "Aborted.\n";
+        return 0;
+      }
+    }
+  }
+
   auto logger = Logger::getLogger(cCommandRunLoggerName);
 
   if (resuming) {
@@ -577,17 +682,6 @@ int CommandRun::run() {
     if (!fs::exists(filename)) {
       throw InvalidArgumentException(fmt::format("Input coverage file does not exist: {}", filename));
     }
-  }
-
-  // Warn if compile_commands.json is absent from an explicitly specified --compiledb-dir.
-  // Only warn when the user explicitly set the option (CLI or YAML); skip for the default value.
-  // Check before the build so the user knows early; the build step may generate it.
-  bool compileDbDirExplicit = mCompileDbDir || (!resuming && mConfig && mConfig->compileDbDir.has_value());
-  if (compileDbDirExplicit && !fs::exists(fs::path(compileDbStr) / "compile_commands.json")) {
-    logger->warn(fmt::format(
-        "--compiledb-dir '{}' does not contain compile_commands.json. "
-        "Mutant generation will fail unless the build step creates it.",
-        compileDbStr));
   }
 
   try {
@@ -711,9 +805,8 @@ int CommandRun::run() {
       }
       statusLine.setTotalMutants(indexedMutants.size());
       if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-        fmt::print("Note: mutant count capped at {} of {} candidates (--limit {}). "
-                   "Use --limit 0 to evaluate all mutants.\n",
-                   mutantLimit, candidateCount, mutantLimit);
+        std::cout << fmt::format("Note: mutant count capped at {} of {} candidates (--limit {}).\n",
+                                 mutantLimit, candidateCount, mutantLimit);
       }
     }
 
