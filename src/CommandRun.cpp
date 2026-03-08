@@ -197,15 +197,6 @@ static const char* const kYamlTemplate =
     "# Workspace directory for all sentinel run artifacts (default: ./sentinel_workspace)\n"
     "# workspace: ./sentinel_workspace\n"
     "\n"
-    "# Enable verbose logging (default: false)\n"
-    "# verbose: false\n"
-    "\n"
-    "# Suppress build/test log output to the terminal; status line still shows progress (default: false)\n"
-    "# silent: false\n"
-    "\n"
-    "# Enable debug logging (default: false)\n"
-    "# debug: false\n"
-    "\n"
     "# --- Run options ---\n"
     "\n"
     "# Disable the terminal status line even when stdout is a TTY (default: false)\n"
@@ -398,17 +389,8 @@ void CommandRun::init() {
     }
   }
 
-  // Call base init: sets log level from CLI -v/--debug.
+  // Call base init: sets log level from CLI --verbose/--debug.
   Command::init();
-
-  // Apply YAML log level only if CLI did not set verbose or debug.
-  if (!mInit && !mIsDebug && !mIsVerbose && mConfig) {
-    if (mConfig->debug.value_or(false)) {
-      sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::DEBUG);
-    } else if (mConfig->verbose.value_or(false)) {
-      sentinel::Logger::setDefaultLevel(sentinel::Logger::Level::VERBOSE);
-    }
-  }
 }
 
 void CommandRun::setSignalHandler() {
@@ -429,15 +411,11 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot,
                                       const std::vector<std::string>& coverageFiles,
                                       const std::string& generator, size_t timeout, size_t killAfter,
                                       unsigned seed, const std::vector<std::string>& operators,
-                                      const std::string& outputDir, bool verbose, bool debug,
-                                      bool noStatusLine, bool silent) {
+                                      const std::string& outputDir, bool noStatusLine) {
   YAML::Emitter out;
   out << YAML::BeginMap;
   out << YAML::Key << "source-dir" << YAML::Value << sourceRoot;
-  out << YAML::Key << "verbose" << YAML::Value << verbose;
-  out << YAML::Key << "debug" << YAML::Value << debug;
   out << YAML::Key << "no-statusline" << YAML::Value << noStatusLine;
-  out << YAML::Key << "silent" << YAML::Value << silent;
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
@@ -600,10 +578,7 @@ int CommandRun::run() {
   }
 
   // Determine silent mode (suppress build/test subprocess output to terminal)
-  bool silent = mSilent.Get() || (mConfig && mConfig->silent.value_or(false));
-  if (resuming) {
-    silent = activeConfig.silent.value_or(false);
-  }
+  bool silent = mSilent.Get();
 
   // Validate required options
   if (buildCmd.empty()) {
@@ -796,8 +771,7 @@ int CommandRun::run() {
                                            testResultFileExts, coverageFiles, generatorStr,
                                            mTimeLimit, mKillAfter, randomSeed, operators,
                                            emptyOutputDir ? std::string{} : outputDir.string(),
-                                           mIsVerbose.Get(), mIsDebug.Get(),
-                                           disableStatusLine, silent));
+                                           disableStatusLine));
         }
       }  // end if (!dryRun || dryRunBuildOK)
     }

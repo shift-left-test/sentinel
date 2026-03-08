@@ -22,10 +22,6 @@ struct SentinelConfig {
   // Shared with Command base class
   /// Path to the source root directory (--source-dir).
   std::optional<std::string> sourceDir;
-  /// Enable verbose logging (--verbose).
-  std::optional<bool> verbose;
-  /// Enable debug logging (--debug).
-  std::optional<bool> debug;
   /// Workspace directory for sentinel run artifacts (--workspace).
   std::optional<std::string> workDir;
   /// Directory for output reports (--output-dir).
@@ -66,8 +62,6 @@ struct SentinelConfig {
   std::optional<std::vector<std::string>> operators;
   /// Disable the terminal status line even when stdout is a TTY (--no-statusline).
   std::optional<bool> noStatusLine;
-  /// Suppress build/test log output to terminal; show only status line progress (--silent).
-  std::optional<bool> silent;
 
   /**
    * @brief Load configuration from a YAML file.

@@ -266,15 +266,6 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # Workspace directory for all sentinel run artifacts (default: ./sentinel_workspace)
 # workspace: ./sentinel_workspace
 
-# Enable verbose logging (default: false)
-# verbose: false
-
-# Suppress build/test log output to the terminal; status line still shows progress (default: false)
-# silent: false
-
-# Enable debug logging (default: false)
-# debug: false
-
 # --- Run options ---
 
 # Disable the terminal status line even when stdout is a TTY (default: false)

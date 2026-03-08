@@ -70,12 +70,6 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["source-dir"]) {
       cfg.sourceDir = root["source-dir"].as<std::string>();
     }
-    if (root["verbose"]) {
-      cfg.verbose = root["verbose"].as<bool>();
-    }
-    if (root["debug"]) {
-      cfg.debug = root["debug"].as<bool>();
-    }
     if (root["workspace"]) {
       cfg.workDir = root["workspace"].as<std::string>();
     }
@@ -133,9 +127,6 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     }
     if (root["no-statusline"]) {
       cfg.noStatusLine = root["no-statusline"].as<bool>();
-    }
-    if (root["silent"]) {
-      cfg.silent = root["silent"].as<bool>();
     }
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));

@@ -182,17 +182,11 @@ Supported keys (all optional):
 \fBsource-dir\fR
 Root of the source tree to test.
 .TP
-\fBverbose\fR / \fBdebug\fR
-Enable verbose or debug logging (boolean).
-.TP
 \fBworkspace\fR
 Directory for all run artifacts.
 .TP
 \fBoutput-dir\fR
 Directory to write HTML/XML reports.
-.TP
-\fBsilent\fR
-Suppress build/test log output to the terminal (boolean).
 .TP
 \fBno-statusline\fR
 Disable the terminal status line (boolean).

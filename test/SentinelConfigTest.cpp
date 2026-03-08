@@ -42,8 +42,6 @@ class SentinelConfigTest : public ::testing::Test {
 TEST_F(SentinelConfigTest, testLoadCompleteConfig) {
   writeFile("sentinel.yaml", R"(
 source-dir: ./src
-verbose: true
-debug: false
 workspace: ./work
 output-dir: ./out
 compiledb-dir: ./build
@@ -76,12 +74,6 @@ operator:
 
   ASSERT_TRUE(cfg.sourceDir.has_value());
   EXPECT_EQ((mTmpDir / "src").string(), *cfg.sourceDir);
-
-  ASSERT_TRUE(cfg.verbose.has_value());
-  EXPECT_TRUE(*cfg.verbose);
-
-  ASSERT_TRUE(cfg.debug.has_value());
-  EXPECT_FALSE(*cfg.debug);
 
   ASSERT_TRUE(cfg.workDir.has_value());
   EXPECT_EQ((mTmpDir / "work").string(), *cfg.workDir);
@@ -162,8 +154,6 @@ limit: 20
 
   // Unspecified fields must remain empty optionals
   EXPECT_FALSE(cfg.sourceDir.has_value());
-  EXPECT_FALSE(cfg.verbose.has_value());
-  EXPECT_FALSE(cfg.debug.has_value());
   EXPECT_FALSE(cfg.workDir.has_value());
   EXPECT_FALSE(cfg.outputDir.has_value());
   EXPECT_FALSE(cfg.compileDbDir.has_value());
@@ -196,14 +186,6 @@ TEST_F(SentinelConfigTest, testLoadInvalidYamlSyntax) {
 TEST_F(SentinelConfigTest, testLoadWrongTypeForLimit) {
   writeFile("sentinel.yaml", R"(
 limit: not_a_number
-)");
-
-  EXPECT_THROW(SentinelConfig::loadFromFile(configPath("sentinel.yaml")), std::runtime_error);
-}
-
-TEST_F(SentinelConfigTest, testLoadWrongTypeForVerbose) {
-  writeFile("sentinel.yaml", R"(
-verbose: not_a_bool
 )");
 
   EXPECT_THROW(SentinelConfig::loadFromFile(configPath("sentinel.yaml")), std::runtime_error);
