@@ -74,7 +74,7 @@ class RandomMutantGenerator : public MutantGenerator {
    private:
     clang::ASTContext* mContext;
     clang::SourceManager& mSrcMgr;
-    std::vector<MutationOperator*> mMutationOperators;
+    std::vector<std::unique_ptr<MutationOperator>> mMutationOperators;
     Mutants* mMutants;
     std::vector<std::size_t> mTargetLines;
   };

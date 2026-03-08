@@ -51,6 +51,16 @@ class CommandRun : public Command {
    */
   static void restoreBackup(const std::string& backup, const std::string& srcRoot);
 
+  /**
+   * @brief Copies test result files with the given extensions from @p from to @p to.
+   *
+   * @param from Source directory containing test result files.
+   * @param to   Destination directory to copy files into.
+   * @param exts File extensions to copy (e.g. {"xml", "XML"}).
+   */
+  static void copyTestReportTo(const std::string& from, const std::string& to,
+                                const std::vector<std::string>& exts);
+
  protected:
   /**
    * @brief Installs signal handlers that restore the backup on abnormal exit.
@@ -89,15 +99,6 @@ class CommandRun : public Command {
    * @brief Configuration loaded from the YAML file; populated in init().
    */
   std::optional<SentinelConfig> mConfig;
-
-  /**
-   * @brief Copies test result files with the given extensions from @p from to @p to.
-   *
-   * @param from Source directory containing test result files.
-   * @param to   Destination directory to copy files into.
-   * @param exts File extensions to copy (e.g. {"xml", "XML"}).
-   */
-  void copyTestReportTo(const std::string& from, const std::string& to, const std::vector<std::string>& exts);
 
   /**
    * @brief Ensures @p target exists as a directory and returns its canonical path.

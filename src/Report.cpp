@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <tuple>
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResults.hpp"
@@ -32,18 +31,6 @@ Report::Report(const std::experimental::filesystem::path& resultsPath,
   mLogger->verbose(fmt::format("Load MutationResults: {}", resultsPath.string()));
 
   generateReport();
-}
-
-Report::~Report() {
-  for (const auto& p : groupByDirPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
-  }
-
-  for (const auto& p : groupByPath) {
-    delete std::get<0>(*p.second);
-    delete p.second;
-  }
 }
 
 void Report::generateReport() {
@@ -72,38 +59,29 @@ void Report::generateReport() {
     std::string curDirname = mrPath.parent_path();
     curDirname = string::replaceAll(curDirname, "/", ".");
 
-    if (groupByDirPath.empty() || groupByDirPath.count(curDirname) == 0) {
-      groupByDirPath.emplace(curDirname,
-                             new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t, std::size_t>(
-                                 new std::vector<const MutationResult*>(), 0, 0, 0));
-    }
-    std::get<0>(*groupByDirPath[curDirname])->push_back(&mr);
-    std::get<1>(*groupByDirPath[curDirname]) += 1;
+    groupByDirPath[curDirname].results.push_back(&mr);
+    groupByDirPath[curDirname].total += 1;
 
-    if (groupByPath.empty() || groupByPath.count(mrPath) == 0) {
-      groupByPath.emplace(mrPath, new std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t>(
-                                      new std::vector<const MutationResult*>(), 0, 0));
-    }
-    std::get<0>(*groupByPath[mrPath])->push_back(&mr);
-    std::get<1>(*groupByPath[mrPath]) += 1;
+    groupByPath[mrPath].results.push_back(&mr);
+    groupByPath[mrPath].total += 1;
 
     if (mr.getDetected()) {
-      std::get<2>(*groupByDirPath[curDirname]) += 1;
-      std::get<2>(*groupByPath[mrPath]) += 1;
+      groupByDirPath[curDirname].detected += 1;
+      groupByPath[mrPath].detected += 1;
       totNumberOfDetectedMutation += 1;
     }
   }
 
-  for (const auto& p : groupByDirPath) {
+  for (auto& p : groupByDirPath) {
     std::set<std::string> tmpSet;
-    for (const MutationResult* mr : *(std::get<0>(*p.second))) {
+    for (const MutationResult* mr : p.second.results) {
       tmpSet.insert(mr->getMutant().getPath());
     }
-    std::get<3>(*p.second) = tmpSet.size();
+    p.second.fileCount = tmpSet.size();
   }
 }
 
-void Report::printSummary() {
+void Report::printSummary() const {
   std::size_t flen = 50;
   std::size_t klen = 10;
   std::size_t mlen = 10;
@@ -129,8 +107,8 @@ void Report::printSummary() {
 
   for (const auto& p : groupByPath) {
     double curScore = -1.0;
-    if (std::get<1>(*p.second) != 0) {
-      curScore = (100.0 * std::get<2>(*p.second)) / std::get<1>(*p.second);
+    if (p.second.total != 0) {
+      curScore = (100.0 * p.second.detected) / p.second.total;
     }
     int filePos = p.first.string().size() - flen;
     std::string skipStr;
@@ -142,7 +120,7 @@ void Report::printSummary() {
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
     std::cout << fmt::format(defFormat, skipStr + p.first.string().substr(filePos), flen,
-                             std::get<2>(*p.second), klen, std::get<1>(*p.second), mlen,
+                             p.second.detected, klen, p.second.total, mlen,
                              scoreStr, clen);
   }
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);

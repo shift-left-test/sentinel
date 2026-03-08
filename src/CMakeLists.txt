@@ -14,7 +14,7 @@ build_static_library(
        Report.cpp XMLReport.cpp HTMLReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
-       operators/MutationOperator.cpp util/Subprocess.cpp
+       operators/MutationOperator.cpp Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
        Command.cpp CommandRun.cpp SentinelConfig.cpp MainCLI.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include

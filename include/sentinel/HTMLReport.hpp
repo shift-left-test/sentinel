@@ -7,9 +7,7 @@
 #define INCLUDE_SENTINEL_HTMLREPORT_HPP_
 
 #include <experimental/filesystem>
-#include <map>
 #include <string>
-#include <tuple>
 #include <vector>
 #include "sentinel/Report.hpp"
 
@@ -65,7 +63,8 @@ class HTMLReport : public Report {
    * @param srcPath
    * @param outputDir
    */
-  void makeSourceHtml(std::vector<const MutationResult*>* MRs, const std::experimental::filesystem::path& srcPath,
+  void makeSourceHtml(const std::vector<const MutationResult*>& MRs,
+                      const std::experimental::filesystem::path& srcPath,
                       const std::experimental::filesystem::path& outputDir);
 };
 

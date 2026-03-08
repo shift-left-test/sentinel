@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "sentinel/util/Subprocess.hpp"
+#include "sentinel/Subprocess.hpp"
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);

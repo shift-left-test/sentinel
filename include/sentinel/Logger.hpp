@@ -54,6 +54,12 @@ class Logger {
   static void setDefaultLevel(Logger::Level level);
 
   /**
+   * @brief Clear the logger cache.
+   *        Primarily for use in tests to ensure isolation between test cases.
+   */
+  static void clearCache();
+
+  /**
    * @brief Log a debug message
    *
    * @param message to log

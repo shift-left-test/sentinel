@@ -20,7 +20,8 @@ namespace fs = std::experimental::filesystem;
 namespace sentinel {
 
 Evaluator::Evaluator(const std::string& expectedResultDir, const std::string& sourcePath) :
-    mSourcePath(sourcePath), mExpectedResult(expectedResultDir), mLogger(Logger::getLogger("Evaluator")) {
+    mSourcePath(sourcePath), mCanonicalSourcePath(fs::canonical(sourcePath)),
+    mExpectedResult(expectedResultDir), mLogger(Logger::getLogger("Evaluator")) {
   mLogger->info(fmt::format("Load Expected Result: {}", expectedResultDir));
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
@@ -57,7 +58,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualRe
   fs::path relPath;
 
   auto p = fs::canonical(mut.getPath());
-  auto base = fs::canonical(mSourcePath);
+  const auto& base = mCanonicalSourcePath;
 
   auto mismatched = std::mismatch(p.begin(), p.end(), base.begin(), base.end());
 

@@ -60,7 +60,7 @@ void GitSourceTree::modify(const Mutant& info, const std::experimental::filesyst
     lineIdx += 1;
 
     if (lineIdx < info.getFirst().line || lineIdx > info.getLast().line) {
-      mutatedFile << line << std::endl;
+      mutatedFile << line << '\n';
     }
 
     if (lineIdx == info.getFirst().line) {
@@ -69,7 +69,7 @@ void GitSourceTree::modify(const Mutant& info, const std::experimental::filesyst
     }
 
     if (lineIdx == info.getLast().line) {
-      mutatedFile << line.substr(info.getLast().column - 1) << std::endl;
+      mutatedFile << line.substr(info.getLast().column - 1) << '\n';
     }
   }
 

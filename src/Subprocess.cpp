@@ -11,18 +11,19 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
 #include "sentinel/util/signal.hpp"
-#include "sentinel/util/Subprocess.hpp"
+#include "sentinel/Subprocess.hpp"
 
 namespace sentinel {
 
-pid_t Subprocess::childPid;
-std::size_t Subprocess::killAfter;
-bool Subprocess::timedOut;
-int Subprocess::pendSig;
+volatile pid_t Subprocess::childPid;
+volatile std::size_t Subprocess::killAfter;
+volatile bool Subprocess::timedOut;
+volatile int Subprocess::pendSig;
 
 Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill, const std::string& logFile,
                        bool silent) :
@@ -52,7 +53,7 @@ int Subprocess::execute() {
   // sc's desctructor restore signals' handler.
   const std::vector<int> usingSignals = {SIGABRT, SIGINT,  SIGFPE, SIGILL,  SIGSEGV,
                                          SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
-  auto sc = new signal::SaContainer(usingSignals);
+  auto sc = std::make_unique<signal::SaContainer>(usingSignals);
 
   // Ignore below signals' temporally
   // If below signals are received before the signal handler is set,
@@ -180,8 +181,7 @@ int Subprocess::execute() {
     Subprocess::pendSig = 0;
     Subprocess::killAfter = 0;
 
-    // restore signal handler
-    delete sc;
+    // restore signal handler (sc destructor called automatically by unique_ptr)
 
     // send pending signal to sentinel
     if (tmpSig != 0) {
@@ -190,7 +190,6 @@ int Subprocess::execute() {
 
     return status;
   } else {
-    delete sc;
     close(pfd[0]);
     close(pfd[1]);
     throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})", mCmd, std::strerror(errno)));

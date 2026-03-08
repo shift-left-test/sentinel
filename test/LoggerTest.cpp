@@ -37,6 +37,7 @@ class LoggerTest : public ::testing::Test {
 
   void TearDown() override {
     Logger::setDefaultLevel(Logger::Level::OFF);
+    Logger::clearCache();
   }
 
   void captureStdout() {

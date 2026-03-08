@@ -5,6 +5,7 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
+#include <memory>
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -30,7 +31,7 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
 
   auto xmlPath = dirPath / "mutations.xml";
 
-  auto doc = new tinyxml2::XMLDocument();
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
   tinyxml2::XMLDeclaration* pDecl = doc->NewDeclaration();
   doc->InsertFirstChild(pDecl);
 
@@ -51,16 +52,16 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
       pMutation->SetAttribute("detected", r.getDetected());
     }
 
-    addChildToParent(doc, pMutation, "sourceFile", r.getMutant().getPath().filename());
-    addChildToParent(doc, pMutation, "sourceFilePath", getRelativePath(r.getMutant().getPath(), mSourcePath));
-    addChildToParent(doc, pMutation, "mutatedClass", r.getMutant().getClass());
-    addChildToParent(doc, pMutation, "mutatedMethod", r.getMutant().getFunction());
-    addChildToParent(doc, pMutation, "lineNumber", std::to_string(r.getMutant().getFirst().line));
-    addChildToParent(doc, pMutation, "mutator", r.getMutant().getOperator());
+    addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename());
+    addChildToParent(doc.get(), pMutation, "sourceFilePath", getRelativePath(r.getMutant().getPath(), mSourcePath));
+    addChildToParent(doc.get(), pMutation, "mutatedClass", r.getMutant().getClass());
+    addChildToParent(doc.get(), pMutation, "mutatedMethod", r.getMutant().getFunction());
+    addChildToParent(doc.get(), pMutation, "lineNumber", std::to_string(r.getMutant().getFirst().line));
+    addChildToParent(doc.get(), pMutation, "mutator", r.getMutant().getOperator());
     if (skip) {
-      addChildToParent(doc, pMutation, "killingTest", "");
+      addChildToParent(doc.get(), pMutation, "killingTest", "");
     } else {
-      addChildToParent(doc, pMutation, "killingTest", r.getKillingTest());
+      addChildToParent(doc.get(), pMutation, "killingTest", r.getKillingTest());
     }
 
     pMutations->InsertEndChild(pMutation);
@@ -69,7 +70,6 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   doc->InsertEndChild(pMutations);
   doc->SaveFile(xmlPath.c_str());
   mLogger->info(fmt::format("Save to {}", xmlPath.string()));
-  delete doc;
 }
 
 void XMLReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,

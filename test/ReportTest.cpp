@@ -12,7 +12,9 @@
 #include <string>
 #include <sstream>
 #include "helper/CaptureHelper.hpp"
+#include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/Report.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
@@ -21,33 +23,19 @@ namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-class ReportTest : public ::testing::Test {
+class ReportTest : public SentinelReportTestBase {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_REPORTTEST_TMP_DIR";
-    fs::remove_all(BASE);
-
-    SOURCE_DIR = BASE / "SOURCE_DIR";
-    fs::create_directories(SOURCE_DIR);
-    NESTED_SOURCE_DIR = SOURCE_DIR / "NESTED_DIR1/NESTED_DIR";
-    fs::create_directories(NESTED_SOURCE_DIR);
-    NESTED_SOURCE_DIR2 = SOURCE_DIR / "NESTED_DIR2";
-    fs::create_directories(NESTED_SOURCE_DIR2);
-
-    TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
+    setUpDirectories("SENTINEL_REPORTTEST_TMP_DIR");
     makeFile(TARGET_FULL_PATH);
-    TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
     makeFile(TARGET_FULL_PATH2);
-    TARGET_FULL_PATH3 = NESTED_SOURCE_DIR2 / "target3.cpp";
     makeFile(TARGET_FULL_PATH3);
-    TARGET_FULL_PATH4 = SOURCE_DIR / "target4.cpp";
     makeFile(TARGET_FULL_PATH4);
-
     mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
-    fs::remove_all(BASE);
+    tearDownBase();
   }
 
   void makeFile(const std::string& path) {
@@ -61,15 +49,6 @@ class ReportTest : public ::testing::Test {
   std::string capturedStdout() {
     return mStdoutCapture->release();
   }
-
-  fs::path BASE;
-  fs::path SOURCE_DIR;
-  fs::path NESTED_SOURCE_DIR;
-  fs::path NESTED_SOURCE_DIR2;
-  fs::path TARGET_FULL_PATH;
-  fs::path TARGET_FULL_PATH2;
-  fs::path TARGET_FULL_PATH3;
-  fs::path TARGET_FULL_PATH4;
 
  private:
   std::shared_ptr<CaptureHelper> mStdoutCapture;

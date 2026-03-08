@@ -9,7 +9,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <tuple>
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/docGenerator/CSSGenerator.hpp"
@@ -60,7 +59,7 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
   }
 
   for (const auto& p : groupByPath) {
-    makeSourceHtml(std::get<0>(*p.second), p.first, dirPath);
+    makeSourceHtml(p.second.results, p.first, dirPath);
   }
 }
 
@@ -77,9 +76,9 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     numerator = totNumberOfDetectedMutation;
     denominator = totNumberOfMutation;
   } else {
-    sizeOfTargetFiles = std::get<3>(*groupByDirPath[currentDirPath]);
-    numerator = std::get<2>(*groupByDirPath[currentDirPath]);
-    denominator = std::get<1>(*groupByDirPath[currentDirPath]);
+    sizeOfTargetFiles = groupByDirPath[currentDirPath].fileCount;
+    numerator = groupByDirPath[currentDirPath].detected;
+    denominator = groupByDirPath[currentDirPath].total;
   }
   unsigned int cov = 100 * numerator / denominator;
 
@@ -87,9 +86,9 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
 
   if (root) {
     for (const auto& p : groupByDirPath) {
-      std::size_t numOfFiles = std::get<3>(*p.second);
-      std::size_t subDetected = std::get<2>(*p.second);
-      std::size_t subMut = std::get<1>(*p.second);
+      std::size_t numOfFiles = p.second.fileCount;
+      std::size_t subDetected = p.second.detected;
+      std::size_t subMut = p.second.total;
       unsigned int subCov = 100 * subDetected / subMut;
       ihg.pushItemToTable(p.first, subCov, subDetected, subMut, numOfFiles);
     }
@@ -102,8 +101,8 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
         continue;
       }
 
-      std::size_t subDetected = std::get<2>(*p.second);
-      std::size_t subMut = std::get<1>(*p.second);
+      std::size_t subDetected = p.second.detected;
+      std::size_t subMut = p.second.total;
       auto subCov = 100 * subDetected / subMut;
 
       ihg.pushItemToTable(p.first.filename(), subCov, subDetected, subMut, -1);
@@ -130,7 +129,7 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   mLogger->info(fmt::format("Save to {}", (outputDir / fileName).string()));
 }
 
-void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
+void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
                                 const std::experimental::filesystem::path& srcPath,
                                 const std::experimental::filesystem::path& outputDir) {
   namespace fs = std::experimental::filesystem;
@@ -147,7 +146,7 @@ void HTMLReport::makeSourceHtml(std::vector<const MutationResult*>* MRs,
   std::set<std::string> uniqueMutator;
 
   std::size_t maxLineNum = 0;
-  for (const MutationResult* mr : *MRs) {
+  for (const MutationResult* mr : MRs) {
     auto tmpvector = string::split(mr->getKillingTest(), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {

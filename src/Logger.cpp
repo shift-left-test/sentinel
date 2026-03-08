@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -16,18 +17,26 @@ namespace sentinel {
 
 static std::map<std::string, std::shared_ptr<Logger>> loggers;
 static Logger::Level defaultLevel = Logger::Level::INFO;
+static std::mutex loggersMutex;
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
   return getLogger(name, "[{level}] {message}");
 }
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name, const std::string& format) {
+  std::lock_guard<std::mutex> lock(loggersMutex);
   loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name, format, defaultLevel)));
   return loggers.at(name);
 }
 
 void Logger::setDefaultLevel(Logger::Level level) {
+  std::lock_guard<std::mutex> lock(loggersMutex);
   defaultLevel = level;
+}
+
+void Logger::clearCache() {
+  std::lock_guard<std::mutex> lock(loggersMutex);
+  loggers.clear();
 }
 
 Logger::Logger(const std::string& name, const std::string& format, Logger::Level level) :

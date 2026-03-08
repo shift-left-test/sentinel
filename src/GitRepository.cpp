@@ -203,8 +203,9 @@ static std::vector<std::experimental::filesystem::path> collectGitRepos(
       auto sub = collectGitRepos(entry.path(), skipDirs);
       result.insert(result.end(), sub.begin(), sub.end());
     }
-  } catch (const fs::filesystem_error&) {
-    // Skip directories we cannot read.
+  } catch (const fs::filesystem_error& e) {
+    Logger::getLogger(cGitRepositoryLoggerName)->warn(
+        fmt::format("Skipping unreadable directory '{}': {}", dir.string(), e.what()));
   }
   return result;
 }
@@ -236,7 +237,9 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
       throw RepositoryException(fmt::format("Failed to peel tag: error code {}", error_code));
     }
   } else {
-    git_revparse_single(obj.getPtr(), repo, "HEAD^{commit}");
+    if (git_revparse_single(obj.getPtr(), repo, "HEAD^{commit}") != 0) {
+      logger->warn(fmt::format("git_revparse_single failed for HEAD in {}", gitWorkdir));
+    }
   }
 
   if (!obj.isNull()) {

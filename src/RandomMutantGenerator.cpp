@@ -111,22 +111,16 @@ RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext*
   auto include = [&selectedOps](const std::string& name) {
     return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
   };
-  if (include("AOR")) mMutationOperators.push_back(new AOR(Context));
-  if (include("BOR")) mMutationOperators.push_back(new BOR(Context));
-  if (include("ROR")) mMutationOperators.push_back(new ROR(Context));
-  if (include("SOR")) mMutationOperators.push_back(new SOR(Context));
-  if (include("LCR")) mMutationOperators.push_back(new LCR(Context));
-  if (include("SDL")) mMutationOperators.push_back(new SDL(Context));
-  if (include("UOI")) mMutationOperators.push_back(new UOI(Context));
+  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(Context));
+  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(Context));
+  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(Context));
+  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(Context));
+  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(Context));
+  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(Context));
+  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(Context));
 }
 
-RandomMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() {
-  for (auto op : mMutationOperators) {
-    delete op;
-  }
-
-  mMutationOperators.clear();
-}
+RandomMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() = default;
 
 bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   clang::SourceLocation startLoc = s->getBeginLoc();
@@ -152,7 +146,7 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   bool containTargetLine = lo != mTargetLines.end() && *lo <= endLineNum;
 
   if (containTargetLine) {
-    for (auto m : mMutationOperators) {
+    for (const auto& m : mMutationOperators) {
       if (m->canMutate(s)) {
         m->populate(s, mMutants);
       }

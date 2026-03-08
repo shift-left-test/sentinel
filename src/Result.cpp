@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "sentinel/CTestXmlParser.hpp"
 #include "sentinel/GoogleTestXmlParser.hpp"
@@ -44,9 +45,11 @@ MutationState Result::compare(const Result& original, const Result& mutated, std
                               std::string* errorTest) {
   killingTest->clear();
   errorTest->clear();
+  const std::unordered_set<std::string> mutatedPassed(mutated.mPassedTC.begin(), mutated.mPassedTC.end());
+  const std::unordered_set<std::string> mutatedFailed(mutated.mFailedTC.begin(), mutated.mFailedTC.end());
   for (const std::string& tc : original.mPassedTC) {
-    if (std::find(mutated.mPassedTC.begin(), mutated.mPassedTC.end(), tc) == mutated.mPassedTC.end()) {
-      if (std::find(mutated.mFailedTC.begin(), mutated.mFailedTC.end(), tc) == mutated.mFailedTC.end()) {
+    if (mutatedPassed.count(tc) == 0) {
+      if (mutatedFailed.count(tc) == 0) {
         if (!errorTest->empty()) {
           errorTest->append(", ");
         }

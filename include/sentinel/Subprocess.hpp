@@ -13,6 +13,11 @@ namespace sentinel {
 
 /**
  * @brief Subprocess class
+ *
+ * @note Only one Subprocess may be active at a time per process.  The signal
+ *       handler accesses the static members childPid, killAfter, timedOut and
+ *       pendSig; they are declared volatile so that the compiler does not
+ *       cache their values across signal-handler boundaries.
  */
 class Subprocess {
  public:
@@ -59,10 +64,10 @@ class Subprocess {
   bool mSilent = false;
   bool mTimedOut = false;
   int mStatus = -1;
-  static pid_t childPid;
-  static std::size_t killAfter;
-  static bool timedOut;
-  static int pendSig;
+  static volatile pid_t childPid;          ///< PID of the running child process.
+  static volatile std::size_t killAfter;   ///< Seconds before SIGKILL after timeout.
+  static volatile bool timedOut;           ///< Set to true by the SIGALRM handler.
+  static volatile int pendSig;             ///< Pending signal to forward to child.
 };
 
 }  // namespace sentinel

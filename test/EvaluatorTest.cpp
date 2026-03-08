@@ -50,16 +50,14 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC1);
     MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC2);
 
-    mutable1 = new Mutant("AOR", SAMPLE1_PATH, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
+    mutable1 = std::make_unique<Mutant>("AOR", SAMPLE1_PATH, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
     auto SAMPLE1_CLONE_PATH = SAMPLE1_DIR / "veryVeryVeryVeryVeryVeryVeryVeryVeryLongSampleFile.cpp";
     fs::copy(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
-    mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH, "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
+    mutable2 = std::make_unique<Mutant>("BOR", SAMPLE1_CLONE_PATH, "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
   }
 
   void TearDown() override {
     fs::remove_all(BASE);
-    delete mutable1;
-    delete mutable2;
     SampleFileGeneratorForTest::TearDown();
   }
 
@@ -71,10 +69,8 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     tmpfile.close();
   }
 
-  Mutant* mutable1 = nullptr;
-  Mutant* mutable2 = nullptr;
-  Mutant* mutable3 = nullptr;
-  Mutant* mutable4 = nullptr;
+  std::unique_ptr<Mutant> mutable1;
+  std::unique_ptr<Mutant> mutable2;
   fs::path BASE;
   std::string ORI_DIR;
   std::string ORI_DIR_FAIL;

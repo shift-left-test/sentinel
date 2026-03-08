@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
@@ -41,10 +40,12 @@ class Report {
    *        when resultsPath is empty or sourcePath doesn't exist
    */
   Report(const std::experimental::filesystem::path& resultsPath, const std::experimental::filesystem::path& sourcePath);
+
   /**
    * @brief Default Destructor
    */
-  virtual ~Report();
+  virtual ~Report() = default;
+
   /**
    * @brief Save the report to the given path
    *
@@ -55,12 +56,31 @@ class Report {
   /**
    * @brief Print summury of report
    */
-  void printSummary();
+  void printSummary() const;
 
  private:
   void generateReport();
 
  protected:
+  /**
+   * @brief Aggregated statistics for mutations in a directory.
+   */
+  struct DirStats {
+    std::vector<const MutationResult*> results;  ///< All mutation results in the directory
+    std::size_t total = 0;      ///< Total number of mutations
+    std::size_t detected = 0;   ///< Number of detected (killed) mutations
+    std::size_t fileCount = 0;  ///< Number of distinct source files
+  };
+
+  /**
+   * @brief Aggregated statistics for mutations in a single source file.
+   */
+  struct FileStats {
+    std::vector<const MutationResult*> results;  ///< All mutation results in the file
+    std::size_t total = 0;     ///< Total number of mutations
+    std::size_t detected = 0;  ///< Number of detected (killed) mutations
+  };
+
   /**
    * @brief Return the relative path from start dir
    *
@@ -76,18 +96,14 @@ class Report {
   MutationResults mResults;
 
   /**
-   * @brief group MutationReuslt by Directory
+   * @brief group MutationResult by Directory
    */
-  std::map<std::experimental::filesystem::path,
-           std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t, std::size_t>*>
-      groupByDirPath;
+  std::map<std::experimental::filesystem::path, DirStats> groupByDirPath;
 
   /**
    * @brief group MutationResult by File
    */
-  std::map<std::experimental::filesystem::path,
-           std::tuple<std::vector<const MutationResult*>*, std::size_t, std::size_t>*>
-      groupByPath;
+  std::map<std::experimental::filesystem::path, FileStats> groupByPath;
 
   /**
    * @brief total Number Of Mutation

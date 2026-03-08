@@ -77,6 +77,9 @@ bool Workspace::isLocked(int id) const {
 
 void Workspace::setLock(int id) {
   std::ofstream f(mutantFile(id, "mt.lock"));
+  if (!f) {
+    throw std::runtime_error(fmt::format("Failed to create lock for mutant {}", id));
+  }
 }
 
 void Workspace::clearLock(int id) {
@@ -101,7 +104,9 @@ MutationResult Workspace::getDoneResult(int id) const {
     throw std::runtime_error(fmt::format("Cannot read mt.done for mutant {}", id));
   }
   MutationResult result;
-  in >> result;
+  if (!(in >> result)) {
+    throw std::runtime_error(fmt::format("Failed to parse mt.done for mutant {}", id));
+  }
   return result;
 }
 

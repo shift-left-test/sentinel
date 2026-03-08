@@ -72,13 +72,14 @@ class Evaluator {
    *
    * @return MutationResults
    */
-  const MutationResults& getMutationResults() {
+  const MutationResults& getMutationResults() const {
     return mMutationResults;
   }
 
  private:
   std::shared_ptr<Logger> mLogger;
   std::string mSourcePath;
+  std::experimental::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
   Mutants mMutants;
   Result mExpectedResult;
   MutationResults mMutationResults;

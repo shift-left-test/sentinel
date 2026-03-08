@@ -10,8 +10,10 @@
 #include <regex>
 #include <string>
 #include <sstream>
+#include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/HTMLReport.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -19,31 +21,18 @@ namespace fs = std::experimental::filesystem;
 
 namespace sentinel {
 
-class HTMLReportTest : public ::testing::Test {
+class HTMLReportTest : public SentinelReportTestBase {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_HTMLREPORTTEST_TMP_DIR";
-    fs::remove_all(BASE);
-
-    SOURCE_DIR = BASE / "SOURCE_DIR";
-    fs::create_directories(SOURCE_DIR);
-    NESTED_SOURCE_DIR = SOURCE_DIR / "NESTED_DIR1/NESTED_DIR";
-    fs::create_directories(NESTED_SOURCE_DIR);
-    NESTED_SOURCE_DIR2 = SOURCE_DIR / "NESTED_DIR2";
-    fs::create_directories(NESTED_SOURCE_DIR2);
-
-    TARGET_FULL_PATH = NESTED_SOURCE_DIR / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
+    setUpDirectories("SENTINEL_HTMLREPORTTEST_TMP_DIR");
     writeFile(TARGET_FULL_PATH, TARGET_CONTENT);
-    TARGET_FULL_PATH2 = NESTED_SOURCE_DIR2 / "target2.cpp";
     writeFile(TARGET_FULL_PATH2, TARGET_CONTENT2);
-    TARGET_FULL_PATH3 = NESTED_SOURCE_DIR2 / "target3.cpp";
     writeFile(TARGET_FULL_PATH3, TARGET_CONTENT3);
-    TARGET_FULL_PATH4 = SOURCE_DIR / "target4.cpp";
     writeFile(TARGET_FULL_PATH4, TARGET_CONTENT4);
   }
 
   void TearDown() override {
-    fs::remove_all(BASE);
+    tearDownBase();
   }
 
   void readFileAndCompareExpected(const std::string& path, const std::string& expectedContents) {
@@ -63,22 +52,15 @@ class HTMLReportTest : public ::testing::Test {
     t.close();
   }
 
-  fs::path BASE;
-  fs::path SOURCE_DIR;
-  fs::path NESTED_SOURCE_DIR;
-  fs::path NESTED_SOURCE_DIR2;
-  fs::path TARGET_FULL_PATH;
   std::string TARGET_CONTENT =
       R"(#include <iostream>
 int add(int a, int b) {
   return a + b;
 })";
-  fs::path TARGET_FULL_PATH2;
   std::string TARGET_CONTENT2 =
       R"(int bitwiseOR(int a, int b) {
   return a | b;
 })";
-  fs::path TARGET_FULL_PATH3;
   std::string TARGET_CONTENT3 =
       R"(//a & b
 int bitwiseAND(int a, int b){
@@ -89,7 +71,6 @@ int bitwiseAND(int a, int b){
 int minus(int a, int b){
   return a - b;
 })";
-  fs::path TARGET_FULL_PATH4;
   std::string TARGET_CONTENT4 =
       R"(int multiply(int a, int b) {
   return a * b;
