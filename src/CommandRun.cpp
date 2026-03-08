@@ -269,8 +269,8 @@ static const char* const kYamlTemplate =
     "# Paths excluded from mutation; fnmatch-style patterns (default: none)\n"
     "# exclude: []\n"
     "\n"
-    "# Maximum number of mutants to generate (default: 10)\n"
-    "# limit: 10\n"
+    "# Maximum number of mutants to generate (default: 0 = unlimited)\n"
+    "# limit: 0\n"
     "\n"
     "# Mutant selection strategy (default: uniform)\n"
     "#   uniform  - one mutant per operator per source line\n"
@@ -341,7 +341,8 @@ CommandRun::CommandRun(args::Group& parser) :
               {'p', "pattern"}),
     mExcludes(mGroupMutation, "EXPR", "Exclude files/directories matching fnmatch-style patterns",
               {'e', "exclude"}),
-    mLimit(mGroupMutation, "N", "Maximum number of mutants to generate", {'l', "limit"}, 10),
+    mLimit(mGroupMutation, "N", "Maximum number of mutants to generate (default: 0 = unlimited)",
+           {'l', "limit"}, 0),
     mGenerator(mGroupMutation, "TYPE",
                "Mutant selection strategy: uniform=one per operator per line, "
                "random=fully random, weighted=complex-code-first (default: uniform)",
@@ -1058,7 +1059,8 @@ int CommandRun::run() {
   // Collect potentially problematic settings and ask the user to confirm before
   // starting the (potentially hours-long) pipeline.
   if (!resuming) {
-    if (!checkConfigWarnings(sourceRoot, mutantLimit, timeLimitStr, diffPatterns, excludePaths)) {
+    if (!checkConfigWarnings(sourceRoot, mutantLimit, timeLimitStr, diffPatterns, excludePaths,
+                             partIdx, partCount)) {
       return 0;
     }
   }
@@ -1145,15 +1147,30 @@ int CommandRun::run() {
 
     // ── STEP 4b: Apply partition slice ──────────────────────────────────────────
     size_t fullMutantCount = pr.indexedMutants.size();
-    if (partIdx != 0 && !pr.indexedMutants.empty()) {
-      size_t start = (partIdx - 1) * fullMutantCount / partCount;
-      size_t end = partIdx * fullMutantCount / partCount;
-      logger->info(fmt::format("Partition {}/{}: evaluating {} of {} mutants.",
-                               partIdx, partCount, end - start, fullMutantCount));
-      pr.indexedMutants = std::vector<std::pair<int, sentinel::Mutant>>(
-          pr.indexedMutants.begin() + static_cast<ptrdiff_t>(start),
-          pr.indexedMutants.begin() + static_cast<ptrdiff_t>(end));
-      statusLine.setTotalMutants(pr.indexedMutants.size());
+    if (partIdx != 0) {
+      if (pr.indexedMutants.empty()) {
+        logger->warn(fmt::format(
+            "Partition {}/{}: no mutants were generated (total: 0). "
+            "Nothing to evaluate.",
+            partIdx, partCount));
+      } else {
+        size_t start = (partIdx - 1) * fullMutantCount / partCount;
+        size_t end = partIdx * fullMutantCount / partCount;
+        pr.indexedMutants = std::vector<std::pair<int, sentinel::Mutant>>(
+            pr.indexedMutants.begin() + static_cast<ptrdiff_t>(start),
+            pr.indexedMutants.begin() + static_cast<ptrdiff_t>(end));
+        statusLine.setTotalMutants(pr.indexedMutants.size());
+        if (pr.indexedMutants.empty()) {
+          logger->warn(fmt::format(
+              "Partition {}/{}: 0 mutants assigned out of {} total. "
+              "Increase --limit or reduce --partition TOTAL.",
+              partIdx, partCount, fullMutantCount));
+        } else {
+          logger->info(fmt::format("Partition {}/{}: evaluating {} of {} mutants.",
+                                   partIdx, partCount, pr.indexedMutants.size(),
+                                   fullMutantCount));
+        }
+      }
     }
 
     // ── DRY-RUN EXIT ────────────────────────────────────────────────────────────
@@ -1465,7 +1482,9 @@ bool CommandRun::checkConfigWarnings(
     size_t mutantLimit,
     const std::string& timeLimitStr,
     const std::vector<std::string>& diffPatterns,
-    const std::vector<std::string>& excludePaths) {
+    const std::vector<std::string>& excludePaths,
+    size_t partIdx,
+    size_t partCount) {
   namespace fs = std::experimental::filesystem;
 
   // Source labels: distinguish CLI flags from sentinel.yaml keys.
@@ -1490,6 +1509,15 @@ bool CommandRun::checkConfigWarnings(
         "{}: 0 — all candidate mutants will be evaluated. "
         "This may take a very long time.",
         limitSrc));
+  }
+
+  // limit > 0 but smaller than partition count: most partitions receive 0 mutants.
+  if (mutantLimit > 0 && partIdx != 0 && mutantLimit < partCount) {
+    warnings.push_back(fmt::format(
+        "{}: {} is smaller than --partition TOTAL ({}). "
+        "Most partitions will receive 0 mutants due to integer division. "
+        "Use --limit=0 (unlimited) or set --limit >= {}.",
+        limitSrc, mutantLimit, partCount, partCount));
   }
 
   // timeout=0: no per-mutant time cap; a hanging test blocks the run forever.

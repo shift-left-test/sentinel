@@ -214,8 +214,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `-t, --extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
 | `-p, --pattern=PATTERN` | Git pathspec patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Absolute paths trigger a pre-run warning. | |
 | `-e, --exclude=PATTERN` | fnmatch patterns matched against canonical absolute file paths (repeatable). Patterns without a leading `*` or ending in `/` trigger a pre-run warning. | |
-| `-l, --limit=N` | Maximum number of mutants to generate; `0` = evaluate all candidates (triggers pre-run warning) | `10` |
-| `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). Requires `--seed` to be explicitly set so every partition instance generates an identical mutant list. The union of all partition results equals a single non-partitioned run. | disabled |
+| `-l, --limit=N` | Maximum number of mutants to generate; `0` = evaluate all candidates (triggers pre-run warning) | `0` |
+| `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). Requires `--seed` to be explicitly set so every partition instance generates an identical mutant list. The union of all partition results equals a single non-partitioned run. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--seed=N` | Random seed for mutant selection | random |
 | `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |
@@ -320,8 +320,8 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # Paths excluded from mutation; fnmatch-style patterns (default: none)
 # exclude: []
 
-# Maximum number of mutants to generate (default: 10)
-# limit: 10
+# Maximum number of mutants to generate (default: 0 = unlimited)
+# limit: 0
 
 # Mutant generator type: 'uniform', 'random', or 'weighted' (default: uniform)
 # generator: uniform

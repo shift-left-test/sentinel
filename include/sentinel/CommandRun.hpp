@@ -295,7 +295,7 @@ class CommandRun : public Command {
   /** @brief fnmatch-style patterns for paths excluded from mutation. */
   args::ValueFlagList<std::string> mExcludes;
 
-  /** @brief Maximum number of mutants to generate. */
+  /** @brief Maximum number of mutants to generate (0 = unlimited, default). */
   args::ValueFlag<size_t> mLimit;
 
   /** @brief Mutant selection strategy: "uniform", "random", or "weighted". */
@@ -330,6 +330,8 @@ class CommandRun : public Command {
    * @param timeLimitStr  Raw timeout string from CLI/config ("auto", "0", or integer).
    * @param diffPatterns  Resolved --pattern values.
    * @param excludePaths  Resolved --exclude values.
+   * @param partIdx       Partition index (0 if --partition not set).
+   * @param partCount     Partition total (0 if --partition not set).
    * @return @c true if the run should proceed, @c false if the user aborted.
    */
   bool checkConfigWarnings(
@@ -337,7 +339,9 @@ class CommandRun : public Command {
       size_t mutantLimit,
       const std::string& timeLimitStr,
       const std::vector<std::string>& diffPatterns,
-      const std::vector<std::string>& excludePaths);
+      const std::vector<std::string>& excludePaths,
+      size_t partIdx,
+      size_t partCount);
 };
 
 }  // namespace sentinel
