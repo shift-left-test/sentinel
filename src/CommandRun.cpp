@@ -125,70 +125,83 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
                                 std::size_t candidateCount, bool verbose,
                                 bool buildOK, bool testOK,
                                 const std::string& workspaceDir,
-                                const std::vector<std::string>& operators) {
-  fmt::print("\n=== Sentinel Dry Run ===\n");
-  fmt::print("  source-dir:    {}\n", sourceRoot.string());
-  fmt::print("  build-command: {}\n", buildCmd);
-  fmt::print("  test-command:  {}\n", testCmd);
-  fmt::print("  scope:         {}\n", scope);
-  fmt::print("  limit:         {}\n",
+                                const std::vector<std::string>& operators,
+                                size_t partIdx, size_t partCount,
+                                size_t fullMutantCount) {
+  std::cout << "\n=== Sentinel Dry Run ===\n";
+  std::cout << fmt::format("  source-dir:    {}\n", sourceRoot.string());
+  std::cout << fmt::format("  build-command: {}\n", buildCmd);
+  std::cout << fmt::format("  test-command:  {}\n", testCmd);
+  std::cout << fmt::format("  scope:         {}\n", scope);
+  std::cout << fmt::format("  limit:         {}\n",
              mutantLimit == 0 ? std::string("unlimited") : std::to_string(mutantLimit));
-  fmt::print("  operators:     {}\n",
+  std::cout << fmt::format("  operators:     {}\n",
              operators.empty() ? std::string("all")
                                : sentinel::string::join(", ", operators));
-  fmt::print("  workspace:     {}\n", workspaceDir);
-  fmt::print("\n");
+  if (partIdx != 0) {
+    std::cout << fmt::format("  partition:     {}/{}\n", partIdx, partCount);
+  }
+  std::cout << fmt::format("  workspace:     {}\n", workspaceDir);
+  std::cout << "\n";
 
-  fmt::print("  {}  Original build\n", buildOK ? "[ OK ]" : "[FAIL]");
+  std::cout << fmt::format("  {}  Original build\n", buildOK ? "[ OK ]" : "[FAIL]");
   if (!buildOK) {
-    fmt::print("  [ -- ]  Original tests  (skipped)\n");
-    fmt::print("  [ -- ]  Mutants         (skipped)\n");
-    fmt::print("\nDry run failed. Fix the issues above before running mutation testing.\n");
+    std::cout << "  [ -- ]  Original tests  (skipped)\n";
+    std::cout << "  [ -- ]  Mutants         (skipped)\n";
+    std::cout << "\nDry run failed. Fix the issues above before running mutation testing.\n";
     return;
   }
 
   if (timeLimitStr == "auto") {
-    fmt::print("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
+    std::cout << fmt::format("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
                testOK ? "[ OK ]" : "[FAIL]", baselineSecs, timeLimit);
   } else {
-    fmt::print("  {}  Original tests  (timeout: {}s)\n",
+    std::cout << fmt::format("  {}  Original tests  (timeout: {}s)\n",
                testOK ? "[ OK ]" : "[FAIL]", timeLimit);
   }
   if (!testOK) {
-    fmt::print("  [ -- ]  Mutants         (skipped)\n");
-    fmt::print("\nDry run failed. Fix the issues above before running mutation testing.\n");
+    std::cout << "  [ -- ]  Mutants         (skipped)\n";
+    std::cout << "\nDry run failed. Fix the issues above before running mutation testing.\n";
     return;
   }
 
   if (indexedMutants.empty()) {
-    fmt::print("  [WARN]  Mutants: 0 — nothing to evaluate.\n");
-    fmt::print("          Check --scope, --pattern, --extension settings.\n");
+    std::cout << "  [WARN]  Mutants: 0 — nothing to evaluate.\n";
+    if (partIdx != 0) {
+      std::cout << fmt::format("          (partition {}/{} of {} total mutants)\n",
+                 partIdx, partCount, fullMutantCount);
+    }
+    std::cout << "          Check --scope, --pattern, --extension settings.\n";
+  } else if (partIdx != 0) {
+    std::cout << fmt::format("  [ OK ]  Mutants: {} (partition {}/{} of {} total)\n",
+               indexedMutants.size(), partIdx, partCount, fullMutantCount);
   } else if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-    fmt::print("  [ OK ]  Mutants: {} of {} candidates (capped at --limit {})\n",
+    std::cout << fmt::format("  [ OK ]  Mutants: {} of {} candidates (capped at --limit {})\n",
                indexedMutants.size(), candidateCount, mutantLimit);
   } else {
-    fmt::print("  [ OK ]  Mutants: {}{}\n", indexedMutants.size(),
+    std::cout << fmt::format("  [ OK ]  Mutants: {}{}\n", indexedMutants.size(),
                candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount)
                                   : std::string{});
   }
 
   if (!indexedMutants.empty() && baselineSecs > 0.0) {
     double estimated = baselineSecs * static_cast<double>(indexedMutants.size());
-    fmt::print("          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)\n",
+    std::cout << fmt::format(
+               "          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)\n",
                formatDuration(estimated, true), indexedMutants.size(),
                indexedMutants.size() == 1 ? "" : "s", baselineSecs);
   }
 
   if (verbose) {
     for (const auto& [id, m] : indexedMutants) {
-      fmt::print("          [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
+      std::cout << fmt::format("          [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
                  m.getPath().filename().string(), m.getFirst().line);
     }
   }
 
   if (!indexedMutants.empty()) {
-    fmt::print("\nWorkspace saved. Remove --dry-run to start mutation testing\n");
-    fmt::print("(the workspace will be reused — build and populate steps are skipped).\n");
+    std::cout << "\nWorkspace saved. Remove --dry-run to start mutation testing\n";
+    std::cout << "(the workspace will be reused — build and populate steps are skipped).\n";
   }
 }
 
@@ -342,7 +355,14 @@ CommandRun::CommandRun(args::Group& parser) :
                "AOR=Arithmetic BOR=Bitwise LCR=Logical ROR=Relational SDL=StmtDel SOR=Shift UOI=Unary",
                {"operator"}),
     mCoverageFiles(mGroupMutation, "FILE",
-                   "lcov coverage info file; limits mutation to covered lines only", {"coverage"}) {}
+                   "lcov coverage info file; limits mutation to covered lines only", {"coverage"}),
+    mPartition(mGroupMutation, "N/TOTAL",
+               "Evaluate only the N-th slice of the full mutant list out of TOTAL "
+               "partitions (1-based, e.g., --partition=2/5). "
+               "Requires --seed to be explicitly set so every partition generates an "
+               "identical mutant list. Combine all partition results to obtain the same "
+               "outcome as a single non-partitioned run.",
+               {"partition"}) {}
 
 void CommandRun::init() {
   namespace fs = std::experimental::filesystem;
@@ -675,7 +695,9 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
   logger->info(fmt::format("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s"));
   auto evalStart = std::chrono::steady_clock::now();
 
+  size_t localIdx = 0;
   for (const auto& [id, m] : indexedMutants) {
+    ++localIdx;
     if (ws.isDone(id)) {
       sentinel::MutationResult prevResult = ws.getDoneResult(id);
       evaluator.injectResult(prevResult);
@@ -700,7 +722,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
                        m.getFirst().line);
       sl.recordResult(static_cast<int>(result.getMutationState()));
       logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}",
-                               id, totalMutants, m.getOperator(),
+                               localIdx, totalMutants, m.getOperator(),
                                m.getPath().filename().string(), m.getFirst().line,
                                sentinel::MutationStateToStr(result.getMutationState())));
       continue;
@@ -754,7 +776,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     ws.setDone(id, result);
     sl.recordResult(static_cast<int>(result.getMutationState()));
     logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}  ({})",
-                             id, totalMutants, m.getOperator(),
+                             localIdx, totalMutants, m.getOperator(),
                              m.getPath().filename().string(), m.getFirst().line,
                              sentinel::MutationStateToStr(result.getMutationState()),
                              formatDuration(mutantElapsed)));
@@ -971,6 +993,20 @@ int CommandRun::run() {
     }
   }
 
+  // Validate partition
+  auto [partIdx, partCount] = getPartition();
+  if (partIdx != 0 && !resuming) {
+    bool hasSeed = (mSeed && mSeed.Get() != "auto") || (mConfig && mConfig->seed.has_value());
+    if (!hasSeed) {
+      throw InvalidArgumentException(
+          "--partition requires an explicit --seed value.\n"
+          "  Without a fixed seed, each partition instance generates a different random\n"
+          "  mutant list, making combined results inconsistent with a single full run.\n"
+          "  hint: add --seed <N> with the same value across all partition instances,\n"
+          "        e.g., --seed 42 --partition 1/5");
+    }
+  }
+
   // Only parse timeout string for fresh runs (resume uses computed integer directly)
   std::string timeLimitStr;
   if (!resuming) {
@@ -1115,6 +1151,19 @@ int CommandRun::run() {
     // ── STEP 4: Populate or reload mutants ─────────────────────────────────────
     PopulateResult pr = runPopulateMutants(cfg, ws, statusLine, br, logger);
 
+    // ── STEP 4b: Apply partition slice ──────────────────────────────────────────
+    size_t fullMutantCount = pr.indexedMutants.size();
+    if (partIdx != 0 && !pr.indexedMutants.empty()) {
+      size_t start = (partIdx - 1) * fullMutantCount / partCount;
+      size_t end = partIdx * fullMutantCount / partCount;
+      logger->info(fmt::format("Partition {}/{}: evaluating {} of {} mutants.",
+                               partIdx, partCount, end - start, fullMutantCount));
+      pr.indexedMutants = std::vector<std::pair<int, sentinel::Mutant>>(
+          pr.indexedMutants.begin() + static_cast<ptrdiff_t>(start),
+          pr.indexedMutants.begin() + static_cast<ptrdiff_t>(end));
+      statusLine.setTotalMutants(pr.indexedMutants.size());
+    }
+
     // ── DRY-RUN EXIT ────────────────────────────────────────────────────────────
     if (dryRun) {
       statusLine.disable();
@@ -1122,7 +1171,8 @@ int CommandRun::run() {
       printDryRunSummary(sourceRoot, buildCmd, testCmd, scope, mutantLimit,
                          br.baselineSecs, cfg.timeLimit, timeLimitStr,
                          pr.indexedMutants, pr.candidateCount, getVerbose(),
-                         br.buildOK, br.testOK, workDirPath.string(), operators);
+                         br.buildOK, br.testOK, workDirPath.string(), operators,
+                         partIdx, partCount, fullMutantCount);
       std::raise(SIGUSR1);
       return (br.buildOK && br.testOK) ? 0 : 1;
     }
@@ -1525,6 +1575,39 @@ bool CommandRun::checkConfigWarnings(
     }
   }
   return true;
+}
+
+std::pair<size_t, size_t> CommandRun::getPartition() {
+  if (!mPartition) {
+    return {0, 0};
+  }
+  const std::string& s = mPartition.Get();
+  auto slash = s.find('/');
+  if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
+    throw InvalidArgumentException(
+        fmt::format("Invalid --partition value: '{}'. "
+                    "Expected format: N/TOTAL (e.g., --partition=2/5).", s));
+  }
+  size_t idx = 0;
+  size_t cnt = 0;
+  try {
+    idx = std::stoul(s.substr(0, slash));
+    cnt = std::stoul(s.substr(slash + 1));
+  } catch (...) {
+    throw InvalidArgumentException(
+        fmt::format("Invalid --partition value: '{}'. "
+                    "N and TOTAL must be positive integers (e.g., --partition=2/5).", s));
+  }
+  if (cnt == 0) {
+    throw InvalidArgumentException(
+        fmt::format("Invalid --partition value: '{}'. TOTAL must be at least 1.", s));
+  }
+  if (idx == 0 || idx > cnt) {
+    throw InvalidArgumentException(
+        fmt::format("Invalid --partition value: '{}'. "
+                    "N must be between 1 and TOTAL (got N={}, TOTAL={}).", s, idx, cnt));
+  }
+  return {idx, cnt};
 }
 
 }  // namespace sentinel

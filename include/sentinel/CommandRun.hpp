@@ -10,6 +10,7 @@
 #include <experimental/filesystem>  // NOLINT(build/include_order)
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 #include "sentinel/Command.hpp"
 #include "sentinel/SentinelConfig.hpp"
@@ -221,6 +222,17 @@ class CommandRun : public Command {
    */
   virtual std::optional<double> getThreshold();
 
+  /**
+   * @brief Returns the partition index and total partition count for parallel execution.
+   *
+   * Parses the @c --partition=N/TOTAL option.  N is 1-based and must
+   * satisfy @c 1 <= N <= TOTAL.
+   *
+   * @return @c {n, total} when the option is set; @c {0, 0} otherwise.
+   * @throws InvalidArgumentException on malformed or out-of-range values.
+   */
+  virtual std::pair<size_t, size_t> getPartition();
+
   // Run control options (registered to mGroupRunCtrl)
 
   /** @brief Flag: write a sentinel.yaml template and exit. */
@@ -297,6 +309,16 @@ class CommandRun : public Command {
 
   /** @brief lcov coverage info files; limits mutation to covered lines. */
   args::ValueFlagList<std::string> mCoverageFiles;
+
+  /**
+   * @brief Partition specification for parallel execution.
+   *
+   * Accepts @c "N/TOTAL" (e.g., @c "2/5") and causes @c run() to evaluate
+   * only the N-th contiguous slice of the full mutant list.  Requires
+   * @c --seed to be explicitly set so that all partition instances generate an
+   * identical mutant list.
+   */
+  args::ValueFlag<std::string> mPartition;
 
  private:
   /**

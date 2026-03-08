@@ -63,6 +63,10 @@ Pass \fB\-\-verbose\fR together with \fB\-\-dry\-run\fR to also list all generat
 .TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
+.TP
+\fB\-\-threshold\fR=\fIPCT\fR
+Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
+A one-line score summary is always written to stderr at the end of the run.
 .SS Build & test options
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR
@@ -109,6 +113,15 @@ Exclude files/directories matching an fnmatch-style pattern (repeatable).
 .TP
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
 Maximum number of mutants to generate. Default: \fB10\fR
+.TP
+\fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
+Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL
+partitions (1-based, e.g., \fB\-\-partition=2/5\fR).
+Requires \fB\-\-seed\fR to be explicitly set so that every partition instance generates an
+identical mutant list.
+The union of all partition results is equivalent to a single non-partitioned run.
+\fBNote:\fR source isolation and workspace separation between partition instances are the
+responsibility of the calling environment.
 .TP
 \fB\-\-generator\fR=\fITYPE\fR
 Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR

@@ -545,4 +545,225 @@ TEST_F(MainCLITest, testPreRunWarningProceedsOnYes) {
   EXPECT_FALSE(sentinel::string::contains(out, "Aborted."));
 }
 
+// ── --partition option tests ───────────────────────────────────────────────────
+
+TEST_F(MainCLITest, testPartitionInvalidFormatNoSlash) {
+  setUpMinimalRunArgs();
+  addArg("--seed=42");
+  addArg("--partition=2");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "N/TOTAL"));
+}
+
+TEST_F(MainCLITest, testPartitionInvalidFormatNonNumeric) {
+  setUpMinimalRunArgs();
+  addArg("--seed=42");
+  addArg("--partition=a/5");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+}
+
+TEST_F(MainCLITest, testPartitionIndexZeroIsInvalid) {
+  setUpMinimalRunArgs();
+  addArg("--seed=42");
+  addArg("--partition=0/5");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "N must be between"));
+}
+
+TEST_F(MainCLITest, testPartitionIndexExceedsCount) {
+  setUpMinimalRunArgs();
+  addArg("--seed=42");
+  addArg("--partition=6/5");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "N must be between"));
+}
+
+TEST_F(MainCLITest, testPartitionCountZeroIsInvalid) {
+  setUpMinimalRunArgs();
+  addArg("--seed=42");
+  addArg("--partition=1/0");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "TOTAL must be at least 1"));
+}
+
+TEST_F(MainCLITest, testPartitionWithoutSeedFails) {
+  // --partition requires an explicit --seed; without it all partitions would
+  // generate different random mutant lists.
+  setUpMinimalRunArgs();
+  addArg("--partition=2/5");
+  // no --seed → defaults to "auto"
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "seed"));
+}
+
+TEST_F(MainCLITest, testPartitionWithSeedAutoFails) {
+  // Explicitly passing --seed=auto is the same as no seed.
+  setUpMinimalRunArgs();
+  addArg("--seed=auto");
+  addArg("--partition=2/5");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "partition"));
+  EXPECT_TRUE(sentinel::string::contains(err, "seed"));
+}
+
+TEST_F(MainCLITest, testPartitionDryRunShowsPartitionInfo) {
+  namespace fs = std::experimental::filesystem;
+
+  // Reset CWD: prior tests using setUpMinimalRunArgs() may have changed it.
+  fs::current_path(fs::temp_directory_path());
+  makeGitRepo();
+
+  Subprocess(fmt::format("cd {} && cmake .", SAMPLE_DIR.string())).execute();
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
+
+  Subprocess(fmt::format("cd {} && make all", SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
+                         SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
+  fs::remove_all(SAMPLE_DIR / "testresult");
+
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
+  addArg(fmt::format("--config={}", (SAMPLE_DIR / "sentinel.yaml").string()).c_str());
+  addArg(fmt::format("--source-dir={}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("--workspace={}", (SAMPLE_BASE / "workspace").string()).c_str());
+  addArg(fmt::format("--test-report-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());
+  addArg(fmt::format("--build-command={}", "make").c_str());
+  addArg(fmt::format("--test-command={}", R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
+  addArg("-sall");
+  addArg("-l50");  // large enough to cover all sample mutants
+  addArg("--timeout=auto");
+  addArg("--seed=42");
+  addArg("--generator=random");
+  addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
+  addArg("--force");
+  addArg("--dry-run");
+  addArg("--partition=1/3");
+
+  captureStdout();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+
+  EXPECT_EQ(0, ret);
+  EXPECT_TRUE(sentinel::string::contains(out, "partition:     1/3"));
+  EXPECT_TRUE(sentinel::string::contains(out, "partition 1/3 of"));
+}
+
+TEST_F(MainCLITest, testPartitionDryRunTwoPartitionsMutantCountsSumToFull) {
+  // Verify that running partition 1/2 and partition 2/2 in dry-run mode produces
+  // mutant counts that sum to the full (non-partitioned) dry-run count.
+  namespace fs = std::experimental::filesystem;
+
+  // Reset CWD: prior tests using setUpMinimalRunArgs() may have changed it.
+  fs::current_path(fs::temp_directory_path());
+  makeGitRepo();
+
+  Subprocess(fmt::format("cd {} && cmake .", SAMPLE_DIR.string())).execute();
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
+
+  Subprocess(fmt::format("cd {} && make all", SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2",
+                         SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
+  fs::remove_all(SAMPLE_DIR / "testresult");
+
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
+
+  // Helper: build argv vector and run sentinel, returning stdout.
+  auto runDryRun = [&](const std::string& workspace,
+                       const std::string& partition) -> std::string {
+    std::vector<std::string> args = {
+      fmt::format("--config={}", (SAMPLE_DIR / "sentinel.yaml").string()),
+      fmt::format("--source-dir={}", SAMPLE_DIR.string()),
+      fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()),
+      fmt::format("--workspace={}", workspace),
+      fmt::format("--test-report-dir={}", (SAMPLE_DIR / "testresult").string()),
+      "--build-command=make",
+      fmt::format("--test-command={}", R"(GTEST_OUTPUT="xml:./testresult/" make test)"),
+      "-sall",
+      "-l50",  // large enough to cover all sample mutants
+      "--timeout=auto",
+      "--seed=42",
+      "--generator=random",
+      fmt::format("-e{}", SAMPLE_TEST_NAME),
+      "--force",
+      "--dry-run",
+    };
+    if (!partition.empty()) {
+      args.push_back(fmt::format("--partition={}", partition));
+    }
+
+    std::vector<char*> argv;
+    argv.push_back(const_cast<char*>("./sentinel"));
+    for (auto& a : args) argv.push_back(const_cast<char*>(a.c_str()));
+
+    captureStdout();
+    sentinel::MainCLI(static_cast<int>(argv.size()), argv.data());
+    return capturedStdout();
+  };
+
+  std::string fullOut = runDryRun((SAMPLE_BASE / "ws_full").string(), "");
+  std::string p1Out   = runDryRun((SAMPLE_BASE / "ws_p1").string(), "1/2");
+  std::string p2Out   = runDryRun((SAMPLE_BASE / "ws_p2").string(), "2/2");
+
+  // Parse "Mutants: N " from each output line.
+  auto parseMutantCount = [](const std::string& out) -> size_t {
+    auto pos = out.find("Mutants: ");
+    if (pos == std::string::npos) return 0;
+    return static_cast<size_t>(std::stoul(out.substr(pos + 9)));
+  };
+
+  size_t fullN = parseMutantCount(fullOut);
+  size_t p1N   = parseMutantCount(p1Out);
+  size_t p2N   = parseMutantCount(p2Out);
+
+  EXPECT_GT(fullN, 0u);
+  EXPECT_EQ(fullN, p1N + p2N);
+
+  // Partition outputs must show the partition tag.
+  EXPECT_TRUE(sentinel::string::contains(p1Out, "partition 1/2 of"));
+  EXPECT_TRUE(sentinel::string::contains(p2Out, "partition 2/2 of"));
+}
+
 }  // namespace sentinel
