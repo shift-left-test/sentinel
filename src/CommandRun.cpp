@@ -58,7 +58,7 @@ static void signalHandler(int signum) {
   }
   std::cout.flush();
   if (signum != SIGUSR1) {
-    std::cerr << fmt::format("Receive a signal({}).", strsignal(signum)) << std::endl;
+    std::cerr << fmt::format("Received signal: {}.", strsignal(signum)) << std::endl;
     std::exit(EXIT_FAILURE);
   }
 }
@@ -70,6 +70,19 @@ static std::string formatDuration(double secs) {
     return fmt::format("~{:.0f}m {:.0f}s", std::floor(secs / 60.0), std::fmod(secs, 60.0));
   return fmt::format("~{:.0f}h {:.0f}m",
                      std::floor(secs / 3600.0), std::fmod(secs, 3600.0) / 60.0);
+}
+
+// Formats an exact elapsed duration (no '~' prefix).
+static std::string formatElapsed(double secs) {
+  if (secs < 60.0) return fmt::format("{:.1f}s", secs);
+  if (secs < 3600.0) {
+    int m = static_cast<int>(secs / 60.0);
+    double s = secs - m * 60.0;
+    return fmt::format("{}m {:.0f}s", m, s);
+  }
+  int h = static_cast<int>(secs / 3600.0);
+  int m = static_cast<int>((secs - h * 3600.0) / 60.0);
+  return fmt::format("{}h {}m", h, m);
 }
 
 // Validates that the test result directory exists and contains result files.
@@ -119,7 +132,7 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
   fmt::print("  workspace:     {}\n", workspaceDir);
   fmt::print("\n");
 
-  fmt::print("  {}  Original build\n", buildOK ? "[OK]  " : "[FAIL]");
+  fmt::print("  {}  Original build\n", buildOK ? "[ OK ]" : "[FAIL]");
   if (!buildOK) {
     fmt::print("  [ -- ]  Original tests  (skipped)\n");
     fmt::print("  [ -- ]  Mutants         (skipped)\n");
@@ -129,10 +142,10 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
 
   if (timeLimitStr == "auto") {
     fmt::print("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
-               testOK ? "[OK]  " : "[FAIL]", baselineSecs, timeLimit);
+               testOK ? "[ OK ]" : "[FAIL]", baselineSecs, timeLimit);
   } else {
     fmt::print("  {}  Original tests  (timeout: {}s)\n",
-               testOK ? "[OK]  " : "[FAIL]", timeLimit);
+               testOK ? "[ OK ]" : "[FAIL]", timeLimit);
   }
   if (!testOK) {
     fmt::print("  [ -- ]  Mutants         (skipped)\n");
@@ -144,10 +157,10 @@ static void printDryRunSummary(const std::experimental::filesystem::path& source
     fmt::print("  [WARN]  Mutants: 0 — nothing to evaluate.\n");
     fmt::print("          Check --scope, --pattern, --extension settings.\n");
   } else if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-    fmt::print("  [OK]    Mutants: {} of {} candidates (capped at --limit {})\n",
+    fmt::print("  [ OK ]  Mutants: {} of {} candidates (capped at --limit {})\n",
                indexedMutants.size(), candidateCount, mutantLimit);
   } else {
-    fmt::print("  [OK]    Mutants: {}{}\n", indexedMutants.size(),
+    fmt::print("  [ OK ]  Mutants: {}{}\n", indexedMutants.size(),
                candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount)
                                   : std::string{});
   }
@@ -592,13 +605,19 @@ int CommandRun::run() {
 
   // Validate required options
   if (buildCmd.empty()) {
-    throw InvalidArgumentException("Option --build-command is required to be not empty");
+    throw InvalidArgumentException(
+        "Option --build-command is required.\n"
+        "  hint: pass --build-command 'make' or add 'build-command: make' to sentinel.yaml");
   }
   if (testCmd.empty()) {
-    throw InvalidArgumentException("Option --test-command is required to be not empty");
+    throw InvalidArgumentException(
+        "Option --test-command is required.\n"
+        "  hint: pass --test-command 'ctest' or add 'test-command: ctest' to sentinel.yaml");
   }
   if (testResultDirStr.empty()) {
-    throw InvalidArgumentException("Option --test-report-dir is required");
+    throw InvalidArgumentException(
+        "Option --test-report-dir is required.\n"
+        "  hint: pass --test-report-dir <path> or add 'test-report-dir: <path>' to sentinel.yaml");
   }
 
   // Only parse timeout string for fresh runs (resume uses computed integer directly)
@@ -610,7 +629,7 @@ int CommandRun::run() {
         mTimeLimit = sentinel::string::stringToInt<size_t>(timeLimitStr);
       } catch (...) {
         throw InvalidArgumentException(fmt::format(
-            R"a1s2(Failed to read timeout option value({}). Please execute "sentinel --help" and check valid option value.)a1s2",
+            "Invalid timeout value: '{}'. Expected a positive integer (seconds) or 'auto'.",
             timeLimitStr));
       }
     }
@@ -812,11 +831,17 @@ int CommandRun::run() {
     if (!origDone) {
       // build
       logger->info("Building original source code...");
+      auto buildPhaseStart = std::chrono::steady_clock::now();
       Subprocess origBuildProc(buildCmd, 0, 0, (ws.getOriginalDir() / "build.log").string(), silent);
       origBuildProc.execute();
+      double buildElapsed = std::chrono::duration<double>(
+          std::chrono::steady_clock::now() - buildPhaseStart).count();
       if (!origBuildProc.isSuccessfulExit()) {
+        logger->info(fmt::format("Build failed ({}).", formatElapsed(buildElapsed)));
         if (!dryRun) throw std::runtime_error("Build failed.");
         dryRunBuildOK = false;
+      } else {
+        logger->info(fmt::format("Build done ({}).", formatElapsed(buildElapsed)));
       }
 
       if (!dryRun || dryRunBuildOK) {
@@ -829,21 +854,21 @@ int CommandRun::run() {
 
         auto start = std::chrono::steady_clock::now();
         firstTestProc.execute();
+        double testElapsed = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - start).count();
 
         if (!resuming && timeLimitStr == "auto") {
-          auto end = std::chrono::steady_clock::now();
-          auto diff = end - start;
-          auto diffSecs = std::chrono::duration<double>(diff).count();
-          baselineSecs = diffSecs;
-          if (diffSecs < 1.0) {
+          baselineSecs = testElapsed;
+          if (testElapsed < 1.0) {
             mTimeLimit = 1;
           } else {
-            mTimeLimit = static_cast<size_t>(ceil(diffSecs * 2.0));
+            mTimeLimit = static_cast<size_t>(ceil(testElapsed * 2.0));
           }
-          logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", mTimeLimit, diffSecs));
+          logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", mTimeLimit, testElapsed));
         }
 
         if (firstTestProc.isTimedOut()) {
+          logger->info(fmt::format("Tests timed out ({}).", formatElapsed(testElapsed)));
           if (!dryRun) throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
           dryRunTestOK = false;
         }
@@ -852,6 +877,7 @@ int CommandRun::run() {
         }
 
         if (dryRunTestOK) {
+          logger->info(fmt::format("Tests done ({}).", formatElapsed(testElapsed)));
           // Copy baseline test results to workspace/original/results/
           copyTestReportTo(testResultDir.string(), ws.getOriginalResultsDir().string(), testResultFileExts);
 
@@ -884,6 +910,7 @@ int CommandRun::run() {
     } else if (!dryRun || (dryRunBuildOK && dryRunTestOK)) {
       statusLine.setPhase(StatusLine::Phase::POPULATE);
       logger->info("Generating mutants...");
+      auto populateStart = std::chrono::steady_clock::now();
       auto repo =
           std::make_unique<sentinel::GitRepository>(sourceRoot, targetFileExts, diffPatterns, excludePaths);
       repo->addSkipDir(workDirPath);
@@ -923,6 +950,11 @@ int CommandRun::run() {
         id++;
       }
       statusLine.setTotalMutants(indexedMutants.size());
+      double populateElapsed = std::chrono::duration<double>(
+          std::chrono::steady_clock::now() - populateStart).count();
+      logger->info(fmt::format("Generated {} mutant{} ({}).",
+                               indexedMutants.size(), indexedMutants.size() == 1 ? "" : "s",
+                               formatElapsed(populateElapsed)));
       if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
         std::cout << fmt::format("Note: mutant count capped at {} of {} candidates (--limit {}).\n",
                                  mutantLimit, candidateCount, mutantLimit);
@@ -954,6 +986,7 @@ int CommandRun::run() {
 
     size_t totalMutants = indexedMutants.size();
     logger->info(fmt::format("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s"));
+    auto evalStart = std::chrono::steady_clock::now();
 
     for (auto& [id, m] : indexedMutants) {
       // Already completed in a previous run: inject stored result and skip
@@ -975,13 +1008,6 @@ int CommandRun::run() {
         ws.clearLock(id);
       }
 
-      // Progress indicator (always visible at INFO level)
-      logger->info(fmt::format("[{}/{}] {} @ {}:{}",
-                               id, totalMutants,
-                               m.getOperator(),
-                               m.getPath().filename().string(),
-                               m.getFirst().line));
-
       // Coverage check
       if (!coverageFiles.empty() && !cov.cover(m.getPath().string(), m.getFirst().line)) {
         MutationResult result = evaluator.compare(m, actualDir.string(), "uncovered");
@@ -989,6 +1015,10 @@ int CommandRun::run() {
         statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                                  m.getFirst().line);
         statusLine.recordResult(static_cast<int>(result.getMutationState()));
+        logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}",
+                                 id, totalMutants,
+                                 m.getOperator(), m.getPath().filename().string(), m.getFirst().line,
+                                 MutationStateToStr(result.getMutationState())));
         continue;
       }
 
@@ -997,6 +1027,8 @@ int CommandRun::run() {
 
       statusLine.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                                m.getFirst().line);
+
+      auto mutantStart = std::chrono::steady_clock::now();
 
       // Mutate
       std::stringstream buf;
@@ -1035,6 +1067,8 @@ int CommandRun::run() {
 
       // Evaluate
       MutationResult result = evaluator.compare(m, actualDir.string(), testState);
+      double mutantElapsed = std::chrono::duration<double>(
+          std::chrono::steady_clock::now() - mutantStart).count();
 
       // Restore source
       logger->verbose("Restoring source...");
@@ -1045,9 +1079,20 @@ int CommandRun::run() {
       ws.setDone(id, result);
       statusLine.recordResult(static_cast<int>(result.getMutationState()));
 
+      // Per-mutant result line (always visible at INFO level)
+      logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}  ({})",
+                               id, totalMutants,
+                               m.getOperator(), m.getPath().filename().string(), m.getFirst().line,
+                               MutationStateToStr(result.getMutationState()),
+                               formatElapsed(mutantElapsed)));
+
       // Clear temp actual dir
       fs::remove_all(actualDir);
     }
+
+    double evalElapsed = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - evalStart).count();
+    logger->info(fmt::format("Evaluation done ({}).", formatElapsed(evalElapsed)));
 
     // ── STEP 6: Report ──────────────────────────────────────────────────────────
 
@@ -1132,11 +1177,11 @@ std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targe
     fs::create_directories(target);
   } else {
     if (!fs::is_directory(target)) {
-      throw InvalidArgumentException(fmt::format("{0} must be directory.", target));
+      throw InvalidArgumentException(fmt::format("'{}' must be a directory.", target));
     }
 
     if (!isFilledDir && !fs::is_empty(target)) {
-      throw InvalidArgumentException(fmt::format("{0} must be empty.", target));
+      throw InvalidArgumentException(fmt::format("'{}' must be empty.", target));
     }
   }
   return fs::canonical(target).string();

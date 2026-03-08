@@ -118,7 +118,7 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     auto newDir = outputDir / "srcDir" / currentDirPath;
     if (fs::exists(newDir)) {
       if (!fs::is_directory(newDir)) {
-        throw InvalidArgumentException(fmt::format("path isn't direcotry({0})", newDir.string()));
+        throw InvalidArgumentException(fmt::format("'{}' is not a directory", newDir.string()));
       }
     } else {
       fs::create_directories(newDir);

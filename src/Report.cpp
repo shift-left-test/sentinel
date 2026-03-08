@@ -49,7 +49,7 @@ Report::~Report() {
 void Report::generateReport() {
   namespace fs = std::experimental::filesystem;
   if (!fs::exists(mSourcePath) || !fs::is_directory(mSourcePath)) {
-    throw InvalidArgumentException(fmt::format("sourcePath doesn't exist({0})", mSourcePath.string()));
+    throw InvalidArgumentException(fmt::format("source path does not exist: {}", mSourcePath.string()));
   }
 
   for (const MutationResult& mr : mResults) {
@@ -105,10 +105,10 @@ void Report::generateReport() {
 
 void Report::printSummary() {
   std::size_t flen = 50;
-  std::size_t mlen = 10;
   std::size_t klen = 10;
+  std::size_t mlen = 10;
   std::size_t clen = 10;
-  std::size_t maxlen = flen + mlen + klen + clen + 2;
+  std::size_t maxlen = flen + klen + mlen + clen + 2;
 
   int cnt = 0;
   mLogger->verbose(fmt::format("# of MutationResults: {}", mResults.size()));
@@ -121,17 +121,16 @@ void Report::printSummary() {
   }
 
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)) << std::endl;
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "File", flen, "#killed", klen, "#mutation", mlen, "cov", clen);
-
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)) << "\n";
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  std::cout << fmt::format(defFormat, "File", flen, "Killed", klen, "Total", mlen, "Score", clen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   for (const auto& p : groupByPath) {
-    int curCov = -1;
+    double curScore = -1.0;
     if (std::get<1>(*p.second) != 0) {
-      curCov = 100 * std::get<2>(*p.second) / std::get<1>(*p.second);
+      curScore = (100.0 * std::get<2>(*p.second)) / std::get<1>(*p.second);
     }
     int filePos = p.first.string().size() - flen;
     std::string skipStr;
@@ -141,29 +140,40 @@ void Report::printSummary() {
       filePos += 4;
       skipStr = "... ";
     }
-    std::cout << fmt::format(defFormat, skipStr + p.first.string().substr(filePos), flen, std::get<2>(*p.second), klen,
-                             std::get<1>(*p.second), mlen,
-                             (curCov != -1 ? std::to_string(curCov) : std::string("-")) + "%", clen);
+    std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
+    std::cout << fmt::format(defFormat, skipStr + p.first.string().substr(filePos), flen,
+                             std::get<2>(*p.second), klen, std::get<1>(*p.second), mlen,
+                             scoreStr, clen);
   }
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  int finalCov = -1;
+
+  double finalScore = -1.0;
   if (totNumberOfMutation != 0) {
-    finalCov = 100 * totNumberOfDetectedMutation / totNumberOfMutation;
+    finalScore = (100.0 * totNumberOfDetectedMutation) / totNumberOfMutation;
   }
-  std::cout << fmt::format(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen, totNumberOfMutation, mlen,
-                           (finalCov != -1 ? std::to_string(finalCov) : std::string("-")) + "%", clen);
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::string finalScoreStr = finalScore >= 0.0 ? fmt::format("{:.1f}%", finalScore) : "-%";
+  std::cout << fmt::format(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen,
+                           totNumberOfMutation, mlen, finalScoreStr, clen);
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+
   if ((totNumberOfBuildFailure + totNumberOfRuntimeError + totNumberOfTimeout) != 0) {
-    std::cout << fmt::format("Ignored Mutation\n");
-    std::cout << string::rtrim(
-                     fmt::format(defFormat, "Build Failure", flen, "", klen, totNumberOfBuildFailure, mlen, "", clen))
-              << std::endl;
-    std::cout << string::rtrim(
-                     fmt::format(defFormat, "Runtime Error", flen, "", klen, totNumberOfRuntimeError, mlen, "", clen))
-              << std::endl;
-    std::cout << string::rtrim(fmt::format(defFormat, "Timeout", flen, "", klen, totNumberOfTimeout, mlen, "", clen))
-              << std::endl;
-    std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+    std::string skipped;
+    if (totNumberOfBuildFailure > 0) {
+      skipped += fmt::format("{} build failure{}", totNumberOfBuildFailure,
+                             totNumberOfBuildFailure == 1 ? "" : "s");
+    }
+    if (totNumberOfRuntimeError > 0) {
+      if (!skipped.empty()) skipped += "  \xc2\xb7  ";
+      skipped += fmt::format("{} runtime error{}", totNumberOfRuntimeError,
+                             totNumberOfRuntimeError == 1 ? "" : "s");
+    }
+    if (totNumberOfTimeout > 0) {
+      if (!skipped.empty()) skipped += "  \xc2\xb7  ";
+      skipped += fmt::format("{} timeout{}", totNumberOfTimeout,
+                             totNumberOfTimeout == 1 ? "" : "s");
+    }
+    std::cout << "Skipped: " << skipped << "\n";
+    std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
   }
 }
 

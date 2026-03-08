@@ -179,7 +179,7 @@ std::string StatusLine::buildStatusString() const {
     result += fmt::format(" | {} {}:{}", mOp, mFile, mLine);
   }
 
-  result += fmt::format(" | K: {} S: {} B: {} T: {} R: {}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);
+  result += fmt::format(" | K:{} / S:{} / B:{} / T:{} / R:{}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);
 
   size_t denominator = mKilled + mSurvived + mTimeout + mRuntimeError;
   if (denominator > 0) {

@@ -192,15 +192,16 @@ TOTAL                                                      3
 --------------------------------------------------------------)a1f4";
 
   std::string MUTATION_COVERAGE_REPORT2 =
-      R"a1f4z0(----------------------------------------------------------------------------------
+      R"a1f4z0(==================================================================================
                              Mutation Coverage Report
+==================================================================================
+File                                                  Killed     Total     Score
 ----------------------------------------------------------------------------------
-File                                                 #killed #mutation       cov
+sample.cpp                                                 3         3    100.0%
 ----------------------------------------------------------------------------------
-sample.cpp                                                 3         3      100%
-----------------------------------------------------------------------------------
-TOTAL                                                      3         3      100%
-----------------------------------------------------------------------------------)a1f4z0";
+TOTAL                                                      3         3    100.0%
+==================================================================================
+)a1f4z0";
 
   // Sets up the minimum CLI args needed to reach the pre-run warning block
   // without running a real cmake/make project.  The run aborts early when the
@@ -275,12 +276,6 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "mutations.xml"));
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
-  EXPECT_TRUE(
-      sentinel::string::contains(out, R"(ROR : sample.cpp (10:17-10:19 -> >)............................... KILLED)"));
-  EXPECT_TRUE(
-      sentinel::string::contains(out, R"(UOI : sample.cpp (9:29-9:31 -> (--(to))).......................... KILLED)"));
-  EXPECT_TRUE(sentinel::string::contains(
-      out, R"(UOI : sample.cpp (10:32-10:33 -> (++(i)))......................... KILLED)"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
   EXPECT_TRUE(sentinel::string::contains(out, "Note: mutant count capped at 3 of"));
 }

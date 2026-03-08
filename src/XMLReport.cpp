@@ -22,7 +22,7 @@ void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})", dirPath.string()));
+      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath.string()));
     }
   } else {
     fs::create_directories(dirPath);

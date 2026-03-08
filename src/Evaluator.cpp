@@ -6,7 +6,6 @@
 #include <fmt/core.h>
 #include <experimental/filesystem>
 #include <fstream>
-#include <iostream>
 #include <memory>
 #include <string>
 #include "sentinel/Evaluator.hpp"
@@ -94,10 +93,9 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualRe
     skipStr = "... ";
   }
 
-  std::cout << fmt::format("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
-                           fmt::arg("loc", skipStr + mutLoc.substr(filePos)), fmt::arg("flen", flen),
-                           fmt::arg("status", MutationStateToStr(state)))
-            << std::endl;
+  mLogger->verbose(fmt::format("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
+                              fmt::arg("loc", skipStr + mutLoc.substr(filePos)), fmt::arg("flen", flen),
+                              fmt::arg("status", MutationStateToStr(state))));
 
   MutationResult ret(mut, killingTC, errorTC, state);
 
@@ -117,7 +115,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {
-      throw InvalidArgumentException(fmt::format("dirPath isn't directory({0})", outDir.string()));
+      throw InvalidArgumentException(fmt::format("'{}' is not a directory", outDir.string()));
     }
   } else {
     fs::create_directories(outDir);
