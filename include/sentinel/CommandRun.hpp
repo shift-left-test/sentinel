@@ -279,6 +279,25 @@ class CommandRun : public Command {
 
   /** @brief lcov coverage info files; limits mutation to covered lines. */
   args::ValueFlagList<std::string> mCoverageFiles;
+
+ private:
+  /**
+   * @brief Checks resolved options for potentially problematic settings and
+   *        asks the user to confirm before starting the pipeline.
+   *
+   * @param sourceRoot    Canonical path to the source root.
+   * @param mutantLimit   Maximum number of mutants (0 = unlimited).
+   * @param timeLimitStr  Raw timeout string from CLI/config ("auto", "0", or integer).
+   * @param diffPatterns  Resolved --pattern values.
+   * @param excludePaths  Resolved --exclude values.
+   * @return @c true if the run should proceed, @c false if the user aborted.
+   */
+  bool checkConfigWarnings(
+      const std::experimental::filesystem::path& sourceRoot,
+      size_t mutantLimit,
+      const std::string& timeLimitStr,
+      const std::vector<std::string>& diffPatterns,
+      const std::vector<std::string>& excludePaths);
 };
 
 }  // namespace sentinel

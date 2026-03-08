@@ -54,7 +54,6 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     auto SAMPLE1_CLONE_PATH = SAMPLE1_DIR / "veryVeryVeryVeryVeryVeryVeryVeryVeryLongSampleFile.cpp";
     fs::copy(SAMPLE1_PATH, SAMPLE1_CLONE_PATH);
     mutable2 = new Mutant("BOR", SAMPLE1_CLONE_PATH, "sumOfEvenPositiveNumber", 1, 1, 1, 1, "|");
-
   }
 
   void TearDown() override {
