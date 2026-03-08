@@ -86,6 +86,13 @@ class StatusLine {
    */
   void recordResult(int state);
 
+  /**
+   * @brief Set dry-run mode indicator and redraw.
+   *
+   * @param dryRun True if running in dry-run mode.
+   */
+  void setDryRun(bool dryRun);
+
  private:
   void queryTermSize();
   void setScrollRegion();
@@ -96,6 +103,7 @@ class StatusLine {
   std::string getElapsedStr() const;
 
   bool mEnabled = false;
+  bool mDryRun = false;
   int mTermRows = 24;
   int mTermCols = 80;
   Phase mPhase = Phase::INIT;

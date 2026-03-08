@@ -491,6 +491,7 @@ int CommandRun::run() {
   bool dryRun = static_cast<bool>(mDryRun);
 
   StatusLine statusLine;
+  statusLine.setDryRun(dryRun);
   gStatusLineForSH = &statusLine;
 
   // ── STEP 1: Workspace setup ─────────────────────────────────────────────────

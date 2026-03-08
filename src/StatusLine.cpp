@@ -67,6 +67,11 @@ void StatusLine::setMutantInfo(size_t current, const std::string& op, const std:
   redraw();
 }
 
+void StatusLine::setDryRun(bool dryRun) {
+  mDryRun = dryRun;
+  redraw();
+}
+
 void StatusLine::recordResult(int state) {
   switch (static_cast<MutationState>(state)) {
     case MutationState::KILLED:
@@ -157,8 +162,14 @@ std::string StatusLine::getElapsedStr() const {
 }
 
 std::string StatusLine::buildStatusString() const {
+  std::string result;
+
+  if (mDryRun) {
+    result += " [DRY-RUN]";
+  }
+
   // Phase label, padded to 10 chars for alignment across all phase names
-  std::string result = fmt::format(" Phase:{:<10}", phaseLabel());
+  result += fmt::format(" Phase: {:<10}", phaseLabel());
 
   if (mTotal > 0) {
     result += fmt::format(" [{}/{}]", mCurrent, mTotal);
@@ -168,17 +179,17 @@ std::string StatusLine::buildStatusString() const {
     result += fmt::format(" | {} {}:{}", mOp, mFile, mLine);
   }
 
-  result += fmt::format(" | K:{} S:{} B:{} T:{} R:{}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);
+  result += fmt::format(" | K: {} S: {} B: {} T: {} R: {}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);
 
   size_t denominator = mKilled + mSurvived + mTimeout + mRuntimeError;
   if (denominator > 0) {
     double score = (100.0 * static_cast<double>(mKilled)) / static_cast<double>(denominator);
-    result += fmt::format(" | Score:{:.1f}%", score);
+    result += fmt::format(" | Score: {:.1f}%", score);
   } else {
-    result += " | Score:N/A";
+    result += " | Score: N/A";
   }
 
-  result += " | Elapsed:" + getElapsedStr();
+  result += " | Elapsed: " + getElapsedStr();
   return result;
 }
 
