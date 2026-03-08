@@ -211,6 +211,15 @@ class CommandRun : public Command {
    */
   virtual bool getVerbose();
 
+  /**
+   * @brief Returns the minimum mutation score threshold as a percentage (0–100),
+   *        or @c std::nullopt if no threshold was specified.
+   *
+   * When set, @c run() returns exit code 3 if the final mutation score is strictly
+   * below this value.
+   */
+  virtual std::optional<double> getThreshold();
+
   // Run control options (registered to mGroupRunCtrl)
 
   /** @brief Flag: write a sentinel.yaml template and exit. */
@@ -221,6 +230,14 @@ class CommandRun : public Command {
    *        then print a readiness summary and exit without evaluating any mutants.
    */
   args::Flag mDryRun;
+
+  /**
+   * @brief Minimum mutation score threshold (0–100).
+   *
+   * When provided via @c --threshold, @c run() emits a summary line to stderr and
+   * returns exit code 3 if the final mutation score falls strictly below this value.
+   */
+  args::ValueFlag<double> mThreshold;
 
   /** @brief Flag: disable the live terminal status line. */
   args::Flag mNoStatusLine;

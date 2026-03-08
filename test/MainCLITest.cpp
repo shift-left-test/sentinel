@@ -279,6 +279,64 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
 }
 
+TEST_F(MainCLITest, testThresholdPassWhenScoreAbove) {
+  namespace fs = std::experimental::filesystem;
+
+  makeGitRepo();
+
+  Subprocess(fmt::format("cd {} && cmake .", SAMPLE_DIR.string())).execute();
+  EXPECT_TRUE(fs::exists(SAMPLE_DIR / "compile_commands.json"));
+
+  Subprocess(fmt::format("cd {} && make all", SAMPLE_DIR.string())).execute();
+  Subprocess(fmt::format(R"a1b2(cd {} && GTEST_OUTPUT="xml:./testresult/" make test)a1b2", SAMPLE_DIR.string()))
+      .execute();
+  Subprocess(fmt::format("cd {} && make clean", SAMPLE_DIR.string())).execute();
+  fs::remove_all(SAMPLE_DIR / "testresult");
+
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
+  addArg(fmt::format("--config={}", (SAMPLE_DIR / "sentinel.yaml").string()).c_str());
+  addArg(fmt::format("--source-dir={}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("--compiledb-dir={}", SAMPLE_DIR.string()).c_str());
+  addArg(fmt::format("-o{}", (SAMPLE_DIR / "result").string()).c_str());
+  addArg(fmt::format("--workspace={}", (SAMPLE_BASE / "workspace").string()).c_str());
+  addArg(fmt::format("--test-report-dir={}", (SAMPLE_DIR / "testresult").string()).c_str());
+  addArg(fmt::format("--build-command={}", "make").c_str());
+  addArg(fmt::format("--test-command={}", R"(GTEST_OUTPUT="xml:./testresult/" make test)").c_str());
+  addArg("-sall");
+  addArg("-l3");
+  addArg("--timeout=auto");
+  addArg("--seed=1");
+  addArg("--generator=random");
+  addArg(fmt::format("-e{}", SAMPLE_TEST_NAME).c_str());
+  addArg("--force");
+  addArg("--threshold=50");  // score will be 100%, well above threshold
+
+  captureStdout();
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto out = capturedStdout();
+  auto err = capturedStderr();
+
+  EXPECT_EQ(0, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "Mutation score:"));
+  EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
+}
+
+TEST_F(MainCLITest, testThresholdYamlConfigParsed) {
+  // Verify that 'threshold' in sentinel.yaml is picked up and validated.
+  setUpMinimalRunArgs();
+  // Overwrite the sentinel.yaml written by setUpMinimalRunArgs() with a threshold value.
+  writeFile(SAMPLE_DIR / "sentinel.yaml", "threshold: 101\n");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  // sentinel.yaml has threshold: 101 which is out of range → exit 2
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "threshold"));
+}
+
 // ── --force option tests ───────────────────────────────────────────────────────
 
 TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
@@ -439,6 +497,33 @@ TEST_F(MainCLITest, testPreRunWarnPatternAbsoluteInsideSrcAbortsOnNo) {
   EXPECT_TRUE(sentinel::string::contains(out, "is an absolute path"));
   EXPECT_TRUE(sentinel::string::contains(out, "consider using a relative path"));
   EXPECT_TRUE(sentinel::string::contains(out, "Aborted."));
+}
+
+// ── --threshold option tests ───────────────────────────────────────────────────
+
+TEST_F(MainCLITest, testThresholdInvalidHigh) {
+  setUpMinimalRunArgs();
+  addArg("--threshold=101");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  // InvalidArgumentException is caught by MainCLI and returned as exit code 2
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "threshold"));
+}
+
+TEST_F(MainCLITest, testThresholdInvalidLow) {
+  setUpMinimalRunArgs();
+  addArg("--threshold=-1");
+
+  captureStderr();
+  int ret = sentinel::MainCLI(getArgc(), getArgv());
+  auto err = capturedStderr();
+
+  EXPECT_EQ(2, ret);
+  EXPECT_TRUE(sentinel::string::contains(err, "threshold"));
 }
 
 TEST_F(MainCLITest, testPreRunWarningProceedsOnYes) {

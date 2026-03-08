@@ -191,6 +191,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--init` | Write a `sentinel.yaml` config template and exit | |
 | `--dry-run` | Build, test, and generate mutants, then print a readiness summary and exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. Combine with `--verbose` to also list every generated mutant. | |
 | `--no-statusline` | Disable the live terminal status line | |
+| `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0–100). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 
 #### Build & test options
 
@@ -270,6 +271,9 @@ Run `sentinel --init` to write a fully commented template to the current directo
 
 # Disable the terminal status line even when stdout is a TTY (default: false)
 # no-statusline: false
+
+# Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
+# threshold: 80
 
 # --- Build & test options ---
 
@@ -378,6 +382,17 @@ The `--coverage` option can be repeated to merge multiple coverage files.
 | **SDL** | Statement Deletion | Deletes a statement body | `return x;` → *(deleted)* |
 | **SOR** | Shift Operator Replacement | Replaces shift operators | `a << b` → `a >> b` |
 | **UOI** | Unary Operator Insertion | Inserts a unary operator | `x` → `-x` |
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | CLI argument error |
+| `2` | Runtime error (build failure, I/O error, invalid option value, etc.) |
+| `3` | Mutation score is below the `--threshold` value |
 
 ---
 

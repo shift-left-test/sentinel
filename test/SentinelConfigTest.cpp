@@ -128,6 +128,8 @@ operator:
 
   ASSERT_TRUE(cfg.operators.has_value());
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), *cfg.operators);
+
+  EXPECT_FALSE(cfg.threshold.has_value());
 }
 
 TEST_F(SentinelConfigTest, testLoadPartialConfig) {
@@ -168,6 +170,7 @@ limit: 20
   EXPECT_FALSE(cfg.killAfter.has_value());
   EXPECT_FALSE(cfg.seed.has_value());
   EXPECT_FALSE(cfg.operators.has_value());
+  EXPECT_FALSE(cfg.threshold.has_value());
 }
 
 TEST_F(SentinelConfigTest, testLoadEmptyConfig) {
@@ -250,6 +253,28 @@ operator:
   ASSERT_TRUE(cfg.operators.has_value());
   std::vector<std::string> expected = {"AOR", "BOR", "LCR", "ROR", "SDL", "SOR", "UOI"};
   EXPECT_EQ(expected, *cfg.operators);
+}
+
+TEST_F(SentinelConfigTest, testThresholdParsed) {
+  writeFile("sentinel.yaml", R"(
+build-command: make
+threshold: 80.0
+)");
+
+  auto cfg = SentinelConfig::loadFromFile(configPath("sentinel.yaml"));
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(80.0, *cfg.threshold);
+}
+
+TEST_F(SentinelConfigTest, testThresholdInteger) {
+  writeFile("sentinel.yaml", R"(
+build-command: make
+threshold: 75
+)");
+
+  auto cfg = SentinelConfig::loadFromFile(configPath("sentinel.yaml"));
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(75.0, *cfg.threshold);
 }
 
 TEST_F(SentinelConfigTest, testFileNotFoundThrows) {

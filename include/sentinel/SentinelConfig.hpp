@@ -62,6 +62,8 @@ struct SentinelConfig {
   std::optional<std::vector<std::string>> operators;
   /// Disable the terminal status line even when stdout is a TTY (--no-statusline).
   std::optional<bool> noStatusLine;
+  /// Minimum mutation score threshold 0–100 (--threshold); exit code 3 if score is below this.
+  std::optional<double> threshold;
 
   /**
    * @brief Load configuration from a YAML file.

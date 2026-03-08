@@ -202,6 +202,9 @@ static const char* const kYamlTemplate =
     "# Disable the terminal status line even when stdout is a TTY (default: false)\n"
     "# no-statusline: false\n"
     "\n"
+    "# Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)\n"
+    "# threshold: 80\n"
+    "\n"
     "# --- Build & test options ---\n"
     "\n"
     "# Source root directory (default: .)\n"
@@ -293,6 +296,9 @@ CommandRun::CommandRun(args::Group& parser) :
     mDryRun(mGroupRunCtrl, "dry-run",
             "Build, test, and generate mutants then exit; prints a readiness summary without evaluating mutants",
             {"dry-run"}),
+    mThreshold(mGroupRunCtrl, "PCT",
+               "Fail with exit code 3 if mutation score is below this percentage (0–100)",
+               {"threshold"}),
     mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
                   {"no-statusline"}),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}, "."),
@@ -597,6 +603,15 @@ int CommandRun::run() {
         "  hint: pass --test-report-dir <path> or add 'test-report-dir: <path>' to sentinel.yaml");
   }
 
+  // Validate threshold
+  {
+    std::optional<double> thresh = getThreshold();
+    if (thresh && (*thresh < 0.0 || *thresh > 100.0)) {
+      throw InvalidArgumentException(
+          fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].", *thresh));
+    }
+  }
+
   // Only parse timeout string for fresh runs (resume uses computed integer directly)
   std::string timeLimitStr;
   if (!resuming) {
@@ -703,6 +718,7 @@ int CommandRun::run() {
   double baselineSecs = 0.0;
   bool dryRunBuildOK = true;
   bool dryRunTestOK = true;
+  int exitCode = 0;
 
   try {
     // ── STEP 3: Original build & test ──────────────────────────────────────────
@@ -986,6 +1002,35 @@ int CommandRun::run() {
       sentinel::XMLReport xmlReport(evaluator.getMutationResults(), sourceRoot);
       xmlReport.printSummary();
     }
+
+    // ── STEP 7: Score summary & threshold check ──────────────────────────────────
+
+    {
+      size_t totalMutants = 0;
+      size_t killedMutants = 0;
+      for (const auto& r : evaluator.getMutationResults()) {
+        auto s = r.getMutationState();
+        if (s == MutationState::BUILD_FAILURE || s == MutationState::RUNTIME_ERROR ||
+            s == MutationState::TIMEOUT) {
+          continue;
+        }
+        totalMutants++;
+        if (r.getDetected()) killedMutants++;
+      }
+      if (totalMutants > 0) {
+        double score = (100.0 * killedMutants) / totalMutants;
+        std::cerr << fmt::format("[info] Mutation score: {:.1f}% ({}/{} mutants killed)\n",
+                                 score, killedMutants, totalMutants);
+        std::optional<double> thresh = getThreshold();
+        if (thresh && score < *thresh) {
+          std::cerr << fmt::format("[error] Mutation score {:.1f}% is below threshold {:.1f}%\n",
+                                   score, *thresh);
+          exitCode = 3;
+        }
+      } else {
+        std::cerr << "[info] Mutation score: -% (no evaluable mutants)\n";
+      }
+    }
   } catch (...) {
     std::raise(SIGUSR1);
     throw;
@@ -994,7 +1039,7 @@ int CommandRun::run() {
   statusLine.disable();
   gStatusLineForSH = nullptr;
   std::raise(SIGUSR1);
-  return 0;
+  return exitCode;
 }
 
 void CommandRun::copyTestReportTo(const std::string& from, const std::string& to,
@@ -1249,6 +1294,16 @@ unsigned CommandRun::getSeed() {
 
 bool CommandRun::getVerbose() {
   return mIsVerbose.Get();
+}
+
+std::optional<double> CommandRun::getThreshold() {
+  if (mThreshold) {
+    return mThreshold.Get();
+  }
+  if (mConfig && mConfig->threshold) {
+    return *mConfig->threshold;
+  }
+  return std::nullopt;
 }
 
 std::vector<std::string> CommandRun::getOperators() {
