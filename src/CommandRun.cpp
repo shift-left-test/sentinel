@@ -516,7 +516,7 @@ int CommandRun::run() {
   SentinelConfig activeConfig;
 
   if (ws.hasPreviousRun()) {
-    bool resume = !mForce.Get();
+    bool resume = !mForce.Get() && !dryRun;
     if (resume) {
       fmt::print("Previous run found in '{}'. Resume? [y/N] ", workDirPath.string());
       std::string answer;
@@ -529,7 +529,9 @@ int CommandRun::run() {
       fmt::print("Resuming previous run.\n");
     } else {
       ws.initialize();
-      fmt::print("Starting fresh run.\n");
+      if (!dryRun) {
+        fmt::print("Starting fresh run.\n");
+      }
     }
   } else {
     ws.initialize();
