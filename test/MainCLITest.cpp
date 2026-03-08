@@ -181,15 +181,15 @@ add_test(
 )a1f4";
 
   std::string MUTATION_POPULATION_REPORT2 =
-      R"a1f4(--------------------------------------------------------------
+      R"a1f4(==============================================================
                    Mutant Population Report
---------------------------------------------------------------
-File                                               #mutation
+==============================================================
+File                                                 Mutants
 --------------------------------------------------------------
 sample.cpp                                                 3
 --------------------------------------------------------------
 TOTAL                                                      3
---------------------------------------------------------------)a1f4";
+==============================================================)a1f4";
 
   std::string MUTATION_COVERAGE_REPORT2 =
       R"a1f4z0(==================================================================================
@@ -277,7 +277,6 @@ TEST_F(MainCLITest, testCommandRun) {
   EXPECT_TRUE(fs::exists(SAMPLE_DIR / "result" / "index.html"));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_POPULATION_REPORT2));
   EXPECT_TRUE(sentinel::string::contains(out, MUTATION_COVERAGE_REPORT2));
-  EXPECT_TRUE(sentinel::string::contains(out, "Note: mutant count capped at 3 of"));
 }
 
 // ── --force option tests ───────────────────────────────────────────────────────

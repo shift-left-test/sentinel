@@ -939,7 +939,7 @@ int CommandRun::run() {
       generator->setOperators(operators);
 
       sentinel::MutationFactory mutationFactory(generator);
-      auto mutants = mutationFactory.populate(sourceRoot, sourceLines, mutantLimit, randomSeed);
+      auto mutants = mutationFactory.populate(sourceRoot, sourceLines, mutantLimit, randomSeed, generatorStr);
       candidateCount = generator->getCandidateCount();
 
       int id = 1;
@@ -952,13 +952,7 @@ int CommandRun::run() {
       statusLine.setTotalMutants(indexedMutants.size());
       double populateElapsed = std::chrono::duration<double>(
           std::chrono::steady_clock::now() - populateStart).count();
-      logger->info(fmt::format("Generated {} mutant{} ({}).",
-                               indexedMutants.size(), indexedMutants.size() == 1 ? "" : "s",
-                               formatElapsed(populateElapsed)));
-      if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-        std::cout << fmt::format("Note: mutant count capped at {} of {} candidates (--limit {}).\n",
-                                 mutantLimit, candidateCount, mutantLimit);
-      }
+      logger->info(fmt::format("Mutant population complete ({}).", formatElapsed(populateElapsed)));
     }
 
     // ── DRY-RUN EXIT ────────────────────────────────────────────────────────────

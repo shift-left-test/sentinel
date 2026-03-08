@@ -33,10 +33,11 @@ class MutationFactory {
    * @param sourceLines lines of the source
    * @param maxMutants maximum number of mutables generated
    * @param randomSeed random seed
+   * @param generatorStr name of the mutant selection strategy (e.g. "uniform", "random", "weighted")
    * @return list of mutables
    */
   Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                   unsigned randomSeed);
+                   unsigned randomSeed, const std::string& generatorStr = "");
 
   /**
    * @brief Populate mutables from the given source lines.

@@ -57,8 +57,6 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
   }
 
   auto logger = Logger::getLogger(cUniformGeneratorLoggerName);
-  logger->info(fmt::format("random seed: {}", randomSeed));
-
   // Launch async tasks in batches capped at hardware_concurrency to avoid overloading the system.
   // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
   // and restore it after all tasks complete to neutralise the side effect.
@@ -70,7 +68,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
   while (fileIt != targetLines.end()) {
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->info(fmt::format("Checking for mutants in {}", fileIt->first));
+      logger->verbose(fmt::format("Checking for mutants in {}", fileIt->first));
       futures.push_back(
           std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
             Mutants localMutables;

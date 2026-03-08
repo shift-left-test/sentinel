@@ -22,35 +22,31 @@ namespace sentinel {
 MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
 
 Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                                  unsigned randomSeed) {
+                                  unsigned randomSeed, const std::string& generatorStr) {
   namespace fs = std::experimental::filesystem;
 
   auto logger = Logger::getLogger("populate");
   logger->debug(fmt::format("random seed: {}", randomSeed));
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
-  // Count number of mutants generated in each file
+  // Count mutants per file and per operator
   std::map<std::string, std::size_t> groupByPath;
+  std::map<std::string, std::size_t> groupByOperator;
   for (const auto& m : mutables) {
-    std::string path = m.getPath();
-    auto it = groupByPath.find(path);
-
-    if (it != groupByPath.end()) {
-      ++it->second;
-    } else {
-      groupByPath[path] = 1;
-    }
+    groupByPath[m.getPath()]++;
+    groupByOperator[m.getOperator()]++;
   }
 
-  // Printing summary
   std::size_t flen = 50;
   std::size_t mlen = 10;
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}\n";
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}\n", "Mutant Population Report", maxlen)) << std::endl;
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "File", flen, "#mutation", mlen);
+
+  // ── File table ──────────────────────────────────────────────────────────────
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutant Population Report", maxlen)) << "\n";
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  std::cout << fmt::format(defFormat, "File", flen, "Mutants", mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   for (const auto& p : groupByPath) {
@@ -69,16 +65,39 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
 
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
   std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+
+  // ── Operator table ──────────────────────────────────────────────────────────
+  std::cout << "\n";
+  std::cout << fmt::format(defFormat, "Operator", flen, "Mutants", mlen);
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
-  logger->verbose(fmt::format("source lines: {}", sourceLines.size()));
-  logger->verbose(fmt::format("generated mutants: {}", mutables.size()));
+  for (const auto& p : groupByOperator) {
+    std::cout << fmt::format(defFormat, p.first, flen, p.second, mlen);
+  }
+
+  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+
+  // ── Footer ──────────────────────────────────────────────────────────────────
+  std::size_t numFiles = groupByPath.size();
+  std::size_t candidateCount = mGenerator->getCandidateCount();
+  if (!generatorStr.empty()) {
+    std::cout << fmt::format("Generator : {}  |  Seed: {}\n", generatorStr, randomSeed);
+  }
+  std::cout << fmt::format("Analyzed  : {} source line{} across {} file{}\n",
+                           sourceLines.size(), sourceLines.size() == 1 ? "" : "s",
+                           numFiles, numFiles == 1 ? "" : "s");
+  std::cout << fmt::format("Selected  : {} out of {} candidate{}\n",
+                           mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
+  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
 
   return mutables;
 }
 
 Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants) {
-  return populate(gitPath, sourceLines, maxMutants, std::random_device {}());
+  return populate(gitPath, sourceLines, maxMutants, std::random_device {}(), "");
 }
 
 }  // namespace sentinel

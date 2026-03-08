@@ -123,6 +123,37 @@ sentinel \
   --exclude="*/test/*"
 ```
 
+### Sample Output
+
+After mutant generation, Sentinel prints a **Mutant Population Report** summarising what was generated:
+
+```
+==============================================================
+               Mutant Population Report
+==============================================================
+File                                                  Mutants
+--------------------------------------------------------------
+src/foo.cpp                                                45
+src/bar.cpp                                                30
+--------------------------------------------------------------
+TOTAL                                                      75
+==============================================================
+
+Operator                                              Mutants
+--------------------------------------------------------------
+AOR                                                        42
+LCR                                                        33
+--------------------------------------------------------------
+TOTAL                                                      75
+==============================================================
+Generator : uniform  |  Seed: 3721894056
+Analyzed  : 320 source lines across 2 files
+Selected  : 75 out of 320 candidates
+==============================================================
+```
+
+After all mutants are evaluated, a **Mutation Coverage Report** is printed to stdout.
+
 ### Terminal Status Line
 
 When stdout is a TTY, Sentinel displays a live status line at the bottom of the terminal:
