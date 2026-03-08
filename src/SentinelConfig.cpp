@@ -125,9 +125,6 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["operator"]) {
       cfg.operators = toStringVector(root["operator"], "operator");
     }
-    if (root["no-statusline"]) {
-      cfg.noStatusLine = root["no-statusline"].as<bool>();
-    }
     if (root["threshold"]) {
       cfg.threshold = root["threshold"].as<double>();
     }

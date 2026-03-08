@@ -201,9 +201,6 @@ Directory for all run artifacts.
 \fBoutput-dir\fR
 Directory to write HTML/XML reports.
 .TP
-\fBno-statusline\fR
-Disable the terminal status line (boolean).
-.TP
 \fBcompiledb-dir\fR
 Directory containing compile_commands.json.
 .TP

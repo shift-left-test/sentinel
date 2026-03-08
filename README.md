@@ -270,9 +270,6 @@ Run `sentinel --init` to write a fully commented template to the current directo
 
 # --- Run options ---
 
-# Disable the terminal status line even when stdout is a TTY (default: false)
-# no-statusline: false
-
 # Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
 # threshold: 80
 

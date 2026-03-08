@@ -60,8 +60,6 @@ struct SentinelConfig {
   std::optional<unsigned> seed;
   /// Mutation operators to use (--operator).
   std::optional<std::vector<std::string>> operators;
-  /// Disable the terminal status line even when stdout is a TTY (--no-statusline).
-  std::optional<bool> noStatusLine;
   /// Minimum mutation score threshold 0–100 (--threshold); exit code 3 if score is below this.
   std::optional<double> threshold;
 

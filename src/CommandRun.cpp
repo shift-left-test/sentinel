@@ -219,9 +219,6 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Run options ---\n"
     "\n"
-    "# Disable the terminal status line even when stdout is a TTY (default: false)\n"
-    "# no-statusline: false\n"
-    "\n"
     "# Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)\n"
     "# threshold: 80\n"
     "\n"
@@ -444,11 +441,10 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot,
                                       const std::vector<std::string>& coverageFiles,
                                       const std::string& generator, size_t timeout, size_t killAfter,
                                       unsigned seed, const std::vector<std::string>& operators,
-                                      const std::string& outputDir, bool noStatusLine) {
+                                      const std::string& outputDir) {
   YAML::Emitter out;
   out << YAML::BeginMap;
   out << YAML::Key << "source-dir" << YAML::Value << sourceRoot;
-  out << YAML::Key << "no-statusline" << YAML::Value << noStatusLine;
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
@@ -603,8 +599,7 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
                                        cfg.testResultDir.string(), cfg.testResultFileExts,
                                        cfg.coverageFiles, cfg.generatorStr, cfg.timeLimit,
                                        cfg.killAfter, cfg.randomSeed, cfg.operators,
-                                       cfg.emptyOutputDir ? std::string{} : cfg.outputDir.string(),
-                                       cfg.disableStatusLine));
+                                       cfg.emptyOutputDir ? std::string{} : cfg.outputDir.string()));
     }
   }
 
@@ -1095,10 +1090,7 @@ int CommandRun::run() {
   logger->info(fmt::format("Workspace: {}", ws.getRoot().string()));
   logger->verbose(fmt::format("resuming:           {}", resuming ? "yes" : "no"));
 
-  bool disableStatusLine = static_cast<bool>(mNoStatusLine) || (mConfig && mConfig->noStatusLine.value_or(false));
-  if (resuming) {
-    disableStatusLine = activeConfig.noStatusLine.value_or(false);
-  }
+  bool disableStatusLine = static_cast<bool>(mNoStatusLine);
   if (!disableStatusLine) {
     statusLine.enable();
   }
