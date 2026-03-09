@@ -43,7 +43,7 @@ class Command {
   /**
    * @brief source root directory
    */
-  args::Positional<std::string> mSourceRoot;
+  args::ValueFlag<std::string> mSourceRoot;
 
   /**
    * @brief verbose option

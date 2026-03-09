@@ -47,7 +47,7 @@ debug: false
 workspace: ./work
 output-dir: ./out
 cwd: /tmp
-build-dir: ./build
+binary-dir: ./build
 compiledb: ./build
 scope: commit
 extension:
@@ -60,8 +60,8 @@ exclude:
 limit: 5
 build-command: make
 test-command: ctest
-test-result-dir: ./results
-test-result-extension:
+test-report-dir: ./results
+test-report-extension:
   - xml
 coverage:
   - coverage.info
@@ -150,7 +150,7 @@ TEST_F(SentinelConfigTest, testLoadPartialConfig) {
   writeFile("sentinel.yaml", R"(
 build-command: make all
 test-command: ctest --verbose
-test-result-dir: ./test-results
+test-report-dir: ./test-results
 limit: 20
 )");
 

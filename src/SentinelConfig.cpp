@@ -63,8 +63,8 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     }
 
     // CommandRun-specific options
-    if (root["build-dir"]) {
-      cfg.buildDir = root["build-dir"].as<std::string>();
+    if (root["binary-dir"]) {
+      cfg.buildDir = root["binary-dir"].as<std::string>();
     }
     if (root["compiledb"]) {
       cfg.compileDbDir = root["compiledb"].as<std::string>();
@@ -90,11 +90,11 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["test-command"]) {
       cfg.testCmd = root["test-command"].as<std::string>();
     }
-    if (root["test-result-dir"]) {
-      cfg.testResultDir = root["test-result-dir"].as<std::string>();
+    if (root["test-report-dir"]) {
+      cfg.testResultDir = root["test-report-dir"].as<std::string>();
     }
-    if (root["test-result-extension"]) {
-      cfg.testResultFileExts = toStringVector(root["test-result-extension"], "test-result-extension");
+    if (root["test-report-extension"]) {
+      cfg.testResultFileExts = toStringVector(root["test-report-extension"], "test-report-extension");
     }
     if (root["coverage"]) {
       cfg.coverageFiles = toStringVector(root["coverage"], "coverage");

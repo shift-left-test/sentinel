@@ -262,8 +262,8 @@ class CommandRun : public Command {
   /** @brief Mutant selection strategy: "uniform", "random", or "weighted". */
   args::ValueFlag<std::string> mGenerator;
 
-  /** @brief Random seed for mutant selection. */
-  args::ValueFlag<unsigned> mSeed;
+  /** @brief Random seed for mutant selection ('auto' = pick randomly). */
+  args::ValueFlag<std::string> mSeed;
 
   /** @brief Mutation operators to apply; empty means all operators. */
   args::ValueFlagList<std::string> mOperators;

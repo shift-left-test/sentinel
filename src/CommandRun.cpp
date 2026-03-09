@@ -71,7 +71,7 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Shared options (all commands) ---\n"
     "\n"
-    "# Source root directory (equivalent to SOURCE_ROOT_PATH positional argument)\n"
+    "# Source root directory (equivalent to --source-dir CLI option)\n"
     "# source-root: ./\n"
     "\n"
     "# Enable verbose logging\n"
@@ -94,8 +94,8 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- sentinel run options ---\n"
     "\n"
-    "# Build command output directory (contains compile_commands.json by default)\n"
-    "# build-dir: .\n"
+    "# Path to the test binary directory\n"
+    "# binary-dir: .\n"
     "\n"
     "# Explicit path to directory containing compile_commands.json\n"
     "# compiledb: .\n"
@@ -127,11 +127,11 @@ static const char* const kYamlTemplate =
     "# Shell command to execute tests\n"
     "# test-command: make test\n"
     "\n"
-    "# Directory containing test command output\n"
-    "# test-result-dir: ./test-results\n"
+    "# Path to the test report directory\n"
+    "# test-report-dir: ./test-results\n"
     "\n"
-    "# File extensions of test output files\n"
-    "# test-result-extension:\n"
+    "# File extension of the test report\n"
+    "# test-report-extension:\n"
     "#   - xml\n"
     "\n"
     "# lcov-format coverage result files\n"
@@ -147,8 +147,8 @@ static const char* const kYamlTemplate =
     "# Seconds to wait after timeout before sending SIGKILL. 0 = disabled.\n"
     "# kill-after: 60\n"
     "\n"
-    "# Random seed for mutant selection\n"
-    "# seed: 42\n"
+    "# Random seed for mutant selection ('auto' = pick randomly)\n"
+    "# seed: auto\n"
     "\n"
     "# Disable the terminal status line even when stdout is a TTY\n"
     "# no-statusline: false\n"
@@ -175,16 +175,16 @@ CommandRun::CommandRun(args::Group& parser) :
           {"init"}),
     mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
                   {"no-statusline"}),
-    mBuildDir(mGroupBuildTest, "PATH", "Build output directory (also searched for compile_commands.json by default)",
-              {'b', "build-dir"}, "."),
-    mCompileDbDir(mGroupBuildTest, "PATH", "Directory containing compile_commands.json (overrides --build-dir)",
+    mBuildDir(mGroupBuildTest, "PATH", "Path to the test binary directory",
+              {'b', "binary-dir"}, "."),
+    mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",
                   {"compiledb"}),
     mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project", {"build-command"}),
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
-    mTestResultDir(mGroupBuildTest, "PATH", "Directory where the test command writes result files",
-                   {"test-result-dir"}),
-    mTestResultFileExts(mGroupBuildTest, "EXT", "File extensions of test result files",
-                        {"test-result-extension"}, {"xml", "XML"}),
+    mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory",
+                   {"test-report-dir"}),
+    mTestResultFileExts(mGroupBuildTest, "EXT", "File extension of the test report",
+                        {"test-report-extension"}, {"xml", "XML"}),
     mTimeLimitStr(mGroupBuildTest, "SEC",
                   "Test time limit in seconds; 0 = no limit, auto = 2x baseline run time",
                   {"timeout"}, "auto"),
@@ -195,14 +195,14 @@ CommandRun::CommandRun(args::Group& parser) :
            {'s', "scope"}, "all"),
     mExtensions(mGroupMutation, "EXT", "Source file extensions to mutate", {'t', "extension"},
                 {"cxx", "cpp", "cc", "c", "c++", "cu"}),
-    mPatterns(mGroupMutation, "PATTERN", "Paths or glob patterns to constrain the mutation scope",
+    mPatterns(mGroupMutation, "EXPR", "Paths or glob patterns to constrain the mutation scope",
               {'p', "pattern"}),
-    mExcludes(mGroupMutation, "PATTERN", "Exclude files/directories matching fnmatch-style patterns",
+    mExcludes(mGroupMutation, "EXPR", "Exclude files/directories matching fnmatch-style patterns",
               {'e', "exclude"}),
     mLimit(mGroupMutation, "N", "Maximum number of mutants to generate", {'l', "limit"}, 10),
     mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: 'uniform', 'random', or 'weighted'",
                {"generator"}, "uniform"),
-    mSeed(mGroupMutation, "N", "Random seed for mutant selection", {"seed"}, std::random_device {}()),
+    mSeed(mGroupMutation, "N", "Random seed for mutant selection ('auto' = pick randomly)", {"seed"}, "auto"),
     mOperators(mGroupMutation, "OP",
                "Mutation operators to apply (AOR BOR LCR ROR SDL SOR UOI); defaults to all",
                {"operator"}),
@@ -282,7 +282,7 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
   if (!outputDir.empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << outputDir;
   }
-  out << YAML::Key << "build-dir" << YAML::Value << buildDir;
+  out << YAML::Key << "binary-dir" << YAML::Value << buildDir;
   out << YAML::Key << "compiledb" << YAML::Value << compileDbDir;
   out << YAML::Key << "scope" << YAML::Value << scope;
   out << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
@@ -297,8 +297,8 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot, const std::
   out << YAML::Key << "limit" << YAML::Value << limit;
   out << YAML::Key << "build-command" << YAML::Value << buildCmd;
   out << YAML::Key << "test-command" << YAML::Value << testCmd;
-  out << YAML::Key << "test-result-dir" << YAML::Value << testResultDir;
-  out << YAML::Key << "test-result-extension" << YAML::Value << YAML::BeginSeq;
+  out << YAML::Key << "test-report-dir" << YAML::Value << testResultDir;
+  out << YAML::Key << "test-report-extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : testResultFileExts) out << e;
   out << YAML::EndSeq;
   out << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
@@ -445,7 +445,7 @@ int CommandRun::run() {
     throw InvalidArgumentException("Option --test-command is required to be not empty");
   }
   if (testResultDirStr.empty()) {
-    throw InvalidArgumentException("Option --test-result-dir is required");
+    throw InvalidArgumentException("Option --test-report-dir is required");
   }
 
   // Only parse timeout string for fresh runs (resume uses computed integer directly)
@@ -1029,13 +1029,18 @@ std::string CommandRun::getKillAfter() {
 }
 
 unsigned CommandRun::getSeed() {
+  std::string seedStr;
   if (mSeed) {
-    return mSeed.Get();
-  }
-  if (mConfig && mConfig->seed) {
+    seedStr = mSeed.Get();
+  } else if (mConfig && mConfig->seed) {
     return *mConfig->seed;
+  } else {
+    seedStr = mSeed.Get();
   }
-  return mSeed.Get();
+  if (seedStr == "auto") {
+    return std::random_device {}();
+  }
+  return static_cast<unsigned>(std::stoul(seedStr));
 }
 
 bool CommandRun::getVerbose() {

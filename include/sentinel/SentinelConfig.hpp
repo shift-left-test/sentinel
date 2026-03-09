@@ -34,7 +34,7 @@ struct SentinelConfig {
   std::optional<std::string> cwd;
 
   // CommandRun-specific options
-  /// Build command output directory (--build-dir).
+  /// Path to the test binary directory (--binary-dir).
   std::optional<std::string> buildDir;
   /// Path to directory containing compile_commands.json (--compiledb).
   std::optional<std::string> compileDbDir;
@@ -52,9 +52,9 @@ struct SentinelConfig {
   std::optional<std::string> buildCmd;
   /// Shell command to execute tests (--test-command).
   std::optional<std::string> testCmd;
-  /// Directory containing test command output (--test-result-dir).
+  /// Path to the test report directory (--test-report-dir).
   std::optional<std::string> testResultDir;
-  /// Test result file extensions (--test-result-extension).
+  /// File extension of the test report (--test-report-extension).
   std::optional<std::vector<std::string>> testResultFileExts;
   /// lcov-format coverage result files (--coverage).
   std::optional<std::vector<std::string>> coverageFiles;
