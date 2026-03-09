@@ -181,7 +181,8 @@ int Subprocess::execute() {
     Subprocess::pendSig = 0;
     Subprocess::killAfter = 0;
 
-    // restore signal handler (sc destructor called automatically by unique_ptr)
+    // restore signal handler
+    sc.reset();
 
     // send pending signal to sentinel
     if (tmpSig != 0) {
@@ -190,6 +191,7 @@ int Subprocess::execute() {
 
     return status;
   } else {
+    sc.reset();
     close(pfd[0]);
     close(pfd[1]);
     throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})", mCmd, std::strerror(errno)));
