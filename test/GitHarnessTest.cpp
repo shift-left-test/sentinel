@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cstdio>
 #include <fstream>
 #include <memory>
@@ -14,7 +14,7 @@
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

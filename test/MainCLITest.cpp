@@ -6,7 +6,7 @@
 #include <fmt/core.h>
 #include <git2.h>
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -26,7 +26,7 @@ class MainCLITest : public ::testing::Test {
   void SetUp() override {
     addArg("./sentinel");
 
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
     SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR_MAIN_CLI";
     fs::remove_all(SAMPLE_BASE);
     SAMPLE_DIR = SAMPLE_BASE / "sample";
@@ -49,7 +49,7 @@ class MainCLITest : public ::testing::Test {
     for (auto p : argVector) {
       delete[] p;
     }
-    std::experimental::filesystem::remove_all(SAMPLE_BASE);
+    std::filesystem::remove_all(SAMPLE_BASE);
   }
 
   void makeGitRepo() {
@@ -106,14 +106,14 @@ class MainCLITest : public ::testing::Test {
     return mStderrCapture->release();
   }
 
-  void writeFile(const std::experimental::filesystem::path& p, const std::string& c) {
+  void writeFile(const std::filesystem::path& p, const std::string& c) {
     std::ofstream t(p.string());
     t << c << std::endl;
     t.close();
   }
 
-  std::string readFile(const std::experimental::filesystem::path& p) {
-    EXPECT_TRUE(std::experimental::filesystem::exists(p));
+  std::string readFile(const std::filesystem::path& p) {
+    EXPECT_TRUE(std::filesystem::exists(p));
 
     std::ifstream t(p);
     std::stringstream buffer;
@@ -122,9 +122,9 @@ class MainCLITest : public ::testing::Test {
     return buffer.str();
   }
 
-  std::experimental::filesystem::path SAMPLE_BASE;
-  std::experimental::filesystem::path SAMPLE_DIR;
-  std::experimental::filesystem::path SAMPLE_PATH;
+  std::filesystem::path SAMPLE_BASE;
+  std::filesystem::path SAMPLE_DIR;
+  std::filesystem::path SAMPLE_PATH;
   std::string SAMPLE_NAME = "sample.cpp";
   std::string SAMPLE_CONTENTS =
       R"a1f4(inline bool lessThanOrEqual(int a, int b) {
@@ -144,7 +144,7 @@ int sumOfEvenPositiveNumber(int from, int to) {
 }
 )a1f4";
 
-  std::experimental::filesystem::path SAMPLE_TEST_PATH;
+  std::filesystem::path SAMPLE_TEST_PATH;
   std::string SAMPLE_TEST_NAME = "test_main.cpp";
   std::string SAMPLE_TEST_CONTENTS =
       R"a1f4(#include <gtest/gtest.h>
@@ -157,7 +157,7 @@ int sumOfEvenPositiveNumber(int from, int to);
 }}
 )a1f4";
 
-  std::experimental::filesystem::path SAMPLE_CMAKELISTS_PATH;
+  std::filesystem::path SAMPLE_CMAKELISTS_PATH;
   std::string SAMPLE_CMAKELISTS_NAME = "CMakeLists.txt";
   std::string SAMPLE_CMAKELISTS_CONTENTS =
       R"a1f4(cmake_minimum_required(VERSION 3.3)
@@ -210,7 +210,7 @@ TOTAL                                                      3         3    100.0%
   // needed.  The sentinel.yaml config is placed in SAMPLE_DIR and the cwd is
   // changed to SAMPLE_DIR so that no "working directory changed" warning fires.
   void setUpMinimalRunArgs() {
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
     fs::current_path(SAMPLE_DIR);
     writeFile(SAMPLE_DIR / "sentinel.yaml", "{}\n");
     addArg("--config=sentinel.yaml");
@@ -239,7 +239,7 @@ TEST_F(MainCLITest, testHelpOption) {
 }
 
 TEST_F(MainCLITest, testCommandRun) {
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
 
   makeGitRepo();
 
@@ -281,7 +281,7 @@ TEST_F(MainCLITest, testCommandRun) {
 }
 
 TEST_F(MainCLITest, testThresholdPassWhenScoreAbove) {
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
 
   makeGitRepo();
 
@@ -343,7 +343,7 @@ TEST_F(MainCLITest, testThresholdYamlConfigParsed) {
 TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
   // Pre-create sentinel.yaml with recognisable content.
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
-  std::experimental::filesystem::current_path(SAMPLE_DIR);
+  std::filesystem::current_path(SAMPLE_DIR);
 
   addArg("--init");
   addArg("--force");
@@ -361,7 +361,7 @@ TEST_F(MainCLITest, testForceOptionSkipsInitOverwritePrompt) {
 
 TEST_F(MainCLITest, testInitPromptAbortsOnNo) {
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
-  std::experimental::filesystem::current_path(SAMPLE_DIR);
+  std::filesystem::current_path(SAMPLE_DIR);
 
   addArg("--init");
 
@@ -380,7 +380,7 @@ TEST_F(MainCLITest, testInitPromptAbortsOnNo) {
 
 TEST_F(MainCLITest, testInitPromptOverwritesOnY) {
   writeFile(SAMPLE_DIR / "sentinel.yaml", "# original\n");
-  std::experimental::filesystem::current_path(SAMPLE_DIR);
+  std::filesystem::current_path(SAMPLE_DIR);
 
   addArg("--init");
 
@@ -482,7 +482,7 @@ TEST_F(MainCLITest, testPreRunWarnPatternAbsoluteOutsideSrcAbortsOnNo) {
 }
 
 TEST_F(MainCLITest, testPreRunWarnPatternAbsoluteInsideSrcAbortsOnNo) {
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
   setUpMinimalRunArgs();
   // Absolute path inside SAMPLE_DIR triggers the "git pathspec" warning.
   addArg(fmt::format("--pattern={}", (SAMPLE_DIR / "file.cpp").string()).c_str());
@@ -649,7 +649,7 @@ TEST_F(MainCLITest, testPartitionWithSeedAutoFails) {
 }
 
 TEST_F(MainCLITest, testPartitionDryRunShowsPartitionInfo) {
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
 
   // Reset CWD: prior tests using setUpMinimalRunArgs() may have changed it.
   fs::current_path(fs::temp_directory_path());
@@ -694,7 +694,7 @@ TEST_F(MainCLITest, testPartitionDryRunShowsPartitionInfo) {
 TEST_F(MainCLITest, testPartitionDryRunTwoPartitionsMutantCountsSumToFull) {
   // Verify that running partition 1/2 and partition 2/2 in dry-run mode produces
   // mutant counts that sum to the full (non-partitioned) dry-run count.
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
 
   // Reset CWD: prior tests using setUpMinimalRunArgs() may have changed it.
   fs::current_path(fs::temp_directory_path());

@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_EVALUATOR_HPP_
 #define INCLUDE_SENTINEL_EVALUATOR_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
@@ -54,8 +54,8 @@ class Evaluator {
    *        when evalFile's parent's path isn't directory
    */
   MutationResult compareAndSaveMutationResult(const Mutant& mut,
-                                              const std::experimental::filesystem::path& ActualResultDir,
-                                              const std::experimental::filesystem::path& evalFilePath,
+                                              const std::filesystem::path& ActualResultDir,
+                                              const std::filesystem::path& evalFilePath,
                                               const std::string& testState);
 
   /**
@@ -79,7 +79,7 @@ class Evaluator {
  private:
   std::shared_ptr<Logger> mLogger;
   std::string mSourcePath;
-  std::experimental::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
+  std::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
   Mutants mMutants;
   Result mExpectedResult;
   MutationResults mMutationResults;

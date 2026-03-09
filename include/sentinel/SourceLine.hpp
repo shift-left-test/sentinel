@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_SOURCELINE_HPP_
 #define INCLUDE_SENTINEL_SOURCELINE_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 
 namespace sentinel {
@@ -23,7 +23,7 @@ class SourceLine {
    *
    * @param lineNumber soure line number
    */
-  SourceLine(const std::experimental::filesystem::path& path, std::size_t lineNumber);
+  SourceLine(const std::filesystem::path& path, std::size_t lineNumber);
 
   /**
    * @brief == operator overloading for std::find algorithm
@@ -31,7 +31,7 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator==(const SourceLine& other) const {
-    return std::experimental::filesystem::equivalent(this->mPath, other.mPath) &&
+    return std::filesystem::equivalent(this->mPath, other.mPath) &&
            this->mLineNumber == other.mLineNumber;
   }
 
@@ -53,7 +53,7 @@ class SourceLine {
   /**
    * @brief Return path to file
    */
-  std::experimental::filesystem::path getPath() const {
+  std::filesystem::path getPath() const {
     return mPath;
   }
 
@@ -65,7 +65,7 @@ class SourceLine {
   }
 
  private:
-  std::experimental::filesystem::path mPath;
+  std::filesystem::path mPath;
   std::size_t mLineNumber;
 };
 

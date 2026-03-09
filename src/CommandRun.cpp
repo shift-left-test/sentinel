@@ -7,7 +7,7 @@
 #include <yaml-cpp/yaml.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -39,17 +39,17 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/CommandRun.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 static const char* cCommandRunLoggerName = "CommandRun";
-static std::experimental::filesystem::path backupDirForSH;
-static std::experimental::filesystem::path sourceRootForSH;
-static std::experimental::filesystem::path workspaceDirForSH;
+static fs::path backupDirForSH;
+static fs::path sourceRootForSH;
+static fs::path workspaceDirForSH;
 static StatusLine* gStatusLineForSH = nullptr;
 
 static void signalHandler(int signum) {
-  namespace fs = std::experimental::filesystem;
-
   if (!backupDirForSH.empty() && fs::exists(backupDirForSH) && fs::is_directory(backupDirForSH)) {
     CommandRun::restoreBackup(backupDirForSH.string(), sourceRootForSH.string());
   }
@@ -94,9 +94,8 @@ static std::string formatDuration(double secs, bool approximate = false) {
 
 // Validates that the test result directory exists and contains result files.
 // In normal mode throws on failure; in dry-run mode returns false instead.
-static bool validateTestResultDir(const std::experimental::filesystem::path& dir,
-                                   const std::string& dirStr, bool dryRun) {
-  namespace fs = std::experimental::filesystem;
+static bool validateTestResultDir(const std::filesystem::path& dir,
+                                  const std::string& dirStr, bool dryRun) {
   if (!fs::exists(dir)) {
     if (!dryRun)
       throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", dirStr));
@@ -116,18 +115,18 @@ static bool validateTestResultDir(const std::experimental::filesystem::path& dir
 }
 
 // Prints the dry-run summary to stdout.
-static void printDryRunSummary(const std::experimental::filesystem::path& sourceRoot,
-                                const std::string& buildCmd, const std::string& testCmd,
-                                const std::string& scope, size_t mutantLimit,
-                                double baselineSecs, size_t timeLimit,
-                                const std::string& timeLimitStr,
-                                const std::vector<std::pair<int, Mutant>>& indexedMutants,
-                                std::size_t candidateCount, bool verbose,
-                                bool buildOK, bool testOK,
-                                const std::string& workspaceDir,
-                                const std::vector<std::string>& operators,
-                                size_t partIdx, size_t partCount,
-                                size_t fullMutantCount) {
+static void printDryRunSummary(const std::filesystem::path& sourceRoot,
+                               const std::string& buildCmd, const std::string& testCmd,
+                               const std::string& scope, size_t mutantLimit,
+                               double baselineSecs, size_t timeLimit,
+                               const std::string& timeLimitStr,
+                               const std::vector<std::pair<int, Mutant>>& indexedMutants,
+                               std::size_t candidateCount, bool verbose,
+                               bool buildOK, bool testOK,
+                               const std::string& workspaceDir,
+                               const std::vector<std::string>& operators,
+                               size_t partIdx, size_t partCount,
+                               size_t fullMutantCount) {
   std::cout << "\n=== Sentinel Dry Run ===\n";
   std::cout << fmt::format("  source-dir:    {}\n", sourceRoot.string());
   std::cout << fmt::format("  build-command: {}\n", buildCmd);
@@ -363,8 +362,6 @@ CommandRun::CommandRun(args::Group& parser) :
                {"partition"}) {}
 
 void CommandRun::init() {
-  namespace fs = std::experimental::filesystem;
-
   if (!mInit) {
     // Determine config file path.
     std::string configPath;
@@ -484,11 +481,11 @@ static std::string buildWorkspaceYaml(const std::string& sourceRoot,
 namespace {
 
 struct RunCfg {
-  std::experimental::filesystem::path sourceRoot;
-  std::experimental::filesystem::path workDirPath;
+  std::filesystem::path sourceRoot;
+  std::filesystem::path workDirPath;
   std::string buildCmd;
   std::string testCmd;
-  std::experimental::filesystem::path testResultDir;
+  std::filesystem::path testResultDir;
   std::string testResultDirStr;
   std::vector<std::string> testResultFileExts;
   std::vector<std::string> coverageFiles;
@@ -502,7 +499,7 @@ struct RunCfg {
   std::vector<std::string> excludePaths;
   std::vector<std::string> diffPatterns;
   std::vector<std::string> operators;
-  std::experimental::filesystem::path outputDir;
+  std::filesystem::path outputDir;
   bool emptyOutputDir = true;
   bool silent = false;
   std::string compileDbStr;
@@ -530,7 +527,6 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
                                               sentinel::Workspace& ws,               // NOLINT(runtime/references)
                                               sentinel::StatusLine& sl,              // NOLINT(runtime/references)
                                               const std::shared_ptr<sentinel::Logger>& logger) {
-  namespace fs = std::experimental::filesystem;
   BaselineResult r;
 
   sl.setPhase(sentinel::StatusLine::Phase::BUILD_ORIG);
@@ -678,7 +674,6 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
                                      sentinel::Evaluator& evaluator,  // NOLINT(runtime/references)
                                      const std::vector<std::pair<int, sentinel::Mutant>>& indexedMutants,
                                      const std::shared_ptr<sentinel::Logger>& logger) {
-  namespace fs = std::experimental::filesystem;
   fs::path actualDir = ws.getRoot() / "actual";
   auto repo = std::make_unique<sentinel::GitRepository>(cfg.sourceRoot, cfg.targetFileExts,
                                                         cfg.diffPatterns, cfg.excludePaths);
@@ -788,7 +783,6 @@ static int generateReportAndScore(const RunCfg& cfg,
                                   const sentinel::Evaluator& evaluator,
                                   sentinel::StatusLine* sl,
                                   const std::shared_ptr<sentinel::Logger>& logger) {
-  namespace fs = std::experimental::filesystem;
   sl->setPhase(sentinel::StatusLine::Phase::REPORT);
 
   fs::path outputDir = cfg.outputDir;
@@ -837,7 +831,6 @@ static int generateReportAndScore(const RunCfg& cfg,
 int CommandRun::run() {
   if (mInit) {
     static const char* const kConfigFileName = "sentinel.yaml";
-    namespace fs = std::experimental::filesystem;
     if (fs::exists(kConfigFileName)) {
       bool overwrite = mForce.Get();
       if (!overwrite) {
@@ -859,8 +852,6 @@ int CommandRun::run() {
     fmt::print("Generated '{}'\n", kConfigFileName);
     return 0;
   }
-
-  namespace fs = std::experimental::filesystem;
 
   bool dryRun = static_cast<bool>(mDryRun);
 
@@ -1205,8 +1196,6 @@ int CommandRun::run() {
 
 void CommandRun::copyTestReportTo(const std::string& from, const std::string& to,
                                   const std::vector<std::string>& exts) {
-  namespace fs = std::experimental::filesystem;
-
   fs::remove_all(to);
   fs::create_directories(to);
 
@@ -1239,8 +1228,6 @@ void CommandRun::copyTestReportTo(const std::string& from, const std::string& to
 }
 
 void CommandRun::restoreBackup(const std::string& backup, const std::string& srcRoot) {
-  namespace fs = std::experimental::filesystem;
-
   for (const auto& dirent : fs::directory_iterator(backup)) {
     const auto& backupFile = dirent.path();
     if (fs::is_regular_file(backupFile) || fs::is_directory(backupFile)) {
@@ -1252,7 +1239,6 @@ void CommandRun::restoreBackup(const std::string& backup, const std::string& src
 }
 
 std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir) {
-  namespace fs = std::experimental::filesystem;
   if (!fs::exists(target)) {
     *targetExists = false;
     fs::create_directories(target);
@@ -1478,15 +1464,13 @@ std::vector<std::string> CommandRun::getOperators() {
 }
 
 bool CommandRun::checkConfigWarnings(
-    const std::experimental::filesystem::path& sourceRoot,
+    const std::filesystem::path& sourceRoot,
     size_t mutantLimit,
     const std::string& timeLimitStr,
     const std::vector<std::string>& diffPatterns,
     const std::vector<std::string>& excludePaths,
     size_t partIdx,
     size_t partCount) {
-  namespace fs = std::experimental::filesystem;
-
   // Source labels: distinguish CLI flags from sentinel.yaml keys.
   const std::string limitSrc   = mLimit        ? "--limit (CLI)"   : "limit (sentinel.yaml)";
   const std::string timeoutSrc = mTimeLimitStr  ? "--timeout (CLI)" : "timeout (sentinel.yaml)";

@@ -4,12 +4,12 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include "sentinel/SourceLine.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

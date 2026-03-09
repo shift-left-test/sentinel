@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_COMMANDRUN_HPP_
 #define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -335,7 +335,7 @@ class CommandRun : public Command {
    * @return @c true if the run should proceed, @c false if the user aborted.
    */
   bool checkConfigWarnings(
-      const std::experimental::filesystem::path& sourceRoot,
+      const std::filesystem::path& sourceRoot,
       size_t mutantLimit,
       const std::string& timeLimitStr,
       const std::vector<std::string>& diffPatterns,

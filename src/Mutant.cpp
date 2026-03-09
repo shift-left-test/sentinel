@@ -4,12 +4,14 @@
  */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <utility>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/util/string.hpp"
+
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
@@ -18,7 +20,7 @@ Mutant::Mutant() : mFirst {0, 0}, mLast {0, 0} {}
 Mutant::Mutant(const std::string& mutationOperator, const std::string& path, const std::string& qualifiedFuncName,
                std::size_t firstLine, std::size_t firstColumn, std::size_t lastLine, std::size_t lastColumn,
                const std::string& token) :
-    mPath(std::experimental::filesystem::canonical(path)),
+    mPath(fs::canonical(path)),
     mToken(token),
     mOperator(mutationOperator),
     mQualifiedFunction(qualifiedFuncName),
@@ -35,8 +37,6 @@ Mutant::Mutant(const std::string& mutationOperator, const std::string& path, con
 }
 
 bool Mutant::operator==(const Mutant& other) const {
-  namespace fs = std::experimental::filesystem;
-
   return mOperator == other.getOperator() && fs::equivalent(mPath, other.getPath()) &&
          mFirst.line == other.getFirst().line && mFirst.column == other.getFirst().column &&
          mLast.line == other.getLast().line && mLast.column == other.getLast().column && mToken == other.getToken();
@@ -54,7 +54,7 @@ std::string Mutant::getOperator() const {
   return mOperator;
 }
 
-std::experimental::filesystem::path Mutant::getPath() const {
+std::filesystem::path Mutant::getPath() const {
   return mPath;
 }
 

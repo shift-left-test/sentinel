@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -17,7 +17,7 @@ namespace sentinel {
 class SampleFileGeneratorForTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
     SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR";
     fs::remove_all(SAMPLE_BASE);
     SAMPLE1_DIR = SAMPLE_BASE / "sample1";
@@ -42,18 +42,18 @@ class SampleFileGeneratorForTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    std::experimental::filesystem::remove_all(SAMPLE_BASE);
+    std::filesystem::remove_all(SAMPLE_BASE);
   }
 
-  void writeFile(const std::experimental::filesystem::path& p, const std::string& c) {
+  void writeFile(const std::filesystem::path& p, const std::string& c) {
     std::ofstream t(p.string());
     t << c;
     t.close();
   }
 
-  std::experimental::filesystem::path SAMPLE_BASE;
-  std::experimental::filesystem::path SAMPLE1_DIR;
-  std::experimental::filesystem::path SAMPLE1_PATH;
+  std::filesystem::path SAMPLE_BASE;
+  std::filesystem::path SAMPLE1_DIR;
+  std::filesystem::path SAMPLE1_PATH;
   std::string SAMPLE1_NAME;
   std::string SAMPLE1_CONTENTS =
       R"a1s2d3f4(/*
@@ -158,7 +158,7 @@ int blockUOIForMaterializedTemporaryExpr() {
   int ret = temporaryBook().num_pages;
   return ret;
 })a1s2d3f4";
-  std::experimental::filesystem::path SAMPLE1B_PATH;
+  std::filesystem::path SAMPLE1B_PATH;
   std::string SAMPLE1B_NAME;
   std::string SAMPLE1B_CONTENTS =
       R"a1s2d3f4(/*
@@ -209,7 +209,7 @@ int sdlBlockedCases() {
     return -1;
   }
 })a1s2d3f4";
-  std::experimental::filesystem::path SAMPLECOMCOMJSON_PATH;
+  std::filesystem::path SAMPLECOMCOMJSON_PATH;
   std::string SAMPLECOMCOMJSON_NAME;
   std::string SAMPLECOMCOMJSON_CONTENTS =
       R"a1b3([
@@ -230,7 +230,7 @@ int sdlBlockedCases() {
 }}
 ])a1b3";
 
-  std::experimental::filesystem::path SAMPLECOVERAGE_PATH;
+  std::filesystem::path SAMPLECOVERAGE_PATH;
   std::string SAMPLECOVERAGE_NAME;
   std::string SAMPLECOVERAGE_CONTENTS =
       R"a1b3(TN:

@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -16,14 +16,14 @@ namespace sentinel {
 class SentinelConfigTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
     mTmpDir = fs::temp_directory_path() / "SENTINEL_CONFIG_TEST";
     fs::remove_all(mTmpDir);
     fs::create_directories(mTmpDir);
   }
 
   void TearDown() override {
-    std::experimental::filesystem::remove_all(mTmpDir);
+    std::filesystem::remove_all(mTmpDir);
   }
 
   void writeFile(const std::string& filename, const std::string& content) {
@@ -36,7 +36,7 @@ class SentinelConfigTest : public ::testing::Test {
     return (mTmpDir / filename).string();
   }
 
-  std::experimental::filesystem::path mTmpDir;
+  std::filesystem::path mTmpDir;
 };
 
 TEST_F(SentinelConfigTest, testLoadCompleteConfig) {

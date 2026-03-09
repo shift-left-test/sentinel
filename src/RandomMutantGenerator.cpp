@@ -25,6 +25,8 @@
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
@@ -37,7 +39,6 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
 }
 
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
-  namespace fs = std::experimental::filesystem;
   Mutants mutables;
 
   std::string errorMsg;

@@ -5,7 +5,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -17,7 +17,7 @@
 #include "git-harness/GitHarness.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

@@ -8,7 +8,7 @@
 
 namespace sentinel {
 
-SourceLine::SourceLine(const std::experimental::filesystem::path& path, std::size_t lineNumber) :
+SourceLine::SourceLine(const std::filesystem::path& path, std::size_t lineNumber) :
     mPath(path), mLineNumber(lineNumber) {}
 
 }  // namespace sentinel

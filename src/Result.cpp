@@ -5,7 +5,7 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -17,7 +17,7 @@
 #include "sentinel/QTestXmlParser.hpp"
 #include "sentinel/Result.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

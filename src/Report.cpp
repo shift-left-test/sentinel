@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <set>
@@ -15,17 +15,17 @@
 #include "sentinel/Report.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
-Report::Report(const MutationResults& results, const std::experimental::filesystem::path& sourcePath) :
+Report::Report(const MutationResults& results, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mResults(results), mLogger(Logger::getLogger("Report")) {
   generateReport();
 }
 
-Report::Report(const std::experimental::filesystem::path& resultsPath,
-               const std::experimental::filesystem::path& sourcePath) :
+Report::Report(const std::filesystem::path& resultsPath,
+               const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mLogger(Logger::getLogger("Report")) {
   mResults.load(resultsPath);
   mLogger->verbose(fmt::format("Load MutationResults: {}", resultsPath.string()));
@@ -34,7 +34,6 @@ Report::Report(const std::experimental::filesystem::path& resultsPath,
 }
 
 void Report::generateReport() {
-  namespace fs = std::experimental::filesystem;
   if (!fs::exists(mSourcePath) || !fs::is_directory(mSourcePath)) {
     throw InvalidArgumentException(fmt::format("source path does not exist: {}", mSourcePath.string()));
   }

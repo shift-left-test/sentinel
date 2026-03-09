@@ -5,7 +5,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
@@ -15,7 +15,7 @@
 #include "sentinel/util/string.hpp"
 #include "sentinel/XMLReport.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

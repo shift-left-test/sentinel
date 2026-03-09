@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -17,7 +17,7 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Mutant.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

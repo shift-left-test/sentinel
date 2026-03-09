@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -16,7 +16,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Workspace.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

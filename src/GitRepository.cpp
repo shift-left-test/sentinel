@@ -20,7 +20,7 @@
 #include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
@@ -160,10 +160,9 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
  * continues into subdirectories so that arbitrarily-nested multi-repo
  * layouts (e.g. Android repo) are discovered fully.
  */
-static std::vector<std::experimental::filesystem::path> collectGitRepos(
-    const std::experimental::filesystem::path& dir,
-    const std::vector<std::experimental::filesystem::path>& skipDirs) {
-  namespace fs = std::experimental::filesystem;
+static std::vector<std::filesystem::path> collectGitRepos(
+    const std::filesystem::path& dir,
+    const std::vector<std::filesystem::path>& skipDirs) {
   std::vector<fs::path> result;
   if (!fs::is_directory(dir)) {
     return result;
@@ -298,13 +297,13 @@ void GitRepository::addSkipDir(const fs::path& dir) {
   }
 }
 
-bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension) {
+bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkExtension) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
   fs::path canonicalPath;
 
   // Canonicalize the path (relative paths are resolved relative to sourceRoot).
   try {
-    canonicalPath = fs::canonical(path, getSourceRoot());
+    canonicalPath = fs::canonical(path.is_absolute() ? path : (getSourceRoot() / path));
   } catch (const fs::filesystem_error&) {
     if (path.is_absolute()) {
       canonicalPath = path;
@@ -344,7 +343,6 @@ bool GitRepository::isTargetPath(const std::experimental::filesystem::path& path
 }
 
 SourceLines GitRepository::getSourceLines(const std::string& scope) {
-  namespace fs = std::experimental::filesystem;
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   if (scope != "commit" && scope != "all") {

@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -12,7 +12,7 @@
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutants.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

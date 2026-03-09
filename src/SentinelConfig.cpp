@@ -5,39 +5,16 @@
 
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include "sentinel/SentinelConfig.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
-
-namespace {
-
-namespace fs = std::experimental::filesystem;
-
-// Equivalent of path::lexically_normal() for experimental::filesystem,
-// which lacks that method. Resolves "." and ".." components without
-// requiring the path to exist on the filesystem.
-static fs::path lexicallyNormal(const fs::path& p) {
-  fs::path result;
-  for (const auto& part : p) {
-    if (part == ".") {
-      continue;
-    } else if (part == "..") {
-      if (!result.empty() && result.filename() != "..") {
-        result = result.parent_path();
-      } else {
-        result /= part;
-      }
-    } else {
-      result /= part;
-    }
-  }
-  return result.empty() ? fs::path(".") : result;
-}
 
 std::vector<std::string> toStringVector(const YAML::Node& node, const std::string& key) {
   if (!node.IsSequence()) {
@@ -48,8 +25,6 @@ std::vector<std::string> toStringVector(const YAML::Node& node, const std::strin
                  [](const YAML::Node& item) { return item.as<std::string>(); });
   return result;
 }
-
-}  // namespace
 
 SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
   YAML::Node root;
@@ -140,7 +115,7 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (optPath && !optPath->empty()) {
       fs::path p(*optPath);
       if (p.is_relative()) {
-        *optPath = lexicallyNormal(yamlDir / p).string();
+        *optPath = (yamlDir / p).lexically_normal().string();
       }
     }
   };
@@ -155,7 +130,7 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     for (auto& f : *cfg.coverageFiles) {
       fs::path p(f);
       if (p.is_relative()) {
-        f = lexicallyNormal(yamlDir / p).string();
+        f = (yamlDir / p).lexically_normal().string();
       }
     }
   }

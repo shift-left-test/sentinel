@@ -25,6 +25,8 @@
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 static const char* cUniformGeneratorLoggerName = "UniformMutantGenerator";
@@ -37,7 +39,6 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
 }
 
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
-  namespace fs = std::experimental::filesystem;
   Mutants mutables;
 
   std::string errorMsg;

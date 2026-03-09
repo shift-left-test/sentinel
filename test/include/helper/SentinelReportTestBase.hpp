@@ -7,11 +7,11 @@
 #define TEST_INCLUDE_HELPER_SENTINELREPORTTESTBASE_HPP_
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include "sentinel/Logger.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 

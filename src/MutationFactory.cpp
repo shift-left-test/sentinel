@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -17,14 +17,14 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/util/string.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
 
 Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                                   unsigned randomSeed, const std::string& generatorStr) {
-  namespace fs = std::experimental::filesystem;
-
   auto logger = Logger::getLogger("populate");
   logger->debug(fmt::format("random seed: {}", randomSeed));
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
@@ -50,7 +50,9 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
 
   for (const auto& p : groupByPath) {
-    std::string filePath = fs::canonical(p.first).string().substr(fs::canonical(gitPath).string().length() + 1);
+    auto root = fs::canonical(gitPath);
+    auto file = fs::canonical(p.first);
+    std::string filePath = file.lexically_relative(root).string();
 
     int filePos = filePath.size() - flen;
     std::string skipStr;

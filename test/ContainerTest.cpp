@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -104,7 +104,7 @@ TEST_F(ContainerTest, testClear) {
 }
 
 TEST_F(ContainerTest, testSaveAndLoad) {
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::filesystem;
   auto path = fs::temp_directory_path() / "SENTINEL_CONTAINERTEST_TMP_FILE";
   fs::remove_all(path);
   integers.save(path);

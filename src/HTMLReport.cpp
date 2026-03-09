@@ -21,6 +21,8 @@
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 HTMLReport::HTMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
@@ -28,8 +30,7 @@ HTMLReport::HTMLReport(const MutationResults& results, const std::string& source
 HTMLReport::HTMLReport(const std::string& resultsPath, const std::string& sourcePath) :
     Report(resultsPath, sourcePath) {}
 
-void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
-  namespace fs = std::experimental::filesystem;
+void HTMLReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make HTML Report");
 
   if (fs::exists(dirPath)) {
@@ -64,10 +65,8 @@ void HTMLReport::save(const std::experimental::filesystem::path& dirPath) {
 }
 
 void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
-                               const std::experimental::filesystem::path& currentDirPath,
-                               const std::experimental::filesystem::path& outputDir) {
-  namespace fs = std::experimental::filesystem;
-
+                               const std::filesystem::path& currentDirPath,
+                               const std::filesystem::path& outputDir) {
   std::size_t sizeOfTargetFiles = 0;
   std::size_t numerator = 0;
   std::size_t denominator = 0;
@@ -130,10 +129,8 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
 }
 
 void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
-                                const std::experimental::filesystem::path& srcPath,
-                                const std::experimental::filesystem::path& outputDir) {
-  namespace fs = std::experimental::filesystem;
-
+                                const std::filesystem::path& srcPath,
+                                const std::filesystem::path& outputDir) {
   auto absSrcPath = mSourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
     throw InvalidArgumentException(fmt::format("Source doesn't exists: {0}", absSrcPath.string()));

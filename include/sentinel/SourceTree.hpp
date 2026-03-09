@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_SOURCETREE_HPP_
 #define INCLUDE_SENTINEL_SOURCETREE_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include "sentinel/Mutant.hpp"
 
@@ -24,7 +24,7 @@ class SourceTree {
    *
    * @param baseDirectory repository directory
    */
-  explicit SourceTree(const std::experimental::filesystem::path& baseDirectory);
+  explicit SourceTree(const std::filesystem::path& baseDirectory);
 
   /**
    * @brief Modify the source with respect to the given mutable information
@@ -32,7 +32,7 @@ class SourceTree {
    * @param info Mutant information
    * @param backupPath backup directory
    */
-  virtual void modify(const Mutant& info, const std::experimental::filesystem::path& backupPath) = 0;
+  virtual void modify(const Mutant& info, const std::filesystem::path& backupPath) = 0;
 
  protected:
   /**
@@ -40,10 +40,10 @@ class SourceTree {
    *
    * @return base directory
    */
-  std::experimental::filesystem::path getBaseDirectory() const;
+  std::filesystem::path getBaseDirectory() const;
 
  private:
-  std::experimental::filesystem::path mBaseDirectory;
+  std::filesystem::path mBaseDirectory;
 };
 
 }  // namespace sentinel

@@ -51,7 +51,7 @@ class GitRepository : public Repository {
   /**
    * @brief Return absolute root path
    */
-  const std::experimental::filesystem::path& getSourceRoot() {
+  const std::filesystem::path& getSourceRoot() {
     return mSourceRoot;
   }
 
@@ -66,7 +66,7 @@ class GitRepository : public Repository {
    *
    * @return return true if path is valid sourceline target.
    */
-  bool isTargetPath(const std::experimental::filesystem::path& path, bool checkExtension = true);
+  bool isTargetPath(const std::filesystem::path& path, bool checkExtension = true);
 
   /**
    * @brief Add a directory to skip during git repository discovery.
@@ -78,14 +78,14 @@ class GitRepository : public Repository {
    *
    * @param dir absolute or relative path of the directory to skip
    */
-  void addSkipDir(const std::experimental::filesystem::path& dir);
+  void addSkipDir(const std::filesystem::path& dir);
 
  private:
-  std::experimental::filesystem::path mSourceRoot;
+  std::filesystem::path mSourceRoot;
   std::vector<std::string> mExtensions;
   std::vector<std::string> mPatterns;
   std::vector<std::string> mExcludes;
-  std::vector<std::experimental::filesystem::path> mSkipDirs;
+  std::vector<std::filesystem::path> mSkipDirs;
 };
 
 }  // namespace sentinel

@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_HTMLREPORT_HPP_
 #define INCLUDE_SENTINEL_HTMLREPORT_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include "sentinel/Report.hpp"
@@ -40,7 +40,7 @@ class HTMLReport : public Report {
    * @param dirPath
    * @throw InvalidArgumentException when path is not directory
    */
-  void save(const std::experimental::filesystem::path& dirPath) override;
+  void save(const std::filesystem::path& dirPath) override;
 
  private:
   /**
@@ -53,8 +53,8 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
-                     const std::experimental::filesystem::path& currentDirPath,
-                     const std::experimental::filesystem::path& outputDir);
+                     const std::filesystem::path& currentDirPath,
+                     const std::filesystem::path& outputDir);
 
   /**
    * @brief makeSourceHtml
@@ -64,8 +64,8 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeSourceHtml(const std::vector<const MutationResult*>& MRs,
-                      const std::experimental::filesystem::path& srcPath,
-                      const std::experimental::filesystem::path& outputDir);
+                      const std::filesystem::path& srcPath,
+                      const std::filesystem::path& outputDir);
 };
 
 }  // namespace sentinel

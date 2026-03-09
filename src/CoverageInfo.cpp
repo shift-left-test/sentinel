@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -14,10 +14,11 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/util/string.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
-  namespace fs = std::experimental::filesystem;
   for (const auto& filename : filenames) {
     if (!fs::exists(filename)) {
       throw InvalidArgumentException(fmt::format("Input coverage file does not exist: {}", filename));
@@ -47,7 +48,6 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
 }
 
 bool CoverageInfo::cover(const std::string& filename, size_t line) {
-  namespace fs = std::experimental::filesystem;
   fs::path p = fs::absolute(fs::path(filename));
 
   if (mData.find(p.string()) == mData.end()) {

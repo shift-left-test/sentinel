@@ -4,14 +4,14 @@
  */
 
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
@@ -97,11 +97,9 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
 TEST_F(GitSourceTreeTest, testBackupWorks) {
   // create a temporary copy of target file
   auto tempSubDirPath = BASE_DIR / "SUB_DIR";
-  std::string tempSubDirName = tempSubDirPath.filename();
   fs::create_directories(tempSubDirPath);
 
   auto tempFilename = tempSubDirPath / "TMP_FILE";
-  std::string filename = tempFilename.filename();
   fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
   Mutant m {"LCR", tempFilename, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
@@ -112,6 +110,8 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
   tree.modify(m, backupPath);
 
   // backup exists
+  std::string tempSubDirName = tempSubDirPath.filename();
+  std::string filename = tempFilename.filename();
   EXPECT_TRUE(fs::exists(backupPath / tempSubDirName / filename));
 
   // mutation is applied correctly

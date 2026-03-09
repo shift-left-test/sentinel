@@ -7,7 +7,7 @@
 #define TEST_HARNESS_GIT_HARNESS_GITHARNESS_HPP_
 
 #include <git2.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -146,7 +146,7 @@ class GitHarness {
   static void libgitErrorCheck(int error, const char* msg);
 
  private:
-  std::experimental::filesystem::path repo_path;
+  std::filesystem::path repo_path;
   git_repository* repo;
   std::vector<git_oid> commit_ids;
 };

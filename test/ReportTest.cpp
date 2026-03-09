@@ -5,7 +5,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <regex>
@@ -19,7 +19,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
@@ -57,7 +57,7 @@ class ReportTest : public SentinelReportTestBase {
 class ReportForTest : public Report {
  public:
   using Report::Report;
-  void save(const std::experimental::filesystem::path& dirPath) override {
+  void save(const std::filesystem::path& dirPath) override {
     if (fs::exists(dirPath)) {
       return;
     }

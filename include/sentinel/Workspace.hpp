@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_WORKSPACE_HPP_
 #define INCLUDE_SENTINEL_WORKSPACE_HPP_
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,7 +35,7 @@ class Workspace {
   /**
    * @brief Construct a Workspace rooted at the given directory (need not exist yet).
    */
-  explicit Workspace(const std::experimental::filesystem::path& root);
+  explicit Workspace(const std::filesystem::path& root);
 
   /**
    * @brief Return true if a previous run exists (sentinel.yaml is present).
@@ -55,19 +55,19 @@ class Workspace {
   void saveConfig(const std::string& yamlContent);
 
   /** @brief Return the workspace root path. */
-  const std::experimental::filesystem::path& getRoot() const;
+  const std::filesystem::path& getRoot() const;
 
   /** @brief Return &lt;root&gt;/original/. */
-  std::experimental::filesystem::path getOriginalDir() const;
+  std::filesystem::path getOriginalDir() const;
 
   /** @brief Return &lt;root&gt;/original/results/. */
-  std::experimental::filesystem::path getOriginalResultsDir() const;
+  std::filesystem::path getOriginalResultsDir() const;
 
   /** @brief Return &lt;root&gt;/backup/. */
-  std::experimental::filesystem::path getBackupDir() const;
+  std::filesystem::path getBackupDir() const;
 
   /** @brief Return &lt;root&gt;/NNNNN/ for the given 1-based mutant ID. */
-  std::experimental::filesystem::path getMutantDir(int id) const;
+  std::filesystem::path getMutantDir(int id) const;
 
   /**
    * @brief Create &lt;root&gt;/NNNNN/ and write mt.cfg with the mutant's data.
@@ -114,13 +114,13 @@ class Workspace {
   std::vector<std::pair<int, Mutant>> loadMutants() const;
 
  private:
-  std::experimental::filesystem::path mRoot;
+  std::filesystem::path mRoot;
 
   /** @brief Return the zero-padded 5-digit directory name for @p id. */
   static std::string mutantDirName(int id);
 
   /** @brief Return the path to a named file inside &lt;root&gt;/NNNNN/. */
-  std::experimental::filesystem::path mutantFile(int id, const std::string& name) const;
+  std::filesystem::path mutantFile(int id, const std::string& name) const;
 };
 
 }  // namespace sentinel

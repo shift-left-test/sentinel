@@ -30,6 +30,8 @@
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 static const char* cWeightedGeneratorLoggerName = "WeightedMutantGenerator";
@@ -42,7 +44,6 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 }
 
 Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
-  namespace fs = std::experimental::filesystem;
   Mutants mutables;
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =

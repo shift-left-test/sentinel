@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
@@ -110,8 +110,8 @@ void Evaluator::injectResult(const MutationResult& result) {
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
-                                                       const std::experimental::filesystem::path& ActualResultDir,
-                                                       const std::experimental::filesystem::path& evalFilePath,
+                                                       const std::filesystem::path& ActualResultDir,
+                                                       const std::filesystem::path& evalFilePath,
                                                        const std::string& testState) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {

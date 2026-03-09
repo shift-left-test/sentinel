@@ -12,14 +12,15 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/XMLReport.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 XMLReport::XMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
 
 XMLReport::XMLReport(const std::string& resultsPath, const std::string& sourcePath) : Report(resultsPath, sourcePath) {}
 
-void XMLReport::save(const std::experimental::filesystem::path& dirPath) {
-  namespace fs = std::experimental::filesystem;
+void XMLReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
