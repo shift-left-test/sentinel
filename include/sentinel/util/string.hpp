@@ -205,7 +205,7 @@ inline std::string join(char delim, const std::vector<std::string>& tokens) {
  */
 template <typename... Arg>
 inline std::string join(const std::string& delim, const Arg&... tokens) {
-  return join(delim, {tokens...});  // NOLINT
+  return join(delim, {tokens...});
 }
 
 /**

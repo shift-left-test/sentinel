@@ -138,12 +138,12 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     const std::string& canonPath = emplaceResult.first->second;
     std::size_t targetLine = line.getLineNumber();
 
-    auto fileIt = mutantsByFile.find(canonPath);
-    if (fileIt == mutantsByFile.end()) {
+    auto mutantsByFileIt = mutantsByFile.find(canonPath);
+    if (mutantsByFileIt == mutantsByFile.end()) {
       continue;
     }
 
-    const auto& fileVec = fileIt->second;
+    const auto& fileVec = mutantsByFileIt->second;
 
     // Binary search: upper_bound finds end of mutants with first.line <= targetLine
     auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,

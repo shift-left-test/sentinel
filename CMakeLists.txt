@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 project(sentinel VERSION 0.4.8)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/scripts)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(CMakeUtils)
 

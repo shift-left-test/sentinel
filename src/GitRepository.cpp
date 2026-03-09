@@ -61,7 +61,7 @@ class SafeGit2ObjPtr {
    */
   template <typename C>
   C cast() {
-    return reinterpret_cast<C>(obj);  // NOLINT
+    return reinterpret_cast<C>(obj);
   }
 
   /**
@@ -191,12 +191,10 @@ static std::vector<std::experimental::filesystem::path> collectGitRepos(
       }
       // Skip sentinel-managed directories (workspace, output, etc.)
       bool skip = false;
-      for (const auto& sd : skipDirs) {
-        if (entry.path() == sd) {
-          skip = true;
-          break;
-        }
-      }
+      skip = std::any_of(skipDirs.begin(), skipDirs.end(),
+                         [&](const auto& sd) {
+                           return entry.path() == sd;
+                         });
       if (skip) {
         continue;
       }

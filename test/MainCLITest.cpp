@@ -9,6 +9,7 @@
 #include <experimental/filesystem>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <sstream>
@@ -736,7 +737,7 @@ TEST_F(MainCLITest, testPartitionDryRunTwoPartitionsMutantCountsSumToFull) {
 
     std::vector<char*> argv;
     argv.push_back(const_cast<char*>("./sentinel"));
-    for (auto& a : args) argv.push_back(const_cast<char*>(a.c_str()));
+    for (auto& a : args) argv.push_back(const_cast<char*>(a.c_str()));  // cppcheck-suppress useStlAlgorithm
 
     captureStdout();
     sentinel::MainCLI(static_cast<int>(argv.size()), argv.data());

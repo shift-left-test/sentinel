@@ -541,7 +541,7 @@ macro(enable_static_analysis)
       NAME CPPCHECK
       NAMES cppcheck
       VERSION 3.10.0
-      OPTIONS --enable=warning,style,performance,portability --library=googletest --error-exitcode=1)
+      OPTIONS --enable=warning,style,performance,portability --library=googletest --inline-suppr --error-exitcode=1)
   endif()
 
   if(CHECKER_cpplint)

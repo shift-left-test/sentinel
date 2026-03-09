@@ -785,11 +785,11 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
 }
 
 static int generateReportAndScore(const RunCfg& cfg,
-                                   sentinel::Evaluator& evaluator,   // NOLINT(runtime/references)
-                                   sentinel::StatusLine& sl,         // NOLINT(runtime/references)
-                                   const std::shared_ptr<sentinel::Logger>& logger) {
+                                  const sentinel::Evaluator& evaluator,
+                                  sentinel::StatusLine* sl,
+                                  const std::shared_ptr<sentinel::Logger>& logger) {
   namespace fs = std::experimental::filesystem;
-  sl.setPhase(sentinel::StatusLine::Phase::REPORT);
+  sl->setPhase(sentinel::StatusLine::Phase::REPORT);
 
   fs::path outputDir = cfg.outputDir;
   fs::create_directories(outputDir);
@@ -1191,7 +1191,7 @@ int CommandRun::run() {
     runMutantEvaluationLoop(cfg, ws, statusLine, evaluator, pr.indexedMutants, logger);
 
     // ── STEP 6+7: Report & score threshold check ───────────────────────────────
-    exitCode = generateReportAndScore(cfg, evaluator, statusLine, logger);
+    exitCode = generateReportAndScore(cfg, evaluator, &statusLine, logger);
   } catch (...) {
     std::raise(SIGUSR1);
     throw;

@@ -58,7 +58,7 @@ int Subprocess::execute() {
   // Ignore below signals' temporally
   // If below signals are received before the signal handler is set,
   // sentinel operates abnormally.
-  signal::setMultipleSignalHandlers(usingSignals, SIG_IGN);  // NOLINT
+  signal::setMultipleSignalHandlers(usingSignals, SIG_IGN);
 
   auto pid = fork();
 

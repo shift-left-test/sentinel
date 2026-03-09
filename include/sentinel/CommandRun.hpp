@@ -6,8 +6,8 @@
 #ifndef INCLUDE_SENTINEL_COMMANDRUN_HPP_
 #define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
+#include <experimental/filesystem>
 #include <cstddef>
-#include <experimental/filesystem>  // NOLINT(build/include_order)
 #include <optional>
 #include <string>
 #include <utility>
