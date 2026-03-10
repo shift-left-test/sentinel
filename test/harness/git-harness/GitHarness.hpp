@@ -7,7 +7,7 @@
 #define TEST_HARNESS_GIT_HARNESS_GITHARNESS_HPP_
 
 #include <git2.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <string>
 #include <vector>
 

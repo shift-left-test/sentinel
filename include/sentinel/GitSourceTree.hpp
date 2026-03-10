@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_GITSOURCETREE_HPP_
 #define INCLUDE_SENTINEL_GITSOURCETREE_HPP_
 
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <string>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"

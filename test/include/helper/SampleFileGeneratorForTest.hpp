@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <string>
 

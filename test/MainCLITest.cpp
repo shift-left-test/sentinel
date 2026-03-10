@@ -6,13 +6,13 @@
 #include <fmt/core.h>
 #include <git2.h>
 #include <gtest/gtest.h>
-#include <filesystem>
 #include <cstring>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 #include "helper/CaptureHelper.hpp"
 #include "sentinel/MainCLI.hpp"

@@ -69,7 +69,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   while (fileIt != targetLines.end()) {
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->verbose(fmt::format("Checking for mutants in {}", fileIt->first));
+      logger->verbose("Checking for mutants in {}", fileIt->first);
       futures.push_back(
           std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
             Mutants localMutables;

@@ -150,31 +150,10 @@ TEST_F(LoggerTest, testLogsWithOffLevelSet) {
   EXPECT_STREQ("", capturedStderr().c_str());
 }
 
-TEST_F(LoggerTest, testLogWithDifferentFormat) {
-  logger = Logger::getLogger("another", "{name}:{level}:{message}");
-  captureStdout();
-  logger->info("hello world");
-  EXPECT_STREQ("another:info:hello world\n", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testLogWithEmptyFormat) {
-  logger = Logger::getLogger("empty", "");
-  captureStdout();
-  logger->info("hello world");
-  EXPECT_STREQ("\n", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testLogWithWrongFormat) {
-  EXPECT_THROW(Logger::getLogger("wrong", "{wrong}"), InvalidArgumentException);
-}
-
 TEST_F(LoggerTest, testLoggersAreShared) {
-  auto logger1 = Logger::getLogger("shared", "{name}:{level}:{message}");
+  auto logger1 = Logger::getLogger("shared");
   auto logger2 = Logger::getLogger("shared");
-  captureStdout();
-  logger1->info("1");
-  logger2->info("2");
-  EXPECT_STREQ("shared:info:1\nshared:info:2\n", capturedStdout().c_str());
+  EXPECT_EQ(logger1.get(), logger2.get());
 }
 
 TEST_F(LoggerTest, testSetLevelChangesGlobalLogLevel) {

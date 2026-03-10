@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_EVALUATOR_HPP_
 #define INCLUDE_SENTINEL_EVALUATOR_HPP_
 
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"

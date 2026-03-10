@@ -6,9 +6,9 @@
 #ifndef INCLUDE_SENTINEL_COMMAND_HPP_
 #define INCLUDE_SENTINEL_COMMAND_HPP_
 
-#include <filesystem>
-#include <string>
 #include <args/args.hxx>
+#include <filesystem>  // NOLINT(build/c++17)
+#include <string>
 
 namespace sentinel {
 

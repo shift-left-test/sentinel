@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_WORKSPACE_HPP_
 #define INCLUDE_SENTINEL_WORKSPACE_HPP_
 
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <string>
 #include <utility>
 #include <vector>

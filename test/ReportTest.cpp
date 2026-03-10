@@ -5,12 +5,12 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <memory>
 #include <regex>
-#include <string>
 #include <sstream>
+#include <string>
 #include "helper/CaptureHelper.hpp"
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"

@@ -5,11 +5,11 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <regex>
-#include <string>
 #include <sstream>
+#include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"

@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <map>
 #include <set>
@@ -28,7 +28,7 @@ Report::Report(const std::filesystem::path& resultsPath,
                const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mLogger(Logger::getLogger("Report")) {
   mResults.load(resultsPath);
-  mLogger->verbose(fmt::format("Load MutationResults: {}", resultsPath.string()));
+  mLogger->verbose("Load MutationResults: {}", resultsPath.string());
 
   generateReport();
 }
@@ -88,13 +88,13 @@ void Report::printSummary() const {
   std::size_t maxlen = flen + klen + mlen + clen + 2;
 
   int cnt = 0;
-  mLogger->verbose(fmt::format("# of MutationResults: {}", mResults.size()));
+  mLogger->verbose("# of MutationResults: {}", mResults.size());
   for (const MutationResult& mr : mResults) {
-    mLogger->verbose(fmt::format("MutationResult #{}", ++cnt));
-    mLogger->verbose(fmt::format("  Mutant: {}", mr.getMutant().str()));
-    mLogger->verbose(fmt::format("  killing TC: {}", mr.getKillingTest()));
-    mLogger->verbose(fmt::format("  error TC: {}", mr.getErrorTest()));
-    mLogger->verbose(fmt::format("  Mutation State: {}", MutationStateToStr(mr.getMutationState())));
+    mLogger->verbose("MutationResult #{}", ++cnt);
+    mLogger->verbose("  Mutant: {}", mr.getMutant().str());
+    mLogger->verbose("  killing TC: {}", mr.getKillingTest());
+    mLogger->verbose("  error TC: {}", mr.getErrorTest());
+    mLogger->verbose("  Mutation State: {}", MutationStateToStr(mr.getMutationState()));
   }
 
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";

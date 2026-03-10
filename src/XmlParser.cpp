@@ -48,7 +48,7 @@ void XmlParser::process(const std::string& path, std::vector<std::string>* passe
   auto document = std::make_shared<tinyxml2::XMLDocument>();
   auto errcode = document->LoadFile(path.c_str());
   if (errcode != 0) {
-    logger->debug(fmt::format("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), path));
+    logger->debug("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), path);
   }
 
   reset();

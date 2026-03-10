@@ -8,10 +8,6 @@ pipeline {
     stages {
         stage('sentinel') {
             parallel {
-                stage('clang-dev-8') {
-                    agent { docker { image "${getDockerImage('clang-dev:8')}" } }
-                    steps { testSentinel() }
-                }
                 stage('clang-dev-14') {
                     agent { docker { image "${getDockerImage('clang-dev:14')}" } }
                     steps { testSentinel() }

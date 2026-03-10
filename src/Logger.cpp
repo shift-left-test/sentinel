@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
-#include <fmt/format.h>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 #include "sentinel/Logger.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
@@ -20,13 +17,12 @@ static Logger::Level defaultLevel = Logger::Level::INFO;
 static std::mutex loggersMutex;
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
-  return getLogger(name, "[{level}] {message}");
+  std::lock_guard<std::mutex> lock(loggersMutex);
+  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name, defaultLevel)));
+  return loggers.at(name);
 }
 
-std::shared_ptr<Logger> Logger::getLogger(const std::string& name, const std::string& format) {
-  std::lock_guard<std::mutex> lock(loggersMutex);
-  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name, format, defaultLevel)));
-  return loggers.at(name);
+Logger::Logger(const std::string& name, Logger::Level level) : mName(name), mLevel(level) {
 }
 
 void Logger::setDefaultLevel(Logger::Level level) {
@@ -39,70 +35,8 @@ void Logger::clearCache() {
   loggers.clear();
 }
 
-Logger::Logger(const std::string& name, const std::string& format, Logger::Level level) :
-    mName(name), mFormat(format), mLevel(level) {
-  try {
-    this->format(mLevel, mName);
-  } catch (const fmt::format_error& e) {
-    throw InvalidArgumentException(e.what());
-  }
-}
-
-std::string Logger::format(Logger::Level level, const std::string& message) {
-  std::string levelText;
-  if (level == Level::DEBUG) {
-    levelText = "debug";
-  } else if (level == Level::VERBOSE) {
-    levelText = "verbose";
-  } else if (level == Level::INFO) {
-    levelText = "info";
-  } else if (level == Level::WARN) {
-    levelText = "warn";
-  } else if (level == Level::ERROR) {
-    levelText = "error";
-  } else {
-    levelText = "?";
-  }
-  return fmt::format(mFormat, fmt::arg("name", mName), fmt::arg("level", levelText), fmt::arg("message", message));
-}
-
 bool Logger::isAllowed(Logger::Level level) {
   return static_cast<int>(mLevel) <= static_cast<int>(level);
-}
-
-void Logger::debug(const std::string& message) {
-  auto level = Level::DEBUG;
-  if (isAllowed(level)) {
-    std::cout << format(level, message) << std::endl;
-  }
-}
-
-void Logger::verbose(const std::string& message) {
-  auto level = Level::VERBOSE;
-  if (isAllowed(level)) {
-    std::cout << format(level, message) << std::endl;
-  }
-}
-
-void Logger::info(const std::string& message) {
-  auto level = Level::INFO;
-  if (isAllowed(level)) {
-    std::cout << format(level, message) << std::endl;
-  }
-}
-
-void Logger::warn(const std::string& message) {
-  auto level = Level::WARN;
-  if (isAllowed(level)) {
-    std::cerr << format(level, message) << std::endl;
-  }
-}
-
-void Logger::error(const std::string& message) {
-  auto level = Level::ERROR;
-  if (isAllowed(level)) {
-    std::cerr << format(level, message) << std::endl;
-  }
 }
 
 void Logger::setLevel(Logger::Level level) {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <algorithm>
 #include <fstream>
 #include <iostream>

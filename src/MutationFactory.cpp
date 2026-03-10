@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <map>
 #include <memory>
@@ -26,7 +26,7 @@ MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generat
 Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                                   unsigned randomSeed, const std::string& generatorStr) {
   auto logger = Logger::getLogger("populate");
-  logger->debug(fmt::format("random seed: {}", randomSeed));
+  logger->debug("random seed: {}", randomSeed);
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
   // Count mutants per file and per operator

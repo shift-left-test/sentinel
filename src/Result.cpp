@@ -5,8 +5,8 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <memory>
 #include <string>
 #include <unordered_set>

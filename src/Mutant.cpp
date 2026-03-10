@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
 #include <string>
 #include <utility>

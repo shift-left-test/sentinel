@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <filesystem>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/exceptions/IOException.hpp"

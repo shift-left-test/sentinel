@@ -7,13 +7,13 @@
 #include <yaml-cpp/yaml.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <filesystem>
-#include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
+#include <chrono>
 #include <exception>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -545,13 +545,12 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
   double buildElapsed =
       std::chrono::duration<double>(std::chrono::steady_clock::now() - buildPhaseStart).count();
   if (!origBuildProc.isSuccessfulExit()) {
-    logger->info(fmt::format("Build failed ({}).", formatDuration(buildElapsed)));
-    logger->info(
-        fmt::format("  hint: See {} for details.", (ws.getOriginalDir() / "build.log").string()));
+    logger->info("Build failed ({}).", formatDuration(buildElapsed));
+    logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "build.log").string());
     if (!cfg.dryRun) throw std::runtime_error("Build failed.");
     r.buildOK = false;
   } else {
-    logger->info(fmt::format("Build done ({}).", formatDuration(buildElapsed)));
+    logger->info("Build done ({}).", formatDuration(buildElapsed));
   }
 
   if (!cfg.dryRun || r.buildOK) {
@@ -568,25 +567,23 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
     if (!cfg.resuming && cfg.timeLimitStr == "auto") {
       r.baselineSecs = testElapsed;
       cfg.timeLimit = testElapsed < 1.0 ? 1 : static_cast<size_t>(ceil(testElapsed * 2.0));
-      logger->info(fmt::format("Auto timeout: {}s (baseline {:.1f}s x2)", cfg.timeLimit, testElapsed));
+      logger->info("Auto timeout: {}s (baseline {:.1f}s x2)", cfg.timeLimit, testElapsed);
     }
 
     if (firstTestProc.isTimedOut()) {
-      logger->info(fmt::format("Tests timed out ({}).", formatDuration(testElapsed)));
-      logger->info(
-          fmt::format("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string()));
+      logger->info("Tests timed out ({}).", formatDuration(testElapsed));
+      logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string());
       if (!cfg.dryRun)
         throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
       r.testOK = false;
     }
     if (r.testOK && !validateTestResultDir(cfg.testResultDir, cfg.testResultDirStr, cfg.dryRun)) {
-      logger->info(
-          fmt::format("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string()));
+      logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string());
       r.testOK = false;
     }
 
     if (r.testOK) {
-      logger->info(fmt::format("Tests done ({}).", formatDuration(testElapsed)));
+      logger->info("Tests done ({}).", formatDuration(testElapsed));
       sentinel::CommandRun::copyTestReportTo(cfg.testResultDir.string(),
                                              ws.getOriginalResultsDir().string(),
                                              cfg.testResultFileExts);
@@ -612,7 +609,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
 
   if (cfg.resuming) {
     r.indexedMutants = ws.loadMutants();
-    logger->info(fmt::format("Loaded {} mutants from workspace.", r.indexedMutants.size()));
+    logger->info("Loaded {} mutants from workspace.", r.indexedMutants.size());
     sl.setTotalMutants(r.indexedMutants.size());
     return r;
   }
@@ -654,7 +651,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
 
     int id = 1;
     for (auto& m : mutants) {
-      logger->verbose(fmt::format("mutant: {}", m.str()));
+      logger->verbose("mutant: {}", m.str());
       ws.createMutant(id, m);
       r.indexedMutants.emplace_back(id, m);
       id++;
@@ -662,7 +659,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
     sl.setTotalMutants(r.indexedMutants.size());
     double populateElapsed =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - populateStart).count();
-    logger->info(fmt::format("Mutant population complete ({}).", formatDuration(populateElapsed)));
+    logger->info("Mutant population complete ({}).", formatDuration(populateElapsed));
   }
 
   return r;
@@ -683,7 +680,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
   sl.setPhase(sentinel::StatusLine::Phase::MUTANT);
 
   size_t totalMutants = indexedMutants.size();
-  logger->info(fmt::format("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s"));
+  logger->info("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s");
   auto evalStart = std::chrono::steady_clock::now();
 
   size_t localIdx = 0;
@@ -692,8 +689,8 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     if (ws.isDone(id)) {
       sentinel::MutationResult prevResult = ws.getDoneResult(id);
       evaluator.injectResult(prevResult);
-      logger->verbose(fmt::format("Mutant #{} already done: {}. Skipping.", id,
-                                  sentinel::MutationStateToStr(prevResult.getMutationState())));
+      logger->verbose("Mutant #{} already done: {}. Skipping.", id,
+                      sentinel::MutationStateToStr(prevResult.getMutationState()));
       sl.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                        m.getFirst().line);
       sl.recordResult(static_cast<int>(prevResult.getMutationState()));
@@ -701,7 +698,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     }
 
     if (ws.isLocked(id)) {
-      logger->info(fmt::format("Mutant #{} was interrupted mid-run. Restoring source...", id));
+      logger->info("Mutant #{} was interrupted mid-run. Restoring source...", id);
       sentinel::CommandRun::restoreBackup(ws.getBackupDir().string(), cfg.sourceRoot.string());
       ws.clearLock(id);
     }
@@ -712,10 +709,10 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
       sl.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                        m.getFirst().line);
       sl.recordResult(static_cast<int>(result.getMutationState()));
-      logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}",
-                               localIdx, totalMutants, m.getOperator(),
-                               m.getPath().filename().string(), m.getFirst().line,
-                               sentinel::MutationStateToStr(result.getMutationState())));
+      logger->info("[{}/{}] {} @ {}:{} → {}",
+                   localIdx, totalMutants, m.getOperator(),
+                   m.getPath().filename().string(), m.getFirst().line,
+                   sentinel::MutationStateToStr(result.getMutationState()));
       continue;
     }
 
@@ -726,10 +723,10 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
 
     std::stringstream buf;
     buf << m;
-    logger->verbose(fmt::format("Applying: {}", buf.str()));
+    logger->verbose("Applying: {}", buf.str());
     repo->getSourceTree()->modify(m, ws.getBackupDir().string());
 
-    logger->verbose(fmt::format("Building mutant #{}...", id));
+    logger->verbose("Building mutant #{}...", id);
     sentinel::Subprocess buildProc(cfg.buildCmd, 0, 0,
                                    (ws.getMutantDir(id) / "build.log").string(), cfg.silent);
     buildProc.execute();
@@ -766,17 +763,17 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     ws.clearLock(id);
     ws.setDone(id, result);
     sl.recordResult(static_cast<int>(result.getMutationState()));
-    logger->info(fmt::format("[{}/{}] {} @ {}:{} → {}  ({})",
-                             localIdx, totalMutants, m.getOperator(),
-                             m.getPath().filename().string(), m.getFirst().line,
-                             sentinel::MutationStateToStr(result.getMutationState()),
-                             formatDuration(mutantElapsed)));
+    logger->info("[{}/{}] {} @ {}:{} → {}  ({})",
+                 localIdx, totalMutants, m.getOperator(),
+                 m.getPath().filename().string(), m.getFirst().line,
+                 sentinel::MutationStateToStr(result.getMutationState()),
+                 formatDuration(mutantElapsed));
     fs::remove_all(actualDir);
   }
 
   double evalElapsed =
       std::chrono::duration<double>(std::chrono::steady_clock::now() - evalStart).count();
-  logger->info(fmt::format("Evaluation done ({}).", formatDuration(evalElapsed)));
+  logger->info("Evaluation done ({}).", formatDuration(evalElapsed));
 }
 
 static int generateReportAndScore(const RunCfg& cfg,
@@ -790,7 +787,7 @@ static int generateReportAndScore(const RunCfg& cfg,
   outputDir = fs::canonical(outputDir);
 
   if (!cfg.emptyOutputDir) {
-    logger->info(fmt::format("Writing report to {}...", outputDir.string()));
+    logger->info("Writing report to {}...", outputDir.string());
     sentinel::XMLReport xmlReport(evaluator.getMutationResults(), cfg.sourceRoot);
     xmlReport.save(outputDir);
     sentinel::HTMLReport htmlReport(evaluator.getMutationResults(), cfg.sourceRoot);
@@ -1059,29 +1056,29 @@ int CommandRun::run() {
   auto logger = Logger::getLogger(cCommandRunLoggerName);
 
   if (resuming) {
-    logger->warn(fmt::format("Resuming with saved config: {}. "
-                             "New CLI options and sentinel.yaml changes are ignored.",
-                             (ws.getRoot() / "sentinel.yaml").string()));
+    logger->warn("Resuming with saved config: {}. "
+                 "New CLI options and sentinel.yaml changes are ignored.",
+                 (ws.getRoot() / "sentinel.yaml").string());
   }
 
-  logger->verbose(fmt::format("source root:        {}", sourceRoot.string()));
-  logger->verbose(fmt::format("build cmd:          {}", buildCmd));
-  logger->verbose(fmt::format("compiledb dir:      {}", compileDbStr));
-  logger->verbose(fmt::format("test cmd:           {}", testCmd));
-  logger->verbose(fmt::format("test result dir:    {}", testResultDir.string()));
-  logger->verbose(fmt::format("test result exts:   {}", sentinel::string::join(", ", testResultFileExts)));
-  logger->verbose(fmt::format("timeout:            {}s", mTimeLimit));
-  logger->verbose(fmt::format("kill-after:         {}s", mKillAfter));
-  logger->verbose(fmt::format("scope:              {}", scope));
-  logger->verbose(fmt::format("source extensions:  {}", sentinel::string::join(", ", targetFileExts)));
-  logger->verbose(fmt::format("patterns:           {}", sentinel::string::join(", ", diffPatterns)));
-  logger->verbose(fmt::format("exclude patterns:   {}", sentinel::string::join(", ", excludePaths)));
-  logger->verbose(fmt::format("mutant limit:       {}", mutantLimit));
-  logger->verbose(fmt::format("generator:          {}", generatorStr));
-  logger->verbose(fmt::format("random seed:        {}", randomSeed));
-  logger->verbose(fmt::format("coverage files:     {}", sentinel::string::join(", ", coverageFiles)));
-  logger->info(fmt::format("Workspace: {}", ws.getRoot().string()));
-  logger->verbose(fmt::format("resuming:           {}", resuming ? "yes" : "no"));
+  logger->verbose("source root:        {}", sourceRoot.string());
+  logger->verbose("build cmd:          {}", buildCmd);
+  logger->verbose("compiledb dir:      {}", compileDbStr);
+  logger->verbose("test cmd:           {}", testCmd);
+  logger->verbose("test result dir:    {}", testResultDir.string());
+  logger->verbose("test result exts:   {}", sentinel::string::join(", ", testResultFileExts));
+  logger->verbose("timeout:            {}s", mTimeLimit);
+  logger->verbose("kill-after:         {}s", mKillAfter);
+  logger->verbose("scope:              {}", scope);
+  logger->verbose("source extensions:  {}", sentinel::string::join(", ", targetFileExts));
+  logger->verbose("patterns:           {}", sentinel::string::join(", ", diffPatterns));
+  logger->verbose("exclude patterns:   {}", sentinel::string::join(", ", excludePaths));
+  logger->verbose("mutant limit:       {}", mutantLimit);
+  logger->verbose("generator:          {}", generatorStr);
+  logger->verbose("random seed:        {}", randomSeed);
+  logger->verbose("coverage files:     {}", sentinel::string::join(", ", coverageFiles));
+  logger->info("Workspace: {}", ws.getRoot().string());
+  logger->verbose("resuming:           {}", resuming ? "yes" : "no");
 
   bool disableStatusLine = static_cast<bool>(mNoStatusLine);
   if (!disableStatusLine) {
@@ -1140,10 +1137,9 @@ int CommandRun::run() {
     size_t fullMutantCount = pr.indexedMutants.size();
     if (partIdx != 0) {
       if (pr.indexedMutants.empty()) {
-        logger->warn(fmt::format(
-            "Partition {}/{}: no mutants were generated (total: 0). "
-            "Nothing to evaluate.",
-            partIdx, partCount));
+        logger->warn("Partition {}/{}: no mutants were generated (total: 0). "
+                     "Nothing to evaluate.",
+                     partIdx, partCount);
       } else {
         size_t start = (partIdx - 1) * fullMutantCount / partCount;
         size_t end = partIdx * fullMutantCount / partCount;
@@ -1152,14 +1148,12 @@ int CommandRun::run() {
             pr.indexedMutants.begin() + static_cast<ptrdiff_t>(end));
         statusLine.setTotalMutants(pr.indexedMutants.size());
         if (pr.indexedMutants.empty()) {
-          logger->warn(fmt::format(
-              "Partition {}/{}: 0 mutants assigned out of {} total. "
-              "Increase --limit or reduce --partition TOTAL.",
-              partIdx, partCount, fullMutantCount));
+          logger->warn("Partition {}/{}: 0 mutants assigned out of {} total. "
+                       "Increase --limit or reduce --partition TOTAL.",
+                       partIdx, partCount, fullMutantCount);
         } else {
-          logger->info(fmt::format("Partition {}/{}: evaluating {} of {} mutants.",
-                                   partIdx, partCount, pr.indexedMutants.size(),
-                                   fullMutantCount));
+          logger->info("Partition {}/{}: evaluating {} of {} mutants.",
+                       partIdx, partCount, pr.indexedMutants.size(), fullMutantCount);
         }
       }
     }

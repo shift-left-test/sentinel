@@ -4,9 +4,9 @@
  */
 
 #include <fmt/core.h>
-#include <filesystem>
-#include <algorithm>
 #include <cctype>
+#include <algorithm>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <fstream>
 #include <stdexcept>
 #include <string>

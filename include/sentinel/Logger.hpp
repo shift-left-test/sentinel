@@ -6,8 +6,12 @@
 #ifndef INCLUDE_SENTINEL_LOGGER_HPP_
 #define INCLUDE_SENTINEL_LOGGER_HPP_
 
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace sentinel {
 
@@ -38,15 +42,6 @@ class Logger {
   static std::shared_ptr<Logger> getLogger(const std::string& name);
 
   /**
-   * @brief Return the logger instance
-   *
-   * @param name of the logger
-   * @param format string
-   * @return logger instance
-   */
-  static std::shared_ptr<Logger> getLogger(const std::string& name, const std::string& format);
-
-  /**
    * @brief Set the logging level
    *
    * @param level of the logging
@@ -62,37 +57,67 @@ class Logger {
   /**
    * @brief Log a debug message
    *
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    */
-  void debug(const std::string& message);
+  template <typename... Args>
+  void debug(const std::string& pattern, Args&&... args) {
+    if (isAllowed(Level::DEBUG)) {
+      std::cout << format("debug", pattern, std::forward<Args>(args)...) << std::endl;
+    }
+  }
 
   /**
    * @brief Log a verbose message
    *
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    */
-  void verbose(const std::string& message);
+  template <typename... Args>
+  void verbose(const std::string& pattern, Args&&... args) {
+    if (isAllowed(Level::VERBOSE)) {
+      std::cout << format("verbose", pattern, std::forward<Args>(args)...) << std::endl;
+    }
+  }
 
   /**
    * @brief Log an information message
    *
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    */
-  void info(const std::string& message);
+  template <typename... Args>
+  void info(const std::string& pattern, Args&&... args) {
+    if (isAllowed(Level::INFO)) {
+      std::cout << format("info", pattern, std::forward<Args>(args)...) << std::endl;
+    }
+  }
 
   /**
    * @brief Log a warning message
    *
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    */
-  void warn(const std::string& message);
+  template <typename... Args>
+  void warn(const std::string& pattern, Args&&... args) {
+    if (isAllowed(Level::WARN)) {
+      std::cerr << format("warn", pattern, std::forward<Args>(args)...) << std::endl;
+    }
+  }
 
   /**
    * @brief Log an error message
    *
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    */
-  void error(const std::string& message);
+  template <typename... Args>
+  void error(const std::string& pattern, Args&&... args) {
+    if (isAllowed(Level::ERROR)) {
+      std::cerr << format("error", pattern, std::forward<Args>(args)...) << std::endl;
+    }
+  }
 
   /**
    * @brief update Logger's level using defaultLevel
@@ -106,19 +131,22 @@ class Logger {
    * @brief Default constructor
    *
    * @param name of the logger
-   * @param format string
    * @param level logging level
    */
-  Logger(const std::string& name, const std::string& format, Logger::Level level);
+  Logger(const std::string& name, Logger::Level level);
 
   /**
    * @brief Return formatted string
    *
    * @param level of the logging
-   * @param message to log
+   * @param pattern to log
+   * @param args arguments
    * @return formatted string
    */
-  std::string format(Logger::Level level, const std::string& message);
+  template <typename... Args>
+  std::string format(const std::string& level, const std::string& pattern, Args&&... args) {
+    return fmt::format("[{}] ", level) + fmt::format(pattern, std::forward<Args>(args)...);
+  }
 
   /**
    * @brief Test if the level is allowed to log
@@ -130,7 +158,6 @@ class Logger {
 
  private:
   std::string mName;
-  std::string mFormat;
   Logger::Level mLevel;
 };
 

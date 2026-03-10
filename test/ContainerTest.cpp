@@ -4,8 +4,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <functional>
 #include <iterator>
 #include <stdexcept>
