@@ -15,8 +15,9 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include "sentinel/util/signal.hpp"
+#include "sentinel/Console.hpp"
 #include "sentinel/Subprocess.hpp"
+#include "sentinel/util/signal.hpp"
 
 namespace sentinel {
 
@@ -78,7 +79,7 @@ int Subprocess::execute() {
     signal::setMultipleSignalHandlers(usingSignals, SIG_DFL);
 
     execlp("/bin/sh", "sh", "-c", mCmd.c_str(), nullptr);
-    std::cout << fmt::format("fail exec {} (cause: {})", mCmd, std::strerror(errno)) << std::endl;
+    Console::out("fail exec {} (cause: {})", mCmd, std::strerror(errno));
     exit(1);
   } else if (pid > 0) {
     // Close unused pipe
@@ -97,10 +98,8 @@ int Subprocess::execute() {
     // And send last signal to sentinel just before return this function
     signal::setMultipleSignalHandlers(
         {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP}, [](int signum) {
-          std::cout << fmt::format(
-                           R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
-                           strsignal(signum), strsignal(SIGKILL))
-                    << std::endl;
+          Console::out(R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
+                       strsignal(signum), strsignal(SIGKILL));
           kill(-Subprocess::childPid, SIGKILL);
           Subprocess::pendSig = signum;
         });
@@ -121,8 +120,7 @@ int Subprocess::execute() {
         tmpMsg = fmt::format("Failed to terminate child process within {}.", Subprocess::killAfter);
       }
       kill(-Subprocess::childPid, termSignal);
-      std::cout << fmt::format("{} Send a signal({}) to child process' process group.", tmpMsg, strsignal(termSignal))
-                << std::endl;
+      Console::out("{} Send a signal({}) to child process' process group.", tmpMsg, strsignal(termSignal));
     });
 
     // Alarm setting
@@ -141,7 +139,7 @@ int Subprocess::execute() {
       auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
       if (nb > 0) {
         if (!mSilent) {
-          std::cout << std::string(static_cast<char*>(buffer), nb);
+          Console::out(std::string(static_cast<char*>(buffer), nb));
         }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);
@@ -154,7 +152,7 @@ int Subprocess::execute() {
       ssize_t nb = 0;
       while ((nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ)) > 0) {
         if (!mSilent) {
-          std::cout << std::string(static_cast<char*>(buffer), nb);
+          Console::out(std::string(static_cast<char*>(buffer), nb));
         }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);

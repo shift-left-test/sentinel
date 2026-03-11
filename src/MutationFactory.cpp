@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/Mutants.hpp"
@@ -40,14 +41,14 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   std::size_t flen = 50;
   std::size_t mlen = 10;
   std::size_t maxlen = flen + mlen + 2;
-  std::string defFormat = "{0:<{1}}{2:>{3}}\n";
+  std::string defFormat = "{0:<{1}}{2:>{3}}";
 
   // ── File table ──────────────────────────────────────────────────────────────
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutant Population Report", maxlen)) << "\n";
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "File", flen, "Mutants", mlen);
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  Console::out("{0:=^{1}}", "", maxlen);
+  Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutant Population Report", maxlen)));
+  Console::out("{0:=^{1}}", "", maxlen);
+  Console::out(defFormat, "File", flen, "Mutants", mlen);
+  Console::out("{0:-^{1}}", "", maxlen);
 
   for (const auto& p : groupByPath) {
     auto root = fs::canonical(gitPath);
@@ -62,38 +63,37 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
       filePos += 4;
       skipStr = "... ";
     }
-    std::cout << fmt::format(defFormat, skipStr + filePath.substr(filePos), flen, p.second, mlen);
+    Console::out(defFormat, skipStr + filePath.substr(filePos), flen, p.second, mlen);
   }
 
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  Console::out("{0:-^{1}}", "", maxlen);
+  Console::out(defFormat, "TOTAL", flen, mutables.size(), mlen);
+  Console::out("{0:=^{1}}\n", "", maxlen);
 
   // ── Operator table ──────────────────────────────────────────────────────────
-  std::cout << "\n";
-  std::cout << fmt::format(defFormat, "Operator", flen, "Mutants", mlen);
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  Console::out(defFormat, "Operator", flen, "Mutants", mlen);
+  Console::out("{0:-^{1}}", "", maxlen);
 
   for (const auto& p : groupByOperator) {
-    std::cout << fmt::format(defFormat, p.first, flen, p.second, mlen);
+    Console::out(defFormat, p.first, flen, p.second, mlen);
   }
 
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "TOTAL", flen, mutables.size(), mlen);
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  Console::out("{0:-^{1}}", "", maxlen);
+  Console::out(defFormat, "TOTAL", flen, mutables.size(), mlen);
+  Console::out("{0:=^{1}}", "", maxlen);
 
   // ── Footer ──────────────────────────────────────────────────────────────────
   std::size_t numFiles = groupByPath.size();
   std::size_t candidateCount = mGenerator->getCandidateCount();
   if (!generatorStr.empty()) {
-    std::cout << fmt::format("Generator : {}  |  Seed: {}\n", generatorStr, randomSeed);
+    Console::out("Generator : {}  |  Seed: {}", generatorStr, randomSeed);
   }
-  std::cout << fmt::format("Analyzed  : {} source line{} across {} file{}\n",
-                           sourceLines.size(), sourceLines.size() == 1 ? "" : "s",
-                           numFiles, numFiles == 1 ? "" : "s");
-  std::cout << fmt::format("Selected  : {} out of {} candidate{}\n",
-                           mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  Console::out("Analyzed  : {} source line{} across {} file{}",
+               sourceLines.size(), sourceLines.size() == 1 ? "" : "s",
+               numFiles, numFiles == 1 ? "" : "s");
+  Console::out("Selected  : {} out of {} candidate{}",
+               mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
+  Console::out("{0:=^{1}}", "", maxlen);
 
   return mutables;
 }

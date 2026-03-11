@@ -10,9 +10,10 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/Console.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Report.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
@@ -97,12 +98,12 @@ void Report::printSummary() const {
     mLogger->verbose("  Mutation State: {}", MutationStateToStr(mr.getMutationState()));
   }
 
-  std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}\n";
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
-  std::cout << string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)) << "\n";
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
-  std::cout << fmt::format(defFormat, "File", flen, "Killed", klen, "Total", mlen, "Score", clen);
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}";
+  Console::out("{0:=^{1}}", "", maxlen);
+  Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)));
+  Console::out("{0:=^{1}}", "", maxlen);
+  Console::out(defFormat, "File", flen, "Killed", klen, "Total", mlen, "Score", clen);
+  Console::out("{0:-^{1}}", "", maxlen);
 
   for (const auto& p : groupByPath) {
     double curScore = -1.0;
@@ -118,20 +119,20 @@ void Report::printSummary() const {
       skipStr = "... ";
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
-    std::cout << fmt::format(defFormat, skipStr + p.first.string().substr(filePos), flen,
-                             p.second.detected, klen, p.second.total, mlen,
-                             scoreStr, clen);
+    Console::out(defFormat, skipStr + p.first.string().substr(filePos), flen,
+                 p.second.detected, klen, p.second.total, mlen,
+                 scoreStr, clen);
   }
-  std::cout << fmt::format("{0:-^{1}}\n", "", maxlen);
+  Console::out("{0:-^{1}}", "", maxlen);
 
   double finalScore = -1.0;
   if (totNumberOfMutation != 0) {
     finalScore = (100.0 * totNumberOfDetectedMutation) / totNumberOfMutation;
   }
   std::string finalScoreStr = finalScore >= 0.0 ? fmt::format("{:.1f}%", finalScore) : "-%";
-  std::cout << fmt::format(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen,
-                           totNumberOfMutation, mlen, finalScoreStr, clen);
-  std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+  Console::out(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen,
+               totNumberOfMutation, mlen, finalScoreStr, clen);
+  Console::out("{0:=^{1}}", "", maxlen);
 
   if ((totNumberOfBuildFailure + totNumberOfRuntimeError + totNumberOfTimeout) != 0) {
     std::string skipped;
@@ -149,8 +150,8 @@ void Report::printSummary() const {
       skipped += fmt::format("{} timeout{}", totNumberOfTimeout,
                              totNumberOfTimeout == 1 ? "" : "s");
     }
-    std::cout << "Skipped: " << skipped << "\n";
-    std::cout << fmt::format("{0:=^{1}}\n", "", maxlen);
+    Console::out("Skipped: {}", skipped);
+    Console::out("{0:=^{1}}", "", maxlen);
   }
 }
 

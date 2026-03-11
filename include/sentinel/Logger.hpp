@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include "sentinel/Console.hpp"
 
 namespace sentinel {
 
@@ -63,7 +64,7 @@ class Logger {
   template <typename... Args>
   void debug(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::DEBUG)) {
-      std::cout << format("debug", pattern, std::forward<Args>(args)...) << std::endl;
+      Console::out("[debug] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -76,7 +77,7 @@ class Logger {
   template <typename... Args>
   void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
-      std::cout << format("verbose", pattern, std::forward<Args>(args)...) << std::endl;
+      Console::out("[verbose] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -89,7 +90,7 @@ class Logger {
   template <typename... Args>
   void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
-      std::cout << format("info", pattern, std::forward<Args>(args)...) << std::endl;
+      Console::out("[info] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -102,7 +103,7 @@ class Logger {
   template <typename... Args>
   void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
-      std::cerr << format("warn", pattern, std::forward<Args>(args)...) << std::endl;
+      Console::err("[warn] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -115,7 +116,7 @@ class Logger {
   template <typename... Args>
   void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
-      std::cerr << format("error", pattern, std::forward<Args>(args)...) << std::endl;
+      Console::err("[error] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -134,19 +135,6 @@ class Logger {
    * @param level logging level
    */
   Logger(const std::string& name, Logger::Level level);
-
-  /**
-   * @brief Return formatted string
-   *
-   * @param level of the logging
-   * @param pattern to log
-   * @param args arguments
-   * @return formatted string
-   */
-  template <typename... Args>
-  std::string format(const std::string& level, const std::string& pattern, Args&&... args) {
-    return fmt::format("[{}] ", level) + fmt::format(pattern, std::forward<Args>(args)...);
-  }
 
   /**
    * @brief Test if the level is allowed to log

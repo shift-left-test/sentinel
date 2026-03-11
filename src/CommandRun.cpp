@@ -23,21 +23,22 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "sentinel/CommandRun.hpp"
+#include "sentinel/Console.hpp"
 #include "sentinel/CoverageInfo.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/Logger.hpp"
+#include "sentinel/Evaluator.hpp"
 #include "sentinel/GitRepository.hpp"
+#include "sentinel/HTMLReport.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/SentinelConfig.hpp"
 #include "sentinel/StatusLine.hpp"
-#include "sentinel/util/signal.hpp"
-#include "sentinel/util/string.hpp"
 #include "sentinel/Subprocess.hpp"
-#include "sentinel/Evaluator.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XMLReport.hpp"
-#include "sentinel/HTMLReport.hpp"
-#include "sentinel/CommandRun.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/signal.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
 
@@ -59,10 +60,9 @@ static void signalHandler(int signum) {
   }
   std::cout.flush();
   if (signum != SIGUSR1) {
-    std::cerr << fmt::format("Received signal: {}.", strsignal(signum)) << std::endl;
+    Console::err("Received signal: {}.", strsignal(signum));
     if (!workspaceDirForSH.empty()) {
-      std::cerr << fmt::format("  hint: Check logs in {}.", workspaceDirForSH.string())
-                << std::endl;
+      Console::err("  hint: Check logs in {}.", workspaceDirForSH.string());
     }
     std::exit(EXIT_FAILURE);
   }
@@ -127,80 +127,72 @@ static void printDryRunSummary(const std::filesystem::path& sourceRoot,
                                const std::vector<std::string>& operators,
                                size_t partIdx, size_t partCount,
                                size_t fullMutantCount) {
-  std::cout << "\n=== Sentinel Dry Run ===\n";
-  std::cout << fmt::format("  source-dir:    {}\n", sourceRoot.string());
-  std::cout << fmt::format("  build-command: {}\n", buildCmd);
-  std::cout << fmt::format("  test-command:  {}\n", testCmd);
-  std::cout << fmt::format("  scope:         {}\n", scope);
-  std::cout << fmt::format("  limit:         {}\n",
-             mutantLimit == 0 ? std::string("unlimited") : std::to_string(mutantLimit));
-  std::cout << fmt::format("  operators:     {}\n",
-             operators.empty() ? std::string("all")
-                               : sentinel::string::join(", ", operators));
+  Console::out("\n=== Sentinel Dry Run ===");
+  Console::out("  source-dir:    {}", sourceRoot.string());
+  Console::out("  build-command: {}", buildCmd);
+  Console::out("  test-command:  {}", testCmd);
+  Console::out("  scope:         {}", scope);
+  Console::out("  limit:         {}", mutantLimit == 0 ? "unlimited" : std::to_string(mutantLimit));
+  Console::out("  operators:     {}", operators.empty() ? "all" : sentinel::string::join(", ", operators));
   if (partIdx != 0) {
-    std::cout << fmt::format("  partition:     {}/{}\n", partIdx, partCount);
+    Console::out("  partition:     {}/{}", partIdx, partCount);
   }
-  std::cout << fmt::format("  workspace:     {}\n", workspaceDir);
-  std::cout << "\n";
+  Console::out("  workspace:     {}", workspaceDir);
 
-  std::cout << fmt::format("  {}  Original build\n", buildOK ? "[ OK ]" : "[FAIL]");
+  Console::out("\n  {}  Original build", buildOK ? "[ OK ]" : "[FAIL]");
   if (!buildOK) {
-    std::cout << "  [ -- ]  Original tests  (skipped)\n";
-    std::cout << "  [ -- ]  Mutants         (skipped)\n";
-    std::cout << "\nDry run failed. Fix the issues above before running mutation testing.\n";
+    Console::out("  [ -- ]  Original tests  (skipped)");
+    Console::out("  [ -- ]  Mutants         (skipped)");
+    Console::out("\nDry run failed. Fix the issues above before running mutation testing.");
     return;
   }
 
   if (timeLimitStr == "auto") {
-    std::cout << fmt::format("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)\n",
-               testOK ? "[ OK ]" : "[FAIL]", baselineSecs, timeLimit);
+    Console::out("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)",
+                 testOK ? "[ OK ]" : "[FAIL]", baselineSecs, timeLimit);
   } else {
-    std::cout << fmt::format("  {}  Original tests  (timeout: {}s)\n",
-               testOK ? "[ OK ]" : "[FAIL]", timeLimit);
+    Console::out("  {}  Original tests  (timeout: {}s)", testOK ? "[ OK ]" : "[FAIL]", timeLimit);
   }
   if (!testOK) {
-    std::cout << "  [ -- ]  Mutants         (skipped)\n";
-    std::cout << "\nDry run failed. Fix the issues above before running mutation testing.\n";
+    Console::out("  [ -- ]  Mutants         (skipped)");
+    Console::out("\nDry run failed. Fix the issues above before running mutation testing.");
     return;
   }
 
   if (indexedMutants.empty()) {
-    std::cout << "  [WARN]  Mutants: 0 — nothing to evaluate.\n";
+    Console::out("  [WARN]  Mutants: 0 — nothing to evaluate.");
     if (partIdx != 0) {
-      std::cout << fmt::format("          (partition {}/{} of {} total mutants)\n",
-                 partIdx, partCount, fullMutantCount);
+      Console::out("          (partition {}/{} of {} total mutants)", partIdx, partCount, fullMutantCount);
     }
-    std::cout << "          Check --scope, --pattern, --extension settings.\n";
+    Console::out("          Check --scope, --pattern, --extension settings.");
   } else if (partIdx != 0) {
-    std::cout << fmt::format("  [ OK ]  Mutants: {} (partition {}/{} of {} total)\n",
-               indexedMutants.size(), partIdx, partCount, fullMutantCount);
+    Console::out("  [ OK ]  Mutants: {} (partition {}/{} of {} total)",
+                 indexedMutants.size(), partIdx, partCount, fullMutantCount);
   } else if (mutantLimit > 0 && indexedMutants.size() >= mutantLimit) {
-    std::cout << fmt::format("  [ OK ]  Mutants: {} of {} candidates (capped at --limit {})\n",
-               indexedMutants.size(), candidateCount, mutantLimit);
+    Console::out("  [ OK ]  Mutants: {} of {} candidates (capped at --limit {})",
+                 indexedMutants.size(), candidateCount, mutantLimit);
   } else {
-    std::cout << fmt::format("  [ OK ]  Mutants: {}{}\n", indexedMutants.size(),
-               candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount)
-                                  : std::string{});
+    Console::out("  [ OK ]  Mutants: {}{}", indexedMutants.size(),
+                 candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount) : "");
   }
 
   if (!indexedMutants.empty() && baselineSecs > 0.0) {
     double estimated = baselineSecs * static_cast<double>(indexedMutants.size());
-    std::cout << fmt::format(
-               "          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)\n",
-               formatDuration(estimated, true), indexedMutants.size(),
-               indexedMutants.size() == 1 ? "" : "s", baselineSecs);
+    Console::out("          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)",
+                 formatDuration(estimated, true), indexedMutants.size(),
+                 indexedMutants.size() == 1 ? "" : "s", baselineSecs);
   }
 
   if (verbose) {
     for (const auto& [id, m] : indexedMutants) {
-      std::cout << fmt::format("          [{:3d}] {} @ {}:{}\n", id, m.getOperator(),
-                 m.getPath().filename().string(), m.getFirst().line);
+      Console::out("          [{:3d}] {} @ {}:{}", id, m.getOperator(),
+                   m.getPath().filename().string(), m.getFirst().line);
     }
   }
 
   if (!indexedMutants.empty()) {
-    std::cout << "\nWorkspace saved. Remove --dry-run to start mutation testing\n";
-    std::cout << "(the workspace will be reused — build and populate steps are skipped).\n";
+    Console::out("\nWorkspace saved. Remove --dry-run to start mutation testing");
+    Console::out("(the workspace will be reused — build and populate steps are skipped).");
   }
 }
 
@@ -798,7 +790,7 @@ static int generateReportAndScore(const RunCfg& cfg,
     xmlReport.printSummary();
   }
 
-  size_t totalMutatns = 0;
+  size_t totalMutants = 0;
   size_t killedMutants = 0;
   for (const auto& r : evaluator.getMutationResults()) {
     auto s = r.getMutationState();
@@ -807,20 +799,20 @@ static int generateReportAndScore(const RunCfg& cfg,
         s == sentinel::MutationState::TIMEOUT) {
       continue;
     }
-    totalMutatns++;
+    totalMutants++;
     if (r.getDetected()) killedMutants++;
   }
-  if (totalMutatns > 0) {
-    double score = (100.0 * killedMutants) / totalMutatns;
-    std::cerr << fmt::format("[info] Mutation score: {:.1f}% ({}/{} mutants killed)\n",
-                             score, killedMutants, totalMutatns);
+  if (totalMutants > 0) {
+    double score = (100.0 * killedMutants) / totalMutants;
+    Console::err("[info] Mutation score: {:.1f}% ({}/{} mutants killed)",
+                 score, killedMutants, totalMutants);
     if (cfg.threshold && score < *cfg.threshold) {
-      std::cerr << fmt::format("[error] Mutation score {:.1f}% is below threshold {:.1f}%\n",
-                               score, *cfg.threshold);
+      Console::err("[error] Mutation score {:.1f}% is below threshold {:.1f}%",
+                   score, *cfg.threshold);
       return 3;
     }
   } else {
-    std::cerr << "[info] Mutation score: -% (no evaluable mutants)\n";
+    Console::err("[info] Mutation score: -% (no evaluable mutants)");
   }
   return 0;
 }
@@ -831,13 +823,10 @@ int CommandRun::run() {
     if (fs::exists(kConfigFileName)) {
       bool overwrite = mForce.Get();
       if (!overwrite) {
-        fmt::print("'{}' already exists. Overwrite? [y/N] ", kConfigFileName);
-        std::string answer;
-        std::getline(std::cin, answer);
-        overwrite = (answer == "y" || answer == "Y");
+        overwrite = Console::confirm("'{}' already exists. Overwrite?", kConfigFileName);
       }
       if (!overwrite) {
-        fmt::print("Aborted.\n");
+        Console::out("Aborted.");
         return 0;
       }
     }
@@ -846,7 +835,7 @@ int CommandRun::run() {
       throw std::runtime_error(fmt::format("Failed to create '{}'", kConfigFileName));
     }
     out << kYamlTemplate;
-    fmt::print("Generated '{}'\n", kConfigFileName);
+    Console::out("Generated '{}'", kConfigFileName);
     return 0;
   }
 
@@ -867,19 +856,16 @@ int CommandRun::run() {
   if (ws.hasPreviousRun()) {
     bool resume = !mForce.Get() && !dryRun;
     if (resume) {
-      fmt::print("Previous run found in '{}'. Resume? [y/N] ", workDirPath.string());
-      std::string answer;
-      std::getline(std::cin, answer);
-      resume = (answer == "y" || answer == "Y");
+      resume = Console::confirm("Previous run found in '{}'. Resume?", workDirPath.string());
     }
     if (resume) {
       resuming = true;
       activeConfig = SentinelConfig::loadFromFile((ws.getRoot() / "sentinel.yaml").string());
-      fmt::print("Resuming previous run.\n");
+      Console::out("Resuming previous run.");
     } else {
       ws.initialize();
       if (!dryRun) {
-        fmt::print("Starting fresh run.\n");
+        Console::out("Starting fresh run.");
       }
     }
   } else {
@@ -1025,10 +1011,8 @@ int CommandRun::run() {
       if (!fs::is_empty(testResultDirStr)) {
         bool deleteDir = mForce.Get();
         if (!deleteDir) {
-          fmt::print("The given test result path is not empty: {0}\nDelete and continue? [y/N] ", testResultDirStr);
-          std::string answer;
-          std::getline(std::cin, answer);
-          deleteDir = (answer == "y" || answer == "Y");
+          deleteDir = Console::confirm("The given test result path is not empty: {0}\n"
+                                       "Delete and continue?", testResultDirStr);
         }
         if (!deleteDir) {
           throw InvalidArgumentException(
@@ -1559,16 +1543,12 @@ bool CommandRun::checkConfigWarnings(
   }
 
   if (!warnings.empty() && !mForce.Get()) {
-    std::cout << "\nConfiguration warnings:\n";
+    Console::out("\nConfiguration warnings:");
     for (const auto& w : warnings) {
-      std::cout << fmt::format("  [!] {}\n", w);
+      Console::out("  [!] {}", w);
     }
-    std::cout << "\nProceed? [y/N] ";
-    std::cout.flush();
-    std::string answer;
-    std::getline(std::cin, answer);
-    if (answer != "y" && answer != "Y") {
-      std::cout << "Aborted.\n";
+    if (!Console::confirm("\nProceed?")) {
+      Console::out("Aborted.");
       return false;
     }
   }
