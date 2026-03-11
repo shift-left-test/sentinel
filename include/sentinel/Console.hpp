@@ -15,18 +15,36 @@ namespace sentinel {
 namespace Console {
 
 /**
- * @brief Print messages.
+ * @brief Print messages without a trailing newline.
+ *
+ * @param pattern to print
+ * @param args arguments
+ */
+template <typename... Args>
+inline void print(const std::string& pattern, Args&&... args) {
+  std::cout << fmt::format(pattern, std::forward<Args>(args)...);
+}
+
+/**
+ * @brief Print messages followed by a newline.
  *
  * @param pattern to print
  * @param args arguments
  */
 template <typename... Args>
 inline void out(const std::string& pattern, Args&&... args) {
-  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << std::endl;
+  print("{}\n", fmt::format(pattern, std::forward<Args>(args)...));
 }
 
 /**
- * @brief Print messages.
+ * @brief Flush the stdout buffer.
+ */
+inline void flush() {
+  std::cout << std::flush;
+}
+
+/**
+ * @brief Print error messages followed by a newline.
  *
  * @param pattern to print
  * @param args arguments
@@ -46,8 +64,8 @@ inline void err(const std::string& pattern, Args&&... args) {
 template <typename... Args>
 inline bool confirm(const std::string& pattern, Args&&... args) {
   while (true) {
-    std::cout << fmt::format(pattern, std::forward<Args>(args)...) << " [y/N] ";
-    std::cout.flush();
+    print("{} [y/N] " , fmt::format(pattern, std::forward<Args>(args)...));
+    flush();
 
     std::string answer;
     std::getline(std::cin, answer);

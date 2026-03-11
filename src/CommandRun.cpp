@@ -58,7 +58,7 @@ static void signalHandler(int signum) {
     gStatusLineForSH->disable();
     gStatusLineForSH = nullptr;
   }
-  std::cout.flush();
+  Console::flush();
   if (signum != SIGUSR1) {
     Console::err("Received signal: {}.", strsignal(signum));
     if (!workspaceDirForSH.empty()) {

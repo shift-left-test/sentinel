@@ -1,19 +1,17 @@
 /*
- * Copyright (c) 2020 LG Electronics Inc.
+ * Copyright (c) 2026 LG Electronics Inc.
  * SPDX-License-Identifier: MIT
  */
-
-#include "sentinel/StatusLine.hpp"
 
 #include <fmt/core.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-
 #include <chrono>
 #include <iostream>
 #include <string>
-
+#include "sentinel/Console.hpp"
 #include "sentinel/MutationState.hpp"
+#include "sentinel/StatusLine.hpp"
 
 namespace sentinel {
 
@@ -42,10 +40,10 @@ void StatusLine::disable() {
   }
   // Save cursor → move to status row → clear it → reset scroll region (DECSTBM homes
   // the cursor, so it must come before ESC 8) → restore original cursor position.
-  std::cout << "\0337" << fmt::format("\033[{};1H", mTermRows) << "\033[2K";
+  Console::print("\0337\033[{};1H\033[2K", mTermRows);
   clearScrollRegion();
-  std::cout << "\0338";
-  std::cout.flush();
+  Console::print("\0338");
+  Console::flush();
   mEnabled = false;
 }
 
@@ -106,15 +104,16 @@ void StatusLine::setScrollRegion() {
     return;
   }
   // Clear screen
-  std::cout << "\033[2J\033[H" << std::flush;
+  Console::print("\033[2J\033[H");
+  Console::flush();
   // Reserve last row for status line by setting scroll region to rows 1 through R-1
-  std::cout << fmt::format("\033[1;{}r", mTermRows - 1);
-  std::cout.flush();
+  Console::print("\033[1;{}r", mTermRows - 1);
+  Console::flush();
 }
 
 void StatusLine::clearScrollRegion() {
   // Reset scroll region to the full terminal (DECSTBM with no args)
-  std::cout << "\033[r";
+  Console::print("\033[r");
 }
 
 void StatusLine::redraw() {
@@ -126,10 +125,9 @@ void StatusLine::redraw() {
     status.resize(mTermCols);
   }
   // Save cursor, jump to status row, clear line, print reverse-video content, restore cursor
-  std::cout << "\0337" << fmt::format("\033[{};1H", mTermRows) << "\033[2K"
-            << "\033[7m" << status << "\033[0m"
-            << "\0338";
-  std::cout.flush();
+  Console::print("\0337\033[{};1H\033[2K", mTermRows);
+  Console::print("\033[7m{}\033[0m\0338", status);
+  Console::flush();
 }
 
 std::string StatusLine::phaseLabel() const {

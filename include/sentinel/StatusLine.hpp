@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 LG Electronics Inc.
+ * Copyright (c) 2026 LG Electronics Inc.
  * SPDX-License-Identifier: MIT
  */
 
