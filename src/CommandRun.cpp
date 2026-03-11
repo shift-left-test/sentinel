@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <chrono>
 #include <exception>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -515,9 +515,9 @@ struct PopulateResult {
 
 }  // namespace
 
-static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                              // NOLINT(runtime/references)
-                                              sentinel::Workspace& ws,               // NOLINT(runtime/references)
-                                              sentinel::StatusLine& sl,              // NOLINT(runtime/references)
+static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                           // NOLINT
+                                              sentinel::Workspace& ws,               // NOLINT
+                                              sentinel::StatusLine& sl,              // NOLINT
                                               const std::shared_ptr<sentinel::Logger>& logger) {
   BaselineResult r;
 
@@ -593,8 +593,8 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
 }
 
 static PopulateResult runPopulateMutants(const RunCfg& cfg,
-                                          sentinel::Workspace& ws,    // NOLINT(runtime/references)
-                                          sentinel::StatusLine& sl,   // NOLINT(runtime/references)
+                                          sentinel::Workspace& ws,    // NOLINT
+                                          sentinel::StatusLine& sl,   // NOLINT
                                           const BaselineResult& br,
                                           const std::shared_ptr<sentinel::Logger>& logger) {
   PopulateResult r;
@@ -658,9 +658,9 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
 }
 
 static void runMutantEvaluationLoop(const RunCfg& cfg,
-                                     sentinel::Workspace& ws,    // NOLINT(runtime/references)
-                                     sentinel::StatusLine& sl,   // NOLINT(runtime/references)
-                                     sentinel::Evaluator& evaluator,  // NOLINT(runtime/references)
+                                     sentinel::Workspace& ws,    // NOLINT
+                                     sentinel::StatusLine& sl,   // NOLINT
+                                     sentinel::Evaluator& evaluator,  // NOLINT
                                      const std::vector<std::pair<int, sentinel::Mutant>>& indexedMutants,
                                      const std::shared_ptr<sentinel::Logger>& logger) {
   fs::path actualDir = ws.getRoot() / "actual";

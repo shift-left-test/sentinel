@@ -4,7 +4,7 @@
  */
 
 #include <fmt/core.h>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <iostream>
 #include <memory>
 #include "sentinel/CommandRun.hpp"

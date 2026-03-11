@@ -7,7 +7,7 @@
 #define INCLUDE_SENTINEL_CONTAINER_HPP_
 
 #include <algorithm>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iterator>
 #include <random>

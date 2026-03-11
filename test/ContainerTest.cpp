@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <functional>
 #include <iterator>
 #include <stdexcept>

@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_MUTANT_HPP_
 #define INCLUDE_SENTINEL_MUTANT_HPP_
 
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
 #include <utility>

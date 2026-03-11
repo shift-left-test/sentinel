@@ -7,7 +7,7 @@
 #define INCLUDE_SENTINEL_COMMANDRUN_HPP_
 
 #include <cstddef>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <optional>
 #include <string>
 #include <utility>
@@ -28,7 +28,7 @@ class CommandRun : public Command {
   /**
    * @brief Constructor — registers all command-line options with @p parser.
    */
-  explicit CommandRun(args::Group& parser);  // NOLINT(runtime/references)
+  explicit CommandRun(args::Group& parser);  // NOLINT
 
   /**
    * @brief Loads the YAML config file and applies log-level settings.

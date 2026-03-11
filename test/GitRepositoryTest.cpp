@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include <vector>

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <cstdio>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <memory>
 #include <stdexcept>

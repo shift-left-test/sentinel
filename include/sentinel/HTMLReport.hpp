@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_HTMLREPORT_HPP_
 #define INCLUDE_SENTINEL_HTMLREPORT_HPP_
 
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "sentinel/Report.hpp"

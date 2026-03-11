@@ -7,7 +7,7 @@
 #include <git2.h>
 #include <gtest/gtest.h>
 #include <cstring>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
 #include <memory>

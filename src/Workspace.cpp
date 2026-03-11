@@ -6,7 +6,7 @@
 #include <fmt/core.h>
 #include <cctype>
 #include <algorithm>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <stdexcept>
 #include <string>

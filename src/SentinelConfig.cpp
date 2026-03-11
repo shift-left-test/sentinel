@@ -5,7 +5,7 @@
 
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <algorithm>
 #include <stdexcept>
 #include <string>

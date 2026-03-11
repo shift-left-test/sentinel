@@ -7,7 +7,7 @@
 #define TEST_INCLUDE_HELPER_SENTINELREPORTTESTBASE_HPP_
 
 #include <gtest/gtest.h>
-#include <filesystem>  // NOLINT(build/c++17)
+#include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Logger.hpp"
 
