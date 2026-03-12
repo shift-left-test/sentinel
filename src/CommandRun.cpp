@@ -1015,8 +1015,7 @@ int CommandRun::run() {
                                        "Delete and continue?", testResultDirStr);
         }
         if (!deleteDir) {
-          throw InvalidArgumentException(
-              fmt::format("The given test result path is not empty: {0}", testResultDirStr));
+          throw InvalidArgumentException("Aborted.");
         }
         fs::remove_all(testResultDirStr);
       }

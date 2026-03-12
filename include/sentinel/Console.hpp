@@ -77,6 +77,7 @@ inline bool confirm(const std::string& pattern, Args&&... args) {
     } else if (answer.empty()) {
       return false;
     }
+    err("Error: '{}' is not a valid input. Please enter 'y' or 'n'.\n", answer);
   }
 }
 
