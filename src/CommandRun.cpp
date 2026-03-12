@@ -62,7 +62,7 @@ static void signalHandler(int signum) {
   if (signum != SIGUSR1) {
     Console::err("Received signal: {}.", strsignal(signum));
     if (!workspaceDirForSH.empty()) {
-      Console::err("  hint: Check logs in {}.", workspaceDirForSH.string());
+      Console::err("  hint: Check logs in {}", workspaceDirForSH.string());
     }
     std::exit(EXIT_FAILURE);
   }

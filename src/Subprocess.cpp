@@ -98,8 +98,7 @@ int Subprocess::execute() {
     // And send last signal to sentinel just before return this function
     signal::setMultipleSignalHandlers(
         {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP}, [](int signum) {
-          Console::out(R"asdf(Receive a signal({}). Send a signal({}) to child process' process group.)asdf",
-                       strsignal(signum), strsignal(SIGKILL));
+          Console::out(R"asdf( Stopping due to {}...)asdf", strsignal(signum));
           kill(-Subprocess::childPid, SIGKILL);
           Subprocess::pendSig = signum;
         });
@@ -139,7 +138,7 @@ int Subprocess::execute() {
       auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
       if (nb > 0) {
         if (!mSilent) {
-          Console::out(std::string(static_cast<char*>(buffer), nb));
+          std::cout << std::string(static_cast<char*>(buffer), nb);
         }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);
@@ -152,7 +151,7 @@ int Subprocess::execute() {
       ssize_t nb = 0;
       while ((nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ)) > 0) {
         if (!mSilent) {
-          Console::out(std::string(static_cast<char*>(buffer), nb));
+          std::cout << std::string(static_cast<char*>(buffer), nb);
         }
         if (logStream.is_open()) {
           logStream.write(static_cast<char*>(buffer), nb);
