@@ -39,10 +39,6 @@ static const char* cWeightedGeneratorLoggerName = "WeightedMutantGenerator";
 WeightedMutantGenerator::WeightedMutantGenerator(const std::string& path) : mDbPath(path) {
 }
 
-Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
-  return populate(sourceLines, maxMutants, std::random_device {}());
-}
-
 Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
   std::string errorMsg;

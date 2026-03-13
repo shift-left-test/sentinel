@@ -34,10 +34,6 @@ static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
 RandomMutantGenerator::RandomMutantGenerator(const std::string& path) : mDbPath(path) {
 }
 
-Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
-  return populate(sourceLines, maxMutants, std::random_device {}());
-}
-
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
 

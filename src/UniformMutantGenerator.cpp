@@ -34,10 +34,6 @@ static const char* cUniformGeneratorLoggerName = "UniformMutantGenerator";
 UniformMutantGenerator::UniformMutantGenerator(const std::string& path) : mDbPath(path) {
 }
 
-Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants) {
-  return populate(sourceLines, maxMutants, std::random_device {}());
-}
-
 Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
 

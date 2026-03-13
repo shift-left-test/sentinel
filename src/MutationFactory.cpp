@@ -98,8 +98,4 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   return mutables;
 }
 
-Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants) {
-  return populate(gitPath, sourceLines, maxMutants, std::random_device {}(), "");
-}
-
 }  // namespace sentinel

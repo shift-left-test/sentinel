@@ -39,16 +39,6 @@ class MutationFactory {
   Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                    unsigned randomSeed, const std::string& generatorStr = "");
 
-  /**
-   * @brief Populate mutables from the given source lines.
-   *
-   * @param gitPath path to git repo
-   * @param sourceLines lines of the source
-   * @param maxMutants maximum number of mutables generated
-   * @return list of mutables
-   */
-  Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants);
-
  private:
   std::shared_ptr<MutantGenerator> mGenerator;
 };

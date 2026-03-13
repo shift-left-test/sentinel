@@ -109,16 +109,17 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
   SourceLines* sourceLines = nullptr;
   std::string TARGET_FILE1;
   std::string TARGET_FILE2;
+  unsigned SEED = 1234;
 };
 
 TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
   UniformMutantGenerator generator {SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100), IOException);
+  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100, SEED), IOException);
 }
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   UniformMutantGenerator generator {SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 100);
+  Mutants mutants = generator.populate(*sourceLines, 100, SEED);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -136,7 +137,7 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
 TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   UniformMutantGenerator generator {SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 3);
+  Mutants mutants = generator.populate(*sourceLines, 3, SEED);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -154,10 +155,10 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   UniformMutantGenerator generator1 {SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
 
   UniformMutantGenerator generator2 {SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, 3);
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -166,10 +167,10 @@ TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithSameSeedWorks) {
   UniformMutantGenerator generator1 {SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
 
   UniformMutantGenerator generator2 {SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);

@@ -27,7 +27,7 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
   MutationFactory factory(generator);
 
   mStdoutCapture->capture();
-  Mutants selected = factory.populate(SAMPLE1_DIR, sourceLines, 3);
+  Mutants selected = factory.populate(SAMPLE1_DIR, sourceLines, 3, 1234, "");
   std::string out = mStdoutCapture->release();
 
   // 1 mutable on line 58, 1 mutable on line 59 are selected

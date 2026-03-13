@@ -86,17 +86,18 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
   Mutants* allMutants = nullptr;
   SourceLines* sourceLines = nullptr;
   std::string TARGET_FILE1;
+  unsigned SEED = 1234;
 };
 
 TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
   RandomMutantGenerator generator {SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100), IOException);
+  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100, SEED), IOException);
 }
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator {SAMPLE1_DIR};
   int maxMutants = allMutants->size();
-  Mutants mutants = generator.populate(*sourceLines, maxMutants * 2);
+  Mutants mutants = generator.populate(*sourceLines, maxMutants * 2, SEED);
   ASSERT_EQ(mutants.size(), maxMutants);
 
   for (const auto& e1 : mutants) {
@@ -106,7 +107,7 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
   RandomMutantGenerator generator {SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 3);
+  Mutants mutants = generator.populate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants.size(), 3);
   for (const auto& e1 : mutants) {
@@ -116,10 +117,10 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   RandomMutantGenerator generator1 {SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
 
   RandomMutantGenerator generator2 {SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, 3);
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -128,10 +129,10 @@ TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithSameSeedWorks) {
   RandomMutantGenerator generator1 {SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, 1);
+  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
 
   RandomMutantGenerator generator2 {SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, 1);
+  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);

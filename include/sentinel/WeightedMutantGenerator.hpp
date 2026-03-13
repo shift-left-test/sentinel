@@ -47,7 +47,6 @@ class WeightedMutantGenerator : public MutantGenerator {
    */
   explicit WeightedMutantGenerator(const std::string& path);
 
-  Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants) override;
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
