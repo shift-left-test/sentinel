@@ -6,12 +6,8 @@
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
-#include <fmt/core.h>
 #include <algorithm>
-#include <chrono>
-#include <ctime>
 #include <future>
-#include <iostream>
 #include <map>
 #include <thread>
 #include <memory>

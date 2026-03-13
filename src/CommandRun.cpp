@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
-#include <chrono>
 #include <exception>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -34,6 +33,7 @@
 #include "sentinel/SentinelConfig.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
+#include "sentinel/TimeStamper.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -62,34 +62,10 @@ static void signalHandler(int signum) {
   if (signum != SIGUSR1) {
     Console::err("Received signal: {}.", strsignal(signum));
     if (!workspaceDirForSH.empty()) {
-      Console::err("  hint: Check logs in {}", workspaceDirForSH.string());
+      Console::err("  hint: Check logs in {} for details.", workspaceDirForSH.string());
     }
     std::exit(EXIT_FAILURE);
   }
-}
-
-static constexpr double kSecondsPerMinute = 60.0;
-static constexpr double kSecondsPerHour = 3600.0;
-
-// Formats a duration in seconds into a human-readable string.
-// When approximate=true, adds '~' prefix and uses floor rounding.
-// When approximate=false (elapsed), uses exact values with one decimal for seconds.
-static std::string formatDuration(double secs, bool approximate = false) {
-  if (secs < kSecondsPerMinute) {
-    return approximate ? fmt::format("~{:.0f}s", secs) : fmt::format("{:.1f}s", secs);
-  }
-  if (secs < kSecondsPerHour) {
-    int m = static_cast<int>(secs / kSecondsPerMinute);
-    double s = secs - m * kSecondsPerMinute;
-    return approximate ? fmt::format("~{:.0f}m {:.0f}s", std::floor(secs / kSecondsPerMinute),
-                                     std::fmod(secs, kSecondsPerMinute))
-                       : fmt::format("{}m {:.0f}s", m, s);
-  }
-  int h = static_cast<int>(secs / kSecondsPerHour);
-  int m = static_cast<int>((secs - h * kSecondsPerHour) / kSecondsPerMinute);
-  return approximate ? fmt::format("~{:.0f}h {:.0f}m", std::floor(secs / kSecondsPerHour),
-                                   std::fmod(secs, kSecondsPerHour) / kSecondsPerMinute)
-                     : fmt::format("{}h {}m", h, m);
 }
 
 // Validates that the test result directory exists and contains result files.
@@ -174,13 +150,6 @@ static void printDryRunSummary(const std::filesystem::path& sourceRoot,
   } else {
     Console::out("  [ OK ]  Mutants: {}{}", indexedMutants.size(),
                  candidateCount > 0 ? fmt::format(" of {} candidates", candidateCount) : "");
-  }
-
-  if (!indexedMutants.empty() && baselineSecs > 0.0) {
-    double estimated = baselineSecs * static_cast<double>(indexedMutants.size());
-    Console::out("          Estimated evaluation time: {}  ({} mutant{} x {:.1f}s baseline)",
-                 formatDuration(estimated, true), indexedMutants.size(),
-                 indexedMutants.size() == 1 ? "" : "s", baselineSecs);
   }
 
   if (verbose) {
@@ -520,6 +489,7 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
                                               sentinel::StatusLine& sl,              // NOLINT
                                               const std::shared_ptr<sentinel::Logger>& logger) {
   BaselineResult r;
+  TimeStamper timeStamper;
 
   sl.setPhase(sentinel::StatusLine::Phase::BUILD_ORIG);
 
@@ -530,19 +500,17 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
   }
 
   logger->info("Building original source code...");
-  auto buildPhaseStart = std::chrono::steady_clock::now();
+  timeStamper.reset();
   sentinel::Subprocess origBuildProc(cfg.buildCmd, 0, 0,
                                      (ws.getOriginalDir() / "build.log").string(), cfg.silent);
   origBuildProc.execute();
-  double buildElapsed =
-      std::chrono::duration<double>(std::chrono::steady_clock::now() - buildPhaseStart).count();
   if (!origBuildProc.isSuccessfulExit()) {
-    logger->info("Build failed ({}).", formatDuration(buildElapsed));
+    logger->info("Build failed ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
     logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "build.log").string());
     if (!cfg.dryRun) throw std::runtime_error("Build failed.");
     r.buildOK = false;
   } else {
-    logger->info("Build done ({}).", formatDuration(buildElapsed));
+    logger->info("Build done ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
   }
 
   if (!cfg.dryRun || r.buildOK) {
@@ -551,10 +519,9 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
     fs::remove_all(cfg.testResultDir);
     sentinel::Subprocess firstTestProc(cfg.testCmd, cfg.timeLimit, cfg.killAfter,
                                        (ws.getOriginalDir() / "test.log").string(), cfg.silent);
-    auto start = std::chrono::steady_clock::now();
+    timeStamper.reset();
     firstTestProc.execute();
-    double testElapsed =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    double testElapsed = timeStamper.toDouble();
 
     if (!cfg.resuming && cfg.timeLimitStr == "auto") {
       r.baselineSecs = testElapsed;
@@ -563,10 +530,10 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
     }
 
     if (firstTestProc.isTimedOut()) {
-      logger->info("Tests timed out ({}).", formatDuration(testElapsed));
+      logger->info("Tests timed out ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
       logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string());
       if (!cfg.dryRun)
-        throw std::runtime_error("Timeout occurs when excuting test cmd for original source code.");
+        throw std::runtime_error("Timeout occurs when excuting test command for original source code.");
       r.testOK = false;
     }
     if (r.testOK && !validateTestResultDir(cfg.testResultDir, cfg.testResultDirStr, cfg.dryRun)) {
@@ -575,7 +542,7 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
     }
 
     if (r.testOK) {
-      logger->info("Tests done ({}).", formatDuration(testElapsed));
+      logger->info("Tests done ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
       sentinel::CommandRun::copyTestReportTo(cfg.testResultDir.string(),
                                              ws.getOriginalResultsDir().string(),
                                              cfg.testResultFileExts);
@@ -598,6 +565,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
                                           const BaselineResult& br,
                                           const std::shared_ptr<sentinel::Logger>& logger) {
   PopulateResult r;
+  TimeStamper timeStamper;
 
   if (cfg.resuming) {
     r.indexedMutants = ws.loadMutants();
@@ -609,7 +577,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
   if (!cfg.dryRun || (br.buildOK && br.testOK)) {
     sl.setPhase(sentinel::StatusLine::Phase::POPULATE);
     logger->info("Generating mutants...");
-    auto populateStart = std::chrono::steady_clock::now();
+    timeStamper.reset();
     auto repo = std::make_unique<sentinel::GitRepository>(cfg.sourceRoot, cfg.targetFileExts,
                                                           cfg.diffPatterns, cfg.excludePaths);
     repo->addSkipDir(cfg.workDirPath);
@@ -649,9 +617,7 @@ static PopulateResult runPopulateMutants(const RunCfg& cfg,
       id++;
     }
     sl.setTotalMutants(r.indexedMutants.size());
-    double populateElapsed =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() - populateStart).count();
-    logger->info("Mutant population complete ({}).", formatDuration(populateElapsed));
+    logger->info("Mutant population complete ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
   }
 
   return r;
@@ -663,6 +629,9 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
                                      sentinel::Evaluator& evaluator,  // NOLINT
                                      const std::vector<std::pair<int, sentinel::Mutant>>& indexedMutants,
                                      const std::shared_ptr<sentinel::Logger>& logger) {
+  TimeStamper evalTimeStamper;
+  TimeStamper mutantTimeStamper;
+
   fs::path actualDir = ws.getRoot() / "actual";
   auto repo = std::make_unique<sentinel::GitRepository>(cfg.sourceRoot, cfg.targetFileExts,
                                                         cfg.diffPatterns, cfg.excludePaths);
@@ -673,7 +642,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
 
   size_t totalMutants = indexedMutants.size();
   logger->info("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s");
-  auto evalStart = std::chrono::steady_clock::now();
+  evalTimeStamper.reset();
 
   size_t localIdx = 0;
   for (const auto& [id, m] : indexedMutants) {
@@ -711,7 +680,7 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     ws.setLock(id);
     sl.setMutantInfo(static_cast<size_t>(id), m.getOperator(), m.getPath().filename().string(),
                      m.getFirst().line);
-    auto mutantStart = std::chrono::steady_clock::now();
+    mutantTimeStamper.reset();
 
     std::stringstream buf;
     buf << m;
@@ -747,8 +716,6 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
     }
 
     sentinel::MutationResult result = evaluator.compare(m, actualDir.string(), testState);
-    double mutantElapsed =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() - mutantStart).count();
 
     logger->verbose("Restoring source...");
     sentinel::CommandRun::restoreBackup(ws.getBackupDir().string(), cfg.sourceRoot.string());
@@ -759,13 +726,11 @@ static void runMutantEvaluationLoop(const RunCfg& cfg,
                  localIdx, totalMutants, m.getOperator(),
                  m.getPath().filename().string(), m.getFirst().line,
                  sentinel::MutationStateToStr(result.getMutationState()),
-                 formatDuration(mutantElapsed));
+                 mutantTimeStamper.toString(TimeStamper::Format::HumanReadable));
     fs::remove_all(actualDir);
   }
 
-  double evalElapsed =
-      std::chrono::duration<double>(std::chrono::steady_clock::now() - evalStart).count();
-  logger->info("Evaluation done ({}).", formatDuration(evalElapsed));
+  logger->info("Evaluation done ({}).", evalTimeStamper.toString(TimeStamper::Format::HumanReadable));
 }
 
 static int generateReportAndScore(const RunCfg& cfg,

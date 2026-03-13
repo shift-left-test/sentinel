@@ -6,8 +6,8 @@
 #ifndef INCLUDE_SENTINEL_STATUSLINE_HPP_
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
-#include <chrono>
 #include <string>
+#include "sentinel/TimeStamper.hpp"
 
 namespace sentinel {
 
@@ -100,7 +100,6 @@ class StatusLine {
   void redraw();
   std::string buildStatusString() const;
   std::string phaseLabel() const;
-  std::string getElapsedStr() const;
 
   bool mEnabled = false;
   bool mDryRun = false;
@@ -117,7 +116,7 @@ class StatusLine {
   size_t mBuildFail = 0;
   size_t mTimeout = 0;
   size_t mRuntimeError = 0;
-  std::chrono::steady_clock::time_point mStartTime;
+  TimeStamper mTimeStamper;
 };
 
 }  // namespace sentinel

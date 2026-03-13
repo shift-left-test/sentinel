@@ -10,7 +10,7 @@ build_static_library(
   SRCS SourceLine.cpp SourceTree.cpp Mutant.cpp
        MutantGenerator.cpp UniformMutantGenerator.cpp RandomMutantGenerator.cpp WeightedMutantGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp XmlParser.cpp GoogleTestXmlParser.cpp CTestXmlParser.cpp QTestXmlParser.cpp Evaluator.cpp
-       MutationResult.cpp GitSourceTree.cpp
+       MutationResult.cpp GitSourceTree.cpp TimeStamper.cpp
        Report.cpp XMLReport.cpp HTMLReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp

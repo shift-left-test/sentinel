@@ -6,12 +6,12 @@
 #include <fmt/core.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <chrono>
 #include <iostream>
 #include <string>
 #include "sentinel/Console.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
+#include "sentinel/TimeStamper.hpp"
 
 namespace sentinel {
 
@@ -28,7 +28,7 @@ void StatusLine::enable() {
     return;
   }
   queryTermSize();
-  mStartTime = std::chrono::steady_clock::now();
+  mTimeStamper.reset();
   mEnabled = true;
   setScrollRegion();
   redraw();
@@ -150,15 +150,6 @@ std::string StatusLine::phaseLabel() const {
   return "UNKNOWN";
 }
 
-std::string StatusLine::getElapsedStr() const {
-  auto now = std::chrono::steady_clock::now();
-  auto secs = std::chrono::duration_cast<std::chrono::seconds>(now - mStartTime).count();
-  int h = static_cast<int>(secs / 3600);
-  int m = static_cast<int>((secs % 3600) / 60);
-  int s = static_cast<int>(secs % 60);
-  return fmt::format("{:02d}:{:02d}:{:02d}", h, m, s);
-}
-
 std::string StatusLine::buildStatusString() const {
   std::string result;
 
@@ -187,7 +178,7 @@ std::string StatusLine::buildStatusString() const {
     result += " | Score: N/A";
   }
 
-  result += " | Elapsed: " + getElapsedStr();
+  result += " | Elapsed: " + mTimeStamper.toString(TimeStamper::Format::Clock) + " ";
   return result;
 }
 
