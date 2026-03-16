@@ -533,7 +533,7 @@ static BaselineResult runBaselineBuildAndTest(RunCfg& cfg,                      
       logger->info("Tests timed out ({}).", timeStamper.toString(TimeStamper::Format::HumanReadable));
       logger->info("  hint: See {} for details.", (ws.getOriginalDir() / "test.log").string());
       if (!cfg.dryRun)
-        throw std::runtime_error("Timeout occurs when excuting test command for original source code.");
+        throw std::runtime_error("Timeout occurs when executing test command for original source code.");
       r.testOK = false;
     }
     if (r.testOK && !validateTestResultDir(cfg.testResultDir, cfg.testResultDirStr, cfg.dryRun)) {

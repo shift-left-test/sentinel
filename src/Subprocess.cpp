@@ -37,7 +37,7 @@ Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secF
 int Subprocess::execute() {
   // Check for existence of /bin/sh
   if (access("/bin/sh", X_OK) != 0) {
-    throw std::runtime_error("/bin/sh is not excutable file.");
+    throw std::runtime_error("/bin/sh is not an executable file.");
   }
 
   if (mCmd.empty()) {
@@ -47,16 +47,16 @@ int Subprocess::execute() {
   // Open pipe
   int pfd[2];
   if (pipe(static_cast<int*>(pfd)) != 0) {
-    throw std::runtime_error(fmt::format("fail open pipe (cause: {})", std::strerror(errno)));
+    throw std::runtime_error(fmt::format("failed to open pipe (cause: {})", std::strerror(errno)));
   }
 
-  // Backup below signals' handler temporally
-  // sc's desctructor restore signals' handler.
+  // Backup below signals' handler temporarily
+  // sc's destructor restore signals' handler.
   const std::vector<int> usingSignals = {SIGABRT, SIGINT,  SIGFPE, SIGILL,  SIGSEGV,
                                          SIGTERM, SIGQUIT, SIGHUP, SIGALRM, SIGCHLD};
   auto sc = std::make_unique<signal::SaContainer>(usingSignals);
 
-  // Ignore below signals' temporally
+  // Ignore below signals' temporarily
   // If below signals are received before the signal handler is set,
   // sentinel operates abnormally.
   signal::setMultipleSignalHandlers(usingSignals, SIG_IGN);
@@ -79,7 +79,7 @@ int Subprocess::execute() {
     signal::setMultipleSignalHandlers(usingSignals, SIG_DFL);
 
     execlp("/bin/sh", "sh", "-c", mCmd.c_str(), nullptr);
-    Console::out("fail exec {} (cause: {})", mCmd, std::strerror(errno));
+    Console::out("failed to exec {} (cause: {})", mCmd, std::strerror(errno));
     exit(1);
   } else if (pid > 0) {
     // Close unused pipe
@@ -191,7 +191,7 @@ int Subprocess::execute() {
     sc.reset();
     close(pfd[0]);
     close(pfd[1]);
-    throw std::runtime_error(fmt::format("fail fork ({}) (cause: {})", mCmd, std::strerror(errno)));
+    throw std::runtime_error(fmt::format("failed to fork ({}) (cause: {})", mCmd, std::strerror(errno)));
   }
 }
 

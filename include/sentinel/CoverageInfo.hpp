@@ -51,4 +51,4 @@ class CoverageInfo {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_MUTATIONRESULTS_HPP_
+#endif  // INCLUDE_SENTINEL_COVERAGEINFO_HPP_

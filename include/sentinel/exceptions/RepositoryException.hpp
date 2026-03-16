@@ -12,7 +12,7 @@
 namespace sentinel {
 
 /**
- * @brief RepositoryExcpetion class
+ * @brief RepositoryException class
  */
 class RepositoryException : public std::runtime_error {
  public:

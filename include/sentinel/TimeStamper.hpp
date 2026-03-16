@@ -12,7 +12,7 @@
 namespace sentinel {
 
 /**
- * @ TimeStamper class.
+ * @brief TimeStamper class.
  */
 class TimeStamper {
  public:

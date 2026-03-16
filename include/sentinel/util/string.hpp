@@ -59,7 +59,7 @@ inline std::string ltrim(const std::string& s, UnaryPredicate pred) {
  * @brief Remove leading whitespace characters
  *
  * @param s string
- * @return trimmed characteres
+ * @return trimmed characters
  */
 inline std::string ltrim(const std::string& s) {
   return ltrim(s, [](unsigned char c) { return std::isspace(c); });
@@ -145,7 +145,7 @@ inline std::vector<std::string> split(const std::string& s, char delim = ' ') {
  *
  * @param s target string
  * @param delimiter
- * @return vecotr of string that is split by delimiter
+ * @return vector of string that is split by delimiter
  */
 inline std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
   std::size_t pos_start = 0;
@@ -196,8 +196,7 @@ inline std::string join(char delim, const std::vector<std::string>& tokens) {
 
 /**
  * @brief Join the given characters into a string
- *
- * @param delim delimter
+ * @param delim delimiter
  * @param tokens to join
  * @return joined string
  */
@@ -209,7 +208,7 @@ inline std::string join(const std::string& delim, const Arg&... tokens) {
 /**
  * @brief Join the given characters into a string
  *
- * @param delim delimter
+ * @param delim delimiter
  * @param tokens to join
  * @return joined string
  */

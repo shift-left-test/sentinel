@@ -57,7 +57,7 @@ class IndexHTMLGenerator : public DOCGenerator {
   std::size_t mDenominator;
   std::string mTableItem;
 
-  std::string indexRootTitle = R"(        <h3>Proejct Summary</h3>)";
+  std::string indexRootTitle = R"(        <h3>Project Summary</h3>)";
 
   std::string indexSubTitle =
       R"(        <h2>Directory Summary</h2>

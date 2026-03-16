@@ -40,7 +40,7 @@ class GitHarnessTest : public ::testing::Test {
     for (i = 0; i < maxi; ++i) {
       s = git_status_byindex(status, i);
 
-      // A staged file is a file that is added, modified , delted, renamed, or
+      // A staged file is a file that is added, modified , deleted, renamed, or
       // typechanged in git repo index.
       if (s != nullptr && s->status != GIT_STATUS_CURRENT &&
           ((s->status & GIT_STATUS_INDEX_NEW) != 0 || (s->status & GIT_STATUS_INDEX_MODIFIED) != 0 ||
@@ -103,7 +103,7 @@ TEST_F(GitHarnessTest, testAddFolderFailWhenFolderExisted) {
 }
 
 // Action: create new file in git repo with empty main function
-// Expected Output: cile created at within repo at correct location and content.
+// Expected Output: file created at within repo at correct location and content.
 TEST_F(GitHarnessTest, testAddFileWorks) {
   std::string filename = "temp.cpp";
   std::string content = "int main() {}";
@@ -187,7 +187,7 @@ TEST_F(GitHarnessTest, testAddCodeFailWhenPositionOutOfBound) {
   EXPECT_EQ("int main() {}\n//comment\n//add\n//add\n", new_content);
 }
 
-// Action: add code to nonexisted file
+// Action: add code to nonexistent file
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testAddCodeFailWhenFileNotExists) {
   std::string content = "content";
@@ -222,7 +222,7 @@ TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
   EXPECT_EQ(initial_content, content);
 }
 
-// Action: add code to nonexisted file
+// Action: add code to nonexistent file
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testDeleteCodeFailWhenFileNotExists) {
   std::vector<std::size_t> target_lines {2};
@@ -329,7 +329,7 @@ TEST_F(GitHarnessTest, testAddTagLightweightWorks) {
   git_oid target_oid;
   git_oid_fromstrp(&target_oid, target_oid_str.c_str());
 
-  // commid id used during tag and the commit id referenced by the tag are same.
+  // commit id used during tag and the commit id referenced by the tag are same.
   EXPECT_TRUE(tagged_oid != nullptr);
   EXPECT_EQ(git_oid_cmp(&target_oid, tagged_oid), 0);
 

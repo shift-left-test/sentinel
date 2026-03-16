@@ -67,7 +67,7 @@ class MutationResult {
    *
    * @param other
    *
-   * @return bool value whether two MutationReults are same
+   * @return bool value whether two MutationResults are same
    */
   bool compare(const MutationResult& other) const;
 

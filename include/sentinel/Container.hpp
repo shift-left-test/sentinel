@@ -129,7 +129,7 @@ class Container {
   void push_back(typename std::vector<T>::value_type&& object);
 
   /**
-   * @brief Construct and add the end
+   * @brief Construct and add at the end
    *
    * @tparam Args constructor argument types
    * @param args for constructor

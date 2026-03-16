@@ -28,8 +28,8 @@ class MutantsTest : public SampleFileGeneratorForTest {
       fs::remove(OUTPUT_PATH);
     }
 
-    if (fs::exists(NONEXISTED_DIR)) {
-      fs::remove_all(NONEXISTED_DIR);
+    if (fs::exists(NONEXISTENT_DIR)) {
+      fs::remove_all(NONEXISTENT_DIR);
     }
     SampleFileGeneratorForTest::TearDown();
   }
@@ -41,11 +41,11 @@ class MutantsTest : public SampleFileGeneratorForTest {
            m1.getLast().column == m2.getLast().column && m1.getToken() == m2.getToken();
   }
 
-  std::string NONEXISTED_DIR = "nonexist";
+  std::string NONEXISTENT_DIR = "nonexist";
   std::string OUTPUT_PATH = "./mutables.db";
-  std::string NONEXISTED_PATH = "nonexist/mutables.db";
+  std::string NONEXISTENT_PATH = "nonexist/mutables.db";
   std::string NORMAL_FILENAME;
-  std::string NONEXISTED_FILENAME = "nonexist/nonexist.cpp";
+  std::string NONEXISTENT_FILENAME = "nonexist/nonexist.cpp";
   std::string ABNORMAL_FILENAME = "some,weird\"~ name";
   std::string ONELINE_TOKEN = "+";
   std::string MULTILINE_TOKEN = "a + \\\n\tb";
@@ -53,7 +53,7 @@ class MutantsTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {
-  EXPECT_THROW(Mutant("AOR", NONEXISTED_FILENAME, "", 0, 0, 0, 0, ONELINE_TOKEN), fs::filesystem_error);
+  EXPECT_THROW(Mutant("AOR", NONEXISTENT_FILENAME, "", 0, 0, 0, 0, ONELINE_TOKEN), fs::filesystem_error);
 }
 
 TEST_F(MutantsTest, testAdd) {
@@ -91,16 +91,16 @@ TEST_F(MutantsTest, testSaveWorksWhenExistedDirGiven) {
   inFile.close();
 }
 
-TEST_F(MutantsTest, testSaveWorksWhenNonexistedDirGiven) {
+TEST_F(MutantsTest, testSaveWorksWhenNonexistentDirGiven) {
   Mutants m;
   Mutant mutable1("AOR", NORMAL_FILENAME, "main", 0, 0, 0, 0, ONELINE_TOKEN);
   Mutant mutable2("AOR", NORMAL_FILENAME, "A::foo", 1, 1, 1, 1, EMPTY_TOKEN);
   m.push_back(mutable1);
   m.push_back(mutable2);
-  m.save(NONEXISTED_PATH);
-  EXPECT_TRUE(fs::exists(NONEXISTED_PATH));
+  m.save(NONEXISTENT_PATH);
+  EXPECT_TRUE(fs::exists(NONEXISTENT_PATH));
 
-  std::ifstream inFile(NONEXISTED_PATH);
+  std::ifstream inFile(NONEXISTENT_PATH);
   Mutant loaded_mutable1;
   EXPECT_NO_THROW(inFile >> loaded_mutable1);
   EXPECT_TRUE(equal(mutable1, loaded_mutable1));

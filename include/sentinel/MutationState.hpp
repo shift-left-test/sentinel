@@ -32,7 +32,7 @@ inline const char* MutationStateToStr(MutationState m) {
     case MutationState::TIMEOUT:
       return "TIMEOUT";
     default:
-      return "UNKOWN";
+      return "UNKNOWN";
   }
 }
 

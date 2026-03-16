@@ -18,20 +18,20 @@ namespace sentinel {
 class Command {
  public:
   /**
-   * @brief constructor
+   * @brief Constructor
    */
   explicit Command(args::Group& parser);
   Command(const Command&) = delete;
   Command& operator=(const Command&) = delete;
 
   /**
-   * @brief destructor
+   * @brief Destructor
    */
   virtual ~Command() = default;
 
  public:
   /**
-   * @brief initialize execution environment
+   * @brief Initialize execution environment
    */
   virtual void init();
 

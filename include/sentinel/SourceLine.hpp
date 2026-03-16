@@ -21,7 +21,7 @@ class SourceLine {
    *
    * @param path source file path
    *
-   * @param lineNumber soure line number
+   * @param lineNumber source line number
    */
   SourceLine(const std::filesystem::path& path, std::size_t lineNumber);
 

@@ -197,7 +197,7 @@ GitHarness& GitHarness::stageFile(std::vector<std::string> filenames) {
   return *this;
 }
 
-// git commit -m "messasge"
+// git commit -m "message"
 GitHarness& GitHarness::commit(const std::string& message) {
   git_oid new_commit_id, tree_oid;
   git_tree* tree;

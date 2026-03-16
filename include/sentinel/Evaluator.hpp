@@ -37,8 +37,8 @@ class Evaluator {
   /**
    * @brief Compare an actual with the expected
    *
-   * @param mut taget mutable
-   * @param ActualResultDir Directory Path of Actural Result
+   * @param mut target mutant
+   * @param ActualResultDir Directory Path of Actual Result
    * @param testState one of ['success', 'build_failure', 'timeout']
    * @return MutationResult summary of compare
    */
@@ -47,8 +47,8 @@ class Evaluator {
   /**
    * @brief Compare an actual with the expected and save&return summary
    *
-   * @param mut taget mutable
-   * @param ActualResultDir Directory Path of Actural Result
+   * @param mut target mutant
+   * @param ActualResultDir Directory Path of Actual Result
    * @param evalFilePath File Path of MutationResult
    * @param testState one of ['success', 'build_failure', 'timeout']
    * @return MutationResult summary of compare

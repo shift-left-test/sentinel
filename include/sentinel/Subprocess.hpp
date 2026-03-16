@@ -38,7 +38,7 @@ class Subprocess {
   Subprocess& operator=(const Subprocess&) = delete;
 
   /**
-   * @brief excute cmd
+   * @brief execute cmd
    *
    * @return exit status
    * @throw runtime_error when bin/sh doesn't exist or fork fail.
@@ -55,7 +55,7 @@ class Subprocess {
   /**
    * @brief check if exit and return 0
    *
-   * @return 1 if exit and retun 0
+   * @return 1 if exit and return 0
    */
   bool isSuccessfulExit();
 

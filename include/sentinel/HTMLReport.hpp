@@ -47,7 +47,7 @@ class HTMLReport : public Report {
    * @brief makeIndexHtml
    *
    * @param totNumberOfMutation
-   * @param totNumberOfDetecedMutation
+   * @param totNumberOfDetectedMutation
    * @param root index or not
    * @param currentDirPath current key of groupByDirPath (used in non root)
    * @param outputDir
@@ -59,7 +59,7 @@ class HTMLReport : public Report {
   /**
    * @brief makeSourceHtml
    *
-   * @param MRs Mutation Resulsts of a source file
+   * @param MRs Mutation Results of a source file
    * @param srcPath
    * @param outputDir
    */

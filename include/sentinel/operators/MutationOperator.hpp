@@ -44,7 +44,7 @@ class MutationOperator {
   }
 
   /**
-   * @brief Return True if this mutation operator can be applied to give AST
+   * @brief Return True if this mutation operator can be applied to given AST
    *        node. Consider the domain of the mutation operator as well as
    *        the AST node's surrounding context to avoid generating stillborn
    *        mutants.
@@ -102,7 +102,7 @@ class MutationOperator {
   bool isPointerDereferenceExpr(clang::Stmt* s);
 
   /**
-   * @brief Return the qualified name of the function surround this ast node.
+   * @brief Return the qualified name of the function surrounding this ast node.
    *
    * @param s target AST node
    * @return function qualified name

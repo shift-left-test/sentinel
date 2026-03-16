@@ -23,7 +23,7 @@ class SrcHTMLGenerator : public DOCGenerator {
    * @brief Default constructor
    *
    * @param srcName current source file name
-   * @param srcRoot if source file locate at source root directory
+   * @param srcRoot if source file located at source root directory
    */
   explicit SrcHTMLGenerator(const std::string& srcName, bool srcRoot);
 
@@ -47,7 +47,7 @@ class SrcHTMLGenerator : public DOCGenerator {
    * @param killed or not
    * @param count
    * @param curKillingTest current killing test
-   * @param curOperator current mutation operatior
+   * @param curOperator current mutation operator
    */
   void pushMutation(std::size_t curLineNum, bool killed, std::size_t count, const std::string& curKillingTest,
                     const std::string& curOperator);

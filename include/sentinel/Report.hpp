@@ -54,7 +54,7 @@ class Report {
   virtual void save(const std::filesystem::path& path) = 0;
 
   /**
-   * @brief Print summury of report
+   * @brief Print summary of report
    */
   void printSummary() const;
 
@@ -111,7 +111,7 @@ class Report {
   std::size_t totNumberOfMutation = 0;
 
   /**
-   * @brief total number of Deteced Mutation
+   * @brief total number of Detected Mutation
    */
   std::size_t totNumberOfDetectedMutation = 0;
 

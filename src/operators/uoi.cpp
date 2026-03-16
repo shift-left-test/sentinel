@@ -44,7 +44,7 @@ bool UOI::canMutate(clang::Stmt* s) {
   // UOI must not be applied to variable reference expression that is:
   // 1. left hand side of assignment expression, or
   // 2. operand of address-of operator (&), or
-  // 3. in return statment, or
+  // 3. in return statement, or
   // 4. inside lambda capture
   const clang::Stmt* parent = getParentStmt(s);
   while (parent != nullptr) {
