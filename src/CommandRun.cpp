@@ -804,7 +804,7 @@ int CommandRun::run() {
     return 0;
   }
 
-  bool dryRun = static_cast<bool>(mDryRun);
+  bool dryRun = mDryRun;
 
   StatusLine statusLine;
   statusLine.setDryRun(dryRun);
@@ -1028,7 +1028,7 @@ int CommandRun::run() {
   logger->info("Workspace: {}", ws.getRoot().string());
   logger->verbose("resuming:           {}", resuming ? "yes" : "no");
 
-  bool disableStatusLine = static_cast<bool>(mNoStatusLine);
+  bool disableStatusLine = mNoStatusLine;
   if (!disableStatusLine) {
     statusLine.enable();
   }
@@ -1197,187 +1197,111 @@ std::string CommandRun::preProcessWorkDir(const std::string& target, bool* targe
 }
 
 std::string CommandRun::getSourceDir() {
-  if (mSourceDir) {
-    return mSourceDir.Get();
-  }
-  if (mConfig && mConfig->sourceDir) {
-    return *mConfig->sourceDir;
-  }
-  return mSourceDir.Get();
+  if (mSourceDir) return mSourceDir.Get();
+  if (mConfig && mConfig->sourceDir) return *mConfig->sourceDir;
+  return ".";
 }
 
 std::string CommandRun::getWorkDir() {
-  if (mWorkDir) {
-    return mWorkDir.Get();
-  }
-  if (mConfig && mConfig->workDir) {
-    return *mConfig->workDir;
-  }
-  return mWorkDir.Get();
+  if (mWorkDir) return mWorkDir.Get();
+  if (mConfig && mConfig->workDir) return *mConfig->workDir;
+  return "./sentinel_workspace";
 }
 
 std::string CommandRun::getOutputDir() {
-  if (mOutputDir) {
-    return mOutputDir.Get();
-  }
-  if (mConfig && mConfig->outputDir) {
-    return *mConfig->outputDir;
-  }
-  return mOutputDir.Get();
+  if (mOutputDir) return mOutputDir.Get();
+  if (mConfig && mConfig->outputDir) return *mConfig->outputDir;
+  return "";
 }
 
 std::string CommandRun::getTestResultDir() {
-  if (mTestResultDir) {
-    return mTestResultDir.Get();
-  }
-  if (mConfig && mConfig->testResultDir) {
-    return *mConfig->testResultDir;
-  }
-  return mTestResultDir.Get();
+  if (mTestResultDir) return mTestResultDir.Get();
+  if (mConfig && mConfig->testResultDir) return *mConfig->testResultDir;
+  return "";
 }
 
 std::string CommandRun::getCompileDbDir() {
-  if (mCompileDbDir) {
-    return mCompileDbDir.Get();
-  }
-  if (mConfig && mConfig->compileDbDir) {
-    return *mConfig->compileDbDir;
-  }
-  return mCompileDbDir.Get();
+  if (mCompileDbDir) return mCompileDbDir.Get();
+  if (mConfig && mConfig->compileDbDir) return *mConfig->compileDbDir;
+  return ".";
 }
 
 std::string CommandRun::getBuildCmd() {
-  if (mBuildCmd) {
-    return mBuildCmd.Get();
-  }
-  if (mConfig && mConfig->buildCmd) {
-    return *mConfig->buildCmd;
-  }
-  return mBuildCmd.Get();
+  if (mBuildCmd) return mBuildCmd.Get();
+  if (mConfig && mConfig->buildCmd) return *mConfig->buildCmd;
+  return "";
 }
 
 std::string CommandRun::getTestCmd() {
-  if (mTestCmd) {
-    return mTestCmd.Get();
-  }
-  if (mConfig && mConfig->testCmd) {
-    return *mConfig->testCmd;
-  }
-  return mTestCmd.Get();
+  if (mTestCmd) return mTestCmd.Get();
+  if (mConfig && mConfig->testCmd) return *mConfig->testCmd;
+  return "";
 }
 
 std::string CommandRun::getGenerator() {
-  if (mGenerator) {
-    return mGenerator.Get();
-  }
-  if (mConfig && mConfig->generator) {
-    return *mConfig->generator;
-  }
-  return mGenerator.Get();
+  if (mGenerator) return mGenerator.Get();
+  if (mConfig && mConfig->generator) return *mConfig->generator;
+  return "uniform";
 }
 
 std::vector<std::string> CommandRun::getTestResultFileExts() {
-  if (mTestResultFileExts) {
-    return mTestResultFileExts.Get();
-  }
-  if (mConfig && mConfig->testResultFileExts) {
-    return *mConfig->testResultFileExts;
-  }
-  return mTestResultFileExts.Get();
+  if (mTestResultFileExts) return mTestResultFileExts.Get();
+  if (mConfig && mConfig->testResultFileExts) return *mConfig->testResultFileExts;
+  return {"xml", "XML"};
 }
 
 std::vector<std::string> CommandRun::getTargetFileExts() {
-  if (mExtensions) {
-    return mExtensions.Get();
-  }
-  if (mConfig && mConfig->extensions) {
-    return *mConfig->extensions;
-  }
-  return mExtensions.Get();
+  if (mExtensions) return mExtensions.Get();
+  if (mConfig && mConfig->extensions) return *mConfig->extensions;
+  return {"cxx", "cpp", "cc", "c", "c++", "cu"};
 }
 
 std::vector<std::string> CommandRun::getPatterns() {
-  if (mPatterns) {
-    return mPatterns.Get();
-  }
-  if (mConfig && mConfig->patterns) {
-    return *mConfig->patterns;
-  }
-  return mPatterns.Get();
+  if (mPatterns) return mPatterns.Get();
+  if (mConfig && mConfig->patterns) return *mConfig->patterns;
+  return {};
 }
 
 std::vector<std::string> CommandRun::getExcludePaths() {
-  if (mExcludes) {
-    return mExcludes.Get();
-  }
-  if (mConfig && mConfig->excludes) {
-    return *mConfig->excludes;
-  }
-  return mExcludes.Get();
+  if (mExcludes) return mExcludes.Get();
+  if (mConfig && mConfig->excludes) return *mConfig->excludes;
+  return {};
 }
 
 std::vector<std::string> CommandRun::getCoverageFiles() {
-  if (mCoverageFiles) {
-    return mCoverageFiles.Get();
-  }
-  if (mConfig && mConfig->coverageFiles) {
-    return *mConfig->coverageFiles;
-  }
-  return mCoverageFiles.Get();
+  if (mCoverageFiles) return mCoverageFiles.Get();
+  if (mConfig && mConfig->coverageFiles) return *mConfig->coverageFiles;
+  return {};
 }
 
 std::string CommandRun::getScope() {
-  if (mScope) {
-    return mScope.Get();
-  }
-  if (mConfig && mConfig->scope) {
-    return *mConfig->scope;
-  }
-  return mScope.Get();
+  if (mScope) return mScope.Get();
+  if (mConfig && mConfig->scope) return *mConfig->scope;
+  return "all";
 }
 
 size_t CommandRun::getMutantLimit() {
-  if (mLimit) {
-    return mLimit.Get();
-  }
-  if (mConfig && mConfig->limit) {
-    return *mConfig->limit;
-  }
-  return mLimit.Get();
+  if (mLimit) return mLimit.Get();
+  if (mConfig && mConfig->limit) return *mConfig->limit;
+  return 0;
 }
 
 std::string CommandRun::getTestTimeLimit() {
-  if (mTimeLimitStr) {
-    return mTimeLimitStr.Get();
-  }
-  if (mConfig && mConfig->timeLimit) {
-    return *mConfig->timeLimit;
-  }
-  return mTimeLimitStr.Get();
+  if (mTimeLimitStr) return mTimeLimitStr.Get();
+  if (mConfig && mConfig->timeLimit) return *mConfig->timeLimit;
+  return "auto";
 }
 
 std::string CommandRun::getKillAfter() {
-  if (mKillAfterStr) {
-    return mKillAfterStr.Get();
-  }
-  if (mConfig && mConfig->killAfter) {
-    return *mConfig->killAfter;
-  }
-  return mKillAfterStr.Get();
+  if (mKillAfterStr) return mKillAfterStr.Get();
+  if (mConfig && mConfig->killAfter) return *mConfig->killAfter;
+  return "60";
 }
 
 unsigned CommandRun::getSeed() {
-  std::string seedStr;
-  if (mSeed) {
-    seedStr = mSeed.Get();
-  } else if (mConfig && mConfig->seed) {
-    return *mConfig->seed;
-  } else {
-    seedStr = mSeed.Get();
-  }
-  if (seedStr == "auto") {
-    return std::random_device {}();
-  }
+  if (mConfig && mConfig->seed && !mSeed) return *mConfig->seed;
+  std::string seedStr = mSeed ? mSeed.Get() : "auto";
+  if (seedStr == "auto") return std::random_device {}();
   return static_cast<unsigned>(std::stoul(seedStr));
 }
 

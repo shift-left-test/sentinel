@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <string_view>
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
@@ -44,9 +45,10 @@ bool QTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
     }
 
     auto savedName = fmt::format("{0}.{1}", pClassName, pName);
-    if (std::string(pResult) == std::string("pass")) {
+    std::string_view res(pResult);
+    if (res == "pass") {
       addPassed(savedName);
-    } else if (std::string(pResult) == std::string("fail")) {
+    } else if (res == "fail") {
       addFailed(savedName);
     } else {
       // do nothing

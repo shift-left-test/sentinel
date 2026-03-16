@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <string_view>
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
@@ -37,7 +38,8 @@ bool CTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
         return false;
       }
 
-      if (std::string(pStatus) == std::string("run") || std::string(pStatus) == std::string("fail")) {
+      std::string_view status(pStatus);
+      if (status == "run" || status == "fail") {
         const char* pName = q->Attribute("name");
         if (pName == nullptr) {
           logger->debug(message);

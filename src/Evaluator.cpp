@@ -55,29 +55,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::string& ActualRe
   mLogger->verbose("error TC: {}", errorTC);
   mLogger->verbose("state: {}", MutationStateToStr(state));
 
-  fs::path relPath;
-
-  auto p = fs::canonical(mut.getPath());
-  const auto& base = mCanonicalSourcePath;
-
-  auto mismatched = std::mismatch(p.begin(), p.end(), base.begin(), base.end());
-
-  if (mismatched.first == p.end() && mismatched.second == base.end()) {
-    relPath /= ".";
-  } else {
-    auto it_p = mismatched.first;
-    auto it_base = mismatched.second;
-
-    for (; it_base != base.end(); ++it_base) {
-      if (!it_base->empty()) {
-        relPath /= "..";
-      }
-    }
-
-    for (; it_p != p.end(); ++it_p) {
-      relPath /= *it_p;
-    }
-  }
+  fs::path relPath = fs::canonical(mut.getPath()).lexically_relative(mCanonicalSourcePath);
 
   std::size_t flen = 60;
   std::string mutLoc = fmt::format("{path} ({sl}:{sc}-{el}:{ec} -> {mc})", fmt::arg("path", relPath.string()),
@@ -127,7 +105,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
   MutationResult ret = compare(mut, ActualResultDir, testState);
 
   std::ofstream outFile(evalFilePath.c_str(), std::ios::out | std::ios::app);
-  outFile << ret << std::endl;
+  outFile << ret << "\n";
   outFile.close();
 
   mLogger->verbose("saved mutation result: {}", outDir.string());

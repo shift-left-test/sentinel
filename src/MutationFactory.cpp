@@ -50,8 +50,8 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   Console::out(defFormat, "File", flen, "Mutants", mlen);
   Console::out("{0:-^{1}}", "", maxlen);
 
+  auto root = fs::canonical(gitPath);
   for (const auto& p : groupByPath) {
-    auto root = fs::canonical(gitPath);
     auto file = fs::canonical(p.first);
     std::string filePath = file.lexically_relative(root).string();
 

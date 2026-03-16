@@ -31,8 +31,8 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator==(const SourceLine& other) const {
-    return std::filesystem::equivalent(this->mPath, other.mPath) &&
-           this->mLineNumber == other.mLineNumber;
+    return std::filesystem::equivalent(mPath, other.mPath) &&
+           mLineNumber == other.mLineNumber;
   }
 
   /**
@@ -41,13 +41,13 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator<(const SourceLine& other) const {
-    if (this->mPath.string() < other.mPath.string()) {
+    if (mPath.string() < other.mPath.string()) {
       return true;
     }
-    if (this->mPath.string() > other.mPath.string()) {
+    if (mPath.string() > other.mPath.string()) {
       return false;
     }
-    return this->mLineNumber < other.mLineNumber;
+    return mLineNumber < other.mLineNumber;
   }
 
   /**

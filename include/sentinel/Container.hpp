@@ -314,7 +314,7 @@ void Container<T>::save(const std::string& path) {
   }
   std::ofstream ofs(path);
   for (const auto& data : mData) {
-    ofs << data << std::endl;
+    ofs << data << "\n";
   }
   ofs.close();
 }

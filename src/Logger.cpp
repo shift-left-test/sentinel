@@ -18,8 +18,11 @@ static std::mutex loggersMutex;
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& name) {
   std::lock_guard<std::mutex> lock(loggersMutex);
-  loggers.emplace(name, std::shared_ptr<Logger>(new Logger(name, defaultLevel)));
-  return loggers.at(name);
+  auto [it, inserted] = loggers.try_emplace(name, nullptr);
+  if (inserted) {
+    it->second.reset(new Logger(name, defaultLevel));
+  }
+  return it->second;
 }
 
 Logger::Logger(const std::string& name, Logger::Level level) : mName(name), mLevel(level) {
