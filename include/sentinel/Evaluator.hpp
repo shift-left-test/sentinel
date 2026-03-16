@@ -31,6 +31,8 @@ class Evaluator {
    *        when expected result doesn't have passed test case
    */
   explicit Evaluator(const std::string& expectedResultDir, const std::string& sourcePath);
+  Evaluator(const Evaluator&) = delete;
+  Evaluator& operator=(const Evaluator&) = delete;
 
   /**
    * @brief Compare an actual with the expected

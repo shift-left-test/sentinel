@@ -34,6 +34,9 @@ class Logger {
     OFF = 6,
   };
 
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
+
   /**
    * @brief Return the logger instance
    *
@@ -64,7 +67,7 @@ class Logger {
   template <typename... Args>
   void debug(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::DEBUG)) {
-      Console::out("[debug] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::out("[debug] " + pattern, std::forward<Args>(args)...);
     }
   }
 
@@ -77,7 +80,7 @@ class Logger {
   template <typename... Args>
   void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
-      Console::out("[verbose] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::out("[verbose] " + pattern, std::forward<Args>(args)...);
     }
   }
 
@@ -90,7 +93,7 @@ class Logger {
   template <typename... Args>
   void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
-      Console::out("[info] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::out("[info] " + pattern, std::forward<Args>(args)...);
     }
   }
 
@@ -103,7 +106,7 @@ class Logger {
   template <typename... Args>
   void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
-      Console::err("[warn] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[warn] " + pattern, std::forward<Args>(args)...);
     }
   }
 
@@ -116,7 +119,7 @@ class Logger {
   template <typename... Args>
   void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
-      Console::err("[error] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[error] " + pattern, std::forward<Args>(args)...);
     }
   }
 

@@ -12,9 +12,7 @@
 #include <tuple>
 #include <vector>
 
-namespace sentinel {
-
-namespace signal {
+namespace sentinel::signal {
 
 /**
  * @brief set signal handler
@@ -82,6 +80,9 @@ class SaContainer {
         });
   }
 
+  SaContainer(const SaContainer&) = delete;
+  SaContainer& operator=(const SaContainer&) = delete;
+
   /**
    * @brief destructor
    */
@@ -97,8 +98,6 @@ class SaContainer {
   std::vector<std::tuple<int, struct sigaction*>> signumAndSa;
 };
 
-}  // namespace signal
-
-}  // namespace sentinel
+}  // namespace sentinel::signal
 
 #endif  // INCLUDE_SENTINEL_UTIL_SIGNAL_HPP_

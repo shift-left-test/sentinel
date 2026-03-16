@@ -34,6 +34,9 @@ class Subprocess {
   explicit Subprocess(const std::string& cmd, std::size_t sec = 0, std::size_t secForKill = 0,
                       const std::string& logFile = "", bool silent = false);
 
+  Subprocess(const Subprocess&) = delete;
+  Subprocess& operator=(const Subprocess&) = delete;
+
   /**
    * @brief excute cmd
    *

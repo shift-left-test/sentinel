@@ -21,6 +21,8 @@ class QTestXmlParser : public XmlParser {
    * @brief Default constructor
    */
   QTestXmlParser();
+  QTestXmlParser(const QTestXmlParser&) = delete;
+  QTestXmlParser& operator=(const QTestXmlParser&) = delete;
 
   /**
    * @brief Default destructor

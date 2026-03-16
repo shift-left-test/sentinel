@@ -29,14 +29,13 @@ class StatusLine {
    * @brief Default constructor.
    */
   StatusLine();
+  StatusLine(const StatusLine&) = delete;
+  StatusLine& operator=(const StatusLine&) = delete;
 
   /**
    * @brief Destructor. Calls disable() if the status line is still active.
    */
   ~StatusLine();
-
-  StatusLine(const StatusLine&) = delete;
-  StatusLine& operator=(const StatusLine&) = delete;
 
   /**
    * @brief Activate the status line.

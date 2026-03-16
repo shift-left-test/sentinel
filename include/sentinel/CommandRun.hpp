@@ -29,6 +29,8 @@ class CommandRun : public Command {
    * @brief Constructor — registers all command-line options with @p parser.
    */
   explicit CommandRun(args::Group& parser);  // NOLINT
+  CommandRun(const CommandRun&) = delete;
+  CommandRun& operator=(const CommandRun&) = delete;
 
   /**
    * @brief Loads the YAML config file and applies log-level settings.

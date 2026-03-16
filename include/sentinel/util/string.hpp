@@ -17,9 +17,7 @@
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-namespace sentinel {
-
-namespace string {
+namespace sentinel::string {
 
 /**
  * @brief Check if a string starts with the given keyword.
@@ -295,8 +293,6 @@ inline bool stringToBool(const std::string& s) {
       fmt::format("Input must be a boolean value (true or false): \"{}\". temp = {}", s, temp));
 }
 
-}  // namespace string
-
-}  // namespace sentinel
+}  // namespace sentinel::string
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

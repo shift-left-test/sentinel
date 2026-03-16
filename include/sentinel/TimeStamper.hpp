@@ -28,14 +28,13 @@ class TimeStamper {
    * @brief Default constructor.
    */
   TimeStamper();
+  TimeStamper(const TimeStamper&) = delete;
+  TimeStamper& operator=(const TimeStamper&) = delete;
 
   /**
    * @brief Default destructor.
    */
   ~TimeStamper();
-
-  TimeStamper(const TimeStamper&) = delete;
-  TimeStamper& operator=(const TimeStamper&) = delete;
 
   /**
    * @brief Reset timer.

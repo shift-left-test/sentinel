@@ -21,6 +21,9 @@ class Command {
    * @brief constructor
    */
   explicit Command(args::Group& parser);
+  Command(const Command&) = delete;
+  Command& operator=(const Command&) = delete;
+
   /**
    * @brief destructor
    */

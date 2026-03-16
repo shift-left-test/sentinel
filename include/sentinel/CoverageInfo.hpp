@@ -30,6 +30,9 @@ class CoverageInfo {
    */
   explicit CoverageInfo(const std::vector<std::string>& filenames);
 
+  CoverageInfo(const CoverageInfo&) = delete;
+  CoverageInfo& operator=(const CoverageInfo&) = delete;
+
   /**
    * @brief Check if a code line is covered by test cases
    *

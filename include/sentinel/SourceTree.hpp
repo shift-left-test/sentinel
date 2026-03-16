@@ -25,6 +25,8 @@ class SourceTree {
    * @param baseDirectory repository directory
    */
   explicit SourceTree(const std::filesystem::path& baseDirectory);
+  SourceTree(const SourceTree&) = delete;
+  SourceTree& operator=(const SourceTree&) = delete;
 
   /**
    * @brief Modify the source with respect to the given mutable information

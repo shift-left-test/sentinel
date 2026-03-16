@@ -20,7 +20,8 @@ namespace fs = std::filesystem;
 
 namespace sentinel {
 
-Workspace::Workspace(const fs::path& root) : mRoot(root) {}
+Workspace::Workspace(const fs::path& root) : mRoot(root) {
+}
 
 bool Workspace::hasPreviousRun() const {
   return fs::exists(mRoot / "sentinel.yaml");

@@ -11,8 +11,7 @@
 #include <iostream>
 #include <string>
 
-namespace sentinel {
-namespace Console {
+namespace sentinel::Console {
 
 /**
  * @brief Print messages without a trailing newline.
@@ -81,7 +80,6 @@ inline bool confirm(const std::string& pattern, Args&&... args) {
   }
 }
 
-}  // namespace Console
-}  // namespace sentinel
+}  // namespace sentinel::Console
 
 #endif  // INCLUDE_SENTINEL_CONSOLE_HPP_

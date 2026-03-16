@@ -25,6 +25,8 @@ class MutationFactory {
    * @param generator Mutation generator
    */
   explicit MutationFactory(const std::shared_ptr<MutantGenerator>& generator);
+  MutationFactory(const MutationFactory&) = delete;
+  MutationFactory& operator=(const MutationFactory&) = delete;
 
   /**
    * @brief Populate mutables from the given source lines
