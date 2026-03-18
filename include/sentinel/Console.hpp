@@ -62,22 +62,13 @@ inline void err(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline bool confirm(const std::string& pattern, Args&&... args) {
-  while (true) {
-    print("{} [y/N] " , fmt::format(pattern, std::forward<Args>(args)...));
-    flush();
+  print("{} [y/N] " , fmt::format(pattern, std::forward<Args>(args)...));
+  flush();
 
-    std::string answer;
-    std::getline(std::cin, answer);
+  std::string answer;
+  std::getline(std::cin, answer);
 
-    if (answer == "y" || answer == "Y") {
-      return true;
-    } else if (answer == "n" || answer == "N") {
-      return false;
-    } else if (answer.empty()) {
-      return false;
-    }
-    err("Error: '{}' is not a valid input. Please enter 'y' or 'n'.\n", answer);
-  }
+  return (answer == "y" || answer == "Y");
 }
 
 }  // namespace sentinel::Console

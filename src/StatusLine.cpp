@@ -11,7 +11,7 @@
 #include "sentinel/Console.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
-#include "sentinel/TimeStamper.hpp"
+#include "sentinel/Timestamper.hpp"
 
 namespace sentinel {
 
@@ -28,7 +28,7 @@ void StatusLine::enable() {
     return;
   }
   queryTermSize();
-  mTimeStamper.reset();
+  mTimestamper.reset();
   mEnabled = true;
   setScrollRegion();
   redraw();
@@ -178,7 +178,7 @@ std::string StatusLine::buildStatusString() const {
     result += " | Score: N/A";
   }
 
-  result += " | Elapsed: " + mTimeStamper.toString(TimeStamper::Format::Clock) + " ";
+  result += " | Elapsed: " + mTimestamper.toString(Timestamper::Format::Clock) + " ";
   return result;
 }
 

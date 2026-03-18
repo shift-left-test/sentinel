@@ -7,26 +7,26 @@
 #include <cmath>
 #include <chrono>
 #include <string>
-#include "sentinel/TimeStamper.hpp"
+#include "sentinel/Timestamper.hpp"
 
 namespace sentinel {
 
-TimeStamper::TimeStamper() {
+Timestamper::Timestamper() {
   reset();
 }
 
-TimeStamper::~TimeStamper() = default;
+Timestamper::~Timestamper() = default;
 
-void TimeStamper::reset() {
+void Timestamper::reset() {
   mStartTime = std::chrono::steady_clock::now();
 }
 
-double TimeStamper::toDouble() const {
+double Timestamper::toDouble() const {
   auto now = std::chrono::steady_clock::now();
   return std::chrono::duration<double>(now - mStartTime).count();
 }
 
-std::string TimeStamper::toString(Format style) const {
+std::string Timestamper::toString(Format style) const {
   auto secs = toDouble();
   int h = static_cast<int>(secs / 3600);
   int m = static_cast<int>(std::fmod(secs, 3600.0) / 60.0);

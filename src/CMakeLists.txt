@@ -10,13 +10,13 @@ build_static_library(
   SRCS SourceLine.cpp SourceTree.cpp Mutant.cpp
        MutantGenerator.cpp UniformMutantGenerator.cpp RandomMutantGenerator.cpp WeightedMutantGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp XmlParser.cpp GoogleTestXmlParser.cpp CTestXmlParser.cpp QTestXmlParser.cpp Evaluator.cpp
-       MutationResult.cpp GitSourceTree.cpp TimeStamper.cpp
+       MutationResult.cpp GitSourceTree.cpp Timestamper.cpp
        Report.cpp XMLReport.cpp HTMLReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
-       Command.cpp CommandRun.cpp SentinelConfig.cpp MainCLI.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
+       MutationRunner.cpp Config.cpp CliConfigParser.cpp YamlConfigParser.cpp ConfigResolver.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt yaml-cpp ${LIBGIT2_LIBRARIES} stdc++fs args

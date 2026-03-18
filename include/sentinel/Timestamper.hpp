@@ -12,9 +12,9 @@
 namespace sentinel {
 
 /**
- * @brief TimeStamper class.
+ * @brief Timestamper class.
  */
-class TimeStamper {
+class Timestamper {
  public:
   /**
    * @brief Format enumeration.
@@ -27,14 +27,14 @@ class TimeStamper {
   /**
    * @brief Default constructor.
    */
-  TimeStamper();
-  TimeStamper(const TimeStamper&) = delete;
-  TimeStamper& operator=(const TimeStamper&) = delete;
+  Timestamper();
+  Timestamper(const Timestamper&) = delete;
+  Timestamper& operator=(const Timestamper&) = delete;
 
   /**
    * @brief Default destructor.
    */
-  ~TimeStamper();
+  ~Timestamper();
 
   /**
    * @brief Reset timer.

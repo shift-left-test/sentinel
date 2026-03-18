@@ -10,13 +10,13 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "sentinel/SentinelConfig.hpp"
+#include "sentinel/YamlConfigParser.hpp"
 
 namespace fs = std::filesystem;
 
 namespace sentinel {
 
-std::vector<std::string> toStringVector(const YAML::Node& node, const std::string& key) {
+static std::vector<std::string> toStringVector(const YAML::Node& node, const std::string& key) {
   if (!node.IsSequence()) {
     throw std::runtime_error(fmt::format("Config key '{}' must be a list", key));
   }
@@ -26,7 +26,7 @@ std::vector<std::string> toStringVector(const YAML::Node& node, const std::strin
   return result;
 }
 
-SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
+Config YamlConfigParser::loadFromFile(const std::string& path) {
   YAML::Node root;
   try {
     root = YAML::LoadFile(path);
@@ -38,7 +38,7 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     throw std::runtime_error(fmt::format("Config file '{}': expected a YAML mapping at root", path));
   }
 
-  SentinelConfig cfg;
+  Config cfg;
 
   try {
     // Shared with Command base class
@@ -51,6 +51,7 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     if (root["output-dir"]) {
       cfg.outputDir = root["output-dir"].as<std::string>();
     }
+
     // CommandRun-specific options
     if (root["compiledb-dir"]) {
       cfg.compileDbDir = root["compiledb-dir"].as<std::string>();
@@ -107,33 +108,8 @@ SentinelConfig SentinelConfig::loadFromFile(const std::string& path) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }
 
-  // Resolve relative path fields relative to the YAML file's directory,
-  // consistent with tools like Docker Compose and Ansible.
-  fs::path yamlDir = fs::absolute(fs::path(path)).parent_path();
-
-  auto resolvePath = [&](std::optional<std::string>& optPath) {
-    if (optPath && !optPath->empty()) {
-      fs::path p(*optPath);
-      if (p.is_relative()) {
-        *optPath = (yamlDir / p).lexically_normal().string();
-      }
-    }
-  };
-
-  resolvePath(cfg.sourceDir);
-  resolvePath(cfg.workDir);
-  resolvePath(cfg.outputDir);
-  resolvePath(cfg.compileDbDir);
-  resolvePath(cfg.testResultDir);
-
-  if (cfg.coverageFiles) {
-    for (auto& f : *cfg.coverageFiles) {
-      fs::path p(f);
-      if (p.is_relative()) {
-        f = (yamlDir / p).lexically_normal().string();
-      }
-    }
-  }
+  // Path resolution logic is moved to ConfigResolver in the later step,
+  // but for now, we keep the basic parsing here.
 
   return cfg;
 }

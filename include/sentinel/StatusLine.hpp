@@ -7,7 +7,7 @@
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
 #include <string>
-#include "sentinel/TimeStamper.hpp"
+#include "sentinel/Timestamper.hpp"
 
 namespace sentinel {
 
@@ -115,7 +115,7 @@ class StatusLine {
   size_t mBuildFail = 0;
   size_t mTimeout = 0;
   size_t mRuntimeError = 0;
-  TimeStamper mTimeStamper;
+  Timestamper mTimestamper;
 };
 
 }  // namespace sentinel
