@@ -23,7 +23,7 @@ class GitSourceTree : public SourceTree {
    *
    * @param baseDirectory base directory
    */
-  explicit GitSourceTree(const std::string& baseDirectory);
+  explicit GitSourceTree(const std::filesystem::path& baseDirectory);
 
   void modify(const Mutant& info, const std::filesystem::path& backupPath) override;
 };

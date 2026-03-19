@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_YAMLCONFIGPARSER_HPP_
 #define INCLUDE_SENTINEL_YAMLCONFIGPARSER_HPP_
 
+#include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Config.hpp"
 
@@ -22,7 +23,7 @@ class YamlConfigParser {
    * @param path Path to the YAML configuration file.
    * @return Parsed Config object.
    */
-  static Config loadFromFile(const std::string& path);
+  static Config loadFromFile(const std::filesystem::path& path);
 };
 
 }  // namespace sentinel

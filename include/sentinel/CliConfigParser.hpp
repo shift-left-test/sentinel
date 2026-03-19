@@ -7,7 +7,10 @@
 #define INCLUDE_SENTINEL_CLICONFIGPARSER_HPP_
 
 #include <args/args.hxx>
+#include <filesystem>  // NOLINT
 #include <memory>
+#include <string>
+#include <vector>
 #include "sentinel/Config.hpp"
 
 namespace sentinel {
@@ -32,7 +35,7 @@ class CliConfigParser {
   /**
    * @brief Returns the path to the config file if specified via --config.
    */
-  std::string getConfigFile() { return mConfigFile ? mConfigFile.Get() : ""; }
+  std::filesystem::path getConfigFile() { return mConfigFile ? mConfigFile.Get() : ""; }
 
  private:
   // Groups
@@ -45,11 +48,11 @@ class CliConfigParser {
 
   // Options (from Command and CommandRun)
   /** @brief Path to the configuration file. */
-  args::ValueFlag<std::string> mConfigFile;
+  args::ValueFlag<std::filesystem::path> mConfigFile;
   /** @brief Command line flag for output directory. */
-  args::ValueFlag<std::string> mOutputDir;
+  args::ValueFlag<std::filesystem::path> mOutputDir;
   /** @brief Command line flag for working directory. */
-  args::ValueFlag<std::string> mWorkDir;
+  args::ValueFlag<std::filesystem::path> mWorkDir;
   /** @brief Command line flag for verbose mode. */
   args::Flag mIsVerbose;
   /** @brief Command line flag for silent mode. */
@@ -69,15 +72,15 @@ class CliConfigParser {
   args::Flag mNoStatusLine;
 
   /** @brief Command line flag for source directory. */
-  args::ValueFlag<std::string> mSourceDir;
+  args::ValueFlag<std::filesystem::path> mSourceDir;
   /** @brief Command line flag for build command. */
   args::ValueFlag<std::string> mBuildCmd;
   /** @brief Command line flag for compilation database directory. */
-  args::ValueFlag<std::string> mCompileDbDir;
+  args::ValueFlag<std::filesystem::path> mCompileDbDir;
   /** @brief Command line flag for test command. */
   args::ValueFlag<std::string> mTestCmd;
   /** @brief Command line flag for test result directory. */
-  args::ValueFlag<std::string> mTestResultDir;
+  args::ValueFlag<std::filesystem::path> mTestResultDir;
   /** @brief Command line flag for test result file extensions. */
   args::ValueFlagList<std::string> mTestResultFileExts;
   /** @brief Command line flag for test time limit. */
@@ -102,7 +105,7 @@ class CliConfigParser {
   /** @brief Command line flag for mutation operators. */
   args::ValueFlagList<std::string> mOperators;
   /** @brief Command line flag for coverage files. */
-  args::ValueFlagList<std::string> mCoverageFiles;
+  args::ValueFlagList<std::filesystem::path> mCoverageFiles;
   /** @brief Command line flag for execution partition. */
   args::ValueFlag<std::string> mPartition;
 };

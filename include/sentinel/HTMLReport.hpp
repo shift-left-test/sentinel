@@ -24,7 +24,7 @@ class HTMLReport : public Report {
    * @param results mutation results
    * @param sourcePath directory path of source files
    */
-  HTMLReport(const MutationResults& results, const std::string& sourcePath);
+  HTMLReport(const MutationResults& results, const std::filesystem::path& sourcePath);
 
   /**
    * @brief Default constructor
@@ -32,7 +32,7 @@ class HTMLReport : public Report {
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    */
-  HTMLReport(const std::string& resultsPath, const std::string& sourcePath);
+  HTMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
 
   /**
    * @brief save html format result to path
@@ -53,8 +53,7 @@ class HTMLReport : public Report {
    * @param outputDir
    */
   void makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
-                     const std::filesystem::path& currentDirPath,
-                     const std::filesystem::path& outputDir);
+                     const std::filesystem::path& currentDirPath, const std::filesystem::path& outputDir);
 
   /**
    * @brief makeSourceHtml
@@ -63,8 +62,7 @@ class HTMLReport : public Report {
    * @param srcPath
    * @param outputDir
    */
-  void makeSourceHtml(const std::vector<const MutationResult*>& MRs,
-                      const std::filesystem::path& srcPath,
+  void makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
                       const std::filesystem::path& outputDir);
 };
 

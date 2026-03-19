@@ -6,6 +6,7 @@
 #include <fmt/core.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
 #include "sentinel/Console.hpp"
@@ -57,7 +58,8 @@ void StatusLine::setTotalMutants(size_t total) {
   redraw();
 }
 
-void StatusLine::setMutantInfo(size_t current, const std::string& op, const std::string& file, size_t line) {
+void StatusLine::setMutantInfo(size_t current, const std::string& op,
+                               const std::filesystem::path& file, size_t line) {
   mCurrent = current;
   mOp = op;
   mFile = file;
@@ -165,7 +167,7 @@ std::string StatusLine::buildStatusString() const {
   }
 
   if (mPhase == Phase::MUTANT && !mOp.empty()) {
-    result += fmt::format(" | {} {}:{}", mOp, mFile, mLine);
+    result += fmt::format(" | {} {}:{}", mOp, mFile.string(), mLine);
   }
 
   result += fmt::format(" | K:{} / S:{} / B:{} / T:{} / R:{}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);

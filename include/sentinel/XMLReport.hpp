@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_XMLREPORT_HPP_
 
 #include <tinyxml2/tinyxml2.h>
+#include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Report.hpp"
 
@@ -23,7 +24,7 @@ class XMLReport : public Report {
    * @param results mutation results
    * @param sourcePath directory path of source files
    */
-  XMLReport(const MutationResults& results, const std::string& sourcePath);
+  XMLReport(const MutationResults& results, const std::filesystem::path& sourcePath);
 
   /**
    * @brief Default constructor
@@ -31,7 +32,7 @@ class XMLReport : public Report {
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    */
-  XMLReport(const std::string& resultsPath, const std::string& sourcePath);
+  XMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
 
   /**
    * @brief save xml format result to path

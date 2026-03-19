@@ -7,18 +7,19 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <future>
 #include <map>
-#include <thread>
 #include <memory>
 #include <random>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
-#include "sentinel/SourceLines.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
+#include "sentinel/SourceLines.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 namespace fs = std::filesystem;
@@ -27,7 +28,7 @@ namespace sentinel {
 
 static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
 
-RandomMutantGenerator::RandomMutantGenerator(const std::string& path) : mDbPath(path) {
+RandomMutantGenerator::RandomMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
 Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
@@ -35,17 +36,17 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
 
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath, errorMsg);
+      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
 
   if (compileDb == nullptr) {
     throw IOException(EINVAL, errorMsg);
   }
 
   // convert sourceLines to map from filename to list of target source lines
-  std::map<std::string, std::vector<std::size_t>> targetLines;
+  std::map<fs::path, std::vector<std::size_t>> targetLines;
 
   for (const auto& sourceLine : sourceLines) {
-    std::string filename = sourceLine.getPath();
+    fs::path filename = sourceLine.getPath();
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
@@ -61,11 +62,11 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   while (fileIt != targetLines.end()) {
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->verbose("Checking for mutants in {}", fileIt->first);
+      logger->verbose("Checking for mutants in {}", fileIt->first.string());
       futures.push_back(
           std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
             Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename);
+            clang::tooling::ClangTool tool(*db, filename.string());
             tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
             tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
             return localMutables;

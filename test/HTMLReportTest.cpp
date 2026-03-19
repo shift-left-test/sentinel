@@ -11,10 +11,10 @@
 #include <sstream>
 #include <string>
 #include "helper/SentinelReportTestBase.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
@@ -127,7 +127,7 @@ int minus(int a, int b){
                 </tr>
                 <tr>
                     <td>
-                        <a href="./srcDir/NESTED_DIR1.NESTED_DIR/index.html">NESTED_DIR1.NESTED_DIR</a>
+                        <a href="./srcDir/NESTED_DIR1.NESTED_DIR/index.html">NESTED_DIR1/NESTED_DIR</a>
                     </td>
                     <td>1</td>
                     <td>
@@ -170,7 +170,7 @@ int minus(int a, int b){
     <body>
         <h1>Sentinel Mutation Coverage Report</h1>
         <h2>Directory Summary</h2>
-        <h3>NESTED_DIR1.NESTED_DIR</h3>
+        <h3>NESTED_DIR1/NESTED_DIR</h3>
         <table>
             <thead>
                 <tr>

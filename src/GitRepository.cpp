@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fnmatch.h>
 #include <fmt/core.h>
+#include <fnmatch.h>
 #include <git2.h>
-#include <iostream>
 #include <algorithm>
+#include <filesystem>  // NOLINT
+#include <iostream>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -17,8 +18,8 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/util/string.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
 
@@ -83,7 +84,8 @@ class DiffData {
    * @param gitRepo git repository
    * @param gitWorkdir actual git working directory root (may differ from sourceRoot)
    */
-  DiffData(GitRepository* gitRepo, std::string gitWorkdir) : mGitRepo(gitRepo), mGitWorkdir(std::move(gitWorkdir)) {}
+  DiffData(GitRepository* gitRepo, std::filesystem::path gitWorkdir) :
+      mGitRepo(gitRepo), mGitWorkdir(std::move(gitWorkdir)) {}
 
   /**
    * @brief add Source Line
@@ -92,8 +94,7 @@ class DiffData {
    * @param line line number
    */
   void addSourceLine(const std::string& file, int line) {
-    fs::path filePath(mGitWorkdir);
-    filePath.append(file);
+    fs::path filePath = mGitWorkdir / file;
     if (mGitRepo->isTargetPath(filePath)) {
       mSourceLines.push_back(SourceLine(filePath, line));
     }
@@ -112,7 +113,7 @@ class DiffData {
   /// git repository instance
   GitRepository* mGitRepo;
   /// actual git working directory root
-  std::string mGitWorkdir;
+  fs::path mGitWorkdir;
 };
 
 static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData* diffData) {
@@ -214,7 +215,7 @@ static std::vector<std::filesystem::path> collectGitRepos(
  * multi-repo walk without duplicating the commit-traversal logic.
  */
 static void applyDiffScope(git_repository* repo, const std::string& scope, git_diff_options* opts, DiffData* d,
-                            const std::string& gitWorkdir) {
+                            const std::filesystem::path& gitWorkdir) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   if (scope == "all") {
@@ -228,14 +229,14 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
   SafeGit2ObjPtr<git_reference, git_reference_free> ref;
 
   if (git_reference_lookup(ref.getPtr(), repo, "refs/tags/devtool-base") == 0) {
-    logger->info("found devtool tag in {}", gitWorkdir);
+    logger->info("found devtool tag in {}", gitWorkdir.string());
     int error_code = git_reference_peel(obj.getPtr(), static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
     if (error_code != 0) {
       throw RepositoryException(fmt::format("Failed to peel tag: error code {}", error_code));
     }
   } else {
     if (git_revparse_single(obj.getPtr(), repo, "HEAD^{commit}") != 0) {
-      logger->warn("git_revparse_single failed for HEAD in {}", gitWorkdir);
+      logger->warn("git_revparse_single failed for HEAD in {}", gitWorkdir.string());
     }
   }
 
@@ -250,14 +251,14 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
       }
     }
   } else {
-    logger->warn("No HEAD commit or devtool tag found in {}", gitWorkdir);
+    logger->warn("No HEAD commit or devtool tag found in {}", gitWorkdir.string());
   }
 
-  // tree may be null here (no parent commit) → diff from empty tree = all files.
+  // tree may be null here (no parent commit) - diff from empty tree = all files.
   getDiffFromTree(repo, static_cast<git_tree*>(tree), opts, d);
 }
 
-GitRepository::GitRepository(const std::string& path, const std::vector<std::string>& extensions,
+GitRepository::GitRepository(const std::filesystem::path& path, const std::vector<std::string>& extensions,
                              const std::vector<std::string>& patterns, const std::vector<std::string>& excludes) {
   git_libgit2_init();
 
@@ -288,7 +289,7 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
-void GitRepository::addSkipDir(const fs::path& dir) {
+void GitRepository::addSkipDir(const std::filesystem::path& dir) {
   try {
     mSkipDirs.push_back(fs::canonical(dir));
   } catch (const fs::filesystem_error&) {
@@ -356,13 +357,13 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
   // Step 2: also probe upward for an enclosing repo.  This handles the case where
   // sourceRoot is a subdirectory inside a single git repo without nested repos.
   // The enclosing repo's workdir is recorded for deduplication below.
-  std::string enclosingWorkdir;
+  fs::path enclosingWorkdir;
   {
     SafeGit2ObjPtr<git_repository, git_repository_free> probe;
     if (git_repository_open_ext(probe.getPtr(), getSourceRoot().c_str(), 0, nullptr) == 0) {
       const char* rawWorkdir = git_repository_workdir(static_cast<git_repository*>(probe));
       if (rawWorkdir) {
-        enclosingWorkdir = fs::canonical(fs::path(rawWorkdir)).string();
+        enclosingWorkdir = fs::canonical(fs::path(rawWorkdir));
       }
     }
   }
@@ -373,7 +374,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
 
   // Track which git workdirs have already been processed to avoid double-counting
   // (e.g. when sourceRoot itself has .git it appears in both repoPaths and enclosingWorkdir).
-  std::set<std::string> processedWorkdirs;
+  std::set<fs::path> processedWorkdirs;
   SourceLines allSourceLines;
 
   // Helper: build git_diff_options from mPatterns.
@@ -402,8 +403,8 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       logger->warn("Repo at {} has no working directory, skipping", repoPath.string());
       continue;
     }
-    std::string gitWorkdir = fs::canonical(fs::path(rawWorkdir)).string();
-    logger->info("git workdir: {}", gitWorkdir);
+    fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
+    logger->info("git workdir: {}", gitWorkdir.string());
     processedWorkdirs.insert(gitWorkdir);
 
     std::vector<char*> cstrs;
@@ -412,7 +413,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     try {
       applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
     } catch (const RepositoryException& e) {
-      logger->warn("diff failed for {}: {}", gitWorkdir, e.what());
+      logger->warn("diff failed for {}: {}", gitWorkdir.string(), e.what());
       continue;
     }
 
@@ -429,8 +430,8 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     if (git_repository_open_ext(repo.getPtr(), getSourceRoot().c_str(), 0, nullptr) == 0) {
       const char* rawWorkdir = git_repository_workdir(static_cast<git_repository*>(repo));
       if (rawWorkdir) {
-        std::string gitWorkdir = fs::canonical(fs::path(rawWorkdir)).string();
-        logger->info("git workdir (enclosing): {}", gitWorkdir);
+        fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
+        logger->info("git workdir (enclosing): {}", gitWorkdir.string());
 
         std::vector<char*> cstrs;
         git_diff_options opts = buildOpts(cstrs);
@@ -441,7 +442,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
           if (repoPaths.empty()) {
             throw;  // Only repo available; propagate so the caller sees the error.
           }
-          logger->warn("diff failed for enclosing repo {}: {}", gitWorkdir, e.what());
+          logger->warn("diff failed for enclosing repo {}: {}", gitWorkdir.string(), e.what());
         }
 
         SourceLines lines = d.getSourceLines();

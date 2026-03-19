@@ -25,10 +25,9 @@ Report::Report(const MutationResults& results, const std::filesystem::path& sour
   generateReport();
 }
 
-Report::Report(const std::filesystem::path& resultsPath,
-               const std::filesystem::path& sourcePath) :
+Report::Report(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mLogger(Logger::getLogger("Report")) {
-  mResults.load(resultsPath);
+  mResults.load(resultsPath.string());
   mLogger->verbose("Load MutationResults: {}", resultsPath.string());
 
   generateReport();
@@ -56,24 +55,23 @@ void Report::generateReport() {
     totNumberOfMutation++;
 
     fs::path mrPath = getRelativePath(mr.getMutant().getPath(), mSourcePath);
-    std::string curDirname = mrPath.parent_path();
-    curDirname = string::replaceAll(curDirname, "/", ".");
+    fs::path curDirpath = mrPath.parent_path();
 
-    groupByDirPath[curDirname].results.push_back(&mr);
-    groupByDirPath[curDirname].total += 1;
+    groupByDirPath[curDirpath].results.push_back(&mr);
+    groupByDirPath[curDirpath].total += 1;
 
     groupByPath[mrPath].results.push_back(&mr);
     groupByPath[mrPath].total += 1;
 
     if (mr.getDetected()) {
-      groupByDirPath[curDirname].detected += 1;
+      groupByDirPath[curDirpath].detected += 1;
       groupByPath[mrPath].detected += 1;
       totNumberOfDetectedMutation += 1;
     }
   }
 
   for (auto& p : groupByDirPath) {
-    std::set<std::string> tmpSet;
+    std::set<fs::path> tmpSet;
     for (const MutationResult* mr : p.second.results) {
       tmpSet.insert(mr->getMutant().getPath());
     }
@@ -108,9 +106,9 @@ void Report::printSummary() const {
   for (const auto& p : groupByPath) {
     double curScore = -1.0;
     if (p.second.total != 0) {
-      curScore = (100.0 * p.second.detected) / p.second.total;
+      curScore = (100.0 * static_cast<double>(p.second.detected)) / static_cast<double>(p.second.total);
     }
-    int filePos = p.first.string().size() - flen;
+    int filePos = static_cast<int>(p.first.string().size()) - static_cast<int>(flen);
     std::string skipStr;
     if (filePos < 0) {
       filePos = 0;
@@ -127,7 +125,7 @@ void Report::printSummary() const {
 
   double finalScore = -1.0;
   if (totNumberOfMutation != 0) {
-    finalScore = (100.0 * totNumberOfDetectedMutation) / totNumberOfMutation;
+    finalScore = (100.0 * static_cast<double>(totNumberOfDetectedMutation)) / static_cast<double>(totNumberOfMutation);
   }
   std::string finalScoreStr = finalScore >= 0.0 ? fmt::format("{:.1f}%", finalScore) : "-%";
   Console::out(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen,
@@ -155,7 +153,8 @@ void Report::printSummary() const {
   }
 }
 
-fs::path Report::getRelativePath(const std::string& path, const std::string& start) {
+std::filesystem::path Report::getRelativePath(const std::filesystem::path& path,
+                                              const std::filesystem::path& start) {
   return fs::canonical(path).lexically_relative(fs::canonical(start));
 }
 

@@ -50,7 +50,7 @@ class MutationRunner {
    * @param backup  Path to the backup directory containing original files.
    * @param srcRoot Path to the source root where files are restored.
    */
-  static void restoreBackup(const std::string& backup, const std::string& srcRoot);
+  static void restoreBackup(const std::filesystem::path& backup, const std::filesystem::path& srcRoot);
 
   /**
    * @brief Copies test result files with the given extensions from @p from to @p to.
@@ -58,7 +58,7 @@ class MutationRunner {
    * @param to   Destination directory to copy files into.
    * @param exts File extensions to copy (e.g. {"xml", "XML"}).
    */
-  static void copyTestReportTo(const std::string& from, const std::string& to,
+  static void copyTestReportTo(const std::filesystem::path& from, const std::filesystem::path& to,
                                 const std::vector<std::string>& exts);
 
  protected:
@@ -75,7 +75,7 @@ class MutationRunner {
    * @param isFilledDir  When @c false, throws if the directory is non-empty.
    * @return Canonical absolute path of @p target.
    */
-  std::string preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir);
+  std::filesystem::path preProcessWorkDir(const std::filesystem::path& target, bool* targetExists, bool isFilledDir);
 
  private:
   /**

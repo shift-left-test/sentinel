@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_CONFIG_HPP_
 #define INCLUDE_SENTINEL_CONFIG_HPP_
 
+#include <filesystem>  // NOLINT
 #include <optional>
 #include <string>
 #include <vector>
@@ -21,11 +22,11 @@ namespace sentinel {
 struct Config {
   // Common options
   /** @brief Path to the source directory. */
-  std::optional<std::string> sourceDir;
+  std::optional<std::filesystem::path> sourceDir;
   /** @brief Path to the working directory. */
-  std::optional<std::string> workDir;
+  std::optional<std::filesystem::path> workDir;
   /** @brief Path to the output directory for reports. */
-  std::optional<std::string> outputDir;
+  std::optional<std::filesystem::path> outputDir;
   /** @brief Enable verbose output. */
   std::optional<bool> verbose;
   /** @brief Enable silent mode. */
@@ -39,11 +40,11 @@ struct Config {
   /** @brief Command used to build the project. */
   std::optional<std::string> buildCmd;
   /** @brief Path to the compilation database directory. */
-  std::optional<std::string> compileDbDir;
+  std::optional<std::filesystem::path> compileDbDir;
   /** @brief Command used to run tests. */
   std::optional<std::string> testCmd;
   /** @brief Directory where test results are stored. */
-  std::optional<std::string> testResultDir;
+  std::optional<std::filesystem::path> testResultDir;
   /** @brief File extensions for test result files. */
   std::optional<std::vector<std::string>> testResultFileExts;
   /** @brief Time limit for test execution. */
@@ -69,7 +70,7 @@ struct Config {
   /** @brief List of mutation operators to apply. */
   std::optional<std::vector<std::string>> operators;
   /** @brief Paths to code coverage information files. */
-  std::optional<std::vector<std::string>> coverageFiles;
+  std::optional<std::vector<std::filesystem::path>> coverageFiles;
   /** @brief Mutation score threshold for success. */
   std::optional<double> threshold;
   /** @brief Partition for parallel execution (e.g., "N/TOTAL"). */

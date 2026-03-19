@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_STATUSLINE_HPP_
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
+#include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Timestamper.hpp"
 
@@ -75,7 +76,7 @@ class StatusLine {
    * @param file    Source filename (basename only).
    * @param line    Source line number of the mutation.
    */
-  void setMutantInfo(size_t current, const std::string& op, const std::string& file, size_t line);
+  void setMutantInfo(size_t current, const std::string& op, const std::filesystem::path& file, size_t line);
 
   /**
    * @brief Record the result of the last mutant and redraw.
@@ -109,7 +110,7 @@ class StatusLine {
   size_t mTotal = 0;
   size_t mLine = 0;
   std::string mOp;
-  std::string mFile;
+  std::filesystem::path mFile;
   size_t mKilled = 0;
   size_t mSurvived = 0;
   size_t mBuildFail = 0;

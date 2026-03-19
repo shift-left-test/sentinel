@@ -24,14 +24,14 @@ namespace sentinel {
 
 MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
 
-Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                                  unsigned randomSeed, const std::string& generatorStr) {
+Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
+                                  std::size_t maxMutants, unsigned randomSeed, const std::string& generatorStr) {
   auto logger = Logger::getLogger("populate");
   logger->debug("random seed: {}", randomSeed);
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
   // Count mutants per file and per operator
-  std::map<std::string, std::size_t> groupByPath;
+  std::map<fs::path, std::size_t> groupByPath;
   std::map<std::string, std::size_t> groupByOperator;
   for (const auto& m : mutables) {
     groupByPath[m.getPath()]++;
@@ -43,7 +43,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   std::size_t maxlen = flen + mlen + 2;
   std::string defFormat = "{0:<{1}}{2:>{3}}";
 
-  // ── File table ──────────────────────────────────────────────────────────────
+  // File table
   Console::out("{0:=^{1}}", "", maxlen);
   Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutant Population Report", maxlen)));
   Console::out("{0:=^{1}}", "", maxlen);
@@ -55,7 +55,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
     auto file = fs::canonical(p.first);
     std::string filePath = file.lexically_relative(root).string();
 
-    int filePos = filePath.size() - flen;
+    int filePos = static_cast<int>(filePath.size()) - static_cast<int>(flen);
     std::string skipStr;
     if (filePos < 0) {
       filePos = 0;
@@ -70,7 +70,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   Console::out(defFormat, "TOTAL", flen, mutables.size(), mlen);
   Console::out("{0:=^{1}}\n", "", maxlen);
 
-  // ── Operator table ──────────────────────────────────────────────────────────
+  // Operator table
   Console::out(defFormat, "Operator", flen, "Mutants", mlen);
   Console::out("{0:-^{1}}", "", maxlen);
 
@@ -82,7 +82,7 @@ Mutants MutationFactory::populate(const std::string& gitPath, const SourceLines&
   Console::out(defFormat, "TOTAL", flen, mutables.size(), mlen);
   Console::out("{0:=^{1}}", "", maxlen);
 
-  // ── Footer ──────────────────────────────────────────────────────────────────
+  // Footer
   std::size_t numFiles = groupByPath.size();
   std::size_t candidateCount = mGenerator->getCandidateCount();
   if (!generatorStr.empty()) {

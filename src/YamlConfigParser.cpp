@@ -5,8 +5,8 @@
 
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
-#include <filesystem>  // NOLINT
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -26,16 +26,26 @@ static std::vector<std::string> toStringVector(const YAML::Node& node, const std
   return result;
 }
 
-Config YamlConfigParser::loadFromFile(const std::string& path) {
+static std::vector<fs::path> toPathVector(const YAML::Node& node, const std::string& key) {
+  if (!node.IsSequence()) {
+    throw std::runtime_error(fmt::format("Config key '{}' must be a list", key));
+  }
+  std::vector<fs::path> result(node.size());
+  std::transform(node.begin(), node.end(), result.begin(),
+                 [](const YAML::Node& item) { return item.as<std::string>(); });
+  return result;
+}
+
+Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
   YAML::Node root;
   try {
-    root = YAML::LoadFile(path);
+    root = YAML::LoadFile(path.string());
   } catch (const YAML::Exception& e) {
-    throw std::runtime_error(fmt::format("Failed to parse config file '{}': {}", path, e.what()));
+    throw std::runtime_error(fmt::format("Failed to parse config file '{}': {}", path.string(), e.what()));
   }
 
   if (!root.IsMap()) {
-    throw std::runtime_error(fmt::format("Config file '{}': expected a YAML mapping at root", path));
+    throw std::runtime_error(fmt::format("Config file '{}': expected a YAML mapping at root", path.string()));
   }
 
   Config cfg;
@@ -84,7 +94,7 @@ Config YamlConfigParser::loadFromFile(const std::string& path) {
       cfg.testResultFileExts = toStringVector(root["test-report-extension"], "test-report-extension");
     }
     if (root["coverage"]) {
-      cfg.coverageFiles = toStringVector(root["coverage"], "coverage");
+      cfg.coverageFiles = toPathVector(root["coverage"], "coverage");
     }
     if (root["generator"]) {
       cfg.generator = root["generator"].as<std::string>();
@@ -105,7 +115,7 @@ Config YamlConfigParser::loadFromFile(const std::string& path) {
       cfg.threshold = root["threshold"].as<double>();
     }
   } catch (const YAML::Exception& e) {
-    throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
+    throw std::runtime_error(fmt::format("Config file '{}': {}", path.string(), e.what()));
   }
 
   // Path resolution logic is moved to ConfigResolver in the later step,

@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
 #define INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
 
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,6 +20,11 @@ namespace sentinel {
  */
 class MutantGenerator {
  public:
+  /**
+   * @brief Default destructor
+   */
+  virtual ~MutantGenerator() = default;
+
   /**
    * @brief Populate mutables from the given source line
    *
@@ -44,7 +50,7 @@ class MutantGenerator {
    * @return mutant generator instance
    */
   static std::shared_ptr<MutantGenerator> getInstance(const std::string& generator,
-                                                      const std::string& directory);
+                                                      const std::filesystem::path& directory);
 
   /**
    * @brief Return the total number of candidate mutants found before the limit was applied.

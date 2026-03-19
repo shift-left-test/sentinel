@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_UTIL_SUBPROCESS_HPP_
 
 #include <unistd.h>
+#include <filesystem>  // NOLINT
 #include <string>
 
 namespace sentinel {
@@ -32,7 +33,7 @@ class Subprocess {
    * @throw runtime_error when another Subprocess already running.
    */
   explicit Subprocess(const std::string& cmd, std::size_t sec = 0, std::size_t secForKill = 0,
-                      const std::string& logFile = "", bool silent = false);
+                      const std::filesystem::path& logFile = "", bool silent = false);
 
   Subprocess(const Subprocess&) = delete;
   Subprocess& operator=(const Subprocess&) = delete;
@@ -63,7 +64,7 @@ class Subprocess {
   std::string mCmd;
   std::size_t mSec;
   std::size_t mSecForKill;
-  std::string mLogFile;
+  std::filesystem::path mLogFile;
   bool mSilent = false;
   bool mTimedOut = false;
   int mStatus = -1;

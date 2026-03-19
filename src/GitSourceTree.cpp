@@ -4,21 +4,25 @@
  */
 
 #include <fmt/core.h>
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/Mutant.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/Mutant.hpp"
+#include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
 
 namespace sentinel {
+
 const char* cGitSourceTreeLoggerName = "GitSourceTree";
 
-GitSourceTree::GitSourceTree(const std::string& baseDirectory) : SourceTree(baseDirectory) {}
+GitSourceTree::GitSourceTree(const std::filesystem::path& baseDirectory) :
+    SourceTree(baseDirectory) {}
 
 void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& backupPath) {
   // Backup target file to be mutated
@@ -26,10 +30,10 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
 
   fs::path targetFilename = fs::canonical(info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
-  if (!string::startsWith(targetFilename.parent_path(), gitRootAbsolutePath)) {
+  if (!string::startsWith(targetFilename.parent_path().string(), gitRootAbsolutePath.string())) {
     throw IOException(EINVAL, "Git root does not contain " + targetFilename.string());
   }
-  std::string targetRelativePath = targetFilename.parent_path().lexically_relative(gitRootAbsolutePath);
+  fs::path targetRelativePath = targetFilename.parent_path().lexically_relative(gitRootAbsolutePath);
   fs::path newBackupPath = backupPath / targetRelativePath;
   if (!fs::exists(newBackupPath)) {
     fs::create_directories(newBackupPath);
@@ -38,7 +42,7 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   logger->verbose("backup: {}", newBackupPath.string());
 
   // Apply mutation
-  std::ifstream originalFile(targetFilename);
+  std::ifstream originalFile(targetFilename.string());
   std::stringstream buffer;
   if (originalFile) {
     buffer << originalFile.rdbuf();
@@ -46,7 +50,7 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   } else {
     throw IOException(EINVAL, "Failed to open " + targetFilename.string());
   }
-  std::ofstream mutatedFile(targetFilename, std::ios::trunc);
+  std::ofstream mutatedFile(targetFilename.string(), std::ios::trunc);
 
   // If code line is out of target range, just write to mutant file.
   // If code line is in target range (start_line < code_line < end_line), skip.

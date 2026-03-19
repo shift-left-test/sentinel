@@ -6,6 +6,8 @@
 #ifndef INCLUDE_SENTINEL_CONFIGRESOLVER_HPP_
 #define INCLUDE_SENTINEL_CONFIGRESOLVER_HPP_
 
+#include <filesystem>  // NOLINT
+#include <optional>
 #include <string>
 #include "sentinel/Config.hpp"
 
@@ -24,15 +26,21 @@ class ConfigResolver {
    * @param yamlPath Path to the sentinel.yaml file (used for relative path resolution).
    * @return A finalized Config object with all paths absolute and defaults filled.
    */
-  static Config resolve(const Config& cli, const Config& yaml, const std::string& yamlPath = "");
+  static Config resolve(const Config& cli, const Config& yaml, const std::filesystem::path& yamlPath = "");
 
  private:
   /**
    * @brief Applies priority (CLI > YAML > Default) and fills a target field.
+   *
+   * @param target       Config field to be filled.
+   * @param cli          Value from CLI parser.
+   * @param yaml         Value from YAML parser.
+   * @param defaultValue Fallback value if neither CLI nor YAML was set.
+   * @tparam T           Type of the target field.
    */
   template <typename T>
-  static void mergeField(std::optional<T>& target, const std::optional<T>& cli,
-                         const std::optional<T>& yaml, const T& defaultValue) {
+  static void mergeField(std::optional<T>& target, const std::optional<T>& cli, const std::optional<T>& yaml,
+                         const T& defaultValue) {
     if (cli.has_value()) {
       target = cli;
     } else if (yaml.has_value()) {
@@ -44,10 +52,14 @@ class ConfigResolver {
 
   /**
    * @brief Merges fields without a default value (leaves as std::nullopt if both sources empty).
+   *
+   * @param target       Config field to be filled.
+   * @param cli          Value from CLI parser.
+   * @param yaml         Value from YAML parser.
+   * @tparam T           Type of the target field.
    */
   template <typename T>
-  static void mergeFieldOptional(std::optional<T>& target, const std::optional<T>& cli,
-                                 const std::optional<T>& yaml) {
+  static void mergeFieldOptional(std::optional<T>& target, const std::optional<T>& cli, const std::optional<T>& yaml) {
     if (cli.has_value()) {
       target = cli;
     } else {

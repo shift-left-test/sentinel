@@ -8,12 +8,15 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/CliConfigParser.hpp"
 #include "sentinel/ConfigResolver.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationRunner.hpp"
 #include "sentinel/YamlConfigParser.hpp"
 #include "sentinel/version.hpp"
+
+namespace fs = std::filesystem;
 
 /**
  * @brief Application entry point.
@@ -41,10 +44,10 @@ int main(int argc, char** argv) {
     // 3. Load YAML if exists or specified (skip if --init)
     sentinel::Config cliCfg = cliParser.getConfig();
     sentinel::Config yamlCfg;
-    std::string configPath = cliParser.getConfigFile();
+    fs::path configPath = cliParser.getConfigFile();
 
     if (!cliCfg.init) {
-      if (configPath.empty() && std::filesystem::exists("sentinel.yaml")) {
+      if (configPath.empty() && fs::exists("sentinel.yaml")) {
         configPath = "sentinel.yaml";
       }
 

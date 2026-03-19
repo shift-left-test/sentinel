@@ -10,15 +10,16 @@
 #include <string>
 #include <vector>
 #include "sentinel/Config.hpp"
-#include "sentinel/YamlConfigParser.hpp"
 #include "sentinel/ConfigResolver.hpp"
+#include "sentinel/YamlConfigParser.hpp"
+
+namespace fs = std::filesystem;
 
 namespace sentinel {
 
 class ConfigTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    namespace fs = std::filesystem;
     mTmpDir = fs::temp_directory_path() / "SENTINEL_CONFIG_TEST";
     fs::remove_all(mTmpDir);
     fs::create_directories(mTmpDir);
@@ -34,8 +35,8 @@ class ConfigTest : public ::testing::Test {
     out.close();
   }
 
-  std::string configPath(const std::string& filename) {
-    return (mTmpDir / filename).string();
+  std::filesystem::path configPath(const std::string& filename) {
+    return mTmpDir / filename;
   }
 
   std::filesystem::path mTmpDir;
@@ -76,16 +77,16 @@ operator:
   auto cfg = ConfigResolver::resolve(Config(), yamlCfg, configPath("sentinel.yaml"));
 
   ASSERT_TRUE(cfg.sourceDir.has_value());
-  EXPECT_EQ((mTmpDir / "src").lexically_normal().string() + "/", *cfg.sourceDir);
+  EXPECT_EQ((mTmpDir / "src").lexically_normal(), *cfg.sourceDir);
 
   ASSERT_TRUE(cfg.workDir.has_value());
-  EXPECT_EQ((mTmpDir / "work").lexically_normal().string() + "/", *cfg.workDir);
+  EXPECT_EQ((mTmpDir / "work").lexically_normal(), *cfg.workDir);
 
   ASSERT_TRUE(cfg.outputDir.has_value());
-  EXPECT_EQ((mTmpDir / "out").lexically_normal().string() + "/", *cfg.outputDir);
+  EXPECT_EQ((mTmpDir / "out").lexically_normal(), *cfg.outputDir);
 
   ASSERT_TRUE(cfg.compileDbDir.has_value());
-  EXPECT_EQ((mTmpDir / "build").lexically_normal().string() + "/", *cfg.compileDbDir);
+  EXPECT_EQ((mTmpDir / "build").lexically_normal(), *cfg.compileDbDir);
 
   ASSERT_TRUE(cfg.scope.has_value());
   EXPECT_EQ("commit", *cfg.scope);
@@ -109,13 +110,13 @@ operator:
   EXPECT_EQ("ctest", *cfg.testCmd);
 
   ASSERT_TRUE(cfg.testResultDir.has_value());
-  EXPECT_EQ((mTmpDir / "results").lexically_normal().string() + "/", *cfg.testResultDir);
+  EXPECT_EQ((mTmpDir / "results").lexically_normal(), *cfg.testResultDir);
 
   ASSERT_TRUE(cfg.testResultFileExts.has_value());
   EXPECT_EQ(std::vector<std::string>({"xml"}), *cfg.testResultFileExts);
 
   ASSERT_TRUE(cfg.coverageFiles.has_value());
-  EXPECT_EQ(std::vector<std::string>({(mTmpDir / "coverage.info").lexically_normal().string()}), *cfg.coverageFiles);
+  EXPECT_EQ(std::vector<std::filesystem::path>({(mTmpDir / "coverage.info").lexically_normal()}), *cfg.coverageFiles);
 
   ASSERT_TRUE(cfg.generator.has_value());
   EXPECT_EQ("random", *cfg.generator);
@@ -153,7 +154,7 @@ limit: 20
   EXPECT_EQ("ctest --verbose", *cfg.testCmd);
 
   ASSERT_TRUE(cfg.testResultDir.has_value());
-  EXPECT_EQ((mTmpDir / "test-results").lexically_normal().string() + "/", *cfg.testResultDir);
+  EXPECT_EQ((mTmpDir / "test-results").lexically_normal(), *cfg.testResultDir);
 
   ASSERT_TRUE(cfg.limit.has_value());
   EXPECT_EQ(20u, *cfg.limit);
@@ -190,7 +191,7 @@ TEST_F(ConfigTest, testResolveDefaults) {
   auto cfg = ConfigResolver::resolve(Config(), Config());
 
   EXPECT_EQ(std::filesystem::current_path().lexically_normal().string() + "/", *cfg.sourceDir);
-  EXPECT_EQ((std::filesystem::current_path() / "sentinel_workspace").lexically_normal().string() + "/", *cfg.workDir);
+  EXPECT_EQ((std::filesystem::current_path() / "sentinel_workspace").lexically_normal(), *cfg.workDir);
   EXPECT_EQ("auto", *cfg.timeLimit);
   EXPECT_EQ(0u, *cfg.limit);
   EXPECT_EQ("uniform", *cfg.generator);

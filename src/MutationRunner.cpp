@@ -4,9 +4,9 @@
  */
 
 #include <fmt/core.h>
-#include <yaml-cpp/yaml.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <yaml-cpp/yaml.h>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "sentinel/MutationRunner.hpp"
+#include "sentinel/Config.hpp"
 #include "sentinel/Console.hpp"
 #include "sentinel/CoverageInfo.hpp"
 #include "sentinel/Evaluator.hpp"
@@ -30,13 +30,13 @@
 #include "sentinel/HTMLReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationFactory.hpp"
-#include "sentinel/Config.hpp"
-#include "sentinel/YamlConfigParser.hpp"
+#include "sentinel/MutationRunner.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XMLReport.hpp"
+#include "sentinel/YamlConfigParser.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/string.hpp"
@@ -53,7 +53,7 @@ static StatusLine* gStatusLineForSH = nullptr;
 
 static void signalHandler(int signum) {
   if (!backupDirForSH.empty() && fs::exists(backupDirForSH) && fs::is_directory(backupDirForSH)) {
-    MutationRunner::restoreBackup(backupDirForSH.string(), sourceRootForSH.string());
+    MutationRunner::restoreBackup(backupDirForSH, sourceRootForSH);
   }
   if (gStatusLineForSH != nullptr) {
     gStatusLineForSH->disable();
@@ -69,21 +69,20 @@ static void signalHandler(int signum) {
   }
 }
 
-static bool validateTestResultDir(const std::filesystem::path& dir,
-                                  const std::string& dirStr, bool dryRun) {
+static bool validateTestResultDir(const std::filesystem::path& dir, bool dryRun) {
   if (!fs::exists(dir)) {
     if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", dirStr));
+      throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", dir.string()));
     return false;
   }
   if (!fs::is_directory(dir)) {
     if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}", dir.c_str()));
+      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}", dir.string()));
     return false;
   }
   if (fs::is_empty(dir)) {
     if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", dir.c_str()));
+      throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", dir.string()));
     return false;
   }
   return true;
@@ -91,10 +90,10 @@ static bool validateTestResultDir(const std::filesystem::path& dir,
 
 static void printDryRunSummary(const Config& cfg, double baselineSecs, size_t computedTimeLimit,
                                const std::vector<std::pair<int, Mutant>>& indexedMutants,
-                               std::size_t candidateCount, const std::string& workspaceDir,
+                               std::size_t candidateCount, const std::filesystem::path& workspaceDir,
                                size_t partIdx, size_t partCount, size_t fullMutantCount) {
   Console::out("\n=== Sentinel Dry Run ===");
-  Console::out("  source-dir:    {}", cfg.sourceDir.value_or("."));
+  Console::out("  source-dir:    {}", cfg.sourceDir->string());
   Console::out("  build-command: {}", cfg.buildCmd.value_or(""));
   Console::out("  test-command:  {}", cfg.testCmd.value_or(""));
   Console::out("  scope:         {}", cfg.scope.value_or("all"));
@@ -103,7 +102,7 @@ static void printDryRunSummary(const Config& cfg, double baselineSecs, size_t co
   if (partIdx != 0) {
     Console::out("  partition:     {}/{}", partIdx, partCount);
   }
-  Console::out("  workspace:     {}", workspaceDir);
+  Console::out("  workspace:     {}", workspaceDir.string());
 
   Console::out("\n  {}  Original build", "[ OK ]");  // Baseline run already happened
 
@@ -153,11 +152,11 @@ void MutationRunner::setSignalHandler() {
 static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout) {
   YAML::Emitter out;
   out << YAML::BeginMap;
-  out << YAML::Key << "source-dir" << YAML::Value << cfg.sourceDir.value_or(".");
+  out << YAML::Key << "source-dir" << YAML::Value << cfg.sourceDir->string();
   if (cfg.outputDir && !cfg.outputDir->empty()) {
-    out << YAML::Key << "output-dir" << YAML::Value << *cfg.outputDir;
+    out << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir->string();
   }
-  out << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir.value_or(".");
+  out << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir->string();
   out << YAML::Key << "scope" << YAML::Value << cfg.scope.value_or("all");
   out << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : *cfg.extensions) out << e;
@@ -171,12 +170,12 @@ static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout)
   out << YAML::Key << "limit" << YAML::Value << cfg.limit.value_or(0);
   out << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd.value_or("");
   out << YAML::Key << "test-command" << YAML::Value << cfg.testCmd.value_or("");
-  out << YAML::Key << "test-report-dir" << YAML::Value << cfg.testResultDir.value_or("");
+  out << YAML::Key << "test-report-dir" << YAML::Value << cfg.testResultDir->string();
   out << YAML::Key << "test-report-extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : *cfg.testResultFileExts) out << e;
   out << YAML::EndSeq;
   out << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
-  for (const auto& c : *cfg.coverageFiles) out << c;
+  for (const auto& c : *cfg.coverageFiles) out << c.string();
   out << YAML::EndSeq;
   out << YAML::Key << "generator" << YAML::Value << cfg.generator.value_or("uniform");
   out << YAML::Key << "timeout" << YAML::Value << computedTimeout;
@@ -190,7 +189,7 @@ static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout)
 }
 
 static const char* const kYamlTemplate =
-    "# sentinel.yaml — full configuration template\n"
+    "# sentinel.yaml - full configuration template\n"
     "#\n"
     "# Uncomment and edit the options you need.\n"
     "# CLI arguments always take priority over values in this file.\n"
@@ -203,7 +202,7 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Run options ---\n"
     "\n"
-    "# Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)\n"
+    "# Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)\n"
     "# threshold: 80\n"
     "\n"
     "# --- Build & test options ---\n"
@@ -227,7 +226,7 @@ static const char* const kYamlTemplate =
     "# test-report-extension:\n"
     "#   - xml\n"
     "\n"
-    "# Test time limit in seconds (default: auto — 2x baseline run time; 0 = no limit)\n"
+    "# Test time limit in seconds (default: auto - 2x baseline run time; 0 = no limit)\n"
     "# timeout: auto\n"
     "\n"
     "# Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)\n"
@@ -247,7 +246,7 @@ static const char* const kYamlTemplate =
     "#   - c++\n"
     "#   - cu\n"
     "\n"
-    "# Paths or glob patterns to constrain the diff (default: none — entire source)\n"
+    "# Paths or glob patterns to constrain the diff (default: none - entire source)\n"
     "# pattern: []\n"
     "\n"
     "# Paths excluded from mutation; fnmatch-style patterns (default: none)\n"
@@ -262,7 +261,7 @@ static const char* const kYamlTemplate =
     "#   weighted - samples more mutants from complex code\n"
     "# generator: uniform\n"
     "\n"
-    "# Random seed for mutant selection (default: auto — picked randomly)\n"
+    "# Random seed for mutant selection (default: auto - picked randomly)\n"
     "# seed: auto\n"
     "\n"
     "# Mutation operators to use; omit to use all operators (default: all)\n"
@@ -320,7 +319,7 @@ int MutationRunner::run() {
 
   Config activeConfig = mConfig;
   if (resuming) {
-    activeConfig = YamlConfigParser::loadFromFile((ws.getRoot() / "sentinel.yaml").string());
+    activeConfig = YamlConfigParser::loadFromFile(ws.getRoot() / "sentinel.yaml");
     Console::out("Resuming previous run.");
   } else {
     ws.initialize();
@@ -373,12 +372,12 @@ int MutationRunner::run() {
   }
 
   auto logger = Logger::getLogger(cMutationRunnerLoggerName);
-  sourceRootForSH = fs::path(*activeConfig.sourceDir);
+  sourceRootForSH = *activeConfig.sourceDir;
   backupDirForSH = ws.getBackupDir();
   workspaceDirForSH = ws.getRoot();
   setSignalHandler();
 
-  // ── Baseline & Mutants ───────────────────────────────────────────────────
+  // Baseline & Mutants
   size_t computedTimeLimit = 0;
   if (activeConfig.timeLimit != "auto") {
     computedTimeLimit = std::stoul(*activeConfig.timeLimit);
@@ -403,7 +402,7 @@ int MutationRunner::run() {
       computedTimeLimit = static_cast<size_t>(ceil(ts.toDouble() * 2.0));
       if (computedTimeLimit < 1) computedTimeLimit = 1;
     }
-    copyTestReportTo(*activeConfig.testResultDir, ws.getOriginalResultsDir().string(),
+    copyTestReportTo(*activeConfig.testResultDir, ws.getOriginalResultsDir(),
                      *activeConfig.testResultFileExts);
     ws.saveConfig(buildWorkspaceYaml(activeConfig, computedTimeLimit));
   }
@@ -438,12 +437,12 @@ int MutationRunner::run() {
   if (dryRun) {
     statusLine.disable();
     printDryRunSummary(activeConfig, 0.0, computedTimeLimit, indexedMutants, indexedMutants.size(),
-                       workDirPath.string(), 0, 0, indexedMutants.size());
+                       workDirPath, 0, 0, indexedMutants.size());
     return 0;
   }
 
   // Evaluation Loop
-  Evaluator evaluator(ws.getOriginalResultsDir().string(), *activeConfig.sourceDir);
+  Evaluator evaluator(ws.getOriginalResultsDir(), *activeConfig.sourceDir);
   statusLine.setPhase(StatusLine::Phase::MUTANT);
   for (const auto& [id, m] : indexedMutants) {
     if (ws.isDone(id)) {
@@ -470,15 +469,15 @@ int MutationRunner::run() {
       if (mTest.isTimedOut()) {
         testState = "timeout";
       } else {
-        copyTestReportTo(*activeConfig.testResultDir, (ws.getRoot() / "actual").string(),
+        copyTestReportTo(*activeConfig.testResultDir, ws.getRoot() / "actual",
                          *activeConfig.testResultFileExts);
       }
     } else {
       testState = "build_failure";
     }
 
-    MutationResult result = evaluator.compare(m, (ws.getRoot() / "actual").string(), testState);
-    restoreBackup(ws.getBackupDir().string(), *activeConfig.sourceDir);
+    MutationResult result = evaluator.compare(m, ws.getRoot() / "actual", testState);
+    restoreBackup(ws.getBackupDir(), *activeConfig.sourceDir);
     ws.clearLock(id);
     ws.setDone(id, result);
     statusLine.recordResult(static_cast<int>(result.getMutationState()));
@@ -495,7 +494,7 @@ int MutationRunner::run() {
   return 0;
 }
 
-void MutationRunner::copyTestReportTo(const std::string& from, const std::string& to,
+void MutationRunner::copyTestReportTo(const std::filesystem::path& from, const std::filesystem::path& to,
                                       const std::vector<std::string>& exts) {
   fs::remove_all(to);
   fs::create_directories(to);
@@ -512,23 +511,23 @@ void MutationRunner::copyTestReportTo(const std::string& from, const std::string
   }
 }
 
-void MutationRunner::restoreBackup(const std::string& backup, const std::string& srcRoot) {
+void MutationRunner::restoreBackup(const std::filesystem::path& backup, const std::filesystem::path& srcRoot) {
   for (const auto& dirent : fs::directory_iterator(backup)) {
-    fs::copy(dirent.path(), fs::path(srcRoot) / dirent.path().filename(),
+    fs::copy(dirent.path(), srcRoot / dirent.path().filename(),
              fs::copy_options::overwrite_existing | fs::copy_options::recursive);
     fs::remove_all(dirent.path());
   }
 }
 
-std::string MutationRunner::preProcessWorkDir(const std::string& target, bool* targetExists, bool isFilledDir) {
-  fs::path p(target);
-  if (!fs::exists(p)) {
+std::filesystem::path MutationRunner::preProcessWorkDir(const std::filesystem::path& target, bool* targetExists,
+                                                        bool isFilledDir) {
+  if (!fs::exists(target)) {
     *targetExists = false;
-    fs::create_directories(p);
-  } else if (!isFilledDir && !fs::is_empty(p)) {
-    throw InvalidArgumentException(fmt::format("'{}' must be empty.", target));
+    fs::create_directories(target);
+  } else if (!isFilledDir && !fs::is_empty(target)) {
+    throw InvalidArgumentException(fmt::format("'{}' must be empty.", target.string()));
   }
-  return fs::canonical(p).string();
+  return fs::canonical(target);
 }
 
 bool MutationRunner::checkConfigWarnings() {
@@ -536,12 +535,12 @@ bool MutationRunner::checkConfigWarnings() {
 
   // limit=0: evaluates every candidate mutant, which may take hours.
   if (mConfig.limit && *mConfig.limit == 0) {
-    warnings.push_back("limit: 0 — all candidate mutants will be evaluated. This may take a very long time.");
+    warnings.push_back("limit: 0 - all candidate mutants will be evaluated. This may take a very long time.");
   }
 
   // timeout=0: no per-mutant time cap; a hanging test blocks the run forever.
   if (mConfig.timeLimit && *mConfig.timeLimit == "0") {
-    warnings.push_back("timeout: 0 — no per-mutant test time limit. A hanging test will block the run indefinitely.");
+    warnings.push_back("timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
   }
 
   // --exclude checks
@@ -558,17 +557,18 @@ bool MutationRunner::checkConfigWarnings() {
 
   // --pattern checks
   if (mConfig.patterns) {
-    std::string srcRoot = *mConfig.sourceDir;
-    if (!srcRoot.empty() && srcRoot.back() != '/') srcRoot += '/';
+    fs::path srcRoot = *mConfig.sourceDir;
 
     for (const auto& pat : *mConfig.patterns) {
-      if (fs::path(pat).is_absolute()) {
+      fs::path patPath(pat);
+      if (patPath.is_absolute()) {
         // sourceDir is canonical absolute
-        if (pat.find(srcRoot) == 0) {
-          warnings.push_back(fmt::format("pattern: '{}' is an absolute path. "
-                                         "Git pathspec uses paths relative to repository root.", pat));
-        } else {
+        auto rel = patPath.lexically_relative(srcRoot);
+        if (rel.empty() || rel.native().find("..") != std::string::npos) {
           warnings.push_back(fmt::format("pattern: '{}' is an absolute path outside source-dir.", pat));
+        } else {
+           warnings.push_back(fmt::format("pattern: '{}' is an absolute path. "
+                                         "Git pathspec uses paths relative to repository root.", pat));
         }
       }
     }

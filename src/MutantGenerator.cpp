@@ -5,17 +5,19 @@
 
 #include <fmt/core.h>
 #include <exception>
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
 std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string& generator,
-                                                              const std::string& directory) {
+                                                              const std::filesystem::path& directory) {
   if (generator == "uniform") {
     return std::make_shared<UniformMutantGenerator>(directory);
   }

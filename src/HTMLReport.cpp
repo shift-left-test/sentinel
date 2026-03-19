@@ -4,20 +4,21 @@
  */
 
 #include <fmt/core.h>
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/HTMLReport.hpp"
+#include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/docGenerator/CSSGenerator.hpp"
 #include "sentinel/docGenerator/EmptyIndexHTMLGenerator.hpp"
 #include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
 #include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
-#include "sentinel/HTMLReport.hpp"
-#include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationResults.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -25,9 +26,11 @@ namespace fs = std::filesystem;
 
 namespace sentinel {
 
-HTMLReport::HTMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
+HTMLReport::HTMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
+    Report(results, sourcePath) {}
 
-HTMLReport::HTMLReport(const std::string& resultsPath, const std::string& sourcePath) :
+HTMLReport::HTMLReport(const std::filesystem::path& resultsPath,
+                       const std::filesystem::path& sourcePath) :
     Report(resultsPath, sourcePath) {}
 
 void HTMLReport::save(const std::filesystem::path& dirPath) {
@@ -93,10 +96,8 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     }
   } else {
     for (const auto& p : groupByPath) {
-      std::string curDirname = p.first.parent_path();
-      curDirname = string::replaceAll(curDirname, "/", ".");
-
-      if (currentDirPath != curDirname) {
+      fs::path curDirpath = p.first.parent_path();
+      if (currentDirPath != curDirpath) {
         continue;
       }
 
@@ -110,10 +111,11 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
 
   auto contents = ihg.str();
 
-  std::string fileName = "index.html";
+  fs::path fileName = "index.html";
   if (!root) {
-    fileName = "srcDir" / currentDirPath / "index.html";
-    auto newDir = outputDir / "srcDir" / currentDirPath;
+    fs::path relDir = string::replaceAll(currentDirPath.string(), "/", ".");
+    fileName = fs::path("srcDir") / relDir / "index.html";
+    auto newDir = outputDir / "srcDir" / relDir;
     if (fs::exists(newDir)) {
       if (!fs::is_directory(newDir)) {
         throw InvalidArgumentException(fmt::format("'{}' is not a directory", newDir.string()));
@@ -136,7 +138,7 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
     throw InvalidArgumentException(fmt::format("Source doesn't exists: {0}", absSrcPath.string()));
   }
 
-  std::string srcName = absSrcPath.filename();
+  std::string srcName = absSrcPath.filename().string();
 
   std::map<std::size_t, std::shared_ptr<std::vector<const MutationResult*>>> groupByLine;
   std::set<std::string> uniqueKillingTest;
@@ -165,7 +167,7 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
     groupByLine[curLineNum]->push_back(mr);
   }
 
-  std::ifstream tf(absSrcPath);
+  std::ifstream tf(absSrcPath.string());
   std::stringstream buffer;
   buffer << tf.rdbuf();
   std::string srcContents = buffer.str();
@@ -219,7 +221,7 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
         std::string mutatedCodeTail;
         auto first = mr->getMutant().getFirst();
         auto last = mr->getMutant().getLast();
-        for (int i = first.line; i <= last.line; i++) {
+        for (int i = first.line; i <= static_cast<int>(last.line); i++) {
           std::string curLineContent = srcLineByLine[i - 1];
           if (!oriCode.empty()) {
             oriCode += "\n";
@@ -227,7 +229,7 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
           if (i == first.line) {
             mutatedCodeHead = curLineContent.substr(0, first.column - 1);
           }
-          if (i == last.line) {
+          if (i == static_cast<int>(last.line)) {
             mutatedCodeTail = curLineContent.substr(last.column - 1, std::string::npos);
           }
           oriCode.append(curLineContent);
@@ -262,14 +264,14 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
 
   auto contents = shg.str();
 
-  std::string fileName =
-      outputDir / "srcDir" / string::replaceAll(srcPath.parent_path(), "/", ".") / fmt::format("{0}.html", srcName);
+  fs::path relDir = string::replaceAll(srcPath.parent_path().string(), "/", ".");
+  fs::path fileName = outputDir / "srcDir" / relDir / fmt::format("{0}.html", srcName);
 
-  std::ofstream ofs(fileName, std::ofstream::out);
+  std::ofstream ofs(fileName.string(), std::ofstream::out);
   ofs << contents;
   ofs.close();
 
-  mLogger->info("Save to {}", fileName);
+  mLogger->info("Save to {}", fileName.string());
 }
 
 }  // namespace sentinel

@@ -11,13 +11,14 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <future>
 #include <map>
-#include <thread>
 #include <memory>
 #include <random>
 #include <set>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include "sentinel/Logger.hpp"
@@ -32,25 +33,25 @@ namespace sentinel {
 
 static const char* cWeightedGeneratorLoggerName = "WeightedMutantGenerator";
 
-WeightedMutantGenerator::WeightedMutantGenerator(const std::string& path) : mDbPath(path) {
+WeightedMutantGenerator::WeightedMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
 Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath, errorMsg);
+      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
 
   if (compileDb == nullptr) {
     throw IOException(EINVAL, errorMsg);
   }
 
   // convert sourceLines to map from filename to list of target source lines
-  std::map<std::string, SourceLines> targetLines;
+  std::map<fs::path, SourceLines> targetLines;
   std::map<SourceLine, int> depthMap;
 
   for (const auto& sourceLine : sourceLines) {
-    std::string filename = sourceLine.getPath();
+    fs::path filename = sourceLine.getPath();
     targetLines[filename].push_back(sourceLine);
   }
 
@@ -68,7 +69,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   while (fileIt != targetLines.end()) {
     std::vector<std::future<FileResult>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->verbose("Checking for mutants in {}", fileIt->first);
+      logger->verbose("Checking for mutants in {}", fileIt->first.string());
       DepthMap localDm;
       for (const auto& sl : fileIt->second) {
         localDm[sl] = -1;
@@ -77,7 +78,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
           std::launch::async,
           [db, filename = fileIt->first, fileLines = fileIt->second, ldm = std::move(localDm), this]() mutable {
             Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename);
+            clang::tooling::ClangTool tool(*db, filename.string());
             tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
             tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
             return std::make_pair(std::move(localMutables), std::move(ldm));
@@ -103,9 +104,9 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 
   // Pre-group mutants by canonical file path, sorted by first.line for binary search.
   // Mutant::mPath is already canonical (set in Mutant constructor).
-  std::map<std::string, std::vector<const Mutant*>> mutantsByFile;
+  std::map<fs::path, std::vector<const Mutant*>> mutantsByFile;
   for (const auto& m : mutables) {
-    mutantsByFile[m.getPath().string()].push_back(&m);
+    mutantsByFile[m.getPath()].push_back(&m);
   }
   for (auto& entry : mutantsByFile) {
     std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
@@ -114,7 +115,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   }
 
   // Cache canonical path per unique source path to avoid repeated fs::canonical() calls.
-  std::map<std::string, std::string> pathCache;
+  std::map<fs::path, fs::path> pathCache;
 
   // Select one Mutant on each target line
   std::set<Mutant> selectedSet;
@@ -123,12 +124,12 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   for (const auto& it : sortedDepthMap) {
     auto line = it.first;
 
-    std::string rawPath = line.getPath().string();
-    auto emplaceResult = pathCache.emplace(rawPath, std::string{});
+    fs::path rawPath = line.getPath();
+    auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
     if (emplaceResult.second) {
-      emplaceResult.first->second = fs::canonical(rawPath).string();
+      emplaceResult.first->second = fs::canonical(rawPath);
     }
-    const std::string& canonPath = emplaceResult.first->second;
+    const fs::path& canonPath = emplaceResult.first->second;
     std::size_t targetLine = line.getLineNumber();
 
     auto mutantsByFileIt = mutantsByFile.find(canonPath);

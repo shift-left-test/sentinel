@@ -4,11 +4,12 @@
  */
 
 #include <fmt/core.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include <chrono>
 #include <cstring>
 #include <exception>
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -19,6 +20,8 @@
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/util/signal.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 volatile pid_t Subprocess::childPid;
@@ -26,8 +29,8 @@ volatile std::size_t Subprocess::killAfter;
 volatile bool Subprocess::timedOut;
 volatile int Subprocess::pendSig;
 
-Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill, const std::string& logFile,
-                       bool silent) :
+Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill,
+                       const std::filesystem::path& logFile, bool silent) :
     mCmd(cmd), mSec(sec), mSecForKill(secForKill), mLogFile(logFile), mSilent(silent) {
   if (Subprocess::childPid != 0) {
     throw std::runtime_error("Another subprocess is running. (Problem with sentinel logic)");
@@ -128,7 +131,7 @@ int Subprocess::execute() {
     // Open log file for tee output (optional)
     std::ofstream logStream;
     if (!mLogFile.empty()) {
-      logStream.open(mLogFile, std::ios::out | std::ios::trunc);
+      logStream.open(mLogFile.string(), std::ios::out | std::ios::trunc);
     }
 
     const int MAXBUFSZ = 100;

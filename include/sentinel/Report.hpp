@@ -88,7 +88,7 @@ class Report {
    * @param start start dir
    * @return the relative path from start dir
    */
-  std::filesystem::path getRelativePath(const std::string& path, const std::string& start);
+  std::filesystem::path getRelativePath(const std::filesystem::path& path, const std::filesystem::path& start);
 
   /**
    * @brief MutationResults instance

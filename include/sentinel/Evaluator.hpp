@@ -30,7 +30,7 @@ class Evaluator {
    * @throw InvalidArgumentException
    *        when expected result doesn't have passed test case
    */
-  explicit Evaluator(const std::string& expectedResultDir, const std::string& sourcePath);
+  explicit Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath);
   Evaluator(const Evaluator&) = delete;
   Evaluator& operator=(const Evaluator&) = delete;
 
@@ -42,7 +42,7 @@ class Evaluator {
    * @param testState one of ['success', 'build_failure', 'timeout']
    * @return MutationResult summary of compare
    */
-  MutationResult compare(const Mutant& mut, const std::string& ActualResultDir, const std::string& testState);
+  MutationResult compare(const Mutant& mut, const std::filesystem::path& ActualResultDir, const std::string& testState);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
@@ -80,7 +80,7 @@ class Evaluator {
 
  private:
   std::shared_ptr<Logger> mLogger;
-  std::string mSourcePath;
+  std::filesystem::path mSourcePath;
   std::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
   Mutants mMutants;
   Result mExpectedResult;

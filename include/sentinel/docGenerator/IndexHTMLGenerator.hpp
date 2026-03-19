@@ -6,7 +6,8 @@
 #ifndef INCLUDE_SENTINEL_DOCGENERATOR_INDEXHTMLGENERATOR_HPP_
 #define INCLUDE_SENTINEL_DOCGENERATOR_INDEXHTMLGENERATOR_HPP_
 
-#include <stddef.h>
+#include <cstddef>
+#include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "sentinel/docGenerator/DOCGenerator.hpp"
@@ -28,8 +29,8 @@ class IndexHTMLGenerator : public DOCGenerator {
    * @param numerator
    * @param denominator
    */
-  IndexHTMLGenerator(bool root, const std::string& dirName, std::size_t sizeOfTargetFiles, unsigned int coverage,
-                     std::size_t numerator, std::size_t denominator);
+  IndexHTMLGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
+                     unsigned int coverage, std::size_t numerator, std::size_t denominator);
 
   /**
    * @brief push a item to table
@@ -50,7 +51,7 @@ class IndexHTMLGenerator : public DOCGenerator {
 
  private:
   bool mRoot;
-  std::string mDirName;
+  std::filesystem::path mDirName;
   std::size_t mSizeOfTargetFiles;
   unsigned int mCoverage;
   std::size_t mNumerator;

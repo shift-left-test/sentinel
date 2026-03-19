@@ -62,7 +62,7 @@ class Mutant {
    * @param lastColumn column number of last location
    * @param token to replace with
    */
-  Mutant(const std::string& mutationOperator, const std::string& path, const std::string& qualifiedFuncName,
+  Mutant(const std::string& mutationOperator, const std::filesystem::path& path, const std::string& qualifiedFuncName,
          std::size_t firstLine, std::size_t firstColumn, std::size_t lastLine, std::size_t lastColumn,
          const std::string& token);
 

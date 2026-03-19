@@ -11,21 +11,22 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
+#include <filesystem>  // NOLINT
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "sentinel/Mutants.hpp"
 #include "sentinel/MutantGenerator.hpp"
+#include "sentinel/Mutants.hpp"
+#include "sentinel/SourceLines.hpp"
 #include "sentinel/operators/MutationOperator.hpp"
 #include "sentinel/operators/aor.hpp"
 #include "sentinel/operators/bor.hpp"
 #include "sentinel/operators/lcr.hpp"
 #include "sentinel/operators/ror.hpp"
-#include "sentinel/operators/sor.hpp"
 #include "sentinel/operators/sdl.hpp"
+#include "sentinel/operators/sor.hpp"
 #include "sentinel/operators/uoi.hpp"
-#include "sentinel/SourceLines.hpp"
 
 namespace sentinel {
 
@@ -39,12 +40,12 @@ class UniformMutantGenerator : public MutantGenerator {
    *
    * @param path to compilation database file
    */
-  explicit UniformMutantGenerator(const std::string& path);
+  explicit UniformMutantGenerator(const std::filesystem::path& path);
 
   Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
 
  private:
-  std::string mDbPath;
+  std::filesystem::path mDbPath;
 
   /**
    * @brief SentinelASTVistor class

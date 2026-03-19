@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_
 #define INCLUDE_SENTINEL_MUTATIONFACTORY_HPP_
 
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include "sentinel/MutantGenerator.hpp"
@@ -38,7 +39,7 @@ class MutationFactory {
    * @param generatorStr name of the mutant selection strategy (e.g. "uniform", "random", "weighted")
    * @return list of mutables
    */
-  Mutants populate(const std::string& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
+  Mutants populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                    unsigned randomSeed, const std::string& generatorStr = "");
 
  private:

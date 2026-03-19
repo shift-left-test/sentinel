@@ -5,20 +5,23 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/XMLReport.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace fs = std::filesystem;
 
 namespace sentinel {
 
-XMLReport::XMLReport(const MutationResults& results, const std::string& sourcePath) : Report(results, sourcePath) {}
+XMLReport::XMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
+    Report(results, sourcePath) {}
 
-XMLReport::XMLReport(const std::string& resultsPath, const std::string& sourcePath) : Report(resultsPath, sourcePath) {}
+XMLReport::XMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
+    Report(resultsPath, sourcePath) {}
 
 void XMLReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");
@@ -53,8 +56,9 @@ void XMLReport::save(const std::filesystem::path& dirPath) {
       pMutation->SetAttribute("detected", r.getDetected());
     }
 
-    addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename());
-    addChildToParent(doc.get(), pMutation, "sourceFilePath", getRelativePath(r.getMutant().getPath(), mSourcePath));
+    addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename().string());
+    addChildToParent(doc.get(), pMutation, "sourceFilePath",
+                     getRelativePath(r.getMutant().getPath(), mSourcePath).string());
     addChildToParent(doc.get(), pMutation, "mutatedClass", r.getMutant().getClass());
     addChildToParent(doc.get(), pMutation, "mutatedMethod", r.getMutant().getFunction());
     addChildToParent(doc.get(), pMutation, "lineNumber", std::to_string(r.getMutant().getFirst().line));
