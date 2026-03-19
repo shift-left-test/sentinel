@@ -16,6 +16,8 @@
 
 namespace sentinel {
 
+namespace fs = std::filesystem;
+
 std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string& generator,
                                                               const std::filesystem::path& directory) {
   if (generator == "uniform") {

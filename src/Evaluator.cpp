@@ -15,9 +15,9 @@
 #include "sentinel/Result.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Evaluator::Evaluator(const std::filesystem::path& expectedResultDir,
                      const std::filesystem::path& sourcePath) :

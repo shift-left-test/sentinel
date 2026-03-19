@@ -13,8 +13,10 @@
 
 namespace sentinel {
 
+namespace fs = std::filesystem;
+
 SourceTree::SourceTree(const std::filesystem::path& baseDirectory) : mBaseDirectory(baseDirectory) {
-  if (!std::filesystem::exists(mBaseDirectory)) {
+  if (!fs::exists(mBaseDirectory)) {
     throw IOException(EINVAL);
   }
 }

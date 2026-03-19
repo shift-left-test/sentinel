@@ -9,9 +9,9 @@
 #include <vector>
 #include "sentinel/ConfigResolver.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
                                const std::filesystem::path& yamlPath) {

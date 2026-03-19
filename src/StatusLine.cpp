@@ -16,6 +16,8 @@
 
 namespace sentinel {
 
+namespace fs = std::filesystem;
+
 StatusLine::StatusLine() = default;
 
 StatusLine::~StatusLine() {

@@ -22,9 +22,9 @@
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 HTMLReport::HTMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
     Report(results, sourcePath) {}

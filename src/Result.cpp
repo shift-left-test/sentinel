@@ -17,9 +17,9 @@
 #include "sentinel/QTestXmlParser.hpp"
 #include "sentinel/Result.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Result::Result(const std::string& path) : mLogger(Logger::getLogger("Result")) {
   auto parser1 = std::make_shared<GoogleTestXmlParser>();

@@ -9,9 +9,9 @@
 #include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 IndexHTMLGenerator::IndexHTMLGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
                                        unsigned int coverage, std::size_t numerator, std::size_t denominator) :

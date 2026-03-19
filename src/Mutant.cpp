@@ -12,9 +12,9 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Mutant::Mutant() : mFirst {0, 0}, mLast {0, 0} {}
 

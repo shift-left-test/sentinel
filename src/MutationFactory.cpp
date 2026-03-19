@@ -18,9 +18,9 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
 

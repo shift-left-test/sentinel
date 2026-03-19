@@ -16,9 +16,9 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Workspace.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Workspace::Workspace(const fs::path& root) : mRoot(root) {
 }

@@ -13,9 +13,9 @@
 #include "sentinel/XMLReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 XMLReport::XMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
     Report(results, sourcePath) {}

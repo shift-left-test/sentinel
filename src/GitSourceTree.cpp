@@ -15,9 +15,9 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 const char* cGitSourceTreeLoggerName = "GitSourceTree";
 

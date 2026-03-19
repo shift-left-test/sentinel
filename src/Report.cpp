@@ -16,9 +16,9 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 Report::Report(const MutationResults& results, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath), mResults(results), mLogger(Logger::getLogger("Report")) {

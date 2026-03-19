@@ -14,9 +14,9 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
   for (const auto& filename : filenames) {

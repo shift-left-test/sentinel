@@ -22,9 +22,9 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
 

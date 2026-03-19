@@ -41,9 +41,9 @@
 #include "sentinel/util/signal.hpp"
 #include "sentinel/util/string.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 static const char* cMutationRunnerLoggerName = "MutationRunner";
 static fs::path backupDirForSH;

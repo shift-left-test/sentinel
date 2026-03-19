@@ -12,9 +12,9 @@
 #include <vector>
 #include "sentinel/YamlConfigParser.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 static std::vector<std::string> toStringVector(const YAML::Node& node, const std::string& key) {
   if (!node.IsSequence()) {

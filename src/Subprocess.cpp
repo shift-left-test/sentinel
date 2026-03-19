@@ -20,9 +20,9 @@
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/util/signal.hpp"
 
-namespace fs = std::filesystem;
-
 namespace sentinel {
+
+namespace fs = std::filesystem;
 
 volatile pid_t Subprocess::childPid;
 volatile std::size_t Subprocess::killAfter;
