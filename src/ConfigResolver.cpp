@@ -60,19 +60,18 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
   // Otherwise, resolve everything relative to current working directory.
   fs::path yamlBaseDir = yamlPath.empty() ? fs::current_path() : fs::absolute(yamlPath).parent_path();
 
-  auto resolvePath = [&](std::optional<fs::path>& optPath, const std::optional<fs::path>& cliVal) {
-    if (optPath && !optPath->empty()) {
-      fs::path p = *optPath;
+  auto resolveOne = [&](fs::path& p, bool fromCli) {
+    if (!p.empty()) {
       if (p.is_relative()) {
-        if (cliVal.has_value()) {
-          *optPath = fs::absolute(p).lexically_normal();
-        } else {
-          *optPath = (yamlBaseDir / p).lexically_normal();
-        }
+        p = fromCli ? fs::absolute(p).lexically_normal() : (yamlBaseDir / p).lexically_normal();
       } else {
-        *optPath = p.lexically_normal();
+        p = p.lexically_normal();
       }
     }
+  };
+
+  auto resolvePath = [&](std::optional<fs::path>& optPath, const std::optional<fs::path>& cliVal) {
+    if (optPath) resolveOne(*optPath, cliVal.has_value());
   };
 
   resolvePath(result.sourceDir, cli.sourceDir);
@@ -82,18 +81,8 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
   resolvePath(result.testResultDir, cli.testResultDir);
 
   if (result.coverageFiles) {
-    for (size_t i = 0; i < result.coverageFiles->size(); ++i) {
-      fs::path p = (*result.coverageFiles)[i];
-      if (p.is_relative()) {
-        if (cli.coverageFiles.has_value()) {
-          (*result.coverageFiles)[i] = fs::absolute(p).lexically_normal();
-        } else {
-          (*result.coverageFiles)[i] = (yamlBaseDir / p).lexically_normal();
-        }
-      } else {
-        (*result.coverageFiles)[i] = p.lexically_normal();
-      }
-    }
+    bool fromCli = cli.coverageFiles.has_value();
+    for (auto& p : *result.coverageFiles) resolveOne(p, fromCli);
   }
 
   return result;

@@ -34,7 +34,7 @@ Report::Report(const std::filesystem::path& resultsPath, const std::filesystem::
 }
 
 void Report::generateReport() {
-  if (!fs::exists(mSourcePath) || !fs::is_directory(mSourcePath)) {
+  if (!fs::is_directory(mSourcePath)) {
     throw InvalidArgumentException(fmt::format("source path does not exist: {}", mSourcePath.string()));
   }
 

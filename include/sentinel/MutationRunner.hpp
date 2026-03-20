@@ -67,16 +67,6 @@ class MutationRunner {
    */
   virtual void setSignalHandler();
 
-  /**
-   * @brief Ensures @p target exists as a directory and returns its canonical path.
-   *
-   * @param target      Directory path to prepare.
-   * @param targetExists Set to @c true if the directory already existed, @c false otherwise.
-   * @param isFilledDir  When @c false, throws if the directory is non-empty.
-   * @return Canonical absolute path of @p target.
-   */
-  std::filesystem::path preProcessWorkDir(const std::filesystem::path& target, bool* targetExists, bool isFilledDir);
-
  private:
   /**
    * @brief Checks resolved options for potentially problematic settings and

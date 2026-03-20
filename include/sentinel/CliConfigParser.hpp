@@ -54,11 +54,11 @@ class CliConfigParser {
   /** @brief Command line flag for working directory. */
   args::ValueFlag<std::filesystem::path> mWorkDir;
   /** @brief Command line flag for verbose mode. */
-  args::Flag mIsVerbose;
+  args::Flag mVerbose;
   /** @brief Command line flag for silent mode. */
   args::Flag mSilent;
   /** @brief Command line flag for debug mode. */
-  args::Flag mIsDebug;
+  args::Flag mDebug;
   /** @brief Command line flag to force operations. */
   args::Flag mForce;
 
@@ -84,9 +84,9 @@ class CliConfigParser {
   /** @brief Command line flag for test result file extensions. */
   args::ValueFlagList<std::string> mTestResultFileExts;
   /** @brief Command line flag for test time limit. */
-  args::ValueFlag<std::string> mTimeLimitStr;
+  args::ValueFlag<std::string> mTimeLimit;
   /** @brief Command line flag for kill after timeout. */
-  args::ValueFlag<std::string> mKillAfterStr;
+  args::ValueFlag<std::string> mKillAfter;
 
   /** @brief Command line flag for mutation scope. */
   args::ValueFlag<std::string> mScope;

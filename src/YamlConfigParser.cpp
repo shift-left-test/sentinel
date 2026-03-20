@@ -16,23 +16,14 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static std::vector<std::string> toStringVector(const YAML::Node& node, const std::string& key) {
+template <typename T>
+static std::vector<T> toVector(const YAML::Node& node, const std::string& key) {
   if (!node.IsSequence()) {
     throw std::runtime_error(fmt::format("Config key '{}' must be a list", key));
   }
-  std::vector<std::string> result(node.size());
-  std::transform(node.begin(), node.end(), result.begin(),
-                 [](const YAML::Node& item) { return item.as<std::string>(); });
-  return result;
-}
-
-static std::vector<fs::path> toPathVector(const YAML::Node& node, const std::string& key) {
-  if (!node.IsSequence()) {
-    throw std::runtime_error(fmt::format("Config key '{}' must be a list", key));
-  }
-  std::vector<fs::path> result(node.size());
-  std::transform(node.begin(), node.end(), result.begin(),
-                 [](const YAML::Node& item) { return item.as<std::string>(); });
+  std::vector<T> result;
+  result.reserve(node.size());
+  for (const auto& item : node) result.push_back(T(item.as<std::string>()));
   return result;
 }
 
@@ -70,13 +61,13 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.scope = root["scope"].as<std::string>();
     }
     if (root["extension"]) {
-      cfg.extensions = toStringVector(root["extension"], "extension");
+      cfg.extensions = toVector<std::string>(root["extension"], "extension");
     }
     if (root["pattern"]) {
-      cfg.patterns = toStringVector(root["pattern"], "pattern");
+      cfg.patterns = toVector<std::string>(root["pattern"], "pattern");
     }
     if (root["exclude"]) {
-      cfg.excludes = toStringVector(root["exclude"], "exclude");
+      cfg.excludes = toVector<std::string>(root["exclude"], "exclude");
     }
     if (root["limit"]) {
       cfg.limit = root["limit"].as<size_t>();
@@ -91,10 +82,10 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.testResultDir = root["test-report-dir"].as<std::string>();
     }
     if (root["test-report-extension"]) {
-      cfg.testResultFileExts = toStringVector(root["test-report-extension"], "test-report-extension");
+      cfg.testResultFileExts = toVector<std::string>(root["test-report-extension"], "test-report-extension");
     }
     if (root["coverage"]) {
-      cfg.coverageFiles = toPathVector(root["coverage"], "coverage");
+      cfg.coverageFiles = toVector<fs::path>(root["coverage"], "coverage");
     }
     if (root["generator"]) {
       cfg.generator = root["generator"].as<std::string>();
@@ -109,7 +100,7 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.seed = root["seed"].as<unsigned>();
     }
     if (root["operator"]) {
-      cfg.operators = toStringVector(root["operator"], "operator");
+      cfg.operators = toVector<std::string>(root["operator"], "operator");
     }
     if (root["threshold"]) {
       cfg.threshold = root["threshold"].as<double>();

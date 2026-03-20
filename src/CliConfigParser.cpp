@@ -17,9 +17,9 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                 {"config"}),
     mOutputDir(mGroupRunCtrl, "PATH", "Directory for output reports.", {'o', "output-dir"}),
     mWorkDir(mGroupRunCtrl, "PATH", "Workspace directory for all sentinel run artifacts.", {"workspace"}),
-    mIsVerbose(mGroupRunCtrl, "verbose", "Enable verbose logging.", {'v', "verbose"}),
+    mVerbose(mGroupRunCtrl, "verbose", "Enable verbose logging.", {'v', "verbose"}),
     mSilent(mGroupRunCtrl, "silent", "Suppress build/test subprocess output to terminal.", {"silent"}),
-    mIsDebug(mGroupRunCtrl, "debug", "Enable debug logging.", {"debug"}),
+    mDebug(mGroupRunCtrl, "debug", "Enable debug logging.", {"debug"}),
     mForce(mGroupRunCtrl, "force", "Skip all prompts and start fresh.", {"force"}),
     mInit(mGroupRunCtrl, "init", "Write a sentinel.yaml config template to the current directory and exit",
           {"init"}),
@@ -40,10 +40,10 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                    {"test-report-dir"}),
     mTestResultFileExts(mGroupBuildTest, "EXT", "File extension of the test report",
                         {"test-report-extension"}),
-    mTimeLimitStr(mGroupBuildTest, "SEC",
+    mTimeLimit(mGroupBuildTest, "SEC",
                   "Test time limit in seconds; 0 = no limit, auto = 2x baseline run time",
                   {"timeout"}),
-    mKillAfterStr(mGroupBuildTest, "SEC",
+    mKillAfter(mGroupBuildTest, "SEC",
                   "Seconds to wait after timeout before sending SIGKILL (0 = disabled)",
                   {"kill-after"}),
     mScope(mGroupMutation, "SCOPE", "Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)",
@@ -74,9 +74,9 @@ Config CliConfigParser::getConfig() {
   if (mSourceDir) cfg.sourceDir = mSourceDir.Get();
   if (mWorkDir) cfg.workDir = mWorkDir.Get();
   if (mOutputDir) cfg.outputDir = mOutputDir.Get();
-  if (mIsVerbose) cfg.verbose = true;
+  if (mVerbose) cfg.verbose = true;
   if (mSilent) cfg.silent = true;
-  if (mIsDebug) cfg.debug = true;
+  if (mDebug) cfg.debug = true;
   if (mForce) cfg.force = true;
 
   if (mBuildCmd) cfg.buildCmd = mBuildCmd.Get();
@@ -84,8 +84,8 @@ Config CliConfigParser::getConfig() {
   if (mTestCmd) cfg.testCmd = mTestCmd.Get();
   if (mTestResultDir) cfg.testResultDir = mTestResultDir.Get();
   if (mTestResultFileExts) cfg.testResultFileExts = mTestResultFileExts.Get();
-  if (mTimeLimitStr) cfg.timeLimit = mTimeLimitStr.Get();
-  if (mKillAfterStr) cfg.killAfter = mKillAfterStr.Get();
+  if (mTimeLimit) cfg.timeLimit = mTimeLimit.Get();
+  if (mKillAfter) cfg.killAfter = mKillAfter.Get();
 
   if (mScope) cfg.scope = mScope.Get();
   if (mExtensions) cfg.extensions = mExtensions.Get();

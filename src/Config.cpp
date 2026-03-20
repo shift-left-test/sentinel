@@ -4,7 +4,3 @@
  */
 
 #include "sentinel/Config.hpp"
-
-namespace sentinel {
-// Config struct implementation (currently header-only)
-}

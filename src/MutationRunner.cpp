@@ -52,7 +52,7 @@ static fs::path workspaceDirForSH;
 static StatusLine* gStatusLineForSH = nullptr;
 
 static void signalHandler(int signum) {
-  if (!backupDirForSH.empty() && fs::exists(backupDirForSH) && fs::is_directory(backupDirForSH)) {
+  if (!backupDirForSH.empty() && fs::is_directory(backupDirForSH)) {
     MutationRunner::restoreBackup(backupDirForSH, sourceRootForSH);
   }
   if (gStatusLineForSH != nullptr) {
@@ -69,29 +69,10 @@ static void signalHandler(int signum) {
   }
 }
 
-static bool validateTestResultDir(const std::filesystem::path& dir, bool dryRun) {
-  if (!fs::exists(dir)) {
-    if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path does not exist : {0}", dir.string()));
-    return false;
-  }
-  if (!fs::is_directory(dir)) {
-    if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path is not a directory: {0}", dir.string()));
-    return false;
-  }
-  if (fs::is_empty(dir)) {
-    if (!dryRun)
-      throw InvalidArgumentException(fmt::format("The test result path is empty: {0}", dir.string()));
-    return false;
-  }
-  return true;
-}
-
-static void printDryRunSummary(const Config& cfg, double baselineSecs, size_t computedTimeLimit,
+static void printDryRunSummary(const Config& cfg, size_t computedTimeLimit,
                                const std::vector<std::pair<int, Mutant>>& indexedMutants,
                                std::size_t candidateCount, const std::filesystem::path& workspaceDir,
-                               size_t partIdx, size_t partCount, size_t fullMutantCount) {
+                               size_t partIdx, size_t partCount) {
   Console::out("\n=== Sentinel Dry Run ===");
   Console::out("  source-dir:    {}", cfg.sourceDir->string());
   Console::out("  build-command: {}", cfg.buildCmd.value_or(""));
@@ -107,8 +88,7 @@ static void printDryRunSummary(const Config& cfg, double baselineSecs, size_t co
   Console::out("\n  {}  Original build", "[ OK ]");  // Baseline run already happened
 
   if (cfg.timeLimit == "auto") {
-    Console::out("  {}  Original tests  (baseline: {:.1f}s, auto-timeout: {}s)",
-                 "[ OK ]", baselineSecs, computedTimeLimit);
+    Console::out("  {}  Original tests  (auto-timeout: {}s)", "[ OK ]", computedTimeLimit);
   } else {
     Console::out("  {}  Original tests  (timeout: {}s)", "[ OK ]", computedTimeLimit);
   }
@@ -134,13 +114,11 @@ static void printDryRunSummary(const Config& cfg, double baselineSecs, size_t co
 MutationRunner::MutationRunner(const Config& config) : mConfig(config) {}
 
 void MutationRunner::init() {
-  if (mConfig.verbose && *mConfig.verbose) {
-    auto logger = Logger::getLogger("sentinel");
-    logger->setLevel(Logger::Level::VERBOSE);
-  }
+  auto logger = Logger::getLogger("sentinel");
   if (mConfig.debug && *mConfig.debug) {
-    auto logger = Logger::getLogger("sentinel");
     logger->setLevel(Logger::Level::DEBUG);
+  } else if (mConfig.verbose && *mConfig.verbose) {
+    logger->setLevel(Logger::Level::VERBOSE);
   }
 }
 
@@ -348,9 +326,9 @@ int MutationRunner::run() {
   }
 
   // Validate partition
+  size_t partIdx = 0;
+  size_t partCount = 0;
   if (activeConfig.partition && !activeConfig.partition->empty()) {
-    size_t partIdx = 0;
-    size_t partCount = 0;
     const std::string& s = *activeConfig.partition;
     auto slash = s.find('/');
     if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
@@ -436,18 +414,22 @@ int MutationRunner::run() {
 
   if (dryRun) {
     statusLine.disable();
-    printDryRunSummary(activeConfig, 0.0, computedTimeLimit, indexedMutants, indexedMutants.size(),
-                       workDirPath, 0, 0, indexedMutants.size());
+    printDryRunSummary(activeConfig, computedTimeLimit, indexedMutants, indexedMutants.size(),
+                       workDirPath, partIdx, partCount);
     return 0;
   }
 
   // Evaluation Loop
   Evaluator evaluator(ws.getOriginalResultsDir(), *activeConfig.sourceDir);
   statusLine.setPhase(StatusLine::Phase::MUTANT);
+  const fs::path backupDir = ws.getBackupDir();
+  const fs::path actualDir = ws.getRoot() / "actual";
+  const unsigned long killAfterSecs = std::stoul(*activeConfig.killAfter);
   for (const auto& [id, m] : indexedMutants) {
     if (ws.isDone(id)) {
-      evaluator.injectResult(ws.getDoneResult(id));
-      statusLine.recordResult(static_cast<int>(ws.getDoneResult(id).getMutationState()));
+      auto doneResult = ws.getDoneResult(id);
+      evaluator.injectResult(doneResult);
+      statusLine.recordResult(static_cast<int>(doneResult.getMutationState()));
       continue;
     }
     ws.setLock(id);
@@ -455,33 +437,33 @@ int MutationRunner::run() {
 
     // Apply mutation
     auto repo = std::make_unique<GitRepository>(*activeConfig.sourceDir, *activeConfig.extensions);
-    repo->getSourceTree()->modify(m, ws.getBackupDir().string());
+    repo->getSourceTree()->modify(m, backupDir.string());
 
-    Subprocess mBuild(*activeConfig.buildCmd, 0, 0, (ws.getMutantDir(id) / "build.log").string(), *activeConfig.silent);
+    const fs::path mutantDir = ws.getMutantDir(id);
+    Subprocess mBuild(*activeConfig.buildCmd, 0, 0, (mutantDir / "build.log").string(), *activeConfig.silent);
     mBuild.execute();
 
     std::string testState = "success";
     if (mBuild.isSuccessfulExit()) {
       fs::remove_all(*activeConfig.testResultDir);
-      Subprocess mTest(*activeConfig.testCmd, computedTimeLimit, std::stoul(*activeConfig.killAfter),
-                        (ws.getMutantDir(id) / "test.log").string(), *activeConfig.silent);
+      Subprocess mTest(*activeConfig.testCmd, computedTimeLimit, killAfterSecs,
+                        (mutantDir / "test.log").string(), *activeConfig.silent);
       mTest.execute();
       if (mTest.isTimedOut()) {
         testState = "timeout";
       } else {
-        copyTestReportTo(*activeConfig.testResultDir, ws.getRoot() / "actual",
-                         *activeConfig.testResultFileExts);
+        copyTestReportTo(*activeConfig.testResultDir, actualDir, *activeConfig.testResultFileExts);
       }
     } else {
       testState = "build_failure";
     }
 
-    MutationResult result = evaluator.compare(m, ws.getRoot() / "actual", testState);
-    restoreBackup(ws.getBackupDir(), *activeConfig.sourceDir);
+    MutationResult result = evaluator.compare(m, actualDir, testState);
+    restoreBackup(backupDir, *activeConfig.sourceDir);
     ws.clearLock(id);
     ws.setDone(id, result);
     statusLine.recordResult(static_cast<int>(result.getMutationState()));
-    fs::remove_all(ws.getRoot() / "actual");
+    fs::remove_all(actualDir);
   }
 
   // Report
@@ -498,9 +480,9 @@ void MutationRunner::copyTestReportTo(const std::filesystem::path& from, const s
                                       const std::vector<std::string>& exts) {
   fs::remove_all(to);
   fs::create_directories(to);
-  if (fs::exists(from) && fs::is_directory(from)) {
+  if (fs::is_directory(from)) {
     for (const auto& dirent : fs::recursive_directory_iterator(from)) {
-      if (fs::is_regular_file(dirent.path())) {
+      if (dirent.is_regular_file()) {
         std::string ext = dirent.path().extension().string();
         if (ext.size() > 1) ext = ext.substr(1);
         if (exts.empty() || std::find(exts.begin(), exts.end(), ext) != exts.end()) {
@@ -517,17 +499,6 @@ void MutationRunner::restoreBackup(const std::filesystem::path& backup, const st
              fs::copy_options::overwrite_existing | fs::copy_options::recursive);
     fs::remove_all(dirent.path());
   }
-}
-
-std::filesystem::path MutationRunner::preProcessWorkDir(const std::filesystem::path& target, bool* targetExists,
-                                                        bool isFilledDir) {
-  if (!fs::exists(target)) {
-    *targetExists = false;
-    fs::create_directories(target);
-  } else if (!isFilledDir && !fs::is_empty(target)) {
-    throw InvalidArgumentException(fmt::format("'{}' must be empty.", target.string()));
-  }
-  return fs::canonical(target);
 }
 
 bool MutationRunner::checkConfigWarnings() {
