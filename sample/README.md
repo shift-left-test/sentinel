@@ -36,7 +36,7 @@ cd build && ctest --output-on-failure
 
 ## Run Mutation Testing
 
-From the `sample/` directory (the build directory must exist — see Build above):
+From the `sample/` directory:
 
 ```bash
 sentinel

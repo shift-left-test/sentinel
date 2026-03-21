@@ -371,7 +371,15 @@ int MutationRunner::run() {
     auto buildLog = ws.getOriginalDir() / "build.log";
     Subprocess buildProc(*activeConfig.buildCmd, 0, 0, buildLog.string(), *activeConfig.silent);
     buildProc.execute();
-    if (!buildProc.isSuccessfulExit()) throw std::runtime_error("Baseline build failed.");
+    if (!buildProc.isSuccessfulExit()) {
+      throw std::runtime_error(fmt::format("Baseline build failed. See: {}", buildLog.string()));
+    }
+    if (!fs::exists(*activeConfig.compileDbDir / "compile_commands.json")) {
+      throw std::runtime_error(fmt::format(
+          "compile_commands.json not found in '{}'. "
+          "Make sure build-command generates it (e.g., add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON to cmake).",
+          activeConfig.compileDbDir->string()));
+    }
 
     statusLine.setPhase(StatusLine::Phase::TEST_ORIG);
     Timestamper ts;
@@ -386,6 +394,11 @@ int MutationRunner::run() {
     }
     copyTestReportTo(*activeConfig.testResultDir, ws.getOriginalResultsDir(),
                      *activeConfig.testResultFileExts);
+    if (fs::is_empty(ws.getOriginalResultsDir())) {
+      throw std::runtime_error(fmt::format(
+          "No test result files found in '{}' after running test command. See: {}",
+          activeConfig.testResultDir->string(), testLog.string()));
+    }
     ws.saveConfig(buildWorkspaceYaml(activeConfig, computedTimeLimit));
   }
 
