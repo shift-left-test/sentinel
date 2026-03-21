@@ -12,13 +12,14 @@ namespace sentinel {
 Stage::Stage(const Config& cfg, StatusLine& statusLine, std::shared_ptr<Logger> logger)
     : mConfig(cfg), mStatusLine(statusLine), mLogger(std::move(logger)) {}
 
-void Stage::setNext(std::shared_ptr<Stage> next) {
+std::shared_ptr<Stage> Stage::setNext(std::shared_ptr<Stage> next) {
   mNext = std::move(next);
+  return mNext;
 }
 
-int Stage::handle() {
+int Stage::run() {
   if (!execute()) return mExitCode;
-  if (mNext) return mNext->handle();
+  if (mNext) return mNext->run();
   return mExitCode;
 }
 

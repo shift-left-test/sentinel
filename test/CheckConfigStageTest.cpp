@@ -52,31 +52,31 @@ class CheckConfigStageTest : public ::testing::Test {
 
 TEST_F(CheckConfigStageTest, testPassesWithValidConfig) {
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_EQ(stage.handle(), 0);
+  EXPECT_EQ(stage.run(), 0);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenBuildCmdEmpty) {
   mConfig.buildCmd = "";
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenTestCmdEmpty) {
   mConfig.testCmd = "";
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenTestResultDirEmpty) {
   mConfig.testResultDir = fs::path("");
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenThresholdOutOfRange) {
   mConfig.threshold = 150.0;
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
 TEST_F(CheckConfigStageTest, testSkipsValidationWhenAlreadyComplete) {
@@ -86,7 +86,7 @@ TEST_F(CheckConfigStageTest, testSkipsValidationWhenAlreadyComplete) {
   { std::ofstream f(ws / "run.done"); }
   mConfig.buildCmd = "";  // would normally throw
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
-  EXPECT_EQ(stage.handle(), 0);  // skipped, no throw
+  EXPECT_EQ(stage.run(), 0);  // skipped, no throw
 }
 
 TEST_F(CheckConfigStageTest, testSkipsValidationWhenResuming) {
@@ -96,19 +96,19 @@ TEST_F(CheckConfigStageTest, testSkipsValidationWhenResuming) {
   { std::ofstream f(ws / "config.yaml"); f << "version: 1"; }
   mConfig.buildCmd = "";  // would normally throw
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
-  EXPECT_EQ(stage.handle(), 0);
+  EXPECT_EQ(stage.run(), 0);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsOnInvalidPartitionFormat) {
   mConfig.partition = std::string("bad");
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenPartitionWithoutSeed) {
   mConfig.partition = std::string("1/4");
   // seed not set
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_THROW(stage.handle(), InvalidArgumentException);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 }  // namespace sentinel

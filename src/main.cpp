@@ -111,16 +111,11 @@ int main(int argc, char** argv) {
     auto evaluation    = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, logger, workDirPath);
     auto report        = std::make_shared<sentinel::ReportStage>(cfg, statusLine, logger, workDirPath);
 
-    initStage->setNext(checkConfig);
-    checkConfig->setNext(baselineBuild);
-    baselineBuild->setNext(baselineTest);
-    baselineTest->setNext(populate);
-    populate->setNext(dryRunStage);
-    dryRunStage->setNext(evaluation);
-    evaluation->setNext(report);
+    initStage->setNext(checkConfig)->setNext(baselineBuild)->setNext(baselineTest)
+             ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
     // 9. Run chain and return exit code
-    return initStage->handle();
+    return initStage->run();
   } catch (args::Help& e) {
     if (std::strcmp(e.what(), "version") == 0) {
       std::cout << "sentinel " << PROGRAM_VERSION << std::endl;

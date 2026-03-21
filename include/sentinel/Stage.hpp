@@ -17,8 +17,8 @@ namespace sentinel {
  * @brief Abstract base class for pipeline stages (Chain of Responsibility).
  *
  * Subclasses implement execute() to perform their work.
- * handle() calls execute() then, if it returns true and a next stage is set,
- * calls next->handle() and returns its exit code.
+ * run() calls execute() then, if it returns true and a next stage is set,
+ * calls next->run() and returns its exit code.
  */
 class Stage {
  public:
@@ -36,15 +36,16 @@ class Stage {
 
   /**
    * @brief Link the next stage in the chain.
+   * @return next, to allow chaining: a->setNext(b)->setNext(c).
    */
-  void setNext(std::shared_ptr<Stage> next);
+  std::shared_ptr<Stage> setNext(std::shared_ptr<Stage> next);
 
   /**
    * @brief Execute this stage; if execute() returns true and a next stage exists,
    *        invoke it and return its exit code.
    * @return Exit code for the entire chain.
    */
-  int handle();
+  int run();
 
  protected:
   /**

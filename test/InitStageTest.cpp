@@ -44,8 +44,8 @@ class InitStageTest : public ::testing::Test {
 TEST_F(InitStageTest, testPassesThroughWhenInitNotSet) {
   mConfig.init = false;
   InitStage stage(mConfig, mStatusLine, mLogger);
-  // Returns true (pass through) — handle() returns 0
-  int code = stage.handle();
+  // Returns true (pass through) — run() returns 0
+  int code = stage.run();
   EXPECT_EQ(code, 0);
   EXPECT_FALSE(fs::exists("sentinel.yaml"));
 }
@@ -54,7 +54,7 @@ TEST_F(InitStageTest, testWritesSentinelYamlWhenInitSet) {
   mConfig.init = true;
   mConfig.force = true;
   InitStage stage(mConfig, mStatusLine, mLogger);
-  int code = stage.handle();
+  int code = stage.run();
   EXPECT_EQ(code, 0);
   EXPECT_TRUE(fs::exists("sentinel.yaml"));
 }
@@ -71,7 +71,7 @@ TEST_F(InitStageTest, testDoesNotOverwriteWithoutForceWhenUserDeclines) {
   close(devNull);
 
   InitStage stage(mConfig, mStatusLine, mLogger);
-  EXPECT_NO_THROW(stage.handle());
+  EXPECT_NO_THROW(stage.run());
 
   dup2(savedStdin, STDIN_FILENO);
   close(savedStdin);
@@ -86,7 +86,7 @@ TEST_F(InitStageTest, testOverwritesWithForce) {
   mConfig.init = true;
   mConfig.force = true;
   InitStage stage(mConfig, mStatusLine, mLogger);
-  stage.handle();
+  stage.run();
   std::ifstream f("sentinel.yaml");
   std::string content((std::istreambuf_iterator<char>(f)), {});
   EXPECT_NE(content, "old content");
