@@ -1,0 +1,20 @@
+# sentinel.yaml — sample project configuration
+#
+# Run `sentinel` from the sample/ directory.
+# The build directory must exist before running sentinel:
+#   cmake -B build
+#   cmake --build build
+#
+# Then start mutation testing:
+#   sentinel
+
+version: 1
+
+build-command: cmake --build build
+compiledb-dir: ./build
+test-command: cd build && ctest --output-on-failure
+test-report-dir: ./build/test-results
+source-dir: ./src
+
+limit: 30
+output-dir: ./sentinel_output
