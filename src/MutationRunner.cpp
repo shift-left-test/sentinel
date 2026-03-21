@@ -130,6 +130,7 @@ void MutationRunner::setSignalHandler() {
 static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout) {
   YAML::Emitter out;
   out << YAML::BeginMap;
+  out << YAML::Key << "version" << YAML::Value << 1;
   out << YAML::Key << "source-dir" << YAML::Value << cfg.sourceDir->string();
   if (cfg.outputDir && !cfg.outputDir->empty()) {
     out << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir->string();
@@ -171,6 +172,9 @@ static const char* const kYamlTemplate =
     "#\n"
     "# Uncomment and edit the options you need.\n"
     "# CLI arguments always take priority over values in this file.\n"
+    "\n"
+    "# Config file format version (required)\n"
+    "version: 1\n"
     "\n"
     "# Directory for output reports (default: none)\n"
     "# output-dir: ./sentinel_output\n"

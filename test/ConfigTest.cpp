@@ -44,6 +44,7 @@ class ConfigTest : public ::testing::Test {
 
 TEST_F(ConfigTest, testLoadCompleteConfig) {
   writeFile("sentinel.yaml", R"(
+version: 1
 source-dir: ./src
 workspace: ./work
 output-dir: ./out
@@ -138,6 +139,7 @@ operator:
 
 TEST_F(ConfigTest, testLoadPartialConfig) {
   writeFile("sentinel.yaml", R"(
+version: 1
 build-command: make all
 test-command: ctest --verbose
 test-report-dir: ./test-results
@@ -168,6 +170,16 @@ TEST_F(ConfigTest, testLoadEmptyConfig) {
 TEST_F(ConfigTest, testLoadInvalidYamlSyntax) {
   writeFile("bad.yaml", "key: [unclosed");
   EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("bad.yaml")), std::runtime_error);
+}
+
+TEST_F(ConfigTest, testLoadMissingVersion) {
+  writeFile("no-version.yaml", "build-command: make\n");
+  EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("no-version.yaml")), std::runtime_error);
+}
+
+TEST_F(ConfigTest, testLoadUnsupportedVersion) {
+  writeFile("future.yaml", "version: 99\nbuild-command: make\n");
+  EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("future.yaml")), std::runtime_error);
 }
 
 TEST_F(ConfigTest, testResolvePriority) {
