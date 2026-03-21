@@ -37,10 +37,10 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                   {"compiledb-dir"}),
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory",
-                   {"test-report-dir"}),
-    mTestResultFileExts(mGroupBuildTest, "EXT", "File extension of the test report",
-                        {"test-report-extension"}),
-    mTimeLimit(mGroupBuildTest, "SEC",
+                   {"test-result-dir"}),
+    mTestResultExts(mGroupBuildTest, "EXT", "File extension of the test report",
+                        {"test-result-ext"}),
+    mTimeout(mGroupBuildTest, "SEC",
                   "Test time limit in seconds; 0 = no limit, auto = 2x baseline run time",
                   {"timeout"}),
     mKillAfter(mGroupBuildTest, "SEC",
@@ -83,8 +83,8 @@ Config CliConfigParser::getConfig() {
   if (mCompileDbDir) cfg.compileDbDir = mCompileDbDir.Get();
   if (mTestCmd) cfg.testCmd = mTestCmd.Get();
   if (mTestResultDir) cfg.testResultDir = mTestResultDir.Get();
-  if (mTestResultFileExts) cfg.testResultFileExts = mTestResultFileExts.Get();
-  if (mTimeLimit) cfg.timeLimit = mTimeLimit.Get();
+  if (mTestResultExts) cfg.testResultExts = mTestResultExts.Get();
+  if (mTimeout) cfg.timeout = mTimeout.Get();
   if (mKillAfter) cfg.killAfter = mKillAfter.Get();
 
   if (mScope) cfg.scope = mScope.Get();

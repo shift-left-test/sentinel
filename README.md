@@ -60,7 +60,7 @@ cat > sentinel.yaml << 'EOF'
 version: 1
 build-command: make
 test-command: make test
-test-report-dir: ./test-results
+test-result-dir: ./test-results
 source-dir: .
 EOF
 sentinel
@@ -137,7 +137,7 @@ source-dir: ./src
 build-command: cmake -B build && cmake --build build
 compiledb-dir: ./build
 test-command: ctest --test-dir build
-test-report-dir: ./build/test-results
+test-result-dir: ./build/test-results
 scope: commit
 limit: 50
 exclude:
@@ -160,7 +160,7 @@ sentinel \
   --source-dir=./my-project \
   --build-command="cmake -B build && cmake --build build" \
   --test-command="ctest --test-dir build" \
-  --test-report-dir=./build/test-results \
+  --test-result-dir=./build/test-results \
   --scope=commit \
   --limit=50 \
   --exclude="*/third_party/*" \
@@ -245,8 +245,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--build-command=CMD` | Shell command to build the project | **required** |
 | `--compiledb-dir=PATH` | Directory containing `compile_commands.json` | `.` |
 | `--test-command=CMD` | Shell command to run tests | **required** |
-| `--test-report-dir=PATH` | Directory where the test command writes result files | **required** |
-| `--test-report-extension=EXT` | File extension of test result files (repeatable) | `xml` |
+| `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
+| `--test-result-ext=EXT` | File extension of test result files (repeatable) | `xml` |
 | `--timeout=SEC` | Test time limit; `0` = no limit (triggers pre-run warning), `auto` = 2× baseline run time | `auto` |
 | `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
@@ -289,7 +289,7 @@ source-dir: ./src
 compiledb-dir: ./build
 build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
-test-report-dir: ./build/test-results
+test-result-dir: ./build/test-results
 scope: commit
 limit: 50
 exclude:
@@ -318,6 +318,9 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
 # threshold: 80
 
+# Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
+# partition: 1/1
+
 # --- Build & test options ---
 
 # Source root directory (default: .)
@@ -333,10 +336,10 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # test-command: make test
 
 # Path to the test report directory
-# test-report-dir: ./test-results
+# test-result-dir: ./test-results
 
 # File extension of the test report (default: xml)
-# test-report-extension:
+# test-result-ext:
 #   - xml
 
 # Test time limit in seconds (default: auto — 2x baseline run time; 0 = no limit)

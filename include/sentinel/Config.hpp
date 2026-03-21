@@ -46,9 +46,9 @@ struct Config {
   /** @brief Directory where test results are stored. */
   std::optional<std::filesystem::path> testResultDir;
   /** @brief File extensions for test result files. */
-  std::optional<std::vector<std::string>> testResultFileExts;
+  std::optional<std::vector<std::string>> testResultExts;
   /** @brief Time limit for test execution. */
-  std::optional<std::string> timeLimit;   // "auto", "0", or seconds
+  std::optional<std::string> timeout;   // "auto", "0", or seconds
   /** @brief Time to wait before killing a hung process. */
   std::optional<std::string> killAfter;
 

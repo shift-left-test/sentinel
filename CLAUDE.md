@@ -108,7 +108,11 @@ Before starting any code work, always follow these steps:
 ## Verification
 
 - After completing code changes, run `./build.sh` to verify the full build (build + doc + test + coverage + package).
-- If code changes affect user-facing behavior, options, or commands, update `README.md` and the man page (`resources/`) accordingly.
+- If code changes affect user-facing behavior, options, or commands, update the following where applicable:
+  - `README.md` — options table, full config template
+  - `resources/man/sentinel.1.in` — man page (cmake generates `sentinel.1` from this file)
+  - `src/MutationRunner.cpp` — `kYamlTemplate` (the template written by `--init`)
+  - `sample/sentinel.yaml` and `sample/README.md` — only if the sample config or workflow is affected
 - When adding or modifying functionality, always add or update test cases in `test/` to cover the new or changed behavior.
 
 ## Code Quality

@@ -60,8 +60,8 @@ exclude:
 limit: 5
 build-command: make
 test-command: ctest
-test-report-dir: ./results
-test-report-extension:
+test-result-dir: ./results
+test-result-ext:
   - xml
 coverage:
   - coverage.info
@@ -72,6 +72,8 @@ seed: 42
 operator:
   - AOR
   - ROR
+threshold: 75.5
+partition: 2/4
 )");
 
   auto yamlCfg = YamlConfigParser::loadFromFile(configPath("sentinel.yaml"));
@@ -113,8 +115,8 @@ operator:
   ASSERT_TRUE(cfg.testResultDir.has_value());
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), *cfg.testResultDir);
 
-  ASSERT_TRUE(cfg.testResultFileExts.has_value());
-  EXPECT_EQ(std::vector<std::string>({"xml"}), *cfg.testResultFileExts);
+  ASSERT_TRUE(cfg.testResultExts.has_value());
+  EXPECT_EQ(std::vector<std::string>({"xml"}), *cfg.testResultExts);
 
   ASSERT_TRUE(cfg.coverageFiles.has_value());
   EXPECT_EQ(std::vector<std::filesystem::path>({(mTmpDir / "coverage.info").lexically_normal()}), *cfg.coverageFiles);
@@ -122,8 +124,8 @@ operator:
   ASSERT_TRUE(cfg.generator.has_value());
   EXPECT_EQ("random", *cfg.generator);
 
-  ASSERT_TRUE(cfg.timeLimit.has_value());
-  EXPECT_EQ("30", *cfg.timeLimit);
+  ASSERT_TRUE(cfg.timeout.has_value());
+  EXPECT_EQ("30", *cfg.timeout);
 
   ASSERT_TRUE(cfg.killAfter.has_value());
   EXPECT_EQ("10", *cfg.killAfter);
@@ -134,7 +136,11 @@ operator:
   ASSERT_TRUE(cfg.operators.has_value());
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), *cfg.operators);
 
-  EXPECT_FALSE(cfg.threshold.has_value());
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(75.5, *cfg.threshold);
+
+  ASSERT_TRUE(cfg.partition.has_value());
+  EXPECT_EQ("2/4", *cfg.partition);
 }
 
 TEST_F(ConfigTest, testLoadPartialConfig) {
@@ -142,7 +148,7 @@ TEST_F(ConfigTest, testLoadPartialConfig) {
 version: 1
 build-command: make all
 test-command: ctest --verbose
-test-report-dir: ./test-results
+test-result-dir: ./test-results
 limit: 20
 )");
 
@@ -160,6 +166,60 @@ limit: 20
 
   ASSERT_TRUE(cfg.limit.has_value());
   EXPECT_EQ(20u, *cfg.limit);
+}
+
+TEST_F(ConfigTest, testSentinelYamlParsesThresholdAndPartition) {
+  writeFile("sentinel.yaml", R"(
+version: 1
+build-command: make
+test-command: ctest
+test-result-dir: ./results
+threshold: 80.0
+partition: 1/3
+)");
+
+  auto yamlCfg = YamlConfigParser::loadFromFile(configPath("sentinel.yaml"));
+  auto cfg = ConfigResolver::resolve(Config(), yamlCfg, configPath("sentinel.yaml"));
+
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(80.0, *cfg.threshold);
+
+  ASSERT_TRUE(cfg.partition.has_value());
+  EXPECT_EQ("1/3", *cfg.partition);
+}
+
+TEST_F(ConfigTest, testWorkspaceConfigRoundTrip) {
+  // Simulate what buildWorkspaceYaml writes when threshold and partition are set
+  writeFile("config.yaml",
+    "version: 1\n"
+    "source-dir: /tmp/src\n"
+    "compiledb-dir: /tmp\n"
+    "scope: all\n"
+    "extension:\n"
+    "  - cpp\n"
+    "pattern: []\n"
+    "exclude: []\n"
+    "limit: 0\n"
+    "build-command: make\n"
+    "test-command: ctest\n"
+    "test-result-dir: /tmp/results\n"
+    "test-result-ext:\n"
+    "  - xml\n"
+    "coverage: []\n"
+    "generator: uniform\n"
+    "timeout: 60\n"
+    "kill-after: 60\n"
+    "operator: []\n"
+    "threshold: 85.5\n"
+    "partition: 2/4\n");
+
+  auto cfg = YamlConfigParser::loadFromFile(configPath("config.yaml"));
+
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(85.5, *cfg.threshold);
+
+  ASSERT_TRUE(cfg.partition.has_value());
+  EXPECT_EQ("2/4", *cfg.partition);
 }
 
 TEST_F(ConfigTest, testLoadEmptyConfig) {
@@ -204,7 +264,7 @@ TEST_F(ConfigTest, testResolveDefaults) {
 
   EXPECT_EQ(std::filesystem::current_path().lexically_normal().string() + "/", *cfg.sourceDir);
   EXPECT_EQ((std::filesystem::current_path() / ".sentinel").lexically_normal(), *cfg.workDir);
-  EXPECT_EQ("auto", *cfg.timeLimit);
+  EXPECT_EQ("auto", *cfg.timeout);
   EXPECT_EQ(0u, *cfg.limit);
   EXPECT_EQ("uniform", *cfg.generator);
 }

@@ -208,7 +208,7 @@ Directory containing compile_commands.json.
 \fBbuild-command\fR / \fBtest-command\fR
 Shell commands to build the project and run the test suite.
 .TP
-\fBtest-report-dir\fR / \fBtest-report-extension\fR
+\fBtest-result-dir\fR / \fBtest-result-ext\fR
 Test result directory and file extensions.
 .TP
 \fBtimeout\fR / \fBkill-after\fR
@@ -226,6 +226,13 @@ Lists of paths/patterns to include or exclude.
 \fBlimit\fR / \fBgenerator\fR / \fBseed\fR / \fBoperator\fR
 Mutant count limit, selection strategy, random seed, and operator list.
 .TP
+\fBthreshold\fR
+Fail with exit code 3 if the mutation score is below this percentage (0\(en100).
+.TP
+\fBpartition\fR
+Evaluate only the N-th slice of the mutant list out of TOTAL partitions (e.g. \fB2/4\fR).
+Requires \fBseed\fR to be set explicitly.
+.TP
 \fBcoverage\fR
 List of lcov coverage info files.
 .SH EXAMPLES
@@ -236,7 +243,7 @@ sentinel \\
   --source-dir=/path/to/project \\
   --build-command="cmake --build build" \\
   --test-command="ctest --test-dir build" \\
-  --test-report-dir=build/test-results \\
+  --test-result-dir=build/test-results \\
   --scope=commit \\
   --limit=50
 .fi

@@ -100,11 +100,11 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
     if (root["test-command"]) {
       cfg.testCmd = root["test-command"].as<std::string>();
     }
-    if (root["test-report-dir"]) {
-      cfg.testResultDir = root["test-report-dir"].as<std::string>();
+    if (root["test-result-dir"]) {
+      cfg.testResultDir = root["test-result-dir"].as<std::string>();
     }
-    if (root["test-report-extension"]) {
-      cfg.testResultFileExts = toVector<std::string>(root["test-report-extension"], "test-report-extension");
+    if (root["test-result-ext"]) {
+      cfg.testResultExts = toVector<std::string>(root["test-result-ext"], "test-result-ext");
     }
     if (root["coverage"]) {
       cfg.coverageFiles = toVector<fs::path>(root["coverage"], "coverage");
@@ -113,7 +113,7 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.generator = root["generator"].as<std::string>();
     }
     if (root["timeout"]) {
-      cfg.timeLimit = root["timeout"].as<std::string>();
+      cfg.timeout = root["timeout"].as<std::string>();
     }
     if (root["kill-after"]) {
       cfg.killAfter = root["kill-after"].as<std::string>();
@@ -127,12 +127,12 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
     if (root["threshold"]) {
       cfg.threshold = root["threshold"].as<double>();
     }
+    if (root["partition"]) {
+      cfg.partition = root["partition"].as<std::string>();
+    }
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path.string(), e.what()));
   }
-
-  // Path resolution logic is moved to ConfigResolver in the later step,
-  // but for now, we keep the basic parsing here.
 
   return cfg;
 }

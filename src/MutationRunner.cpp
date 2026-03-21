@@ -87,7 +87,7 @@ static void printDryRunSummary(const Config& cfg, size_t computedTimeLimit,
 
   Console::out("\n  {}  Original build", "[ OK ]");  // Baseline run already happened
 
-  if (cfg.timeLimit == "auto") {
+  if (cfg.timeout == "auto") {
     Console::out("  {}  Original tests  (auto-timeout: {}s)", "[ OK ]", computedTimeLimit);
   } else {
     Console::out("  {}  Original tests  (timeout: {}s)", "[ OK ]", computedTimeLimit);
@@ -149,9 +149,9 @@ static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout)
   out << YAML::Key << "limit" << YAML::Value << cfg.limit.value_or(0);
   out << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd.value_or("");
   out << YAML::Key << "test-command" << YAML::Value << cfg.testCmd.value_or("");
-  out << YAML::Key << "test-report-dir" << YAML::Value << cfg.testResultDir->string();
-  out << YAML::Key << "test-report-extension" << YAML::Value << YAML::BeginSeq;
-  for (const auto& e : *cfg.testResultFileExts) out << e;
+  out << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir->string();
+  out << YAML::Key << "test-result-ext" << YAML::Value << YAML::BeginSeq;
+  for (const auto& e : *cfg.testResultExts) out << e;
   out << YAML::EndSeq;
   out << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
   for (const auto& c : *cfg.coverageFiles) out << c.string();
@@ -163,6 +163,8 @@ static std::string buildWorkspaceYaml(const Config& cfg, size_t computedTimeout)
   out << YAML::Key << "operator" << YAML::Value << YAML::BeginSeq;
   for (const auto& op : *cfg.operators) out << op;
   out << YAML::EndSeq;
+  if (cfg.threshold) out << YAML::Key << "threshold" << YAML::Value << *cfg.threshold;
+  if (cfg.partition) out << YAML::Key << "partition" << YAML::Value << *cfg.partition;
   out << YAML::EndMap;
   return out.c_str();
 }
@@ -187,6 +189,9 @@ static const char* const kYamlTemplate =
     "# Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)\n"
     "# threshold: 80\n"
     "\n"
+    "# Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed\n"
+    "# partition: 1/1\n"
+    "\n"
     "# --- Build & test options ---\n"
     "\n"
     "# Source root directory (default: .)\n"
@@ -202,10 +207,10 @@ static const char* const kYamlTemplate =
     "# test-command: make test\n"
     "\n"
     "# Path to the test report directory\n"
-    "# test-report-dir: ./test-results\n"
+    "# test-result-dir: ./test-results\n"
     "\n"
     "# File extension of the test report (default: xml)\n"
-    "# test-report-extension:\n"
+    "# test-result-ext:\n"
     "#   - xml\n"
     "\n"
     "# Test time limit in seconds (default: auto - 2x baseline run time; 0 = no limit)\n"
@@ -320,7 +325,7 @@ int MutationRunner::run() {
     throw InvalidArgumentException("Option --test-command is required.");
   }
   if (activeConfig.testResultDir->empty()) {
-    throw InvalidArgumentException("Option --test-report-dir is required.");
+    throw InvalidArgumentException("Option --test-result-dir is required.");
   }
 
   // Validate threshold
@@ -361,8 +366,8 @@ int MutationRunner::run() {
 
   // Baseline & Mutants
   size_t computedTimeLimit = 0;
-  if (activeConfig.timeLimit != "auto") {
-    computedTimeLimit = std::stoul(*activeConfig.timeLimit);
+  if (activeConfig.timeout != "auto") {
+    computedTimeLimit = std::stoul(*activeConfig.timeout);
   }
 
   // Original Build & Test (Simplification: inlining logic for readability)
@@ -388,12 +393,12 @@ int MutationRunner::run() {
                         testLog.string(), *activeConfig.silent);
     ts.reset();
     testProc.execute();
-    if (activeConfig.timeLimit == "auto") {
+    if (activeConfig.timeout == "auto") {
       computedTimeLimit = static_cast<size_t>(ceil(ts.toDouble() * 2.0));
       if (computedTimeLimit < 1) computedTimeLimit = 1;
     }
     copyTestReportTo(*activeConfig.testResultDir, ws.getOriginalResultsDir(),
-                     *activeConfig.testResultFileExts);
+                     *activeConfig.testResultExts);
     if (fs::is_empty(ws.getOriginalResultsDir())) {
       throw std::runtime_error(fmt::format(
           "No test result files found in '{}' after running test command. See: {}",
@@ -477,7 +482,7 @@ int MutationRunner::run() {
       if (mTest.isTimedOut()) {
         testState = "timeout";
       } else {
-        copyTestReportTo(*activeConfig.testResultDir, actualDir, *activeConfig.testResultFileExts);
+        copyTestReportTo(*activeConfig.testResultDir, actualDir, *activeConfig.testResultExts);
       }
     } else {
       testState = "build_failure";
@@ -541,7 +546,7 @@ bool MutationRunner::checkConfigWarnings() {
   }
 
   // timeout=0: no per-mutant time cap; a hanging test blocks the run forever.
-  if (mConfig.timeLimit && *mConfig.timeLimit == "0") {
+  if (mConfig.timeout && *mConfig.timeout == "0") {
     warnings.push_back("timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
   }
 

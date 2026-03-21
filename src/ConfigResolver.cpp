@@ -31,9 +31,9 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
   mergeField(result.compileDbDir, cli.compileDbDir, yaml.compileDbDir, fs::path("."));
   mergeField(result.testCmd, cli.testCmd, yaml.testCmd, std::string(""));
   mergeField(result.testResultDir, cli.testResultDir, yaml.testResultDir, fs::path(""));
-  mergeField(result.testResultFileExts, cli.testResultFileExts, yaml.testResultFileExts,
+  mergeField(result.testResultExts, cli.testResultExts, yaml.testResultExts,
              std::vector<std::string>{"xml", "XML"});
-  mergeField(result.timeLimit, cli.timeLimit, yaml.timeLimit, std::string("auto"));
+  mergeField(result.timeout, cli.timeout, yaml.timeout, std::string("auto"));
   mergeField(result.killAfter, cli.killAfter, yaml.killAfter, std::string("60"));
 
   // 3. Merge mutation options

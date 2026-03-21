@@ -82,9 +82,9 @@ class CliConfigParser {
   /** @brief Command line flag for test result directory. */
   args::ValueFlag<std::filesystem::path> mTestResultDir;
   /** @brief Command line flag for test result file extensions. */
-  args::ValueFlagList<std::string> mTestResultFileExts;
+  args::ValueFlagList<std::string> mTestResultExts;
   /** @brief Command line flag for test time limit. */
-  args::ValueFlag<std::string> mTimeLimit;
+  args::ValueFlag<std::string> mTimeout;
   /** @brief Command line flag for kill after timeout. */
   args::ValueFlag<std::string> mKillAfter;
 
