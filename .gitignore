@@ -302,7 +302,7 @@ _CPack_Packages/
 resources/man/sentinel.1
 include/sentinel/version.hpp
 out/
-sentinel_workspace/
+.sentinel/
 temp/
 .worktrees/
 docs/

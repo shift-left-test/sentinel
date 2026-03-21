@@ -66,7 +66,7 @@ TEST_F(WorkspaceTest, testSaveConfigCreatesFile) {
   ws.saveConfig("build-command: make\n");
   EXPECT_TRUE(ws.hasPreviousRun());
 
-  std::ifstream in(mRoot / "sentinel.yaml");
+  std::ifstream in(mRoot / "config.yaml");
   std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
   EXPECT_EQ("build-command: make\n", content);
 }

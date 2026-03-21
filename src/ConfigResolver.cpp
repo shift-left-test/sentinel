@@ -19,7 +19,7 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
 
   // 1. Merge core fields with default values
   mergeField(result.sourceDir, cli.sourceDir, yaml.sourceDir, fs::path("."));
-  mergeField(result.workDir, cli.workDir, yaml.workDir, fs::path("./sentinel_workspace"));
+  mergeField(result.workDir, cli.workDir, yaml.workDir, fs::path("./.sentinel"));
   mergeField(result.outputDir, cli.outputDir, yaml.outputDir, fs::path(""));
   mergeField(result.verbose, cli.verbose, yaml.verbose, false);
   mergeField(result.silent, cli.silent, yaml.silent, false);

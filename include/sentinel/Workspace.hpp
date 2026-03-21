@@ -19,7 +19,7 @@ namespace sentinel {
  * @brief Manages the sentinel workspace directory.
  *
  * Directory layout:
- *   &lt;root&gt;/sentinel.yaml          — run options (written after baseline succeeds)
+ *   &lt;root&gt;/config.yaml            — run options (written after baseline succeeds)
  *   &lt;root&gt;/original/build.log     — baseline build stdout/stderr
  *   &lt;root&gt;/original/test.log      — baseline test stdout/stderr
  *   &lt;root&gt;/original/results/      — baseline test result XML files
@@ -38,7 +38,7 @@ class Workspace {
   explicit Workspace(const std::filesystem::path& root);
 
   /**
-   * @brief Return true if a previous run exists (sentinel.yaml is present).
+   * @brief Return true if a previous run exists (config.yaml is present).
    */
   bool hasPreviousRun() const;
 
@@ -48,7 +48,7 @@ class Workspace {
   void initialize();
 
   /**
-   * @brief Write YAML-formatted run options to &lt;root&gt;/sentinel.yaml.
+   * @brief Write YAML-formatted run options to &lt;root&gt;/config.yaml.
    *
    * @param yamlContent  Resolved run options in YAML format.
    */

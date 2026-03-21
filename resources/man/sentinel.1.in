@@ -26,7 +26,7 @@ Enable verbose output (INFO level and above).
 Enable debug output (all log levels).
 .TP
 \fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
-Directory for all run artifacts. Default: \fB./sentinel_workspace\fR
+Directory for all run artifacts. Default: \fB./.sentinel\fR
 .TP
 \fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
 Directory to write HTML/XML reports.

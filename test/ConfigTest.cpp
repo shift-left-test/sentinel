@@ -203,7 +203,7 @@ TEST_F(ConfigTest, testResolveDefaults) {
   auto cfg = ConfigResolver::resolve(Config(), Config());
 
   EXPECT_EQ(std::filesystem::current_path().lexically_normal().string() + "/", *cfg.sourceDir);
-  EXPECT_EQ((std::filesystem::current_path() / "sentinel_workspace").lexically_normal(), *cfg.workDir);
+  EXPECT_EQ((std::filesystem::current_path() / ".sentinel").lexically_normal(), *cfg.workDir);
   EXPECT_EQ("auto", *cfg.timeLimit);
   EXPECT_EQ(0u, *cfg.limit);
   EXPECT_EQ("uniform", *cfg.generator);

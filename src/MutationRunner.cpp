@@ -179,8 +179,8 @@ static const char* const kYamlTemplate =
     "# Directory for output reports (default: none)\n"
     "# output-dir: ./sentinel_output\n"
     "\n"
-    "# Workspace directory for all sentinel run artifacts (default: ./sentinel_workspace)\n"
-    "# workspace: ./sentinel_workspace\n"
+    "# Workspace directory for all sentinel run artifacts (default: ./.sentinel)\n"
+    "# workspace: ./.sentinel\n"
     "\n"
     "# --- Run options ---\n"
     "\n"
@@ -301,7 +301,7 @@ int MutationRunner::run() {
 
   Config activeConfig = mConfig;
   if (resuming) {
-    activeConfig = YamlConfigParser::loadFromFile(ws.getRoot() / "sentinel.yaml");
+    activeConfig = YamlConfigParser::loadFromFile(ws.getRoot() / "config.yaml");
     Console::out("Resuming previous run.");
   } else {
     ws.initialize();

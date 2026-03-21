@@ -1,5 +1,5 @@
 build/
 Testing/
-sentinel_workspace/
+.sentinel/
 sentinel_output/
 StackTest

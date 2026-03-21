@@ -24,7 +24,7 @@ Workspace::Workspace(const fs::path& root) : mRoot(root) {
 }
 
 bool Workspace::hasPreviousRun() const {
-  return fs::exists(mRoot / "sentinel.yaml");
+  return fs::exists(mRoot / "config.yaml");
 }
 
 void Workspace::initialize() {
@@ -34,10 +34,10 @@ void Workspace::initialize() {
 }
 
 void Workspace::saveConfig(const std::string& yamlContent) {
-  std::ofstream out(mRoot / "sentinel.yaml");
+  std::ofstream out(mRoot / "config.yaml");
   if (!out) {
     throw std::runtime_error(
-        fmt::format("Failed to write workspace config: {}", (mRoot / "sentinel.yaml").string()));
+        fmt::format("Failed to write workspace config: {}", (mRoot / "config.yaml").string()));
   }
   out << yamlContent;
 }
