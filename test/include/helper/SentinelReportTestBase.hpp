@@ -51,7 +51,7 @@ class SentinelReportTestBase : public ::testing::Test {
    */
   void tearDownBase() {
     fs::remove_all(BASE);
-    Logger::setDefaultLevel(Logger::Level::OFF);
+    Logger::setLevel(Logger::Level::OFF);
     Logger::clearCache();
   }
 

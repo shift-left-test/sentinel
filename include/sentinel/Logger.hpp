@@ -46,11 +46,11 @@ class Logger {
   static std::shared_ptr<Logger> getLogger(const std::string& name);
 
   /**
-   * @brief Set the logging level
+   * @brief Set the global logging level applied to all loggers.
    *
    * @param level of the logging
    */
-  static void setDefaultLevel(Logger::Level level);
+  static void setLevel(Logger::Level level);
 
   /**
    * @brief Clear the logger cache.
@@ -123,21 +123,13 @@ class Logger {
     }
   }
 
-  /**
-   * @brief update Logger's level using defaultLevel
-   *
-   * @param level of the Logger
-   */
-  void setLevel(Logger::Level level);
-
  private:
   /**
    * @brief Default constructor
    *
    * @param name of the logger
-   * @param level logging level
    */
-  Logger(const std::string& name, Logger::Level level);
+  explicit Logger(const std::string& name);
 
   /**
    * @brief Test if the level is allowed to log
@@ -149,7 +141,6 @@ class Logger {
 
  private:
   std::string mName;
-  Logger::Level mLevel;
 };
 
 }  // namespace sentinel

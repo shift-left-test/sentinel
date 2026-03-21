@@ -94,24 +94,24 @@ TEST_F(GitRepositoryTest, testPatterns) {
   std::string tmpPath = repo_name / "test";
   fs::create_directories(tmpPath);
 
-  Logger::getLogger("GitRepository")->setLevel(Logger::Level::DEBUG);
+  Logger::setLevel(Logger::Level::DEBUG);
   captureStderr();
   captureStdout();
   GitRepository gitRepo(repo_name, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"}, {});
   EXPECT_TRUE(string::contains(capturedStdout(), "patterns: file.txt, file?.txt, /tmp/, */test/*"));
-  Logger::getLogger("GitRepository")->setLevel(Logger::Level::OFF);
+  Logger::setLevel(Logger::Level::OFF);
 }
 
 TEST_F(GitRepositoryTest, testExcludes) {
   std::string tmpPath = repo_name / "test";
   fs::create_directories(tmpPath);
 
-  Logger::getLogger("GitRepository")->setLevel(Logger::Level::DEBUG);
+  Logger::setLevel(Logger::Level::DEBUG);
   captureStderr();
   captureStdout();
   GitRepository gitRepo(repo_name, {}, {}, {"*.c", "file?.txt", "data/*.csv", "*/test/*", "*"});
   EXPECT_TRUE(string::contains(capturedStdout(), "excludes: *.c, file?.txt, data/*.csv, */test/*, *"));
-  Logger::getLogger("GitRepository")->setLevel(Logger::Level::OFF);
+  Logger::setLevel(Logger::Level::OFF);
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {

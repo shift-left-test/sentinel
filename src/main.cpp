@@ -84,9 +84,9 @@ int main(int argc, char** argv) {
     // 5. Configure logger
     auto logger = sentinel::Logger::getLogger("sentinel");
     if (cfg.debug && *cfg.debug) {
-      logger->setLevel(sentinel::Logger::Level::DEBUG);
+      sentinel::Logger::setLevel(sentinel::Logger::Level::DEBUG);
     } else if (cfg.verbose && *cfg.verbose) {
-      logger->setLevel(sentinel::Logger::Level::VERBOSE);
+      sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
     }
 
     // 6. Create StatusLine
