@@ -98,6 +98,8 @@ Before starting any code work, always follow these steps:
 2. **Ask when unclear** — If requirements are ambiguous or a decision is needed, always ask before proceeding.
 3. **Present options** — When there are multiple ways to implement something, show examples and trade-offs for each approach so the user can choose.
 4. **Get approval before starting** — After sharing the plan, wait for the user's explicit approval before beginning any actual code work.
+5. **Do not create commits** — Never create git commits automatically. Leave staging and committing to the user.
+6. **Commit message style** — When asked to commit, write a single-line message that briefly describes the change. No body, no bullet points.
 
 ## Verification
 
@@ -106,6 +108,7 @@ Before starting any code work, always follow these steps:
 
 ## Code Conventions
 
+- Copyright year in new files must use the current year (e.g., `Copyright (c) 2026 LG Electronics Inc.`)
 - Coding rules must satisfy cppcheck, cpplint, Doxygen, and Google C++ Style Guide
 - Line width must not exceed 120 characters
 - Header guard style: `INCLUDE_SENTINEL_<PATH>_HPP_`
