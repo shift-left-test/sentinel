@@ -34,7 +34,16 @@ static fs::path gSourceRoot;
 static fs::path gWorkspaceDir;
 static StatusLine* gStatusLine = nullptr;
 
-void setSignalStatusLine(StatusLine* sl) { gStatusLine = sl; }
+static void signalHandler(int signum);
+
+void installSignalHandlers(StatusLine* sl, const fs::path& workDir) {
+  gStatusLine = sl;
+  gWorkspaceDir = workDir;
+  signal::setMultipleSignalHandlers(
+      {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
+      signalHandler);
+}
+
 void clearSignalStatusLine() { gStatusLine = nullptr; }
 
 static void signalHandler(int signum) {
@@ -79,14 +88,9 @@ bool EvaluationStage::execute() {
   }
   const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
 
-  // Install signal handlers
+  // Set backup globals now that workspace is known
   gBackupDir = ws.getBackupDir();
   gSourceRoot = *mConfig.sourceDir;
-  gWorkspaceDir = mWorkDir;
-  setSignalStatusLine(&mStatusLine);
-  signal::setMultipleSignalHandlers(
-      {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
-      signalHandler);
 
   const fs::path backupDir = ws.getBackupDir();
   const fs::path actualDir = mWorkDir / "actual";

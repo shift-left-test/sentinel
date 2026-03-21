@@ -44,10 +44,11 @@ class EvaluationStage : public Stage {
 };
 
 /**
- * @brief Set the StatusLine pointer used by the signal handler.
- *        Called by EvaluationStage before the evaluation loop.
+ * @brief Install signal handlers for the full pipeline.
+ *        Must be called once before the pipeline starts (in main).
+ *        EvaluationStage will later set backup/source-root globals when known.
  */
-void setSignalStatusLine(StatusLine* sl);
+void installSignalHandlers(StatusLine* sl, const std::filesystem::path& workDir);
 
 /**
  * @brief Clear the StatusLine pointer in the signal handler.

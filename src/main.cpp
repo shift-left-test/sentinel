@@ -115,7 +115,10 @@ int main(int argc, char** argv) {
     initStage->setNext(checkConfig)->setNext(baselineBuild)->setNext(baselineTest)
              ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
-    // 9. Run pipeline
+    // 9. Install signal handlers before pipeline starts
+    sentinel::installSignalHandlers(&statusLine, workDirPath);
+
+    // 10. Run pipeline
     initStage->run();
     return 0;
   } catch (const args::Help& e) {
