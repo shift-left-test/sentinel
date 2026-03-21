@@ -91,6 +91,17 @@ bool Workspace::isDone(int id) const {
   return fs::exists(mutantFile(id, "mt.done"));
 }
 
+bool Workspace::isComplete() const {
+  return fs::exists(mRoot / "run.done");
+}
+
+void Workspace::setComplete() {
+  std::ofstream f(mRoot / "run.done");
+  if (!f) {
+    throw std::runtime_error(fmt::format("Failed to create run.done in {}", mRoot.string()));
+  }
+}
+
 void Workspace::setDone(int id, const MutationResult& result) {
   std::ofstream out(mutantFile(id, "mt.done"));
   if (!out) {

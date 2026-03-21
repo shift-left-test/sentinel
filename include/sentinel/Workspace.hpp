@@ -24,6 +24,7 @@ namespace sentinel {
  *   &lt;root&gt;/original/test.log      — baseline test stdout/stderr
  *   &lt;root&gt;/original/results/      — baseline test result XML files
  *   &lt;root&gt;/backup/                — temporary backup of mutated source files
+ *   &lt;root&gt;/run.done               — present when all evaluation is fully complete
  *   &lt;root&gt;/00001/mt.cfg           — mutant data (Mutant::str() format)
  *   &lt;root&gt;/00001/mt.lock          — present while mutant is being processed
  *   &lt;root&gt;/00001/mt.done          — present (with serialized MutationResult) when complete
@@ -97,6 +98,16 @@ class Workspace {
 
   /** @brief Return true if &lt;root&gt;/NNNNN/mt.done exists. */
   bool isDone(int id) const;
+
+  /**
+   * @brief Return true if the run has fully completed (run.done marker exists).
+   */
+  bool isComplete() const;
+
+  /**
+   * @brief Create the run.done marker to record that evaluation is fully complete.
+   */
+  void setComplete();
 
   /**
    * @brief Serialize @p result to &lt;root&gt;/NNNNN/mt.done.

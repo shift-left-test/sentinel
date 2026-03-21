@@ -233,4 +233,27 @@ TEST_F(WorkspaceTest, testAboveMaxMutantCountExceedsFiveDigits) {
   EXPECT_EQ(6u, aboveLimit.size());
 }
 
+TEST_F(WorkspaceTest, testIsCompleteReturnsFalseInitially) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  EXPECT_FALSE(ws.isComplete());
+}
+
+TEST_F(WorkspaceTest, testSetCompleteCreatesMarker) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  ws.setComplete();
+  EXPECT_TRUE(ws.isComplete());
+  EXPECT_TRUE(fs::exists(mRoot / "run.done"));
+}
+
+TEST_F(WorkspaceTest, testInitializeRemovesCompleteMarker) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  ws.setComplete();
+  EXPECT_TRUE(ws.isComplete());
+  ws.initialize();
+  EXPECT_FALSE(ws.isComplete());
+}
+
 }  // namespace sentinel

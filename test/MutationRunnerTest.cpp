@@ -142,4 +142,42 @@ TEST_F(MutationRunnerTest, testInitSetsVerboseLevel) {
   EXPECT_NE(out.find("verbose_marker"), std::string::npos);
 }
 
+// Verify the partition slice formula used in MutationRunner is correct.
+TEST_F(MutationRunnerTest, testPartitionSliceFormula) {
+  // Simulates: partIdx=N, partCount=TOTAL applied to a list of 'size' items
+  auto applySlice = [](std::size_t size, std::size_t partIdx, std::size_t partCount)
+      -> std::pair<std::size_t, std::size_t> {
+    std::size_t start = (partIdx - 1) * size / partCount;
+    std::size_t end   = partIdx * size / partCount;
+    return {start, end};
+  };
+
+  // 10 mutants split into 2 partitions
+  EXPECT_EQ(std::make_pair(0UL, 5UL), applySlice(10, 1, 2));
+  EXPECT_EQ(std::make_pair(5UL, 10UL), applySlice(10, 2, 2));
+
+  // 10 mutants split into 3 partitions (integer division)
+  EXPECT_EQ(std::make_pair(0UL, 3UL), applySlice(10, 1, 3));
+  EXPECT_EQ(std::make_pair(3UL, 6UL), applySlice(10, 2, 3));
+  EXPECT_EQ(std::make_pair(6UL, 10UL), applySlice(10, 3, 3));
+
+  // Edge: single mutant, single partition
+  EXPECT_EQ(std::make_pair(0UL, 1UL), applySlice(1, 1, 1));
+
+  // Edge: 0 mutants
+  EXPECT_EQ(std::make_pair(0UL, 0UL), applySlice(0, 1, 2));
+
+  // Invariant: union of all slices covers [0, size) with no gaps or overlaps
+  for (std::size_t partCount : {2UL, 3UL, 4UL, 7UL}) {
+    constexpr std::size_t kSize = 10;
+    std::size_t prev = 0;
+    for (std::size_t i = 1; i <= partCount; i++) {
+      auto [s, e] = applySlice(kSize, i, partCount);
+      EXPECT_EQ(s, prev);
+      prev = e;
+    }
+    EXPECT_EQ(prev, kSize);
+  }
+}
+
 }  // namespace sentinel

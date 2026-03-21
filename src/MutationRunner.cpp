@@ -301,19 +301,24 @@ int MutationRunner::run() {
 
   fs::path workDirPath = fs::absolute(*mConfig.workDir);
   Workspace ws(workDirPath);
-  bool resuming = ws.hasPreviousRun() && !mConfig.force && !dryRun &&
+  bool alreadyComplete = ws.hasPreviousRun() && ws.isComplete() && !mConfig.force && !dryRun;
+  bool resuming = !alreadyComplete && ws.hasPreviousRun() && !mConfig.force && !dryRun &&
                   Console::confirm("Previous run found in '{}'. Resume?", workDirPath.string());
 
   Config activeConfig = mConfig;
-  if (resuming) {
+  if (alreadyComplete || resuming) {
     activeConfig = YamlConfigParser::loadFromFile(ws.getRoot() / "config.yaml");
-    Console::out("Resuming previous run.");
+    if (alreadyComplete) {
+      Console::out("Previous run is complete.");
+    } else {
+      Console::out("Resuming previous run.");
+    }
   } else {
     ws.initialize();
   }
 
   // Pre-run configuration validation
-  if (!resuming && !checkConfigWarnings()) {
+  if (!resuming && !alreadyComplete && !checkConfigWarnings()) {
     return 0;
   }
 
@@ -371,7 +376,7 @@ int MutationRunner::run() {
   }
 
   // Original Build & Test (Simplification: inlining logic for readability)
-  if (!resuming) {
+  if (!resuming && !alreadyComplete) {
     statusLine.setPhase(StatusLine::Phase::BUILD_ORIG);
     auto buildLog = ws.getOriginalDir() / "build.log";
     Subprocess buildProc(*activeConfig.buildCmd, 0, 0, buildLog.string(), *activeConfig.silent);
@@ -410,7 +415,7 @@ int MutationRunner::run() {
   // Populate
   std::vector<std::pair<int, Mutant>> indexedMutants;
   std::size_t candidateCount = 0;
-  if (resuming) {
+  if (alreadyComplete || resuming) {
     indexedMutants = ws.loadMutants();
   } else {
     statusLine.setPhase(StatusLine::Phase::POPULATE);
@@ -433,6 +438,15 @@ int MutationRunner::run() {
           "Use --limit to reduce the number of mutants.",
           mutants.size(), Workspace::kMaxMutantCount));
     }
+    // Apply partition slice before storing: only the N-th slice of all mutants is evaluated.
+    if (partIdx != 0) {
+      std::size_t total = mutants.size();
+      std::size_t start = (partIdx - 1) * total / partCount;
+      std::size_t end   = partIdx * total / partCount;
+      mutants = Mutants(mutants.begin() + static_cast<std::ptrdiff_t>(start),
+                        mutants.begin() + static_cast<std::ptrdiff_t>(end));
+    }
+
     int id = 1;
     for (auto& m : mutants) {
       ws.createMutant(id, m);
@@ -440,14 +454,38 @@ int MutationRunner::run() {
       id++;
     }
   }
-  statusLine.setTotalMutants(indexedMutants.size());
-
   if (dryRun) {
+    statusLine.setTotalMutants(indexedMutants.size());
     statusLine.disable();
     printDryRunSummary(activeConfig, computedTimeLimit, indexedMutants, candidateCount,
                        workDirPath, partIdx, partCount);
     return 0;
   }
+
+  auto generateReports = [&](Evaluator& ev) {
+    statusLine.setPhase(StatusLine::Phase::REPORT);
+    XMLReport xmlReport(ev.getMutationResults(), *activeConfig.sourceDir);
+    xmlReport.printSummary();
+    if (activeConfig.outputDir && !activeConfig.outputDir->empty()) {
+      xmlReport.save(*activeConfig.outputDir);
+      HTMLReport htmlReport(ev.getMutationResults(), *activeConfig.sourceDir);
+      htmlReport.save(*activeConfig.outputDir);
+    }
+    statusLine.disable();
+    gStatusLineForSH = nullptr;
+  };
+
+  // If the previous run is already complete, skip evaluation and go straight to reporting.
+  if (alreadyComplete) {
+    Evaluator evaluator(ws.getOriginalResultsDir(), *activeConfig.sourceDir);
+    for (const auto& [id, m] : indexedMutants) {
+      evaluator.injectResult(ws.getDoneResult(id));
+    }
+    generateReports(evaluator);
+    return 0;
+  }
+
+  statusLine.setTotalMutants(indexedMutants.size());
 
   // Evaluation Loop
   Evaluator evaluator(ws.getOriginalResultsDir(), *activeConfig.sourceDir);
@@ -496,19 +534,10 @@ int MutationRunner::run() {
     fs::remove_all(actualDir);
   }
 
+  ws.setComplete();
+
   // Report
-  statusLine.setPhase(StatusLine::Phase::REPORT);
-  XMLReport xmlReport(evaluator.getMutationResults(), *activeConfig.sourceDir);
-  xmlReport.printSummary();
-
-  if (activeConfig.outputDir && !activeConfig.outputDir->empty()) {
-    xmlReport.save(*activeConfig.outputDir);
-    HTMLReport htmlReport(evaluator.getMutationResults(), *activeConfig.sourceDir);
-    htmlReport.save(*activeConfig.outputDir);
-  }
-
-  statusLine.disable();
-  gStatusLineForSH = nullptr;
+  generateReports(evaluator);
   return 0;
 }
 
