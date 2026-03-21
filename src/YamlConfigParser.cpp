@@ -23,7 +23,8 @@ static std::vector<T> toVector(const YAML::Node& node, const std::string& key) {
   }
   std::vector<T> result;
   result.reserve(node.size());
-  for (const auto& item : node) result.push_back(T(item.as<std::string>()));
+  std::transform(node.begin(), node.end(), std::back_inserter(result),
+                 [](const YAML::Node& item) { return T(item.as<std::string>()); });
   return result;
 }
 

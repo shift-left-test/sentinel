@@ -16,7 +16,9 @@ build_static_library(
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp Subprocess.cpp
        docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
-       MutationRunner.cpp CliConfigParser.cpp YamlConfigParser.cpp ConfigResolver.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp
+       CliConfigParser.cpp YamlConfigParser.cpp ConfigResolver.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp
+       stages/InitStage.cpp stages/CheckConfigStage.cpp stages/BaselineBuildStage.cpp stages/BaselineTestStage.cpp
+       stages/PopulateStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt yaml-cpp ${LIBGIT2_LIBRARIES} stdc++fs args

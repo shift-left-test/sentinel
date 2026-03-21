@@ -256,4 +256,62 @@ TEST_F(WorkspaceTest, testInitializeRemovesCompleteMarker) {
   EXPECT_FALSE(ws.isComplete());
 }
 
+TEST_F(WorkspaceTest, testSaveAndLoadStatusBaselineTime) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.baselineTime = 42;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.baselineTime.has_value());
+  EXPECT_EQ(*loaded.baselineTime, 42u);
+  EXPECT_FALSE(loaded.candidateCount.has_value());
+}
+
+TEST_F(WorkspaceTest, testSaveStatusReadModifyWrite) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus a;
+  a.baselineTime = 10;
+  ws.saveStatus(a);
+  WorkspaceStatus b;
+  b.candidateCount = 200;
+  ws.saveStatus(b);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.baselineTime.has_value());
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  EXPECT_EQ(*loaded.baselineTime, 10u);
+  EXPECT_EQ(*loaded.candidateCount, 200u);
+}
+
+TEST_F(WorkspaceTest, testLoadStatusReturnsEmptyWhenFileAbsent) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  auto loaded = ws.loadStatus();
+  EXPECT_FALSE(loaded.baselineTime.has_value());
+  EXPECT_FALSE(loaded.candidateCount.has_value());
+  EXPECT_FALSE(loaded.partIndex.has_value());
+  EXPECT_FALSE(loaded.partCount.has_value());
+}
+
+TEST_F(WorkspaceTest, testSaveStatusAllFields) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.baselineTime = 5;
+  s.candidateCount = 100;
+  s.partIndex = 2;
+  s.partCount = 4;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.baselineTime.has_value());
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  ASSERT_TRUE(loaded.partIndex.has_value());
+  ASSERT_TRUE(loaded.partCount.has_value());
+  EXPECT_EQ(*loaded.baselineTime, 5u);
+  EXPECT_EQ(*loaded.candidateCount, 100u);
+  EXPECT_EQ(*loaded.partIndex, 2u);
+  EXPECT_EQ(*loaded.partCount, 4u);
+}
+
 }  // namespace sentinel

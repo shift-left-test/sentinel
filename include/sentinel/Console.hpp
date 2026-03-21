@@ -8,6 +8,7 @@
 
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <unistd.h>
 #include <iostream>
 #include <string>
 
@@ -62,12 +63,16 @@ inline void err(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline bool confirm(const std::string& pattern, Args&&... args) {
-  print("{} [y/N] " , fmt::format(pattern, std::forward<Args>(args)...));
+  print("{} [y/N] ", fmt::format(pattern, std::forward<Args>(args)...));
   flush();
+
+  if (isatty(STDIN_FILENO) == 0) {
+    err("(non-interactive: defaulting to N)");
+    return false;
+  }
 
   std::string answer;
   std::getline(std::cin, answer);
-
   return (answer == "y" || answer == "Y");
 }
 

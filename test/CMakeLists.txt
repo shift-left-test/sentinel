@@ -20,9 +20,10 @@ build_test_program(
        ContainerTest.cpp RandomMutantGeneratorTest.cpp
        WeightedMutantGeneratorTest.cpp SourceLineTest.cpp
        ConfigTest.cpp WorkspaceTest.cpp ConsoleTest.cpp SubprocessTest.cpp
-       CliConfigParserTest.cpp MutationRunnerTest.cpp StatusLineTest.cpp
+       CliConfigParserTest.cpp StatusLineTest.cpp
        TimestamperTest.cpp AORTest.cpp BORTest.cpp LCRTest.cpp RORTest.cpp SDLTest.cpp SORTest.cpp UOITest.cpp
-       DocGeneratorTest.cpp
+       DocGeneratorTest.cpp StageTest.cpp InitStageTest.cpp CheckConfigStageTest.cpp BaselineTestStageTest.cpp
+       EvaluationStageTest.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include ${CMAKE_SOURCE_DIR}/test/harness
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS} ${CMAKE_DL_LIBS}
 )

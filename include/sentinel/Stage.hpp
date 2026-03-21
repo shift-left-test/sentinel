@@ -1,0 +1,75 @@
+/*
+ * Copyright (c) 2026 LG Electronics Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef INCLUDE_SENTINEL_STAGE_HPP_
+#define INCLUDE_SENTINEL_STAGE_HPP_
+
+#include <memory>
+#include "sentinel/Config.hpp"
+#include "sentinel/Logger.hpp"
+#include "sentinel/StatusLine.hpp"
+
+namespace sentinel {
+
+/**
+ * @brief Abstract base class for pipeline stages (Chain of Responsibility).
+ *
+ * Subclasses implement execute() to perform their work.
+ * handle() calls execute() then, if it returns true and a next stage is set,
+ * calls next->handle() and returns its exit code.
+ */
+class Stage {
+ public:
+  /**
+   * @brief Constructor.
+   * @param cfg      Fully resolved configuration (immutable throughout pipeline).
+   * @param statusLine  Shared status line for progress display.
+   * @param logger   Shared logger instance.
+   */
+  Stage(const Config& cfg, StatusLine& statusLine, std::shared_ptr<Logger> logger);
+
+  Stage(const Stage&) = delete;
+  Stage& operator=(const Stage&) = delete;
+  virtual ~Stage() = default;
+
+  /**
+   * @brief Link the next stage in the chain.
+   */
+  void setNext(std::shared_ptr<Stage> next);
+
+  /**
+   * @brief Execute this stage; if execute() returns true and a next stage exists,
+   *        invoke it and return its exit code.
+   * @return Exit code for the entire chain.
+   */
+  int handle();
+
+ protected:
+  /**
+   * @brief Perform this stage's work.
+   * @return true to continue the chain, false to stop.
+   */
+  virtual bool execute() = 0;
+
+  /**
+   * @brief Set the exit code returned when this stage stops the chain.
+   */
+  void setExitCode(int code) { mExitCode = code; }
+
+  /** @brief Fully resolved configuration (read-only). */
+  const Config& mConfig;
+  /** @brief Shared status line for phase and progress updates. */
+  StatusLine& mStatusLine;
+  /** @brief Shared logger instance. */
+  std::shared_ptr<Logger> mLogger;
+
+ private:
+  std::shared_ptr<Stage> mNext;
+  int mExitCode = 0;
+};
+
+}  // namespace sentinel
+
+#endif  // INCLUDE_SENTINEL_STAGE_HPP_

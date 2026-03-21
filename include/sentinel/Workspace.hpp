@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_WORKSPACE_HPP_
 
 #include <filesystem>  // NOLINT
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,16 @@
 #include "sentinel/MutationResult.hpp"
 
 namespace sentinel {
+
+/**
+ * @brief Runtime state persisted between pipeline stages in workspace/status.yaml.
+ */
+struct WorkspaceStatus {
+  std::optional<std::size_t> baselineTime;    ///< Computed timeout seconds (timeout:auto only)
+  std::optional<std::size_t> candidateCount;  ///< Total candidates before partition
+  std::optional<std::size_t> partIndex;       ///< Partition index N (0 = no partition)
+  std::optional<std::size_t> partCount;       ///< Partition total (0 = no partition)
+};
 
 /**
  * @brief Manages the sentinel workspace directory.
@@ -54,6 +65,18 @@ class Workspace {
    * @param yamlContent  Resolved run options in YAML format.
    */
   void saveConfig(const std::string& yamlContent);
+
+  /**
+   * @brief Write runtime status fields to workspace/status.yaml (read-modify-write).
+   *        Only fields present in @p status are updated; others are preserved.
+   * @param status Fields to write.
+   */
+  void saveStatus(const WorkspaceStatus& status);
+
+  /**
+   * @brief Read workspace/status.yaml. Returns empty struct if file does not exist.
+   */
+  WorkspaceStatus loadStatus() const;
 
   /** @brief Return the workspace root path. */
   const std::filesystem::path& getRoot() const;
