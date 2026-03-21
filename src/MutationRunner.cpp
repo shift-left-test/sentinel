@@ -404,6 +404,7 @@ int MutationRunner::run() {
 
   // Populate
   std::vector<std::pair<int, Mutant>> indexedMutants;
+  std::size_t candidateCount = 0;
   if (resuming) {
     indexedMutants = ws.loadMutants();
   } else {
@@ -420,6 +421,7 @@ int MutationRunner::run() {
     MutationFactory factory(generator);
     auto mutants = factory.populate(*activeConfig.sourceDir, sourceLines, *activeConfig.limit, seed,
                                     *activeConfig.generator);
+    candidateCount = generator->getCandidateCount();
     if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
       throw std::runtime_error(fmt::format(
           "Too many mutants: {} generated, maximum is {}. "
@@ -437,7 +439,7 @@ int MutationRunner::run() {
 
   if (dryRun) {
     statusLine.disable();
-    printDryRunSummary(activeConfig, computedTimeLimit, indexedMutants, indexedMutants.size(),
+    printDryRunSummary(activeConfig, computedTimeLimit, indexedMutants, candidateCount,
                        workDirPath, partIdx, partCount);
     return 0;
   }

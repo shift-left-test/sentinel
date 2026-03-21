@@ -177,4 +177,16 @@ TEST_F(UniformMutantGeneratorTest, testRandomWithSameSeedWorks) {
   EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
 }
 
+TEST_F(UniformMutantGeneratorTest, testPopulateWithZeroLimitReturnsAllCandidates) {
+  UniformMutantGenerator generator1 {SAMPLE1_DIR};
+  Mutants unlimited = generator1.populate(*sourceLines, 0, SEED);
+
+  UniformMutantGenerator generator2 {SAMPLE1_DIR};
+  Mutants limited = generator2.populate(*sourceLines, 1000, SEED);
+
+  // limit=0은 limit=큰수와 동일한 결과여야 함
+  EXPECT_EQ(unlimited.size(), limited.size());
+  EXPECT_GT(unlimited.size(), 0u);
+}
+
 }  // namespace sentinel

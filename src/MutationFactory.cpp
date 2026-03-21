@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <random>
 #include <string>
 #include "sentinel/Console.hpp"
@@ -83,14 +84,16 @@ Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const So
   Console::out("{0:=^{1}}", "", maxlen);
 
   // Footer
-  std::size_t numFiles = groupByPath.size();
+  std::set<fs::path> analyzedFiles;
+  for (const auto& sl : sourceLines) {
+    analyzedFiles.insert(sl.getPath());
+  }
+  std::size_t numFiles = analyzedFiles.size();
   std::size_t candidateCount = mGenerator->getCandidateCount();
   if (!generatorStr.empty()) {
     Console::out("Generator : {}  |  Seed: {}", generatorStr, randomSeed);
   }
-  Console::out("Analyzed  : {} source line{} across {} file{}",
-               sourceLines.size(), sourceLines.size() == 1 ? "" : "s",
-               numFiles, numFiles == 1 ? "" : "s");
+  Console::out("Analyzed  : {} file{}", numFiles, numFiles == 1 ? "" : "s");
   Console::out("Selected  : {} out of {} candidate{}",
                mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
   Console::out("{0:=^{1}}", "", maxlen);

@@ -121,6 +121,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   std::set<Mutant> selectedSet;
   Mutants temp_storage;
   std::mt19937 rng(randomSeed);
+  std::size_t candidateLineCount = 0;
   for (const auto& it : sortedDepthMap) {
     auto line = it.first;
 
@@ -148,8 +149,14 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     std::copy_if(fileVec.begin(), endIt, std::back_inserter(candidates),
         [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
 
-    // Continue if there are no generatable mutants.
     if (candidates.empty()) {
+      continue;
+    }
+
+    candidateLineCount++;
+
+    // Limit reached: keep counting candidates but skip selection.
+    if (maxMutants > 0 && temp_storage.size() == maxMutants) {
       continue;
     }
 
@@ -163,14 +170,9 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
         break;
       }
     }
-
-    // Break if maximum number of mutants is reached.
-    if (temp_storage.size() == maxMutants) {
-      break;
-    }
   }
 
-  mCandidateCount = mutables.size();
+  mCandidateCount = candidateLineCount;
   return temp_storage;
 }
 

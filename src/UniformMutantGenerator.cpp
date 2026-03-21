@@ -99,6 +99,7 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
   Mutants temp_storage;
   std::mt19937 rng(randomSeed);
 
+  std::size_t candidateLineCount = 0;
   for (const auto& line : sourceLines) {
     fs::path rawPath = line.getPath();
     auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
@@ -128,6 +129,13 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
       continue;
     }
 
+    candidateLineCount++;
+
+    // Limit reached: keep counting candidates but skip selection.
+    if (maxMutants > 0 && temp_storage.size() == maxMutants) {
+      continue;
+    }
+
     std::shuffle(candidates.begin(), candidates.end(), rng);
 
     // find first candidate not already in selectedSet
@@ -137,13 +145,9 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
         break;
       }
     }
-
-    if (temp_storage.size() == maxMutants) {
-      break;
-    }
   }
 
-  mCandidateCount = mutables.size();
+  mCandidateCount = candidateLineCount;
   return temp_storage;
 }
 

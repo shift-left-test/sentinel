@@ -11,6 +11,7 @@
 #include <future>
 #include <map>
 #include <memory>
+#include <set>
 #include <random>
 #include <string>
 #include <thread>
@@ -81,20 +82,68 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
 
   mutables.unique();
 
-  std::size_t n = mutables.size();
-  mCandidateCount = n;
-  if (n <= maxMutants) {
-    return mutables;
+  // Build candidates pool: one mutant per source line (consistent with Uniform/Weighted strategy).
+  std::map<fs::path, std::vector<const Mutant*>> mutantsByFile;
+  for (const auto& m : mutables) {
+    mutantsByFile[m.getPath()].push_back(&m);
+  }
+  for (auto& entry : mutantsByFile) {
+    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
+      return a->getFirst().line < b->getFirst().line;
+    });
   }
 
-  // Partial Fisher-Yates: only O(maxMutants) swaps instead of a full O(n) shuffle.
   std::mt19937 rng(randomSeed);
+  std::map<fs::path, fs::path> pathCache;
+  std::set<Mutant> selectedSet;
+  Mutants candidates;
+
+  for (const auto& line : sourceLines) {
+    fs::path rawPath = line.getPath();
+    auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
+    if (emplaceResult.second) {
+      emplaceResult.first->second = fs::canonical(rawPath);
+    }
+    const fs::path& canonPath = emplaceResult.first->second;
+    std::size_t targetLine = line.getLineNumber();
+
+    auto mutantsByFileIt = mutantsByFile.find(canonPath);
+    if (mutantsByFileIt == mutantsByFile.end()) {
+      continue;
+    }
+    const auto& fileVec = mutantsByFileIt->second;
+
+    auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
+        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+    std::vector<const Mutant*> lineCandidates;
+    std::copy_if(fileVec.begin(), endIt, std::back_inserter(lineCandidates),
+        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+
+    if (lineCandidates.empty()) {
+      continue;
+    }
+    std::shuffle(lineCandidates.begin(), lineCandidates.end(), rng);
+    for (const auto* candidate : lineCandidates) {
+      if (selectedSet.insert(*candidate).second) {
+        candidates.push_back(*candidate);
+        break;
+      }
+    }
+  }
+
+  std::size_t n = candidates.size();
+  mCandidateCount = n;
+  if (maxMutants == 0 || n <= maxMutants) {
+    return candidates;
+  }
+
+  // Partial Fisher-Yates: select maxMutants from candidates pool.
   for (std::size_t i = 0; i < maxMutants; ++i) {
     std::uniform_int_distribution<std::size_t> dist(i, n - 1);
     std::size_t j = dist(rng);
-    std::swap(mutables[i], mutables[j]);
+    std::swap(candidates[i], candidates[j]);
   }
-  return Mutants(mutables.begin(), mutables.begin() + maxMutants);
+  return Mutants(candidates.begin(), candidates.begin() + maxMutants);
 }
 
 RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,

@@ -37,6 +37,8 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
 
   EXPECT_TRUE(string::contains(out, SAMPLE1_NAME + "                                                2"));
   EXPECT_TRUE(string::contains(out, "TOTAL                                                      2"));
+  EXPECT_FALSE(string::contains(out, "source line"));
+  EXPECT_TRUE(string::contains(out, "Analyzed  : 1 file"));
 }
 
 }  // namespace sentinel

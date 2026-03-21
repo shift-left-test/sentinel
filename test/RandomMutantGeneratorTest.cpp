@@ -96,10 +96,11 @@ TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
 
 TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator {SAMPLE1_DIR};
-  int maxMutants = allMutants->size();
-  Mutants mutants = generator.populate(*sourceLines, maxMutants * 2, SEED);
-  ASSERT_EQ(mutants.size(), maxMutants);
+  // source line당 1개이므로 결과는 sourceLines 크기 이하
+  Mutants mutants = generator.populate(*sourceLines, 1000, SEED);
 
+  EXPECT_LE(mutants.size(), sourceLines->size());
+  EXPECT_GT(mutants.size(), 0u);
   for (const auto& e1 : mutants) {
     EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(), [e1](const auto& e2) { return e2 == e1; }));
   }
@@ -137,6 +138,17 @@ TEST_F(RandomMutantGeneratorTest, testRandomWithSameSeedWorks) {
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
   EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
+}
+
+TEST_F(RandomMutantGeneratorTest, testPopulateWithZeroLimitReturnsAllCandidates) {
+  RandomMutantGenerator generator1 {SAMPLE1_DIR};
+  Mutants unlimited = generator1.populate(*sourceLines, 0, SEED);
+
+  RandomMutantGenerator generator2 {SAMPLE1_DIR};
+  Mutants large = generator2.populate(*sourceLines, 1000, SEED);
+
+  EXPECT_EQ(unlimited.size(), large.size());
+  EXPECT_GT(unlimited.size(), 0u);
 }
 
 }  // namespace sentinel
