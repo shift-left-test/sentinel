@@ -1,5 +1,5 @@
 .\" DO NOT MODIFY THIS FILE!
-.TH man 1 "11 Nov 2020" "@sentinel_VERSION@" "sentinel manual"
+.TH SENTINEL 1 "Mar 2026" "@sentinel_VERSION@" "sentinel manual"
 .SH NAME
 sentinel \- mutation testing tool for C/C++ projects
 .SH SYNOPSIS
@@ -67,6 +67,7 @@ Disable the live status line shown at the bottom of the terminal in TTY mode.
 \fB\-\-threshold\fR=\fIPCT\fR
 Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
 A one-line score summary is always written to stderr at the end of the run.
+If no evaluable mutants exist, the threshold is not applied.
 .SS Build & test options
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR
@@ -112,7 +113,7 @@ Path or glob pattern to constrain the mutation scope (repeatable).
 Exclude files/directories matching an fnmatch-style pattern (repeatable).
 .TP
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
-Maximum number of mutants to generate. Default: \fB10\fR
+Maximum number of mutants to generate. \fB0\fR = evaluate all candidates. Default: \fB0\fR
 .TP
 \fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
 Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL

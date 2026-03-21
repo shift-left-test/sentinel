@@ -11,6 +11,7 @@
 
 - [About](#about)
 - [Quick Start](#quick-start)
+- [Sample Project](#sample-project)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -54,13 +55,29 @@ git clone https://github.com/shift-left-test/sentinel
 cd sentinel && cmake . && make all -j && make package
 sudo apt-get install ./sentinel-0.4.8-amd64.deb
 
-# 3. Run mutation testing on your project
-sentinel \
-  --source-dir=/path/to/your/project \
-  --build-command="make" \
-  --test-command="make test" \
-  --test-report-dir=./test-results
+# 3. Configure and run mutation testing on your project
+cat > sentinel.yaml << 'EOF'
+version: 1
+build-command: make
+test-command: make test
+test-report-dir: ./test-results
+source-dir: .
+EOF
+sentinel
 ```
+
+---
+
+## Sample Project
+
+The `sample/` directory contains a ready-to-use C++ project pre-configured for mutation testing — the fastest way to see Sentinel in action without any setup on your own project.
+
+```bash
+cd sample
+sentinel
+```
+
+Sentinel will build the project, run the test suite, evaluate mutants, and write an HTML report to `./sample/sentinel_output/`. See [`sample/README.md`](sample/README.md) for details.
 
 ---
 
@@ -109,12 +126,39 @@ sentinel {OPTIONS}
 
 Sentinel builds the project, runs the test suite once to establish a baseline, then applies each mutant in turn and checks whether the tests catch it.
 
-### Example
+### With sentinel.yaml (Recommended)
+
+Place a `sentinel.yaml` in your project directory and run `sentinel` from there:
+
+```yaml
+# sentinel.yaml
+version: 1
+source-dir: ./src
+build-command: cmake -B build && cmake --build build
+compiledb-dir: ./build
+test-command: ctest --test-dir build
+test-report-dir: ./build/test-results
+scope: commit
+limit: 50
+exclude:
+  - "*/third_party/*"
+  - "*/test/*"
+```
+
+```bash
+sentinel
+```
+
+Run `sentinel --init` to generate a fully commented template in the current directory.
+
+### With CLI Options
+
+All settings can be passed directly on the command line. CLI options take priority over `sentinel.yaml`.
 
 ```bash
 sentinel \
   --source-dir=./my-project \
-  --build-command="cmake --build build" \
+  --build-command="cmake -B build && cmake --build build" \
   --test-command="ctest --test-dir build" \
   --test-report-dir=./build/test-results \
   --scope=commit \
@@ -240,9 +284,10 @@ CLI argument  >  sentinel.yaml  >  built-in default
 
 ```yaml
 # sentinel.yaml
+version: 1
 source-dir: ./src
 compiledb-dir: ./build
-build-command: cmake --build build
+build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
 test-report-dir: ./build/test-results
 scope: commit
