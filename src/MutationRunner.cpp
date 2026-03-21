@@ -488,6 +488,12 @@ int MutationRunner::run() {
   XMLReport xmlReport(evaluator.getMutationResults(), *activeConfig.sourceDir);
   xmlReport.printSummary();
 
+  if (activeConfig.outputDir && !activeConfig.outputDir->empty()) {
+    xmlReport.save(*activeConfig.outputDir);
+    HTMLReport htmlReport(evaluator.getMutationResults(), *activeConfig.sourceDir);
+    htmlReport.save(*activeConfig.outputDir);
+  }
+
   statusLine.disable();
   gStatusLineForSH = nullptr;
   return 0;
