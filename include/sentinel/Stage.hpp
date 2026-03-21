@@ -42,10 +42,9 @@ class Stage {
 
   /**
    * @brief Execute this stage; if execute() returns true and a next stage exists,
-   *        invoke it and return its exit code.
-   * @return Exit code for the entire chain.
+   *        invoke it.
    */
-  int run();
+  void run();
 
  protected:
   /**
@@ -53,11 +52,6 @@ class Stage {
    * @return true to continue the chain, false to stop.
    */
   virtual bool execute() = 0;
-
-  /**
-   * @brief Set the exit code returned when this stage stops the chain.
-   */
-  void setExitCode(int code) { mExitCode = code; }
 
   /** @brief Fully resolved configuration (read-only). */
   const Config& mConfig;
@@ -68,7 +62,6 @@ class Stage {
 
  private:
   std::shared_ptr<Stage> mNext;
-  int mExitCode = 0;
 };
 
 }  // namespace sentinel

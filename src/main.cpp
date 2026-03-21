@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include "sentinel/CliConfigParser.hpp"
+#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/ConfigResolver.hpp"
 #include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
@@ -114,20 +115,24 @@ int main(int argc, char** argv) {
     initStage->setNext(checkConfig)->setNext(baselineBuild)->setNext(baselineTest)
              ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
-    // 9. Run chain and return exit code
-    return initStage->run();
-  } catch (args::Help& e) {
+    // 9. Run pipeline
+    initStage->run();
+    return 0;
+  } catch (const args::Help& e) {
     if (std::strcmp(e.what(), "version") == 0) {
       std::cout << "sentinel " << PROGRAM_VERSION << std::endl;
     } else {
       std::cout << parser;
     }
     return 0;
-  } catch (args::Error& e) {
+  } catch (const args::Error& e) {
     std::cerr << e.what() << std::endl << parser;
-    return 1;
-  } catch (std::exception& e) {
-    std::cerr << e.what() << std::endl;
     return 2;
+  } catch (const sentinel::ThresholdError& e) {
+    std::cerr << e.what() << std::endl;
+    return 3;
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
   }
 }

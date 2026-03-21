@@ -253,6 +253,19 @@ Generate a config file template:
 .nf
 sentinel --init
 .fi
+.SH EXIT CODES
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Runtime error (build failure, I/O error, invalid option value, etc.).
+.TP
+.B 2
+CLI argument error (unknown option, missing required value, etc.).
+.TP
+.B 3
+Mutation score is below the \fB\-\-threshold\fR value.
 .SH REPORTING BUGS
 sentinel issue tracker: <https://github.com/shift-left-test/sentinel/issues>
 .SH SEE ALSO

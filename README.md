@@ -436,8 +436,8 @@ The `--coverage` option can be repeated to merge multiple coverage files.
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | CLI argument error |
-| `2` | Runtime error (build failure, I/O error, invalid option value, etc.) |
+| `1` | Runtime error (build failure, I/O error, invalid option value, etc.) |
+| `2` | CLI argument error |
 | `3` | Mutation score is below the `--threshold` value |
 
 ---

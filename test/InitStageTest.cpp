@@ -44,9 +44,7 @@ class InitStageTest : public ::testing::Test {
 TEST_F(InitStageTest, testPassesThroughWhenInitNotSet) {
   mConfig.init = false;
   InitStage stage(mConfig, mStatusLine, mLogger);
-  // Returns true (pass through) — run() returns 0
-  int code = stage.run();
-  EXPECT_EQ(code, 0);
+  stage.run();
   EXPECT_FALSE(fs::exists("sentinel.yaml"));
 }
 
@@ -54,8 +52,7 @@ TEST_F(InitStageTest, testWritesSentinelYamlWhenInitSet) {
   mConfig.init = true;
   mConfig.force = true;
   InitStage stage(mConfig, mStatusLine, mLogger);
-  int code = stage.run();
-  EXPECT_EQ(code, 0);
+  stage.run();
   EXPECT_TRUE(fs::exists("sentinel.yaml"));
 }
 

@@ -10,6 +10,7 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/RepositoryException.hpp"
+#include "sentinel/exceptions/ThresholdError.hpp"
 
 namespace sentinel {
 
@@ -38,6 +39,15 @@ TEST_F(ExceptionTest, testRepositoryExceptionType) {
 
 TEST_F(ExceptionTest, testRepositoryExceptionMessage) {
   EXPECT_STREQ("repo error", RepositoryException("repo error").what());
+}
+
+TEST_F(ExceptionTest, testThresholdErrorType) {
+  EXPECT_THROW(throw ThresholdError(60.0, 80.0), std::runtime_error);
+}
+
+TEST_F(ExceptionTest, testThresholdErrorMessage) {
+  EXPECT_STREQ("Mutation score 60.0% is below threshold 80.0%",
+               ThresholdError(60.0, 80.0).what());
 }
 
 class MutationStateTest : public ::testing::Test {};

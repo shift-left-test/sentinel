@@ -17,10 +17,9 @@ std::shared_ptr<Stage> Stage::setNext(std::shared_ptr<Stage> next) {
   return mNext;
 }
 
-int Stage::run() {
-  if (!execute()) return mExitCode;
-  if (mNext) return mNext->run();
-  return mExitCode;
+void Stage::run() {
+  if (!execute()) return;
+  if (mNext) mNext->run();
 }
 
 }  // namespace sentinel

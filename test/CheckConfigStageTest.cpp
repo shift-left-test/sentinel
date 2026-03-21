@@ -52,7 +52,7 @@ class CheckConfigStageTest : public ::testing::Test {
 
 TEST_F(CheckConfigStageTest, testPassesWithValidConfig) {
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, mBase / ".sentinel");
-  EXPECT_EQ(stage.run(), 0);
+  EXPECT_NO_THROW(stage.run());
 }
 
 TEST_F(CheckConfigStageTest, testThrowsWhenBuildCmdEmpty) {
@@ -86,7 +86,7 @@ TEST_F(CheckConfigStageTest, testSkipsValidationWhenAlreadyComplete) {
   { std::ofstream f(ws / "run.done"); }
   mConfig.buildCmd = "";  // would normally throw
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
-  EXPECT_EQ(stage.run(), 0);  // skipped, no throw
+  EXPECT_NO_THROW(stage.run());  // skipped, no throw
 }
 
 TEST_F(CheckConfigStageTest, testSkipsValidationWhenResuming) {
@@ -96,7 +96,7 @@ TEST_F(CheckConfigStageTest, testSkipsValidationWhenResuming) {
   { std::ofstream f(ws / "config.yaml"); f << "version: 1"; }
   mConfig.buildCmd = "";  // would normally throw
   CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
-  EXPECT_EQ(stage.run(), 0);
+  EXPECT_NO_THROW(stage.run());
 }
 
 TEST_F(CheckConfigStageTest, testThrowsOnInvalidPartitionFormat) {

@@ -18,18 +18,16 @@ namespace sentinel {
 class RecordingStage : public Stage {
  public:
   RecordingStage(const Config& cfg, StatusLine& sl, std::shared_ptr<Logger> log,
-                 bool returnVal, int exitCode = 0)
-      : Stage(cfg, sl, std::move(log)), mReturn(returnVal), mCode(exitCode) {}
+                 bool returnVal)
+      : Stage(cfg, sl, std::move(log)), mReturn(returnVal) {}
   bool wasExecuted() const { return mExecuted; }
  protected:
   bool execute() override {
     mExecuted = true;
-    setExitCode(mCode);
     return mReturn;
   }
  private:
   bool mReturn;
-  int mCode;
   bool mExecuted = false;
 };
 
@@ -69,18 +67,6 @@ TEST_F(StageTest, testHandleStopsWhenExecuteReturnsFalse) {
   EXPECT_FALSE(second->wasExecuted());
 }
 
-TEST_F(StageTest, testHandleReturnsExitCodeOnStop) {
-  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, false, 3);
-  int code = stage->run();
-  EXPECT_EQ(code, 3);
-}
-
-TEST_F(StageTest, testHandleReturnsZeroOnSuccess) {
-  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, true);
-  int code = stage->run();
-  EXPECT_EQ(code, 0);
-}
-
 TEST_F(StageTest, testSetNextReturnsNextForChaining) {
   auto first  = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, true);
   auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, true);
@@ -90,14 +76,6 @@ TEST_F(StageTest, testSetNextReturnsNextForChaining) {
   EXPECT_TRUE(first->wasExecuted());
   EXPECT_TRUE(second->wasExecuted());
   EXPECT_TRUE(third->wasExecuted());
-}
-
-TEST_F(StageTest, testExitCodePropagatesFromLastStage) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, true);
-  auto last = std::make_shared<RecordingStage>(mConfig, mStatusLine, mLogger, false, 42);
-  first->setNext(last);
-  int code = first->run();
-  EXPECT_EQ(code, 42);
 }
 
 }  // namespace sentinel

@@ -12,6 +12,7 @@
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XMLReport.hpp"
+#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/stages/ReportStage.hpp"
 
@@ -53,7 +54,7 @@ bool ReportStage::execute() {
                         [](const MutationResult& r) { return r.getDetected(); }));
       double score = 100.0 * static_cast<double>(killed) / static_cast<double>(total);
       if (score < *mConfig.threshold) {
-        setExitCode(3);
+        throw ThresholdError(score, *mConfig.threshold);
       }
     }
   }
