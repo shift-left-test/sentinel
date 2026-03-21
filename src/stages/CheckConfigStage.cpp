@@ -17,14 +17,15 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-CheckConfigStage::CheckConfigStage(const Config& cfg, StatusLine& sl,
-                                   std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+CheckConfigStage::CheckConfigStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                   std::shared_ptr<Logger> log,
+                                   std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool CheckConfigStage::execute() {
   // Skip on resume or already-complete
-  bool alreadyComplete = fs::exists(mWorkDir / "run.done");
-  bool resuming = !alreadyComplete && fs::exists(mWorkDir / "config.yaml");
+  bool alreadyComplete = mWorkspace->isComplete();
+  bool resuming = !alreadyComplete && mWorkspace->hasPreviousRun();
   if (alreadyComplete || resuming) return true;
 
   // Validate required options

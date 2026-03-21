@@ -17,15 +17,16 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-BaselineBuildStage::BaselineBuildStage(const Config& cfg, StatusLine& sl,
-                                       std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+BaselineBuildStage::BaselineBuildStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                       std::shared_ptr<Logger> log,
+                                       std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool BaselineBuildStage::execute() {
-  fs::path buildLog = mWorkDir / "original" / "build.log";
+  fs::path buildLog = mWorkspace->getOriginalBuildLog();
   if (fs::exists(buildLog)) return true;  // already done
 
-  mStatusLine.setPhase(StatusLine::Phase::BUILD_ORIG);
+  mStatusLine->setPhase(StatusLine::Phase::BUILD_ORIG);
   Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), *mConfig.silent);
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {

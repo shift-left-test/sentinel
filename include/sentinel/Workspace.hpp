@@ -35,6 +35,7 @@ struct WorkspaceStatus {
  *   &lt;root&gt;/original/test.log      — baseline test stdout/stderr
  *   &lt;root&gt;/original/results/      — baseline test result XML files
  *   &lt;root&gt;/backup/                — temporary backup of mutated source files
+ *   &lt;root&gt;/actual/                — temporary mutant test result XML files (during evaluation)
  *   &lt;root&gt;/run.done               — present when all evaluation is fully complete
  *   &lt;root&gt;/00001/mt.cfg           — mutant data (Mutant::str() format)
  *   &lt;root&gt;/00001/mt.lock          — present while mutant is being processed
@@ -90,6 +91,15 @@ class Workspace {
   /** @brief Return &lt;root&gt;/backup/. */
   std::filesystem::path getBackupDir() const;
 
+  /** @brief Return &lt;root&gt;/actual/ (temporary mutant test results during evaluation). */
+  std::filesystem::path getActualDir() const;
+
+  /** @brief Return &lt;root&gt;/original/build.log. */
+  std::filesystem::path getOriginalBuildLog() const;
+
+  /** @brief Return &lt;root&gt;/original/test.log. */
+  std::filesystem::path getOriginalTestLog() const;
+
   /**
    * @brief Maximum number of mutants supported.
    *
@@ -101,6 +111,12 @@ class Workspace {
 
   /** @brief Return &lt;root&gt;/NNNNN/ for the given 1-based mutant ID. */
   std::filesystem::path getMutantDir(int id) const;
+
+  /** @brief Return &lt;root&gt;/NNNNN/build.log for the given 1-based mutant ID. */
+  std::filesystem::path getMutantBuildLog(int id) const;
+
+  /** @brief Return &lt;root&gt;/NNNNN/test.log for the given 1-based mutant ID. */
+  std::filesystem::path getMutantTestLog(int id) const;
 
   /**
    * @brief Create &lt;root&gt;/NNNNN/ and write mt.cfg with the mutant's data.

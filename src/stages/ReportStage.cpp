@@ -20,17 +20,17 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-ReportStage::ReportStage(const Config& cfg, StatusLine& sl,
-                         std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+ReportStage::ReportStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                         std::shared_ptr<Logger> log,
+                         std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool ReportStage::execute() {
-  mStatusLine.setPhase(StatusLine::Phase::REPORT);
+  mStatusLine->setPhase(StatusLine::Phase::REPORT);
 
-  Workspace ws(mWorkDir);
-  Evaluator evaluator(ws.getOriginalResultsDir(), *mConfig.sourceDir);
-  for (const auto& [id, m] : ws.loadMutants()) {
-    evaluator.injectResult(ws.getDoneResult(id));
+  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
+  for (const auto& [id, m] : mWorkspace->loadMutants()) {
+    evaluator.injectResult(mWorkspace->getDoneResult(id));
   }
 
   XMLReport xmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
@@ -41,7 +41,7 @@ bool ReportStage::execute() {
     htmlReport.save(*mConfig.outputDir);
   }
 
-  mStatusLine.disable();
+  mStatusLine->disable();
   clearSignalStatusLine();
 
   // Compute mutation score and check threshold.

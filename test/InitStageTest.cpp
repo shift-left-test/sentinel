@@ -35,7 +35,7 @@ class InitStageTest : public ::testing::Test {
     Logger::clearCache();
   }
   Config mConfig;
-  StatusLine mStatusLine;
+  std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
   std::shared_ptr<Logger> mLogger;
   fs::path mBase;
   fs::path mOrigCwd;

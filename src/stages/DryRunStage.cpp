@@ -60,16 +60,16 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
   }
 }
 
-DryRunStage::DryRunStage(const Config& cfg, StatusLine& sl,
-                         std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                         std::shared_ptr<Logger> log,
+                         std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool DryRunStage::execute() {
   if (!mConfig.dryRun) return true;
 
-  Workspace ws(mWorkDir);
-  auto indexedMutants = ws.loadMutants();
-  auto status = ws.loadStatus();
+  auto indexedMutants = mWorkspace->loadMutants();
+  auto status = mWorkspace->loadStatus();
 
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout == "auto") {
@@ -81,11 +81,11 @@ bool DryRunStage::execute() {
   std::size_t partIdx = status.partIndex.value_or(0);
   std::size_t partCount = status.partCount.value_or(0);
 
-  mStatusLine.setTotalMutants(indexedMutants.size());
-  mStatusLine.disable();
+  mStatusLine->setTotalMutants(indexedMutants.size());
+  mStatusLine->disable();
 
   printDryRunSummary(mConfig, computedTimeLimit, indexedMutants,
-                     candidateCount, mWorkDir, partIdx, partCount);
+                     candidateCount, mWorkspace->getRoot(), partIdx, partCount);
   return false;
 }
 

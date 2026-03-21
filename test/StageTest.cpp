@@ -17,9 +17,9 @@ namespace sentinel {
 // Minimal concrete stage for testing
 class RecordingStage : public Stage {
  public:
-  RecordingStage(const Config& cfg, StatusLine& sl, std::shared_ptr<Logger> log,
+  RecordingStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Logger> log,
                  bool returnVal)
-      : Stage(cfg, sl, std::move(log)), mReturn(returnVal) {}
+      : Stage(cfg, std::move(sl), std::move(log)), mReturn(returnVal) {}
   bool wasExecuted() const { return mExecuted; }
  protected:
   bool execute() override {
@@ -39,7 +39,7 @@ class StageTest : public ::testing::Test {
   }
   void TearDown() override { Logger::clearCache(); }
   Config mConfig;
-  StatusLine mStatusLine;
+  std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
   std::shared_ptr<Logger> mLogger;
 };
 

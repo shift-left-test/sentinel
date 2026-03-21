@@ -109,8 +109,28 @@ fs::path Workspace::getBackupDir() const {
   return mRoot / "backup";
 }
 
+fs::path Workspace::getActualDir() const {
+  return mRoot / "actual";
+}
+
+fs::path Workspace::getOriginalBuildLog() const {
+  return mRoot / "original" / "build.log";
+}
+
+fs::path Workspace::getOriginalTestLog() const {
+  return mRoot / "original" / "test.log";
+}
+
 fs::path Workspace::getMutantDir(int id) const {
   return mRoot / mutantDirName(id);
+}
+
+fs::path Workspace::getMutantBuildLog(int id) const {
+  return mutantFile(id, "build.log");
+}
+
+fs::path Workspace::getMutantTestLog(int id) const {
+  return mutantFile(id, "test.log");
 }
 
 void Workspace::createMutant(int id, const Mutant& m) {

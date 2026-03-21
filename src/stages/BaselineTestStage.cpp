@@ -69,16 +69,16 @@ static std::string buildWorkspaceYaml(const Config& cfg) {
   return out.c_str();
 }
 
-BaselineTestStage::BaselineTestStage(const Config& cfg, StatusLine& sl,
-                                     std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+BaselineTestStage::BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                     std::shared_ptr<Logger> log,
+                                     std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool BaselineTestStage::execute() {
-  fs::path testLog = mWorkDir / "original" / "test.log";
-  fs::path configYaml = mWorkDir / "config.yaml";
-  if (fs::exists(testLog) && fs::exists(configYaml)) return true;  // already done
+  fs::path testLog = mWorkspace->getOriginalTestLog();
+  if (fs::exists(testLog) && mWorkspace->hasPreviousRun()) return true;  // already done
 
-  mStatusLine.setPhase(StatusLine::Phase::TEST_ORIG);
+  mStatusLine->setPhase(StatusLine::Phase::TEST_ORIG);
 
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout != "auto") {
@@ -92,28 +92,25 @@ bool BaselineTestStage::execute() {
   ts.reset();
   testProc.execute();
 
-  // Declare Workspace once for use in both auto-timeout and saveConfig paths
-  Workspace ws(mWorkDir);
-
   if (*mConfig.timeout == "auto") {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(ts.toDouble() * 2.0));
     if (computedTimeLimit < 1) computedTimeLimit = 1;
     WorkspaceStatus status;
     status.baselineTime = computedTimeLimit;
-    ws.saveStatus(status);
+    mWorkspace->saveStatus(status);
   }
 
   copyTestReportTo(*mConfig.testResultDir,
-                   mWorkDir / "original" / "results",
+                   mWorkspace->getOriginalResultsDir(),
                    *mConfig.testResultExts);
 
-  if (fs::is_empty(mWorkDir / "original" / "results")) {
+  if (fs::is_empty(mWorkspace->getOriginalResultsDir())) {
     throw std::runtime_error(fmt::format(
         "No test result files found in '{}' after running test command. See: {}",
         mConfig.testResultDir->string(), testLog.string()));
   }
 
-  ws.saveConfig(buildWorkspaceYaml(mConfig));
+  mWorkspace->saveConfig(buildWorkspaceYaml(mConfig));
   return true;
 }
 

@@ -28,7 +28,7 @@ class Stage {
    * @param statusLine  Shared status line for progress display.
    * @param logger   Shared logger instance.
    */
-  Stage(const Config& cfg, StatusLine& statusLine, std::shared_ptr<Logger> logger);
+  Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Logger> logger);
 
   Stage(const Stage&) = delete;
   Stage& operator=(const Stage&) = delete;
@@ -56,7 +56,7 @@ class Stage {
   /** @brief Fully resolved configuration (read-only). */
   const Config& mConfig;
   /** @brief Shared status line for phase and progress updates. */
-  StatusLine& mStatusLine;
+  std::shared_ptr<StatusLine> mStatusLine;
   /** @brief Shared logger instance. */
   std::shared_ptr<Logger> mLogger;
 

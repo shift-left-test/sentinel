@@ -6,8 +6,9 @@
 #ifndef INCLUDE_SENTINEL_STAGES_CHECKCONFIGSTAGE_HPP_
 #define INCLUDE_SENTINEL_STAGES_CHECKCONFIGSTAGE_HPP_
 
-#include <filesystem>  // NOLINT
+#include <memory>
 #include "sentinel/Stage.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -21,18 +22,18 @@ class CheckConfigStage : public Stage {
    * @param cfg        Resolved configuration.
    * @param statusLine Shared status line.
    * @param logger     Shared logger.
-   * @param workDir    Workspace root path (used to detect run mode).
+   * @param workspace  Shared workspace (used to detect run mode).
    */
-  CheckConfigStage(const Config& cfg, StatusLine& statusLine,
+  CheckConfigStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
                    std::shared_ptr<Logger> logger,
-                   std::filesystem::path workDir);
+                   std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;
 
  private:
   bool checkWarnings();
-  std::filesystem::path mWorkDir;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 }  // namespace sentinel

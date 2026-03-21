@@ -36,9 +36,9 @@ static StatusLine* gStatusLine = nullptr;
 
 static void signalHandler(int signum);
 
-void installSignalHandlers(StatusLine* sl, const fs::path& workDir) {
+void installSignalHandlers(StatusLine* sl, const Workspace& workspace) {
   gStatusLine = sl;
-  gWorkspaceDir = workDir;
+  gWorkspaceDir = workspace.getRoot();
   signal::setMultipleSignalHandlers(
       {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1},
       signalHandler);
@@ -66,22 +66,22 @@ static void signalHandler(int signum) {
 
 // --- EvaluationStage ---
 
-EvaluationStage::EvaluationStage(const Config& cfg, StatusLine& sl,
-                                 std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+EvaluationStage::EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                 std::shared_ptr<Logger> log,
+                                 std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool EvaluationStage::execute() {
-  Workspace ws(mWorkDir);
-  if (ws.isComplete()) return true;  // already-complete: go to report
+  if (mWorkspace->isComplete()) return true;  // already-complete: go to report
 
-  auto indexedMutants = ws.loadMutants();
-  mStatusLine.setTotalMutants(indexedMutants.size());
-  mStatusLine.setPhase(StatusLine::Phase::MUTANT);
+  auto indexedMutants = mWorkspace->loadMutants();
+  mStatusLine->setTotalMutants(indexedMutants.size());
+  mStatusLine->setPhase(StatusLine::Phase::MUTANT);
 
   // Determine timeout
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout == "auto") {
-    auto status = ws.loadStatus();
+    auto status = mWorkspace->loadStatus();
     computedTimeLimit = status.baselineTime.value_or(0);
   } else {
     computedTimeLimit = std::stoul(*mConfig.timeout);
@@ -89,38 +89,37 @@ bool EvaluationStage::execute() {
   const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
 
   // Set backup globals now that workspace is known
-  gBackupDir = ws.getBackupDir();
+  gBackupDir = mWorkspace->getBackupDir();
   gSourceRoot = *mConfig.sourceDir;
 
-  const fs::path backupDir = ws.getBackupDir();
-  const fs::path actualDir = mWorkDir / "actual";
-  Evaluator evaluator(ws.getOriginalResultsDir(), *mConfig.sourceDir);
+  const fs::path backupDir = mWorkspace->getBackupDir();
+  const fs::path actualDir = mWorkspace->getActualDir();
+  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
 
   for (const auto& [id, m] : indexedMutants) {
-    if (ws.isDone(id)) {
-      auto doneResult = ws.getDoneResult(id);
+    if (mWorkspace->isDone(id)) {
+      auto doneResult = mWorkspace->getDoneResult(id);
       evaluator.injectResult(doneResult);
-      mStatusLine.recordResult(static_cast<int>(doneResult.getMutationState()));
+      mStatusLine->recordResult(static_cast<int>(doneResult.getMutationState()));
       continue;
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
-    ws.setLock(id);
-    mStatusLine.setMutantInfo(id, m.getOperator(),
+    mWorkspace->setLock(id);
+    mStatusLine->setMutantInfo(id, m.getOperator(),
                               m.getPath().filename().string(), m.getFirst().line);
 
     auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
     repo->getSourceTree()->modify(m, backupDir.string());
 
-    const fs::path mutantDir = ws.getMutantDir(id);
     Subprocess mBuild(*mConfig.buildCmd, 0, 0,
-                      (mutantDir / "build.log").string(), *mConfig.silent);
+                      mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
     mBuild.execute();
 
     std::string testState = "success";
     if (mBuild.isSuccessfulExit()) {
       fs::remove_all(*mConfig.testResultDir);
       Subprocess mTest(*mConfig.testCmd, computedTimeLimit, killAfterSecs,
-                       (mutantDir / "test.log").string(), *mConfig.silent);
+                       mWorkspace->getMutantTestLog(id).string(), *mConfig.silent);
       mTest.execute();
       if (mTest.isTimedOut()) {
         testState = "timeout";
@@ -134,13 +133,13 @@ bool EvaluationStage::execute() {
 
     MutationResult result = evaluator.compare(m, actualDir, testState);
     restoreBackup(backupDir, *mConfig.sourceDir);
-    ws.clearLock(id);
-    ws.setDone(id, result);
-    mStatusLine.recordResult(static_cast<int>(result.getMutationState()));
+    mWorkspace->clearLock(id);
+    mWorkspace->setDone(id, result);
+    mStatusLine->recordResult(static_cast<int>(result.getMutationState()));
     fs::remove_all(actualDir);
   }
 
-  ws.setComplete();
+  mWorkspace->setComplete();
   return true;
 }
 

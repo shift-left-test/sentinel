@@ -22,25 +22,20 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-PopulateStage::PopulateStage(const Config& cfg, StatusLine& sl,
-                             std::shared_ptr<Logger> log, fs::path workDir)
-    : Stage(cfg, sl, std::move(log)), mWorkDir(std::move(workDir)) {}
+PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                             std::shared_ptr<Logger> log,
+                             std::shared_ptr<Workspace> workspace)
+    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
 bool PopulateStage::execute() {
-  Workspace ws(mWorkDir);
   // Skip if mutants already written (resume or dry-run re-run)
-  for (const auto& entry : fs::directory_iterator(mWorkDir)) {
-    if (fs::is_directory(entry) &&
-        entry.path().filename().string().find_first_not_of("0123456789") == std::string::npos) {
-      if (fs::exists(entry.path() / "mt.cfg")) return true;  // already populated
-    }
-  }
+  if (!mWorkspace->loadMutants().empty()) return true;
 
-  mStatusLine.setPhase(StatusLine::Phase::POPULATE);
+  mStatusLine->setPhase(StatusLine::Phase::POPULATE);
 
   auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions,
                                               *mConfig.patterns, *mConfig.excludes);
-  repo->addSkipDir(mWorkDir);
+  repo->addSkipDir(mWorkspace->getRoot());
   SourceLines sourceLines = repo->getSourceLines(*mConfig.scope);
 
   unsigned int seed = mConfig.seed ? *mConfig.seed : std::random_device {}();
@@ -77,7 +72,7 @@ bool PopulateStage::execute() {
 
   int id = 1;
   for (auto& m : mutants) {
-    ws.createMutant(id, m);
+    mWorkspace->createMutant(id, m);
     id++;
   }
 
@@ -85,7 +80,7 @@ bool PopulateStage::execute() {
   status.candidateCount = candidateCount;
   status.partIndex = partIdx;
   status.partCount = partCount;
-  ws.saveStatus(status);
+  mWorkspace->saveStatus(status);
 
   return true;
 }

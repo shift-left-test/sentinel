@@ -52,13 +52,13 @@ int main(int argc, char** argv) {
 
     // 2. Determine workspace path early for mode detection
     fs::path workDirPath = cliCfg.workDir ? fs::absolute(*cliCfg.workDir) : fs::absolute("./.sentinel");
-    sentinel::Workspace ws(workDirPath);
+    auto ws = std::make_shared<sentinel::Workspace>(workDirPath);
 
     // 3. Detect run mode
     bool dryRun = cliCfg.dryRun;
     bool force  = cliCfg.force && *cliCfg.force;
-    bool alreadyComplete = ws.hasPreviousRun() && ws.isComplete() && !force && !dryRun;
-    bool resuming = !alreadyComplete && ws.hasPreviousRun() && !force && !dryRun &&
+    bool alreadyComplete = ws->hasPreviousRun() && ws->isComplete() && !force && !dryRun;
+    bool resuming = !alreadyComplete && ws->hasPreviousRun() && !force && !dryRun &&
                     sentinel::Console::confirm("Previous run found in '{}'. Resume?",
                                               workDirPath.string());
 
@@ -91,32 +91,32 @@ int main(int argc, char** argv) {
     }
 
     // 6. Create StatusLine
-    sentinel::StatusLine statusLine;
-    statusLine.setDryRun(dryRun);
+    auto statusLine = std::make_shared<sentinel::StatusLine>();
+    statusLine->setDryRun(dryRun);
     if (!cfg.noStatusLine) {
-      statusLine.enable();
+      statusLine->enable();
     }
 
     // 7. Initialize workspace for fresh runs
     if (!alreadyComplete && !resuming && !cfg.init) {
-      ws.initialize();
+      ws->initialize();
     }
 
     // 8. Assemble stage chain
     auto initStage     = std::make_shared<sentinel::InitStage>(cfg, statusLine, logger);
-    auto checkConfig   = std::make_shared<sentinel::CheckConfigStage>(cfg, statusLine, logger, workDirPath);
-    auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, logger, workDirPath);
-    auto baselineTest  = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, logger, workDirPath);
-    auto populate      = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, logger, workDirPath);
-    auto dryRunStage   = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, logger, workDirPath);
-    auto evaluation    = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, logger, workDirPath);
-    auto report        = std::make_shared<sentinel::ReportStage>(cfg, statusLine, logger, workDirPath);
+    auto checkConfig   = std::make_shared<sentinel::CheckConfigStage>(cfg, statusLine, logger, ws);
+    auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, logger, ws);
+    auto baselineTest  = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, logger, ws);
+    auto populate      = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, logger, ws);
+    auto dryRunStage   = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, logger, ws);
+    auto evaluation    = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, logger, ws);
+    auto report        = std::make_shared<sentinel::ReportStage>(cfg, statusLine, logger, ws);
 
     initStage->setNext(checkConfig)->setNext(baselineBuild)->setNext(baselineTest)
              ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
     // 9. Install signal handlers before pipeline starts
-    sentinel::installSignalHandlers(&statusLine, workDirPath);
+    sentinel::installSignalHandlers(statusLine.get(), *ws);
 
     // 10. Run pipeline
     initStage->run();

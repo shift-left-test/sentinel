@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -10,7 +11,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <fmt/core.h>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"

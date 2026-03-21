@@ -7,8 +7,10 @@
 #define INCLUDE_SENTINEL_STAGES_EVALUATIONSTAGE_HPP_
 
 #include <filesystem>  // NOLINT
+#include <memory>
 #include "sentinel/Stage.hpp"
 #include "sentinel/StatusLine.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -23,11 +25,11 @@ class EvaluationStage : public Stage {
    * @param cfg        Resolved configuration.
    * @param statusLine Shared status line.
    * @param logger     Shared logger.
-   * @param workDir    Workspace root path.
+   * @param workspace  Shared workspace.
    */
-  EvaluationStage(const Config& cfg, StatusLine& statusLine,
+  EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
                   std::shared_ptr<Logger> logger,
-                  std::filesystem::path workDir);
+                  std::shared_ptr<Workspace> workspace);
 
   /**
    * @brief Restore original source files from backup directory.
@@ -40,7 +42,7 @@ class EvaluationStage : public Stage {
   bool execute() override;
 
  private:
-  std::filesystem::path mWorkDir;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 /**
@@ -48,7 +50,7 @@ class EvaluationStage : public Stage {
  *        Must be called once before the pipeline starts (in main).
  *        EvaluationStage will later set backup/source-root globals when known.
  */
-void installSignalHandlers(StatusLine* sl, const std::filesystem::path& workDir);
+void installSignalHandlers(StatusLine* sl, const Workspace& workspace);
 
 /**
  * @brief Clear the StatusLine pointer in the signal handler.

@@ -7,9 +7,11 @@
 #define INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
 
 #include <filesystem>  // NOLINT
+#include <memory>
 #include <string>
 #include <vector>
 #include "sentinel/Stage.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -25,11 +27,11 @@ class BaselineTestStage : public Stage {
    * @param cfg        Resolved configuration.
    * @param statusLine Shared status line.
    * @param logger     Shared logger.
-   * @param workDir    Workspace root path.
+   * @param workspace  Shared workspace.
    */
-  BaselineTestStage(const Config& cfg, StatusLine& statusLine,
+  BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
                     std::shared_ptr<Logger> logger,
-                    std::filesystem::path workDir);
+                    std::shared_ptr<Workspace> workspace);
 
   /**
    * @brief Copy test result files matching @p exts from @p from to @p to.
@@ -43,7 +45,7 @@ class BaselineTestStage : public Stage {
   bool execute() override;
 
  private:
-  std::filesystem::path mWorkDir;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 }  // namespace sentinel

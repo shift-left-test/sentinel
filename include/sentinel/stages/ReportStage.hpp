@@ -6,8 +6,9 @@
 #ifndef INCLUDE_SENTINEL_STAGES_REPORTSTAGE_HPP_
 #define INCLUDE_SENTINEL_STAGES_REPORTSTAGE_HPP_
 
-#include <filesystem>  // NOLINT
+#include <memory>
 #include "sentinel/Stage.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -22,17 +23,17 @@ class ReportStage : public Stage {
    * @param cfg        Resolved configuration.
    * @param statusLine Shared status line.
    * @param logger     Shared logger.
-   * @param workDir    Workspace root path.
+   * @param workspace  Shared workspace.
    */
-  ReportStage(const Config& cfg, StatusLine& statusLine,
+  ReportStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
               std::shared_ptr<Logger> logger,
-              std::filesystem::path workDir);
+              std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;
 
  private:
-  std::filesystem::path mWorkDir;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 }  // namespace sentinel
