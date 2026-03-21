@@ -21,7 +21,9 @@ if(ENABLE_TEST)
   enable_doxygen()
 endif()
 
-add_all_subdirectories()
+add_subdirectory(external)
+add_subdirectory(src)
+add_subdirectory(test)
 
 configure_file(${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp.in ${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp)
 configure_file(${CMAKE_SOURCE_DIR}/resources/man/sentinel.1.in ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1)

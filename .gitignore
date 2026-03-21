@@ -304,3 +304,5 @@ include/sentinel/version.hpp
 out/
 sentinel_workspace/
 temp/
+.worktrees/
+docs/

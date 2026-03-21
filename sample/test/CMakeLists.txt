@@ -5,10 +5,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+include(GoogleTest)
+
 add_executable(StackTest StackTest.cpp)
 target_link_libraries(StackTest stack GTest::gtest_main)
 
-add_test(
-  NAME StackTest
-  COMMAND StackTest --gtest_output=xml:${CMAKE_BINARY_DIR}/test-results/StackTest.xml
-)
+gtest_add_tests(TARGET StackTest)
