@@ -87,26 +87,41 @@ src/operators/      — mutation operator implementations
 test/               — GoogleTest unit tests
 cmake/              — CMake modules (FindLibGit2, FindClang, etc.)
 external/           — vendored third-party libraries
-resources/          — man page template, YAML config template
+resources/          — man page template
 ```
 
 ## Working Process
 
 Before starting any code work, always follow these steps:
 
-1. **Create a detailed plan** — Before writing any code, always draft a detailed work plan first. Include which files will be changed, the approach, and the expected scope of impact.
-2. **Ask when unclear** — If requirements are ambiguous or a decision is needed, always ask before proceeding.
-3. **Present options** — When there are multiple ways to implement something, show examples and trade-offs for each approach so the user can choose.
-4. **Get approval before starting** — After sharing the plan, wait for the user's explicit approval before beginning any actual code work.
-5. **Do not create commits** — Never create git commits automatically. Leave staging and committing to the user.
-6. **Commit message style** — When asked to commit, write a single-line message that briefly describes the change. No body, no bullet points.
+1. **Read before modifying** — Always read the relevant files and understand the existing structure before making any changes.
+2. **Create a detailed plan** — Before writing any code, always draft a detailed work plan first. Include which files will be changed, the approach, and the expected scope of impact.
+3. **Ask when unclear** — If requirements are ambiguous or a decision is needed, always ask before proceeding.
+4. **Present options** — When there are multiple ways to implement something, show examples and trade-offs for each approach so the user can choose.
+5. **Get approval before starting** — After sharing the plan, wait for the user's explicit approval before beginning any actual code work.
+
+## Git
+
+- **Do not create commits** — Never create git commits automatically. Leave staging and committing to the user.
+- **Commit message style** — When asked to commit, write a single-line message that briefly describes the change. No body, no bullet points.
 
 ## Verification
 
 - After completing code changes, run `./build.sh` to verify the full build (build + doc + test + coverage + package).
 - If code changes affect user-facing behavior, options, or commands, update `README.md` and the man page (`resources/`) accordingly.
+- When adding or modifying functionality, always add or update test cases in `test/` to cover the new or changed behavior.
+
+## Code Quality
+
+Design principles to follow:
+
+- Follow well-known coding principles: DRY, YAGNI, SOLID, KISS, Fail Fast, Law of Demeter, Boy Scout Rule.
+- Remove unnecessary code — dead code, unused variables, redundant logic.
+- Use clear, descriptive names — variable, function, and class names should convey intent without needing comments.
 
 ## Code Conventions
+
+C++ syntax and style rules:
 
 - Copyright year in new files must use the current year (e.g., `Copyright (c) 2026 LG Electronics Inc.`)
 - Coding rules must satisfy cppcheck, cpplint, Doxygen, and Google C++ Style Guide
@@ -117,3 +132,6 @@ Before starting any code work, always follow these steps:
 - `#include <filesystem>` must always be accompanied by `// NOLINT` (lint suppression for include order)
 - `std::filesystem`: use the full form (`std::filesystem`) in headers; use the short alias (e.g., `namespace fs = std::filesystem; fs::...`) in implementation files, except for function parameter types which always use the full form
 - C++17 throughout; `std::optional` used extensively in `Config`
+- Const correctness — apply `const` to variables, parameters, and member functions that do not modify state
+- No magic numbers or strings — use named constants (e.g., `static constexpr`)
+- Error handling — use `std::runtime_error` with `fmt::format` for error messages; throw on unrecoverable errors, propagate exceptions up the call stack
