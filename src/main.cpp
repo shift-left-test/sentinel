@@ -18,7 +18,7 @@
 #include "sentinel/YamlConfigParser.hpp"
 #include "sentinel/stages/BaselineBuildStage.hpp"
 #include "sentinel/stages/BaselineTestStage.hpp"
-#include "sentinel/stages/CheckConfigStage.hpp"
+#include "sentinel/stages/ConfigValidationStage.hpp"
 #include "sentinel/stages/DryRunStage.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/stages/InitStage.hpp"
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 
     // 8. Assemble stage chain
     auto initStage     = std::make_shared<sentinel::InitStage>(cfg, statusLine, logger);
-    auto checkConfig   = std::make_shared<sentinel::CheckConfigStage>(cfg, statusLine, logger, ws);
+    auto checkConfig   = std::make_shared<sentinel::ConfigValidationStage>(cfg, statusLine, logger, ws);
     auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, logger, ws);
     auto baselineTest  = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, logger, ws);
     auto populate      = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, logger, ws);

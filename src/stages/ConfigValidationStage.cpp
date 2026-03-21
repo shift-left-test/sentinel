@@ -10,19 +10,19 @@
 #include <utility>
 #include <vector>
 #include "sentinel/Console.hpp"
-#include "sentinel/stages/CheckConfigStage.hpp"
+#include "sentinel/stages/ConfigValidationStage.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-CheckConfigStage::CheckConfigStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                   std::shared_ptr<Logger> log,
-                                   std::shared_ptr<Workspace> workspace)
+ConfigValidationStage::ConfigValidationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                             std::shared_ptr<Logger> log,
+                                             std::shared_ptr<Workspace> workspace)
     : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
 
-bool CheckConfigStage::execute() {
+bool ConfigValidationStage::execute() {
   // Skip on resume or already-complete
   bool alreadyComplete = mWorkspace->isComplete();
   bool resuming = !alreadyComplete && mWorkspace->hasPreviousRun();
@@ -75,7 +75,7 @@ bool CheckConfigStage::execute() {
   return checkWarnings();
 }
 
-bool CheckConfigStage::checkWarnings() {
+bool ConfigValidationStage::checkWarnings() {
   std::vector<std::string> warnings;
 
   // limit=0: evaluates every candidate mutant, which may take hours.

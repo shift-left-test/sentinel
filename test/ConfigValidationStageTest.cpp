@@ -14,13 +14,13 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
-#include "sentinel/stages/CheckConfigStage.hpp"
+#include "sentinel/stages/ConfigValidationStage.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
 
-class CheckConfigStageTest : public ::testing::Test {
+class ConfigValidationStageTest : public ::testing::Test {
  protected:
   void SetUp() override {
     Logger::clearCache();
@@ -50,74 +50,74 @@ class CheckConfigStageTest : public ::testing::Test {
   fs::path mBase;
 };
 
-TEST_F(CheckConfigStageTest, testPassesWithValidConfig) {
+TEST_F(ConfigValidationStageTest, testPassesWithValidConfig) {
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_NO_THROW(stage.run());
 }
 
-TEST_F(CheckConfigStageTest, testThrowsWhenBuildCmdEmpty) {
+TEST_F(ConfigValidationStageTest, testThrowsWhenBuildCmdEmpty) {
   mConfig.buildCmd = "";
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
-TEST_F(CheckConfigStageTest, testThrowsWhenTestCmdEmpty) {
+TEST_F(ConfigValidationStageTest, testThrowsWhenTestCmdEmpty) {
   mConfig.testCmd = "";
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
-TEST_F(CheckConfigStageTest, testThrowsWhenTestResultDirEmpty) {
+TEST_F(ConfigValidationStageTest, testThrowsWhenTestResultDirEmpty) {
   mConfig.testResultDir = fs::path("");
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
-TEST_F(CheckConfigStageTest, testThrowsWhenThresholdOutOfRange) {
+TEST_F(ConfigValidationStageTest, testThrowsWhenThresholdOutOfRange) {
   mConfig.threshold = 150.0;
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
-TEST_F(CheckConfigStageTest, testSkipsValidationWhenAlreadyComplete) {
+TEST_F(ConfigValidationStageTest, testSkipsValidationWhenAlreadyComplete) {
   // Create run.done to simulate already-complete workspace
   fs::path wsPath = mBase / ".sentinel";
   fs::create_directories(wsPath);
   { std::ofstream f(wsPath / "run.done"); }
   mConfig.buildCmd = "";  // would normally throw
   auto ws = std::make_shared<Workspace>(wsPath);
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_NO_THROW(stage.run());  // skipped, no throw
 }
 
-TEST_F(CheckConfigStageTest, testSkipsValidationWhenResuming) {
+TEST_F(ConfigValidationStageTest, testSkipsValidationWhenResuming) {
   // Create config.yaml (no run.done) to simulate resume
   fs::path wsPath = mBase / ".sentinel";
   fs::create_directories(wsPath);
   { std::ofstream f(wsPath / "config.yaml"); f << "version: 1"; }
   mConfig.buildCmd = "";  // would normally throw
   auto ws = std::make_shared<Workspace>(wsPath);
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_NO_THROW(stage.run());
 }
 
-TEST_F(CheckConfigStageTest, testThrowsOnInvalidPartitionFormat) {
+TEST_F(ConfigValidationStageTest, testThrowsOnInvalidPartitionFormat) {
   mConfig.partition = std::string("bad");
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 
-TEST_F(CheckConfigStageTest, testThrowsWhenPartitionWithoutSeed) {
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionWithoutSeed) {
   mConfig.partition = std::string("1/4");
   // seed not set
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
-  CheckConfigStage stage(mConfig, mStatusLine, mLogger, ws);
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
 }
 }  // namespace sentinel

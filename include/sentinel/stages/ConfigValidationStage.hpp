@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef INCLUDE_SENTINEL_STAGES_CHECKCONFIGSTAGE_HPP_
-#define INCLUDE_SENTINEL_STAGES_CHECKCONFIGSTAGE_HPP_
+#ifndef INCLUDE_SENTINEL_STAGES_CONFIGVALIDATIONSTAGE_HPP_
+#define INCLUDE_SENTINEL_STAGES_CONFIGVALIDATIONSTAGE_HPP_
 
 #include <memory>
 #include "sentinel/Stage.hpp"
@@ -16,7 +16,7 @@ namespace sentinel {
  * @brief Validates required config options and warns about risky settings.
  *        Skips validation when resuming or already-complete.
  */
-class CheckConfigStage : public Stage {
+class ConfigValidationStage : public Stage {
  public:
   /**
    * @param cfg        Resolved configuration.
@@ -24,9 +24,9 @@ class CheckConfigStage : public Stage {
    * @param logger     Shared logger.
    * @param workspace  Shared workspace (used to detect run mode).
    */
-  CheckConfigStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
-                   std::shared_ptr<Logger> logger,
-                   std::shared_ptr<Workspace> workspace);
+  ConfigValidationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
+                        std::shared_ptr<Logger> logger,
+                        std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;
@@ -38,4 +38,4 @@ class CheckConfigStage : public Stage {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_STAGES_CHECKCONFIGSTAGE_HPP_
+#endif  // INCLUDE_SENTINEL_STAGES_CONFIGVALIDATIONSTAGE_HPP_
