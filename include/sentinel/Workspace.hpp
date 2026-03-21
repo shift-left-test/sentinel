@@ -66,6 +66,15 @@ class Workspace {
   /** @brief Return &lt;root&gt;/backup/. */
   std::filesystem::path getBackupDir() const;
 
+  /**
+   * @brief Maximum number of mutants supported.
+   *
+   * Determined by the 5-digit zero-padded directory name format in mutantDirName().
+   * IDs above this value produce a 6-digit name, which breaks the directory naming convention.
+   * If this value is changed, the format string in mutantDirName() must be updated too.
+   */
+  static constexpr int kMaxMutantCount = 99999;
+
   /** @brief Return &lt;root&gt;/NNNNN/ for the given 1-based mutant ID. */
   std::filesystem::path getMutantDir(int id) const;
 

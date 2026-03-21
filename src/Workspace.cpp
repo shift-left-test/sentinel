@@ -143,6 +143,8 @@ std::vector<std::pair<int, Mutant>> Workspace::loadMutants() const {
 }
 
 std::string Workspace::mutantDirName(int id) {
+  // 5-digit zero-padded format supports IDs 1..kMaxMutantCount (99999).
+  // If this format changes, update kMaxMutantCount in Workspace.hpp accordingly.
   return fmt::format("{:05d}", id);
 }
 

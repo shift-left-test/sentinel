@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fmt/core.h>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -217,6 +218,19 @@ TEST_F(WorkspaceTest, testGetDoneResultThrowsIfMissingFile) {
   ws.createMutant(1, m);
 
   EXPECT_THROW(ws.getDoneResult(1), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testMaxMutantCountFitsInFiveDigits) {
+  // kMaxMutantCount must produce exactly 5 digits with the {:05d} format.
+  // This documents the coupling between the constant and mutantDirName().
+  std::string atLimit = fmt::format("{:05d}", Workspace::kMaxMutantCount);
+  EXPECT_EQ(5u, atLimit.size());
+}
+
+TEST_F(WorkspaceTest, testAboveMaxMutantCountExceedsFiveDigits) {
+  // One above the limit produces a 6-digit name, which would break the convention.
+  std::string aboveLimit = fmt::format("{:05d}", Workspace::kMaxMutantCount + 1);
+  EXPECT_EQ(6u, aboveLimit.size());
 }
 
 }  // namespace sentinel

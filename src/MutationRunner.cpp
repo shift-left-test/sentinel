@@ -420,6 +420,12 @@ int MutationRunner::run() {
     MutationFactory factory(generator);
     auto mutants = factory.populate(*activeConfig.sourceDir, sourceLines, *activeConfig.limit, seed,
                                     *activeConfig.generator);
+    if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
+      throw std::runtime_error(fmt::format(
+          "Too many mutants: {} generated, maximum is {}. "
+          "Use --limit to reduce the number of mutants.",
+          mutants.size(), Workspace::kMaxMutantCount));
+    }
     int id = 1;
     for (auto& m : mutants) {
       ws.createMutant(id, m);
