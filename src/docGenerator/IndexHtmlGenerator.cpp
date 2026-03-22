@@ -6,14 +6,14 @@
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <string>
-#include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
+#include "sentinel/docGenerator/IndexHtmlGenerator.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-IndexHTMLGenerator::IndexHTMLGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
+IndexHtmlGenerator::IndexHtmlGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
                                        unsigned int coverage, std::size_t numerator, std::size_t denominator) :
     mRoot(root),
     mDirName(dirName),
@@ -22,7 +22,7 @@ IndexHTMLGenerator::IndexHTMLGenerator(bool root, const std::filesystem::path& d
     mNumerator(numerator),
     mDenominator(denominator) {}
 
-void IndexHTMLGenerator::pushItemToTable(const std::string& subName, int subCoverage, std::size_t subNumerator,
+void IndexHtmlGenerator::pushItemToTable(const std::string& subName, int subCoverage, std::size_t subNumerator,
                                          std::size_t subDenominator, std::size_t numOfFiles) {
   std::string subPath;
   if (mRoot) {
@@ -37,7 +37,7 @@ void IndexHTMLGenerator::pushItemToTable(const std::string& subName, int subCove
                             fmt::arg("sub_denominator", subDenominator));
 }
 
-std::string IndexHTMLGenerator::str() {
+std::string IndexHtmlGenerator::str() {
   std::string indexTitle = mRoot ? indexRootTitle : indexSubTitle;
   if (!mRoot) {
     indexTitle = fmt::format(indexTitle, fmt::arg("dir_name", mDirName.empty() ? "." : mDirName.string()));

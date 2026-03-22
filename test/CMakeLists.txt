@@ -16,7 +16,7 @@ build_test_program(
        GitRepositoryTest.cpp ResultTest.cpp MutantsTest.cpp
        LoggerTest.cpp UniformMutantGeneratorTest.cpp MutationResultsTest.cpp
        MutationFactoryTest.cpp EvaluatorTest.cpp CoverageInfoTest.cpp
-       GitSourceTreeTest.cpp XMLReportTest.cpp HTMLReportTest.cpp ReportTest.cpp
+       GitSourceTreeTest.cpp XmlReportTest.cpp HtmlReportTest.cpp ReportTest.cpp
        ContainerTest.cpp RandomMutantGeneratorTest.cpp
        WeightedMutantGeneratorTest.cpp SourceLineTest.cpp
        ConfigTest.cpp WorkspaceTest.cpp ConsoleTest.cpp SubprocessTest.cpp

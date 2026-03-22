@@ -11,13 +11,13 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "sentinel/HTMLReport.hpp"
+#include "sentinel/HtmlReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/docGenerator/CSSGenerator.hpp"
-#include "sentinel/docGenerator/EmptyIndexHTMLGenerator.hpp"
-#include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
-#include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
+#include "sentinel/docGenerator/CssGenerator.hpp"
+#include "sentinel/docGenerator/EmptyIndexHtmlGenerator.hpp"
+#include "sentinel/docGenerator/IndexHtmlGenerator.hpp"
+#include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
@@ -26,14 +26,14 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-HTMLReport::HTMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
+HtmlReport::HtmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
     Report(results, sourcePath) {}
 
-HTMLReport::HTMLReport(const std::filesystem::path& resultsPath,
+HtmlReport::HtmlReport(const std::filesystem::path& resultsPath,
                        const std::filesystem::path& sourcePath) :
     Report(resultsPath, sourcePath) {}
 
-void HTMLReport::save(const std::filesystem::path& dirPath) {
+void HtmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make HTML Report");
 
   if (fs::exists(dirPath)) {
@@ -45,13 +45,13 @@ void HTMLReport::save(const std::filesystem::path& dirPath) {
   }
 
   std::ofstream ofs(dirPath / "style.css", std::ofstream::out);
-  CSSGenerator cg;
+  CssGenerator cg;
   ofs << cg.str();
   ofs.close();
 
   if (totNumberOfMutation == 0) {
     std::ofstream ofs2(dirPath / "index.html", std::ofstream::out);
-    ofs2 << EmptyIndexHTMLGenerator().str();
+    ofs2 << EmptyIndexHtmlGenerator().str();
     ofs2.close();
     return;
   }
@@ -67,7 +67,7 @@ void HTMLReport::save(const std::filesystem::path& dirPath) {
   }
 }
 
-void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
+void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
                                const std::filesystem::path& currentDirPath,
                                const std::filesystem::path& outputDir) {
   std::size_t sizeOfTargetFiles = 0;
@@ -84,7 +84,7 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   }
   unsigned int cov = 100 * numerator / denominator;
 
-  IndexHTMLGenerator ihg(root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator);
+  IndexHtmlGenerator ihg(root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator);
 
   if (root) {
     for (const auto& p : groupByDirPath) {
@@ -130,7 +130,7 @@ void HTMLReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   mLogger->info("Save to {}", (outputDir / fileName).string());
 }
 
-void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
+void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
                                 const std::filesystem::path& srcPath,
                                 const std::filesystem::path& outputDir) {
   auto absSrcPath = mSourcePath / srcPath;
@@ -180,7 +180,7 @@ void HTMLReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
                                                srcLineByLine.size(), maxLineNum));
   }
 
-  SrcHTMLGenerator shg(srcName, srcPath.parent_path().empty());
+  SrcHtmlGenerator shg(srcName, srcPath.parent_path().empty());
 
   for (auto it = srcLineByLine.begin(); it != srcLineByLine.end(); ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;

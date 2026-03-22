@@ -9,14 +9,14 @@
 #include <stddef.h>
 #include <string>
 #include <vector>
-#include "sentinel/docGenerator/DOCGenerator.hpp"
+#include "sentinel/docGenerator/DocGenerator.hpp"
 
 namespace sentinel {
 
 /**
- * @brief CSSGenerator class
+ * @brief CssGenerator class
  */
-class CSSGenerator : public DOCGenerator {
+class CssGenerator : public DocGenerator {
  public:
   /**
    * @brief make css string

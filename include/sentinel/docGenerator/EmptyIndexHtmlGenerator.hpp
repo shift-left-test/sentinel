@@ -9,14 +9,14 @@
 #include <stddef.h>
 #include <string>
 #include <vector>
-#include "sentinel/docGenerator/DOCGenerator.hpp"
+#include "sentinel/docGenerator/DocGenerator.hpp"
 
 namespace sentinel {
 
 /**
- * @brief EmptyIndexHTMLGenerator class
+ * @brief EmptyIndexHtmlGenerator class
  */
-class EmptyIndexHTMLGenerator : public DOCGenerator {
+class EmptyIndexHtmlGenerator : public DocGenerator {
  public:
   /**
    * @brief make empty index html string

@@ -14,9 +14,9 @@
 namespace sentinel {
 
 /**
- * @brief XMLReport class
+ * @brief XmlReport class
  */
-class XMLReport : public Report {
+class XmlReport : public Report {
  public:
   /**
    * @brief Default constructor
@@ -24,7 +24,7 @@ class XMLReport : public Report {
    * @param results mutation results
    * @param sourcePath directory path of source files
    */
-  XMLReport(const MutationResults& results, const std::filesystem::path& sourcePath);
+  XmlReport(const MutationResults& results, const std::filesystem::path& sourcePath);
 
   /**
    * @brief Default constructor
@@ -32,7 +32,7 @@ class XMLReport : public Report {
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    */
-  XMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
+  XmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
 
   /**
    * @brief save xml format result to path

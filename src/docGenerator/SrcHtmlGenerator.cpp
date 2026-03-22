@@ -7,13 +7,13 @@
 #include <string>
 #include <vector>
 #include <tuple>
-#include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
+#include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
-SrcHTMLGenerator::SrcHTMLGenerator(const std::string& srcName, bool srcRoot) : mSrcName(srcName), mSrcRoot(srcRoot) {}
+SrcHtmlGenerator::SrcHtmlGenerator(const std::string& srcName, bool srcRoot) : mSrcName(srcName), mSrcRoot(srcRoot) {}
 
-void SrcHTMLGenerator::pushLine(
+void SrcHtmlGenerator::pushLine(
     std::size_t curLineNum, const std::string& curClass, std::size_t numCurLineMrs, const std::string& curCode,
     const std::vector<std::tuple<int, std::string, std::string, std::string, bool>>& explain) {
   std::string lineExplain;
@@ -30,7 +30,7 @@ void SrcHTMLGenerator::pushLine(
                         fmt::arg("line_explain", lineExplain), fmt::arg("cur_code", escape(curCode)));
 }
 
-void SrcHTMLGenerator::pushMutation(std::size_t curLineNum, bool killed, std::size_t count,
+void SrcHtmlGenerator::pushMutation(std::size_t curLineNum, bool killed, std::size_t count,
                                     const std::string& curKillingTest, const std::string& curOperator) {
   mMutations += fmt::format(mutationsContent, fmt::arg("cur_lineNum", curLineNum), fmt::arg("src_name", mSrcName),
                             fmt::arg("killed_or_not", killed ? "KILLED" : "SURVIVED"), fmt::arg("count", count),
@@ -38,15 +38,15 @@ void SrcHTMLGenerator::pushMutation(std::size_t curLineNum, bool killed, std::si
                             fmt::arg("operator", curOperator));
 }
 
-void SrcHTMLGenerator::pushMutator(const std::string& mutator) {
+void SrcHtmlGenerator::pushMutator(const std::string& mutator) {
   mMutators += fmt::format(mutatorListContent, fmt::arg("mutator", mutator));
 }
 
-void SrcHTMLGenerator::pushKillingTest(const std::string& killingTest) {
+void SrcHtmlGenerator::pushKillingTest(const std::string& killingTest) {
   mTestList += fmt::format(testListContent, fmt::arg("test_function", killingTest));
 }
 
-std::string SrcHTMLGenerator::str() {
+std::string SrcHtmlGenerator::str() {
   std::string testListGuard;
   if (!mTestList.empty()) {
     testListGuard = fmt::format(testListGuardContent, fmt::arg("test_list", mTestList));
@@ -59,7 +59,7 @@ std::string SrcHTMLGenerator::str() {
                      fmt::arg("test_list_guard", testListGuard), fmt::arg("https", "https://"));
 }
 
-std::string SrcHTMLGenerator::escape(const std::string& original) {
+std::string SrcHtmlGenerator::escape(const std::string& original) {
   std::string rCode = string::replaceAll(original, "&", "&amp;");
   rCode = string::replaceAll(rCode, "<", "&lt;");
   rCode = string::replaceAll(rCode, ">", "&gt;");

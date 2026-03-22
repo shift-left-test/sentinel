@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 #include "helper/SentinelReportTestBase.hpp"
-#include "sentinel/HTMLReport.hpp"
+#include "sentinel/HtmlReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -21,7 +21,7 @@ namespace fs = std::filesystem;
 
 namespace sentinel {
 
-class HTMLReportTest : public SentinelReportTestBase {
+class HtmlReportTest : public SentinelReportTestBase {
  protected:
   void SetUp() override {
     setUpDirectories("SENTINEL_HTMLREPORTTEST_TMP_DIR");
@@ -917,7 +917,7 @@ int minus(int a, int b){
 )a1b2";
 };
 
-TEST_F(HTMLReportTest, testMakeHTMLReport) {
+TEST_F(HtmlReportTest, testMakeHtmlReport) {
   auto OUT_DIR = BASE / "OUT_DIR_MAKEHTMLREPORT1";
   fs::create_directories(OUT_DIR);
 
@@ -956,7 +956,7 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  HTMLReport htmlreport(MRPath, SOURCE_DIR);
+  HtmlReport htmlreport(MRPath, SOURCE_DIR);
 
   htmlreport.save(OUT_DIR);
 
@@ -978,13 +978,13 @@ TEST_F(HTMLReportTest, testMakeHTMLReport) {
                              ORI_TARGET4_HTML_CONTENTS);
 }
 
-TEST_F(HTMLReportTest, testConstructorFailWhenInvalidPathGiven) {
-  EXPECT_THROW(HTMLReport htmlreport("unknown", "unknown"), InvalidArgumentException);
+TEST_F(HtmlReportTest, testConstructorFailWhenInvalidPathGiven) {
+  EXPECT_THROW(HtmlReport htmlreport("unknown", "unknown"), InvalidArgumentException);
 }
 
-TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
+TEST_F(HtmlReportTest, testMakeHtmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MRs, SOURCE_DIR);
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   htmlreport.save(OUT_DIR);
   auto outXMLPath = OUT_DIR / "index.html";
@@ -998,14 +998,14 @@ TEST_F(HTMLReportTest, testMakeHTMLReportWhenEmptyMutationResult) {
   EXPECT_EQ(EXPECT_EMPTY_MUT_HTML_CONTENT, mutationHTMLContent);
 }
 
-TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
+TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MRs, SOURCE_DIR);
 
   EXPECT_THROW(htmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(htmlreport.save("unknown"));
@@ -1022,7 +1022,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidDirPathGiven) {
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
 
-TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
+TEST_F(HtmlReportTest, testSaveFailWhenInvalidSourcePath) {
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDSOURCEPATH";
   fs::create_directories(OUT_DIR);
   auto tmpPath = TARGET_FULL_PATH;
@@ -1034,12 +1034,12 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidSourcePath) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MRs, SOURCE_DIR);
   fs::remove(tmpPath);
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
 
-TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
+TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER";
   fs::create_directories(OUT_DIR);
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 0, 12, 2, 13, "+");
@@ -1048,7 +1048,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HTMLReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MRs, SOURCE_DIR);
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 
   auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
@@ -1059,7 +1059,7 @@ TEST_F(HTMLReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs2;
   MRs2.push_back(MR2);
 
-  HTMLReport htmlreport2(MRs2, SOURCE_DIR);
+  HtmlReport htmlreport2(MRs2, SOURCE_DIR);
   EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
 }
 

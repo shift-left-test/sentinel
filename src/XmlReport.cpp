@@ -10,20 +10,20 @@
 #include <string>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
-#include "sentinel/XMLReport.hpp"
+#include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-XMLReport::XMLReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
+XmlReport::XmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
     Report(results, sourcePath) {}
 
-XMLReport::XMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
+XmlReport::XmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
     Report(resultsPath, sourcePath) {}
 
-void XMLReport::save(const std::filesystem::path& dirPath) {
+void XmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");
   if (fs::exists(dirPath)) {
     if (!fs::is_directory(dirPath)) {
@@ -77,7 +77,7 @@ void XMLReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Save to {}", xmlPath.string());
 }
 
-void XMLReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,
+void XmlReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,
                                  const std::string& childText) {
   tinyxml2::XMLElement* pChild = d->NewElement(childName.c_str());
   pChild->SetText(childText.c_str());

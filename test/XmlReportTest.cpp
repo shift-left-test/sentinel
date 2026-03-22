@@ -13,13 +13,13 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/util/string.hpp"
-#include "sentinel/XMLReport.hpp"
+#include "sentinel/XmlReport.hpp"
 
 namespace fs = std::filesystem;
 
 namespace sentinel {
 
-class XMLReportTest : public ::testing::Test {
+class XmlReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
     BASE = fs::temp_directory_path() / "SENTINEL_XMLREPORTTEST_TMP_DIR";
@@ -128,7 +128,7 @@ class XMLReportTest : public ::testing::Test {
 )c3d4";
 };
 
-TEST_F(XMLReportTest, testMakeXMLReport) {
+TEST_F(XmlReportTest, testMakeXmlReport) {
   MutationResults MRs;
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
@@ -145,7 +145,7 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult1";
   MRs.save(MRPath);
 
-  XMLReport xmlreport(MRPath, SOURCE_DIR);
+  XmlReport xmlreport(MRPath, SOURCE_DIR);
 
   xmlreport.save(OUT_DIR);
 
@@ -160,14 +160,14 @@ TEST_F(XMLReportTest, testMakeXMLReport) {
   EXPECT_EQ(mutationXMLContent, EXPECT_SKIP_MUT_XML_CONTENT);
 }
 
-TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
+TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
   Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  XMLReport xmlreport(MRs, SOURCE_DIR);
+  XmlReport xmlreport(MRs, SOURCE_DIR);
 
   EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(xmlreport.save("unknown"));
@@ -175,9 +175,9 @@ TEST_F(XMLReportTest, testSaveFailWhenInvalidDirGiven) {
   fs::remove_all("unknown");
 }
 
-TEST_F(XMLReportTest, testMakeXMLReportWhenEmptyMutationResult) {
+TEST_F(XmlReportTest, testMakeXmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  XMLReport xmlreport(MRs, SOURCE_DIR);
+  XmlReport xmlreport(MRs, SOURCE_DIR);
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   xmlreport.save(OUT_DIR);
 

@@ -14,9 +14,9 @@
 namespace sentinel {
 
 /**
- * @brief HTMLReport class
+ * @brief HtmlReport class
  */
-class HTMLReport : public Report {
+class HtmlReport : public Report {
  public:
   /**
    * @brief Default constructor
@@ -24,7 +24,7 @@ class HTMLReport : public Report {
    * @param results mutation results
    * @param sourcePath directory path of source files
    */
-  HTMLReport(const MutationResults& results, const std::filesystem::path& sourcePath);
+  HtmlReport(const MutationResults& results, const std::filesystem::path& sourcePath);
 
   /**
    * @brief Default constructor
@@ -32,7 +32,7 @@ class HTMLReport : public Report {
    * @param resultsPath directory path of mutation results
    * @param sourcePath directory path of source files
    */
-  HTMLReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
+  HtmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
 
   /**
    * @brief save html format result to path

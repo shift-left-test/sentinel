@@ -11,9 +11,9 @@
 namespace sentinel {
 
 /**
- * @brief DOCGenerator interface
+ * @brief DocGenerator interface
  */
-class DOCGenerator {
+class DocGenerator {
  public:
   /**
    * @brief make DOC content

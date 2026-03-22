@@ -6,31 +6,31 @@
 #include <gtest/gtest.h>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
-#include "sentinel/docGenerator/CSSGenerator.hpp"
-#include "sentinel/docGenerator/IndexHTMLGenerator.hpp"
-#include "sentinel/docGenerator/SrcHTMLGenerator.hpp"
+#include "sentinel/docGenerator/CssGenerator.hpp"
+#include "sentinel/docGenerator/IndexHtmlGenerator.hpp"
+#include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 
 namespace sentinel {
 
 class DocGeneratorTest : public SampleFileGeneratorForTest {};
 
-TEST_F(DocGeneratorTest, testCSSGeneratorStrProducesNonEmptyOutput) {
-  CSSGenerator gen;
+TEST_F(DocGeneratorTest, testCssGeneratorStrProducesNonEmptyOutput) {
+  CssGenerator gen;
   std::string css = gen.str();
   EXPECT_FALSE(css.empty());
   EXPECT_NE(css.find("margin"), std::string::npos);
   EXPECT_NE(css.find("padding"), std::string::npos);
 }
 
-TEST_F(DocGeneratorTest, testIndexHTMLGeneratorStrProducesValidHTML) {
-  IndexHTMLGenerator gen(true, ".", 1, 50, 1, 2);
+TEST_F(DocGeneratorTest, testIndexHtmlGeneratorStrProducesValidHTML) {
+  IndexHtmlGenerator gen(true, ".", 1, 50, 1, 2);
   std::string html = gen.str();
   EXPECT_NE(html.find("<html>"), std::string::npos);
   EXPECT_NE(html.find("</html>"), std::string::npos);
 }
 
-TEST_F(DocGeneratorTest, testSrcHTMLGeneratorStrProducesValidHTML) {
-  SrcHTMLGenerator gen("sample.cpp", true);
+TEST_F(DocGeneratorTest, testSrcHtmlGeneratorStrProducesValidHTML) {
+  SrcHtmlGenerator gen("sample.cpp", true);
   std::string html = gen.str();
   EXPECT_NE(html.find("<html>"), std::string::npos);
   EXPECT_NE(html.find("sample.cpp"), std::string::npos);

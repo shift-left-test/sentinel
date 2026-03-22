@@ -10,14 +10,14 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include "sentinel/docGenerator/DOCGenerator.hpp"
+#include "sentinel/docGenerator/DocGenerator.hpp"
 
 namespace sentinel {
 
 /**
- * @brief SrcHTMLGenerator class
+ * @brief SrcHtmlGenerator class
  */
-class SrcHTMLGenerator : public DOCGenerator {
+class SrcHtmlGenerator : public DocGenerator {
  public:
   /**
    * @brief Default constructor
@@ -25,7 +25,7 @@ class SrcHTMLGenerator : public DOCGenerator {
    * @param srcName current source file name
    * @param srcRoot if source file located at source root directory
    */
-  explicit SrcHTMLGenerator(const std::string& srcName, bool srcRoot);
+  explicit SrcHtmlGenerator(const std::string& srcName, bool srcRoot);
 
   /**
    * @brief push a source line

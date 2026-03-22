@@ -11,11 +11,11 @@ build_static_library(
        MutantGenerator.cpp UniformMutantGenerator.cpp RandomMutantGenerator.cpp WeightedMutantGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp XmlParser.cpp GoogleTestXmlParser.cpp CTestXmlParser.cpp QTestXmlParser.cpp Evaluator.cpp
        MutationResult.cpp GitSourceTree.cpp Timestamper.cpp
-       Report.cpp XMLReport.cpp HTMLReport.cpp
+       Report.cpp XmlReport.cpp HtmlReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp Subprocess.cpp
-       docGenerator/IndexHTMLGenerator.cpp docGenerator/SrcHTMLGenerator.cpp
+       docGenerator/IndexHtmlGenerator.cpp docGenerator/SrcHtmlGenerator.cpp
        CliConfigParser.cpp YamlConfigParser.cpp ConfigResolver.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp
        stages/InitStage.cpp stages/ConfigValidationStage.cpp stages/BaselineBuildStage.cpp stages/BaselineTestStage.cpp
        stages/PopulateStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp

@@ -10,14 +10,14 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
-#include "sentinel/docGenerator/DOCGenerator.hpp"
+#include "sentinel/docGenerator/DocGenerator.hpp"
 
 namespace sentinel {
 
 /**
- * @brief IndexHTMLGenerator class
+ * @brief IndexHtmlGenerator class
  */
-class IndexHTMLGenerator : public DOCGenerator {
+class IndexHtmlGenerator : public DocGenerator {
  public:
   /**
    * @brief Default constructor
@@ -29,7 +29,7 @@ class IndexHTMLGenerator : public DOCGenerator {
    * @param numerator
    * @param denominator
    */
-  IndexHTMLGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
+  IndexHtmlGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
                      unsigned int coverage, std::size_t numerator, std::size_t denominator);
 
   /**

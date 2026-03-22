@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 #include "sentinel/Evaluator.hpp"
-#include "sentinel/HTMLReport.hpp"
+#include "sentinel/HtmlReport.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
-#include "sentinel/XMLReport.hpp"
+#include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/stages/ReportStage.hpp"
@@ -33,11 +33,11 @@ bool ReportStage::execute() {
     evaluator.injectResult(mWorkspace->getDoneResult(id));
   }
 
-  XMLReport xmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
+  XmlReport xmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
   xmlReport.printSummary();
   if (mConfig.outputDir && !mConfig.outputDir->empty()) {
     xmlReport.save(*mConfig.outputDir);
-    HTMLReport htmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
+    HtmlReport htmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
     htmlReport.save(*mConfig.outputDir);
   }
 
