@@ -103,14 +103,14 @@ int main(int argc, char** argv) {
     }
 
     // 8. Assemble stage chain
-    auto initStage     = std::make_shared<sentinel::InitStage>(cfg, statusLine, logger);
-    auto checkConfig   = std::make_shared<sentinel::ConfigValidationStage>(cfg, statusLine, logger, ws);
-    auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, logger, ws);
-    auto baselineTest  = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, logger, ws);
-    auto populate      = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, logger, ws);
-    auto dryRunStage   = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, logger, ws);
-    auto evaluation    = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, logger, ws);
-    auto report        = std::make_shared<sentinel::ReportStage>(cfg, statusLine, logger, ws);
+    auto initStage     = std::make_shared<sentinel::InitStage>(cfg, statusLine);
+    auto checkConfig   = std::make_shared<sentinel::ConfigValidationStage>(cfg, statusLine, ws);
+    auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, ws);
+    auto baselineTest  = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, ws);
+    auto populate      = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, ws);
+    auto dryRunStage   = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, ws);
+    auto evaluation    = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, ws);
+    auto report        = std::make_shared<sentinel::ReportStage>(cfg, statusLine, ws);
 
     initStage->setNext(checkConfig)->setNext(baselineBuild)->setNext(baselineTest)
              ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);

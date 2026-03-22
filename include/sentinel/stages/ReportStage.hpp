@@ -22,11 +22,9 @@ class ReportStage : public Stage {
    * @brief Constructor.
    * @param cfg        Resolved configuration.
    * @param statusLine Shared status line.
-   * @param logger     Shared logger.
    * @param workspace  Shared workspace.
    */
   ReportStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
-              std::shared_ptr<Logger> logger,
               std::shared_ptr<Workspace> workspace);
 
  protected:

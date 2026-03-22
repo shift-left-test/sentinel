@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 #include "sentinel/Config.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/stages/InitStage.hpp"
 
@@ -21,29 +20,25 @@ namespace fs = std::filesystem;
 class InitStageTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    Logger::clearCache();
     mBase = fs::temp_directory_path() / "SENTINEL_INITSTAGE_TEST";
     fs::remove_all(mBase);
     fs::create_directories(mBase);
     mOrigCwd = fs::current_path();
     fs::current_path(mBase);
-    mLogger = Logger::getLogger("test");
   }
   void TearDown() override {
     fs::current_path(mOrigCwd);
     fs::remove_all(mBase);
-    Logger::clearCache();
   }
   Config mConfig;
   std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
-  std::shared_ptr<Logger> mLogger;
   fs::path mBase;
   fs::path mOrigCwd;
 };
 
 TEST_F(InitStageTest, testPassesThroughWhenInitNotSet) {
   mConfig.init = false;
-  InitStage stage(mConfig, mStatusLine, mLogger);
+  InitStage stage(mConfig, mStatusLine);
   stage.run();
   EXPECT_FALSE(fs::exists("sentinel.yaml"));
 }
@@ -51,7 +46,7 @@ TEST_F(InitStageTest, testPassesThroughWhenInitNotSet) {
 TEST_F(InitStageTest, testWritesSentinelYamlWhenInitSet) {
   mConfig.init = true;
   mConfig.force = true;
-  InitStage stage(mConfig, mStatusLine, mLogger);
+  InitStage stage(mConfig, mStatusLine);
   stage.run();
   EXPECT_TRUE(fs::exists("sentinel.yaml"));
 }
@@ -67,7 +62,7 @@ TEST_F(InitStageTest, testDoesNotOverwriteWithoutForceWhenUserDeclines) {
   dup2(devNull, STDIN_FILENO);
   close(devNull);
 
-  InitStage stage(mConfig, mStatusLine, mLogger);
+  InitStage stage(mConfig, mStatusLine);
   EXPECT_NO_THROW(stage.run());
 
   dup2(savedStdin, STDIN_FILENO);
@@ -82,7 +77,7 @@ TEST_F(InitStageTest, testOverwritesWithForce) {
   { std::ofstream f("sentinel.yaml"); f << "old content"; }
   mConfig.init = true;
   mConfig.force = true;
-  InitStage stage(mConfig, mStatusLine, mLogger);
+  InitStage stage(mConfig, mStatusLine);
   stage.run();
   std::ifstream f("sentinel.yaml");
   std::string content((std::istreambuf_iterator<char>(f)), {});
@@ -95,7 +90,7 @@ TEST_F(InitStageTest, testThrowsWhenSentinelYamlIsDirectory) {
   fs::create_directories(mBase / "sentinel.yaml");
   mConfig.init = true;
   mConfig.force = true;
-  InitStage stage(mConfig, mStatusLine, mLogger);
+  InitStage stage(mConfig, mStatusLine);
   EXPECT_THROW(stage.run(), std::runtime_error);
 }
 }  // namespace sentinel

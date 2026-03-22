@@ -61,9 +61,8 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
 }
 
 DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                         std::shared_ptr<Logger> log,
                          std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
+    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
 
 bool DryRunStage::execute() {
   if (!mConfig.dryRun) return true;

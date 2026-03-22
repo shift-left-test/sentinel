@@ -23,9 +23,8 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                             std::shared_ptr<Logger> log,
                              std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
+    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
 
 bool PopulateStage::execute() {
   // Skip if mutants already written (resume or dry-run re-run)

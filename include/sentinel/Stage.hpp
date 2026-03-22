@@ -8,7 +8,6 @@
 
 #include <memory>
 #include "sentinel/Config.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 
 namespace sentinel {
@@ -24,11 +23,10 @@ class Stage {
  public:
   /**
    * @brief Constructor.
-   * @param cfg      Fully resolved configuration (immutable throughout pipeline).
-   * @param statusLine  Shared status line for progress display.
-   * @param logger   Shared logger instance.
+   * @param cfg        Fully resolved configuration (immutable throughout pipeline).
+   * @param statusLine Shared status line for progress display.
    */
-  Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Logger> logger);
+  Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine);
 
   Stage(const Stage&) = delete;
   Stage& operator=(const Stage&) = delete;
@@ -57,8 +55,6 @@ class Stage {
   const Config& mConfig;
   /** @brief Shared status line for phase and progress updates. */
   std::shared_ptr<StatusLine> mStatusLine;
-  /** @brief Shared logger instance. */
-  std::shared_ptr<Logger> mLogger;
 
  private:
   std::shared_ptr<Stage> mNext;

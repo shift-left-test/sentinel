@@ -70,9 +70,8 @@ static std::string buildWorkspaceYaml(const Config& cfg) {
 }
 
 BaselineTestStage::BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                     std::shared_ptr<Logger> log,
                                      std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl), std::move(log)), mWorkspace(std::move(workspace)) {}
+    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
 
 bool BaselineTestStage::execute() {
   fs::path testLog = mWorkspace->getOriginalTestLog();

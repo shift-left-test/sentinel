@@ -9,8 +9,8 @@
 
 namespace sentinel {
 
-Stage::Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Logger> logger)
-    : mConfig(cfg), mStatusLine(std::move(statusLine)), mLogger(std::move(logger)) {}
+Stage::Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine)
+    : mConfig(cfg), mStatusLine(std::move(statusLine)) {}
 
 std::shared_ptr<Stage> Stage::setNext(std::shared_ptr<Stage> next) {
   mNext = std::move(next);
