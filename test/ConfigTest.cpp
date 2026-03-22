@@ -269,4 +269,21 @@ TEST_F(ConfigTest, testResolveDefaults) {
   EXPECT_EQ("uniform", *cfg.generator);
 }
 
+TEST_F(ConfigTest, testVersionAsNonIntegerThrows) {
+  writeFile("bad-version.yaml", "version: \"not_an_integer\"\nbuild-command: make\n");
+  EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("bad-version.yaml")), std::runtime_error);
+}
+
+TEST_F(ConfigTest, testListFieldAsScalarThrows) {
+  // 'extension' expects a sequence; giving a scalar should throw
+  writeFile("bad-extension.yaml", "version: 1\nextension: \"cpp\"\n");
+  EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("bad-extension.yaml")), std::runtime_error);
+}
+
+TEST_F(ConfigTest, testFieldWithWrongTypeThrows) {
+  // 'limit' expects an integer; giving a non-numeric string should throw
+  writeFile("bad-limit.yaml", "version: 1\nlimit: \"not_a_number\"\n");
+  EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("bad-limit.yaml")), std::runtime_error);
+}
+
 }  // namespace sentinel

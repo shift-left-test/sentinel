@@ -114,6 +114,16 @@ Before starting any code work, always follow these steps:
   - `src/MutationRunner.cpp` — `kYamlTemplate` (the template written by `--init`)
   - `sample/sentinel.yaml` and `sample/README.md` — only if the sample config or workflow is affected
 - When adding or modifying functionality, always add or update test cases in `test/` to cover the new or changed behavior.
+- Tests that exercise code paths calling `Console::confirm()` must redirect stdin to `/dev/null` to prevent blocking in interactive terminal sessions:
+  ```cpp
+  int savedStdin = dup(STDIN_FILENO);
+  int devNull = open("/dev/null", O_RDONLY);
+  dup2(devNull, STDIN_FILENO);
+  close(devNull);
+  // ... code under test ...
+  dup2(savedStdin, STDIN_FILENO);
+  close(savedStdin);
+  ```
 
 ## Code Quality
 

@@ -233,6 +233,118 @@ TEST_F(WorkspaceTest, testAboveMaxMutantCountExceedsFiveDigits) {
   EXPECT_EQ(6u, aboveLimit.size());
 }
 
+TEST_F(WorkspaceTest, testGetRoot) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot, ws.getRoot());
+}
+
+TEST_F(WorkspaceTest, testGetActualDir) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "actual", ws.getActualDir());
+}
+
+TEST_F(WorkspaceTest, testGetOriginalBuildLog) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "original" / "build.log", ws.getOriginalBuildLog());
+}
+
+TEST_F(WorkspaceTest, testGetOriginalTestLog) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "original" / "test.log", ws.getOriginalTestLog());
+}
+
+TEST_F(WorkspaceTest, testGetMutantBuildLog) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "00001" / "build.log", ws.getMutantBuildLog(1));
+}
+
+TEST_F(WorkspaceTest, testGetMutantTestLog) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "00001" / "test.log", ws.getMutantTestLog(1));
+}
+
+TEST_F(WorkspaceTest, testLoadMutantsSkipsNumericDirWithoutCfg) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  // Create a numeric directory without mt.cfg - should be skipped
+  fs::create_directories(mRoot / "00002");
+
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 5, "+");
+  ws.createMutant(1, m);
+
+  auto mutants = ws.loadMutants();
+  ASSERT_EQ(1u, mutants.size());
+  EXPECT_EQ(1, mutants[0].first);
+}
+
+TEST_F(WorkspaceTest, testGetDoneResultThrowsOnParseError) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(1, m);
+  // Write an empty mt.done file: valid open, but getline fails → parse error
+  { std::ofstream f(mRoot / "00001" / "mt.done"); }
+  EXPECT_THROW(ws.getDoneResult(1), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testLoadStatusThrowsOnYamlTypeError) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  // Write an invalid value type for baseline-time to trigger YAML::TypeException
+  std::ofstream f(mRoot / "status.yaml");
+  f << "baseline-time: not_a_number\n";
+  f.close();
+  EXPECT_THROW(ws.loadStatus(), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testSaveConfigFailsWhenPathIsDirectory) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  // Make config.yaml a directory so ofstream cannot open it
+  fs::create_directories(mRoot / "config.yaml");
+  EXPECT_THROW(ws.saveConfig("version: 1\n"), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testSaveStatusFailsWhenRootMissing) {
+  // mRoot does not exist (no initialize), so ofstream cannot write status.yaml
+  Workspace ws(mRoot);
+  WorkspaceStatus s;
+  s.baselineTime = 42;
+  EXPECT_THROW(ws.saveStatus(s), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testCreateMutantFailsWhenCfgIsDirectory) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  // Pre-create mt.cfg as a directory so ofstream fails
+  fs::create_directories(mRoot / "00001" / "mt.cfg");
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  EXPECT_THROW(ws.createMutant(1, m), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testSetLockFailsWhenMutantDirMissing) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  // Mutant dir 00001 does not exist → ofstream fails
+  EXPECT_THROW(ws.setLock(1), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testSetCompleteFailsWhenRootMissing) {
+  // mRoot does not exist (no initialize) → ofstream fails
+  Workspace ws(mRoot);
+  EXPECT_THROW(ws.setComplete(), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testSetDoneFailsWhenMutantDirMissing) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  // Do not call createMutant, so mutant dir does not exist
+  MutationResult result(m, "", "", MutationState::KILLED);
+  EXPECT_THROW(ws.setDone(1, result), std::runtime_error);
+}
+
 TEST_F(WorkspaceTest, testIsCompleteReturnsFalseInitially) {
   Workspace ws(mRoot);
   ws.initialize();

@@ -85,4 +85,15 @@ TEST_F(SubprocessTest, testConstructorThrowsWhenAnotherRunning) {
   t.join();
 }
 
+TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
+  // silent=false with a logFile: covers both the stdout-print and logStream branches
+  // in the main read loop and drain loop.
+  // Use large output (> 64 KB pipe buffer) to ensure the drain loop body executes.
+  auto logPath = BASE / "nonsilent.log";
+  Subprocess sp("seq 1 20000", 0, 0, logPath, false);
+  sp.execute();
+  EXPECT_TRUE(sp.isSuccessfulExit());
+  EXPECT_TRUE(fs::exists(logPath));
+}
+
 }  // namespace sentinel

@@ -223,4 +223,19 @@ TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   fs::remove(mrPath);
   fs::remove(emptyPath);
 }
+
+TEST_F(EvaluatorTest, testEvaluatorWithInvalidTestState) {
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
+  EXPECT_THROW(
+      mEvaluator.compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath, "invalid_state"),
+      InvalidArgumentException);
+}
+
+TEST_F(EvaluatorTest, testInjectResultAddsToResults) {
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  MutationResult result(*mutable1, "TC1", "", MutationState::KILLED);
+  EXPECT_NO_THROW(mEvaluator.injectResult(result));
+  EXPECT_EQ(1u, mEvaluator.getMutationResults().size());
+}
 }  // namespace sentinel

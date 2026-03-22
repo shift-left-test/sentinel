@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -119,5 +121,122 @@ TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionWithoutSeed) {
   auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
   ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
   EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionSlashAtStart) {
+  mConfig.partition = std::string("/4");
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionSlashAtEnd) {
+  mConfig.partition = std::string("1/");
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionHasNonNumericParts) {
+  mConfig.partition = std::string("abc/def");
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionCountIsZero) {
+  mConfig.partition = std::string("1/0");
+  mConfig.seed = 42u;
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionIndexIsZero) {
+  mConfig.partition = std::string("0/4");
+  mConfig.seed = 42u;
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThrowsWhenPartitionIndexExceedsCount) {
+  mConfig.partition = std::string("5/4");
+  mConfig.seed = 42u;
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThresholdBelowZeroThrows) {
+  mConfig.threshold = -1.0;
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_THROW(stage.run(), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidationStageTest, testThresholdAtBoundaryIsValid) {
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  mConfig.threshold = 0.0;
+  ConfigValidationStage stage0(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage0.run());
+
+  mConfig.threshold = 100.0;
+  ConfigValidationStage stage100(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage100.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningForTimeoutZeroWithForce) {
+  mConfig.timeout = std::string("0");
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningForExcludeEndingWithSlash) {
+  mConfig.excludes = std::vector<std::string>{"somedir/"};
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningForRelativeExcludeWithoutWildcard) {
+  mConfig.excludes = std::vector<std::string>{"relative/pattern.cpp"};
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningForAbsolutePatternOutsideSourceDir) {
+  // sourceDir = mBase; pattern is absolute and outside sourceDir
+  mConfig.patterns = std::vector<std::string>{"/tmp/outside/path.cpp"};
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningForAbsolutePatternInsideSourceDir) {
+  // sourceDir = mBase; pattern is absolute but inside sourceDir
+  mConfig.patterns = std::vector<std::string>{(mBase / "file.cpp").string()};
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+}
+
+TEST_F(ConfigValidationStageTest, testWarningsAbortWhenNotForced) {
+  // force=false + limit=0 (warning always present from fixture) triggers interactive prompt.
+  // Redirect stdin to /dev/null so Console::confirm returns false without blocking.
+  mConfig.force = false;
+  int savedStdin = dup(STDIN_FILENO);
+  int devNull = open("/dev/null", O_RDONLY);
+  dup2(devNull, STDIN_FILENO);
+  close(devNull);
+
+  auto ws = std::make_shared<Workspace>(mBase / ".sentinel");
+  ConfigValidationStage stage(mConfig, mStatusLine, mLogger, ws);
+  EXPECT_NO_THROW(stage.run());
+
+  dup2(savedStdin, STDIN_FILENO);
+  close(savedStdin);
 }
 }  // namespace sentinel

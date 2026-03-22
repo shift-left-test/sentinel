@@ -89,4 +89,13 @@ TEST_F(InitStageTest, testOverwritesWithForce) {
   EXPECT_NE(content, "old content");
   EXPECT_FALSE(content.empty());
 }
+
+TEST_F(InitStageTest, testThrowsWhenSentinelYamlIsDirectory) {
+  // Create sentinel.yaml as a directory so ofstream cannot open it
+  fs::create_directories(mBase / "sentinel.yaml");
+  mConfig.init = true;
+  mConfig.force = true;
+  InitStage stage(mConfig, mStatusLine, mLogger);
+  EXPECT_THROW(stage.run(), std::runtime_error);
+}
 }  // namespace sentinel
