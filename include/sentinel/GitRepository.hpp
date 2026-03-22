@@ -54,9 +54,7 @@ class GitRepository : public Repository {
   /**
    * @brief Return absolute root path
    */
-  const std::filesystem::path& getSourceRoot() {
-    return mSourceRoot;
-  }
+  const std::filesystem::path& getSourceRoot() const;
 
   /**
    * @brief Return path is target path for getSourceLines

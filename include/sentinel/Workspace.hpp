@@ -180,6 +180,9 @@ class Workspace {
 
   /** @brief Return the path to a named file inside &lt;root&gt;/NNNNN/. */
   std::filesystem::path mutantFile(int id, const std::string& name) const;
+
+  /** @brief Return &lt;root&gt;/run.done marker path. */
+  std::filesystem::path getCompleteMarker() const;
 };
 
 }  // namespace sentinel

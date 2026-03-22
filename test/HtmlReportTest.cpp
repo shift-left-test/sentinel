@@ -94,7 +94,10 @@ int minus(int a, int b){
             <tbody>
                 <tr>
                     <td>4</td>
-                    <td>60% <div class="coverage_bar"><div class="coverage_complete width-60"><div class="coverage_legend">3/5</div>
+                    <td>60%
+                        <div class="coverage_bar">
+                            <div class="coverage_complete width-60">
+                                <div class="coverage_legend">3/5</div>
                             </div>
                         </div>
                     </td>
@@ -181,7 +184,10 @@ int minus(int a, int b){
             <tbody>
                 <tr>
                     <td>1</td>
-                    <td>0% <div class="coverage_bar"><div class="coverage_complete width-0"><div class="coverage_legend">0/1</div>
+                    <td>0%
+                        <div class="coverage_bar">
+                            <div class="coverage_complete width-0">
+                                <div class="coverage_legend">0/1</div>
                             </div>
                         </div>
                     </td>
@@ -238,7 +244,10 @@ int minus(int a, int b){
             <tbody>
                 <tr>
                     <td>2</td>
-                    <td>66% <div class="coverage_bar"><div class="coverage_complete width-66"><div class="coverage_legend">2/3</div>
+                    <td>66%
+                        <div class="coverage_bar">
+                            <div class="coverage_complete width-66">
+                                <div class="coverage_legend">2/3</div>
                             </div>
                         </div>
                     </td>
@@ -308,7 +317,10 @@ int minus(int a, int b){
             <tbody>
                 <tr>
                     <td>1</td>
-                    <td>100% <div class="coverage_bar"><div class="coverage_complete width-100"><div class="coverage_legend">1/1</div>
+                    <td>100%
+                        <div class="coverage_bar">
+                            <div class="coverage_complete width-100">
+                                <div class="coverage_legend">1/1</div>
                             </div>
                         </div>
                     </td>

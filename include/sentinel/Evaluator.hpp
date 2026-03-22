@@ -18,6 +18,11 @@
 namespace sentinel {
 
 /**
+ * @brief Represents the outcome of building and running tests on a mutant.
+ */
+enum class TestExecutionState { SUCCESS, BUILD_FAILURE, TIMEOUT, UNCOVERED };
+
+/**
  * @brief Evaluator class
  */
 class Evaluator {
@@ -39,10 +44,11 @@ class Evaluator {
    *
    * @param mut target mutant
    * @param ActualResultDir Directory Path of Actual Result
-   * @param testState one of ['success', 'build_failure', 'timeout']
+   * @param testState execution outcome of the mutant
    * @return MutationResult summary of compare
    */
-  MutationResult compare(const Mutant& mut, const std::filesystem::path& ActualResultDir, const std::string& testState);
+  MutationResult compare(const Mutant& mut, const std::filesystem::path& ActualResultDir,
+                         TestExecutionState testState);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
@@ -50,7 +56,7 @@ class Evaluator {
    * @param mut target mutant
    * @param ActualResultDir Directory Path of Actual Result
    * @param evalFilePath File Path of MutationResult
-   * @param testState one of ['success', 'build_failure', 'timeout']
+   * @param testState execution outcome of the mutant
    * @return MutationResult summary of compare
    * @throw InvalidArgumentException
    *        when evalFile's parent's path isn't directory
@@ -58,7 +64,7 @@ class Evaluator {
   MutationResult compareAndSaveMutationResult(const Mutant& mut,
                                               const std::filesystem::path& ActualResultDir,
                                               const std::filesystem::path& evalFilePath,
-                                              const std::string& testState);
+                                              TestExecutionState testState);
 
   /**
    * @brief Directly inject a previously computed MutationResult (used on resume).
@@ -74,9 +80,7 @@ class Evaluator {
    *
    * @return MutationResults
    */
-  const MutationResults& getMutationResults() const {
-    return mMutationResults;
-  }
+  const MutationResults& getMutationResults() const;
 
  private:
   std::shared_ptr<Logger> mLogger;

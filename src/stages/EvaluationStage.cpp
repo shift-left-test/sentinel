@@ -106,7 +106,7 @@ bool EvaluationStage::execute() {
     // isLocked: treat as incomplete — fall through to re-evaluate
     mWorkspace->setLock(id);
     mStatusLine->setMutantInfo(id, m.getOperator(),
-                              m.getPath().filename().string(), m.getFirst().line);
+                               m.getPath().filename().string(), m.getFirst().line);
 
     auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
     repo->getSourceTree()->modify(m, backupDir.string());
@@ -115,20 +115,20 @@ bool EvaluationStage::execute() {
                       mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
     mBuild.execute();
 
-    std::string testState = "success";
+    TestExecutionState testState = TestExecutionState::SUCCESS;
     if (mBuild.isSuccessfulExit()) {
       fs::remove_all(*mConfig.testResultDir);
       Subprocess mTest(*mConfig.testCmd, computedTimeLimit, killAfterSecs,
                        mWorkspace->getMutantTestLog(id).string(), *mConfig.silent);
       mTest.execute();
       if (mTest.isTimedOut()) {
-        testState = "timeout";
+        testState = TestExecutionState::TIMEOUT;
       } else {
         BaselineTestStage::copyTestReportTo(*mConfig.testResultDir, actualDir,
-                                           *mConfig.testResultExts);
+                                            *mConfig.testResultExts);
       }
     } else {
-      testState = "build_failure";
+      testState = TestExecutionState::BUILD_FAILURE;
     }
 
     MutationResult result = evaluator.compare(m, actualDir, testState);

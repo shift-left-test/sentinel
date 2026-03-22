@@ -289,6 +289,10 @@ GitRepository::~GitRepository() {
   git_libgit2_shutdown();
 }
 
+const std::filesystem::path& GitRepository::getSourceRoot() const {
+  return mSourceRoot;
+}
+
 void GitRepository::addSkipDir(const std::filesystem::path& dir) {
   try {
     mSkipDirs.push_back(fs::canonical(dir));

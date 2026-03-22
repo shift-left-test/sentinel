@@ -124,7 +124,10 @@ class IndexHtmlGenerator : public DocGenerator {
             <tbody>
                 <tr>
                     <td>{size_of_target_files}</td>
-                    <td>{cov}% <div class="coverage_bar"><div class="coverage_complete width-{cov}"><div class="coverage_legend">{numerator}/{denominator}</div>
+                    <td>{cov}%
+                        <div class="coverage_bar">
+                            <div class="coverage_complete width-{cov}">
+                                <div class="coverage_legend">{numerator}/{denominator}</div>
                             </div>
                         </div>
                     </td>

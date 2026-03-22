@@ -30,8 +30,8 @@ bool Workspace::hasPreviousRun() const {
 
 void Workspace::initialize() {
   fs::remove_all(mRoot);
-  fs::create_directories(mRoot / "original" / "results");
-  fs::create_directories(mRoot / "backup");
+  fs::create_directories(getOriginalResultsDir());
+  fs::create_directories(getBackupDir());
 }
 
 void Workspace::saveConfig(const std::string& yamlContent) {
@@ -163,11 +163,11 @@ bool Workspace::isDone(int id) const {
 }
 
 bool Workspace::isComplete() const {
-  return fs::exists(mRoot / "run.done");
+  return fs::exists(getCompleteMarker());
 }
 
 void Workspace::setComplete() {
-  std::ofstream f(mRoot / "run.done");
+  std::ofstream f(getCompleteMarker());
   if (!f) {
     throw std::runtime_error(fmt::format("Failed to create run.done in {}", mRoot.string()));
   }
@@ -232,6 +232,10 @@ std::string Workspace::mutantDirName(int id) {
 
 fs::path Workspace::mutantFile(int id, const std::string& name) const {
   return getMutantDir(id) / name;
+}
+
+fs::path Workspace::getCompleteMarker() const {
+  return mRoot / "run.done";
 }
 
 }  // namespace sentinel

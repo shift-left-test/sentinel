@@ -7,13 +7,12 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <memory>
-#include <string>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
@@ -31,26 +30,30 @@ Evaluator::Evaluator(const std::filesystem::path& expectedResultDir,
 }
 
 MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path& ActualResultDir,
-                                  const std::string& testState) {
+                                  TestExecutionState testState) {
   std::string killingTC;
   std::string errorTC;
   MutationState state;
 
-  if (testState == "build_failure") {
-    state = MutationState::BUILD_FAILURE;
-    mLogger->verbose("build failure ({})", ActualResultDir.string());
-  } else if (testState == "timeout") {
-    state = MutationState::TIMEOUT;
-    mLogger->verbose("timeout ({})", ActualResultDir.string());
-  } else if (testState == "uncovered") {
-    state = MutationState::SURVIVED;
-    mLogger->verbose("uncovered by tests - survived");
-  } else if (testState == "success") {
-    Result mActualResult(ActualResultDir.string());
-    mLogger->verbose("comparing results: {}", ActualResultDir.string());
-    state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
-  } else {
-    throw InvalidArgumentException(fmt::format("Invalid value for testState : {0}", testState));
+  switch (testState) {
+    case TestExecutionState::BUILD_FAILURE:
+      state = MutationState::BUILD_FAILURE;
+      mLogger->verbose("build failure ({})", ActualResultDir.string());
+      break;
+    case TestExecutionState::TIMEOUT:
+      state = MutationState::TIMEOUT;
+      mLogger->verbose("timeout ({})", ActualResultDir.string());
+      break;
+    case TestExecutionState::UNCOVERED:
+      state = MutationState::SURVIVED;
+      mLogger->verbose("uncovered by tests - survived");
+      break;
+    case TestExecutionState::SUCCESS: {
+      Result mActualResult(ActualResultDir.string());
+      mLogger->verbose("comparing results: {}", ActualResultDir.string());
+      state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
+      break;
+    }
   }
   mLogger->verbose("mutant: {}", mut.str());
   mLogger->verbose("killing TC: {}", killingTC);
@@ -91,10 +94,14 @@ void Evaluator::injectResult(const MutationResult& result) {
   mMutationResults.push_back(result);
 }
 
+const MutationResults& Evaluator::getMutationResults() const {
+  return mMutationResults;
+}
+
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
                                                        const std::filesystem::path& ActualResultDir,
                                                        const std::filesystem::path& evalFilePath,
-                                                       const std::string& testState) {
+                                                       TestExecutionState testState) {
   auto outDir = evalFilePath.parent_path();
   if (fs::exists(outDir)) {
     if (!fs::is_directory(outDir)) {
