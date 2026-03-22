@@ -7,6 +7,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <memory>
+#include <string>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"

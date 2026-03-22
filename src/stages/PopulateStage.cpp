@@ -58,19 +58,20 @@ bool PopulateStage::execute() {
   // Apply partition slice
   std::size_t partIdx = 0;
   std::size_t partCount = 0;
+  std::size_t partStart = 0;
   if (mConfig.partition && !mConfig.partition->empty()) {
     const std::string& s = *mConfig.partition;
     auto slash = s.find('/');
     partIdx = std::stoul(s.substr(0, slash));
     partCount = std::stoul(s.substr(slash + 1));
     std::size_t total = mutants.size();
-    std::size_t start = (partIdx - 1) * total / partCount;
-    std::size_t end   = partIdx * total / partCount;
-    mutants = Mutants(mutants.begin() + static_cast<std::ptrdiff_t>(start),
+    partStart = (partIdx - 1) * total / partCount;
+    std::size_t end = partIdx * total / partCount;
+    mutants = Mutants(mutants.begin() + static_cast<std::ptrdiff_t>(partStart),
                       mutants.begin() + static_cast<std::ptrdiff_t>(end));
   }
 
-  int id = 1;
+  int id = static_cast<int>(partStart) + 1;
   for (auto& m : mutants) {
     mWorkspace->createMutant(id, m);
     id++;
