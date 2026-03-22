@@ -73,9 +73,14 @@ int main(int argc, char** argv) {
     bool dryRun = cliCfg.dryRun;
     bool force  = cliCfg.force && *cliCfg.force;
     bool alreadyComplete = ws->hasPreviousRun() && ws->isComplete() && !force && !dryRun;
-    bool resuming = !alreadyComplete && ws->hasPreviousRun() && !force && !dryRun &&
-                    sentinel::Console::confirm("Previous run found in '{}'. Resume?",
-                                              workDirPath.string());
+    bool resuming = false;
+    if (!alreadyComplete && ws->hasPreviousRun() && !force && !dryRun) {
+      if (!sentinel::Console::confirm("Previous run found in '{}'. Resume?", workDirPath.string())) {
+        sentinel::Console::out("Aborted.");
+        return 0;
+      }
+      resuming = true;
+    }
 
     // 4. Load and resolve config
     sentinel::Config yamlCfg;
