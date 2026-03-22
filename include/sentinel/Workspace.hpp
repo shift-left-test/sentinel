@@ -184,6 +184,14 @@ class Workspace {
                                const std::filesystem::path& to,
                                const std::vector<std::string>& exts);
 
+  /**
+   * @brief Restore original source files from the backup directory into @p srcRoot.
+   *        No-op if the backup directory does not exist or is empty.
+   *
+   * @param srcRoot Source root to restore files into.
+   */
+  void restoreBackup(const std::filesystem::path& srcRoot);
+
  private:
   std::filesystem::path mRoot;
 

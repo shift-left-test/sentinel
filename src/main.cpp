@@ -4,18 +4,21 @@
  */
 
 #include <fmt/core.h>
+#include <csignal>
 #include <filesystem>  // NOLINT
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/CliConfigParser.hpp"
-#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/ConfigResolver.hpp"
 #include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/SignalHandler.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/YamlConfigParser.hpp"
+#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/BaselineBuildStage.hpp"
 #include "sentinel/stages/BaselineTestStage.hpp"
 #include "sentinel/stages/ConfigValidationStage.hpp"
@@ -116,7 +119,10 @@ int main(int argc, char** argv) {
              ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
     // 9. Install signal handlers before pipeline starts
-    sentinel::installSignalHandlers(statusLine.get(), *ws);
+    const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
+                                      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
+    sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(*cfg.sourceDir); });
+    sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
     // 10. Run pipeline
     initStage->run();

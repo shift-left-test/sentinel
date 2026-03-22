@@ -24,6 +24,16 @@ namespace fs = std::filesystem;
 Workspace::Workspace(const fs::path& root) : mRoot(root) {
 }
 
+void Workspace::restoreBackup(const fs::path& srcRoot) {
+  const fs::path backup = getBackupDir();
+  if (!fs::is_directory(backup)) return;
+  for (const auto& dirent : fs::directory_iterator(backup)) {
+    fs::copy(dirent.path(), srcRoot / dirent.path().filename(),
+             fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+    fs::remove_all(dirent.path());
+  }
+}
+
 bool Workspace::hasPreviousRun() const {
   return fs::exists(mRoot / "config.yaml");
 }
