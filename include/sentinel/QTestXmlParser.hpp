@@ -16,19 +16,6 @@ namespace sentinel {
  * @brief Parse QTest XML files
  */
 class QTestXmlParser : public XmlParser {
- public:
-  /**
-   * @brief Default constructor
-   */
-  QTestXmlParser();
-  QTestXmlParser(const QTestXmlParser&) = delete;
-  QTestXmlParser& operator=(const QTestXmlParser&) = delete;
-
-  /**
-   * @brief Default destructor
-   */
-  virtual ~QTestXmlParser() = default;
-
  protected:
   bool parse(std::shared_ptr<tinyxml2::XMLDocument> document) override;
 };

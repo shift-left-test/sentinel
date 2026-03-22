@@ -16,17 +16,6 @@ namespace sentinel {
  * @brief Parse GoogleTest XML files
  */
 class GoogleTestXmlParser : public XmlParser {
- public:
-  /**
-   * @brief Default constructor
-   */
-  GoogleTestXmlParser();
-
-  /**
-   * @brief Default destructor
-   */
-  virtual ~GoogleTestXmlParser() = default;
-
  protected:
   bool parse(std::shared_ptr<tinyxml2::XMLDocument> document) override;
 };

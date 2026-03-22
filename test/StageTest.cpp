@@ -36,14 +36,14 @@ class StageTest : public ::testing::Test {
 };
 
 TEST_F(StageTest, testHandleCallsExecute) {
-  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
+  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   stage->run();
   EXPECT_TRUE(stage->wasExecuted());
 }
 
 TEST_F(StageTest, testHandleProceedsToNextWhenExecuteReturnsTrue) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
+  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   first->setNext(second);
   first->run();
   EXPECT_TRUE(first->wasExecuted());
@@ -51,8 +51,8 @@ TEST_F(StageTest, testHandleProceedsToNextWhenExecuteReturnsTrue) {
 }
 
 TEST_F(StageTest, testHandleStopsWhenExecuteReturnsFalse) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine,false);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
+  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, false);
+  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   first->setNext(second);
   first->run();
   EXPECT_TRUE(first->wasExecuted());
@@ -60,9 +60,9 @@ TEST_F(StageTest, testHandleStopsWhenExecuteReturnsFalse) {
 }
 
 TEST_F(StageTest, testSetNextReturnsNextForChaining) {
-  auto first  = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
-  auto third  = std::make_shared<RecordingStage>(mConfig, mStatusLine,true);
+  auto first  = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto third  = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   first->setNext(second)->setNext(third);
   first->run();
   EXPECT_TRUE(first->wasExecuted());

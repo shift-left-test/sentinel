@@ -6,12 +6,51 @@
 #ifndef INCLUDE_SENTINEL_CONFIG_HPP_
 #define INCLUDE_SENTINEL_CONFIG_HPP_
 
+#include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace sentinel {
+
+/**
+ * @brief Parsed partition specification (e.g., "2/4" means part 2 of 4).
+ */
+struct Partition {
+  std::size_t index;  ///< 1-based partition index
+  std::size_t count;  ///< Total number of partitions
+
+  /**
+   * @brief Parse a "N/TOTAL" string into a Partition.
+   *
+   * @param s Partition string in the format "N/TOTAL".
+   * @return Parsed Partition.
+   * @throw std::invalid_argument if the format is invalid.
+   */
+  static Partition parse(const std::string& s) {
+    auto slash = s.find('/');
+    if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
+      throw std::invalid_argument(
+          fmt::format("Invalid partition value: '{}'. Expected format: N/TOTAL.", s));
+    }
+    std::size_t idx = 0;
+    std::size_t cnt = 0;
+    try {
+      idx = std::stoul(s.substr(0, slash));
+      cnt = std::stoul(s.substr(slash + 1));
+    } catch (...) {
+      throw std::invalid_argument(
+          fmt::format("Invalid partition value: '{}'. N and TOTAL must be positive integers.", s));
+    }
+    if (cnt == 0 || idx == 0 || idx > cnt) {
+      throw std::invalid_argument(
+          fmt::format("Invalid partition value: '{}'. N must be between 1 and TOTAL.", s));
+    }
+    return {idx, cnt};
+  }
+};
 
 /**
  * @brief Unified configuration for sentinel.

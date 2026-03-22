@@ -14,6 +14,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/util/io.hpp"
 
 namespace sentinel {
 
@@ -104,13 +105,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
                                                        const std::filesystem::path& evalFilePath,
                                                        TestExecutionState testState) {
   auto outDir = evalFilePath.parent_path();
-  if (fs::exists(outDir)) {
-    if (!fs::is_directory(outDir)) {
-      throw InvalidArgumentException(fmt::format("'{}' is not a directory", outDir.string()));
-    }
-  } else {
-    fs::create_directories(outDir);
-  }
+  io::ensureDirectoryExists(outDir);
 
   MutationResult ret = compare(mut, ActualResultDir, testState);
 

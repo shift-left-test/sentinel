@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "sentinel/stages/BaselineTestStage.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -36,7 +36,7 @@ TEST_F(BaselineTestStageTest, testCopyTestReportToFiltersByExtension) {
   writeFile(from / "a.xml", "<xml/>");
   writeFile(from / "b.txt", "text");
 
-  BaselineTestStage::copyTestReportTo(from, to, {"xml"});
+  Workspace::copyTestReportTo(from, to, {"xml"});
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
   EXPECT_FALSE(fs::exists(to / "b.txt"));
@@ -49,7 +49,7 @@ TEST_F(BaselineTestStageTest, testCopyTestReportToAllFilesWhenExtsEmpty) {
   writeFile(from / "a.xml", "<xml/>");
   writeFile(from / "b.txt", "text");
 
-  BaselineTestStage::copyTestReportTo(from, to, {});
+  Workspace::copyTestReportTo(from, to, {});
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
   EXPECT_TRUE(fs::exists(to / "b.txt"));
@@ -63,7 +63,7 @@ TEST_F(BaselineTestStageTest, testCopyTestReportToClearsDestinationFirst) {
   writeFile(to / "old.xml", "old");
   writeFile(from / "new.xml", "<xml/>");
 
-  BaselineTestStage::copyTestReportTo(from, to, {"xml"});
+  Workspace::copyTestReportTo(from, to, {"xml"});
 
   EXPECT_FALSE(fs::exists(to / "old.xml"));
   EXPECT_TRUE(fs::exists(to / "new.xml"));

@@ -12,7 +12,7 @@ add_subdirectory(harness)
 
 build_test_program(
   NAME unittest
-  SRCS testMain.cpp GitHarnessTest.cpp StringTest.cpp ExceptionTest.cpp
+  SRCS testMain.cpp GitHarnessTest.cpp StringTest.cpp IoTest.cpp ExceptionTest.cpp
        GitRepositoryTest.cpp ResultTest.cpp MutantsTest.cpp
        LoggerTest.cpp UniformMutantGeneratorTest.cpp MutationResultsTest.cpp
        MutationFactoryTest.cpp EvaluatorTest.cpp CoverageInfoTest.cpp

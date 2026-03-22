@@ -19,6 +19,7 @@
 #include "sentinel/docGenerator/IndexHtmlGenerator.hpp"
 #include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/io.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -36,13 +37,7 @@ HtmlReport::HtmlReport(const std::filesystem::path& resultsPath,
 void HtmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make HTML Report");
 
-  if (fs::exists(dirPath)) {
-    if (!fs::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("dirPath isn't direcotry({0})", dirPath.string()));
-    }
-  } else {
-    fs::create_directories(dirPath);
-  }
+  io::ensureDirectoryExists(dirPath);
 
   std::ofstream ofs(dirPath / "style.css", std::ofstream::out);
   CssGenerator cg;
@@ -116,13 +111,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     fs::path relDir = string::replaceAll(currentDirPath.string(), "/", ".");
     fileName = fs::path("srcDir") / relDir / "index.html";
     auto newDir = outputDir / "srcDir" / relDir;
-    if (fs::exists(newDir)) {
-      if (!fs::is_directory(newDir)) {
-        throw InvalidArgumentException(fmt::format("'{}' is not a directory", newDir.string()));
-      }
-    } else {
-      fs::create_directories(newDir);
-    }
+    io::ensureDirectoryExists(newDir);
   }
   std::ofstream ofs(outputDir / fileName, std::ofstream::out);
   ofs << contents;
@@ -135,7 +124,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
                                 const std::filesystem::path& outputDir) {
   auto absSrcPath = mSourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
-    throw InvalidArgumentException(fmt::format("Source doesn't exists: {0}", absSrcPath.string()));
+    throw InvalidArgumentException(fmt::format("Source doesn't exist: {0}", absSrcPath.string()));
   }
 
   std::string srcName = absSrcPath.filename().string();
@@ -156,7 +145,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
 
     std::size_t curLineNum = mr->getMutant().getFirst().line;
     if (curLineNum == 0) {
-      throw InvalidArgumentException(fmt::format("Muation at line number 0"));
+      throw InvalidArgumentException(fmt::format("Mutation at line number 0"));
     }
     if (curLineNum > maxLineNum) {
       maxLineNum = curLineNum;

@@ -16,17 +16,6 @@ namespace sentinel {
  * @brief Parse CTest XML files
  */
 class CTestXmlParser : public XmlParser {
- public:
-  /**
-   * @brief Default constructor
-   */
-  CTestXmlParser();
-
-  /**
-   * @brief Default destructor
-   */
-  virtual ~CTestXmlParser() = default;
-
  protected:
   bool parse(std::shared_ptr<tinyxml2::XMLDocument> document) override;
 };

@@ -6,10 +6,7 @@
 #ifndef INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
 #define INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
 
-#include <filesystem>  // NOLINT
 #include <memory>
-#include <string>
-#include <vector>
 #include "sentinel/Stage.hpp"
 #include "sentinel/Workspace.hpp"
 
@@ -30,14 +27,6 @@ class BaselineTestStage : public Stage {
    */
   BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
                     std::shared_ptr<Workspace> workspace);
-
-  /**
-   * @brief Copy test result files matching @p exts from @p from to @p to.
-   *        Clears @p to before copying. Public for testability.
-   */
-  static void copyTestReportTo(const std::filesystem::path& from,
-                                const std::filesystem::path& to,
-                                const std::vector<std::string>& exts);
 
  protected:
   bool execute() override;

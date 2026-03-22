@@ -11,7 +11,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/XmlReport.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/io.hpp"
 
 namespace sentinel {
 
@@ -25,13 +25,7 @@ XmlReport::XmlReport(const std::filesystem::path& resultsPath, const std::filesy
 
 void XmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");
-  if (fs::exists(dirPath)) {
-    if (!fs::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath.string()));
-    }
-  } else {
-    fs::create_directories(dirPath);
-  }
+  io::ensureDirectoryExists(dirPath);
 
   auto xmlPath = dirPath / "mutations.xml";
 

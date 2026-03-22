@@ -28,6 +28,9 @@ class XmlParser {
    */
   virtual ~XmlParser() = default;
 
+  XmlParser(const XmlParser&) = delete;
+  XmlParser& operator=(const XmlParser&) = delete;
+
   /**
    * @brief Set the next XML parser
    *

@@ -20,7 +20,6 @@
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Workspace.hpp"
-#include "sentinel/stages/BaselineTestStage.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/util/signal.hpp"
 
@@ -123,8 +122,8 @@ bool EvaluationStage::execute() {
       if (mTest.isTimedOut()) {
         testState = TestExecutionState::TIMEOUT;
       } else {
-        BaselineTestStage::copyTestReportTo(*mConfig.testResultDir, actualDir,
-                                            *mConfig.testResultExts);
+        Workspace::copyTestReportTo(*mConfig.testResultDir, actualDir,
+                                    *mConfig.testResultExts);
       }
     } else {
       testState = TestExecutionState::BUILD_FAILURE;

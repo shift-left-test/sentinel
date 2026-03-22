@@ -99,7 +99,7 @@ bool BaselineTestStage::execute() {
     mWorkspace->saveStatus(status);
   }
 
-  copyTestReportTo(*mConfig.testResultDir,
+  Workspace::copyTestReportTo(*mConfig.testResultDir,
                    mWorkspace->getOriginalResultsDir(),
                    *mConfig.testResultExts);
 
@@ -113,21 +113,5 @@ bool BaselineTestStage::execute() {
   return true;
 }
 
-void BaselineTestStage::copyTestReportTo(const fs::path& from, const fs::path& to,
-                                          const std::vector<std::string>& exts) {
-  fs::remove_all(to);
-  fs::create_directories(to);
-  if (fs::is_directory(from)) {
-    for (const auto& dirent : fs::recursive_directory_iterator(from)) {
-      if (dirent.is_regular_file()) {
-        std::string ext = dirent.path().extension().string();
-        if (ext.size() > 1) ext = ext.substr(1);
-        if (exts.empty() || std::find(exts.begin(), exts.end(), ext) != exts.end()) {
-          fs::copy(dirent.path(), to);
-        }
-      }
-    }
-  }
-}
 
 }  // namespace sentinel

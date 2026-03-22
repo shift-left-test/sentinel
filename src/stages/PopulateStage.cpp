@@ -59,10 +59,9 @@ bool PopulateStage::execute() {
   std::size_t partCount = 0;
   std::size_t partStart = 0;
   if (mConfig.partition && !mConfig.partition->empty()) {
-    const std::string& s = *mConfig.partition;
-    auto slash = s.find('/');
-    partIdx = std::stoul(s.substr(0, slash));
-    partCount = std::stoul(s.substr(slash + 1));
+    auto part = Partition::parse(*mConfig.partition);
+    partIdx = part.index;
+    partCount = part.count;
     std::size_t total = mutants.size();
     partStart = (partIdx - 1) * total / partCount;
     std::size_t end = partIdx * total / partCount;

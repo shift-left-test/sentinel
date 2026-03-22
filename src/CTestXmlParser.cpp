@@ -12,8 +12,6 @@
 
 namespace sentinel {
 
-CTestXmlParser::CTestXmlParser() : XmlParser() {}
-
 bool CTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
   auto logger = Logger::getLogger("Result");
   std::string message = "This file doesn't follow ctest result format";

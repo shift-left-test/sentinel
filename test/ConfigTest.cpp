@@ -286,4 +286,44 @@ TEST_F(ConfigTest, testFieldWithWrongTypeThrows) {
   EXPECT_THROW(YamlConfigParser::loadFromFile(configPath("bad-limit.yaml")), std::runtime_error);
 }
 
+TEST_F(ConfigTest, testPartitionParseValid) {
+  auto p = Partition::parse("2/4");
+  EXPECT_EQ(2u, p.index);
+  EXPECT_EQ(4u, p.count);
+}
+
+TEST_F(ConfigTest, testPartitionParseSinglePartition) {
+  auto p = Partition::parse("1/1");
+  EXPECT_EQ(1u, p.index);
+  EXPECT_EQ(1u, p.count);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsOnMissingSlash) {
+  EXPECT_THROW(Partition::parse("bad"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsOnSlashAtStart) {
+  EXPECT_THROW(Partition::parse("/4"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsOnSlashAtEnd) {
+  EXPECT_THROW(Partition::parse("1/"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsOnNonNumeric) {
+  EXPECT_THROW(Partition::parse("abc/def"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsWhenIndexIsZero) {
+  EXPECT_THROW(Partition::parse("0/4"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsWhenCountIsZero) {
+  EXPECT_THROW(Partition::parse("1/0"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsWhenIndexExceedsCount) {
+  EXPECT_THROW(Partition::parse("5/4"), std::invalid_argument);
+}
+
 }  // namespace sentinel

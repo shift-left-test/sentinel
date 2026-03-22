@@ -47,24 +47,10 @@ bool ConfigValidationStage::execute() {
 
   // Validate partition
   if (mConfig.partition && !mConfig.partition->empty()) {
-    const std::string& s = *mConfig.partition;
-    auto slash = s.find('/');
-    if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
-      throw InvalidArgumentException(
-          fmt::format("Invalid --partition value: '{}'. Expected format: N/TOTAL.", s));
-    }
-    std::size_t partIdx = 0;
-    std::size_t partCount = 0;
     try {
-      partIdx = std::stoul(s.substr(0, slash));
-      partCount = std::stoul(s.substr(slash + 1));
-    } catch (...) {
-      throw InvalidArgumentException(
-          fmt::format("Invalid --partition value: '{}'. N and TOTAL must be positive integers.", s));
-    }
-    if (partCount == 0 || partIdx == 0 || partIdx > partCount) {
-      throw InvalidArgumentException(
-          fmt::format("Invalid --partition value: '{}'. N must be between 1 and TOTAL.", s));
+      Partition::parse(*mConfig.partition);
+    } catch (const std::invalid_argument& e) {
+      throw InvalidArgumentException(e.what());
     }
     if (!mConfig.seed) {
       throw InvalidArgumentException("--partition requires an explicit --seed value.");

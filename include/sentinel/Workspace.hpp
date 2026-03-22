@@ -172,6 +172,18 @@ class Workspace {
    */
   std::vector<std::pair<int, Mutant>> loadMutants() const;
 
+  /**
+   * @brief Copy test result files matching @p exts from @p from to @p to.
+   *        Clears @p to before copying.
+   *
+   * @param from Source directory containing test result files.
+   * @param to   Destination directory (cleared and recreated).
+   * @param exts File extensions to include (empty = all files).
+   */
+  static void copyTestReportTo(const std::filesystem::path& from,
+                               const std::filesystem::path& to,
+                               const std::vector<std::string>& exts);
+
  private:
   std::filesystem::path mRoot;
 
