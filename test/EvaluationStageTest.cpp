@@ -7,7 +7,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
-#include "sentinel/stages/EvaluationStage.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -28,25 +28,34 @@ class EvaluationStageTest : public ::testing::Test {
 };
 
 TEST_F(EvaluationStageTest, testRestoreBackupCopiesFilesToSrcRoot) {
-  auto backup = mBase / "backup";
+  Workspace ws(mBase);
   auto srcRoot = mBase / "src";
-  fs::create_directories(backup);
+  fs::create_directories(ws.getBackupDir());
   fs::create_directories(srcRoot);
-  writeFile(backup / "foo.cpp", "original content");
+  writeFile(ws.getBackupDir() / "foo.cpp", "original content");
 
-  EvaluationStage::restoreBackup(backup, srcRoot);
+  ws.restoreBackup(srcRoot);
 
   EXPECT_TRUE(fs::exists(srcRoot / "foo.cpp"));
-  EXPECT_FALSE(fs::exists(backup / "foo.cpp"));
+  EXPECT_FALSE(fs::exists(ws.getBackupDir() / "foo.cpp"));
 }
 
 TEST_F(EvaluationStageTest, testRestoreBackupEmptyBackupIsNoop) {
-  auto backup = mBase / "backup";
+  Workspace ws(mBase);
   auto srcRoot = mBase / "src";
-  fs::create_directories(backup);
+  fs::create_directories(ws.getBackupDir());
   fs::create_directories(srcRoot);
 
-  EXPECT_NO_THROW(EvaluationStage::restoreBackup(backup, srcRoot));
+  EXPECT_NO_THROW(ws.restoreBackup(srcRoot));
+  EXPECT_TRUE(fs::is_empty(srcRoot));
+}
+
+TEST_F(EvaluationStageTest, testRestoreBackupNonexistentBackupIsNoop) {
+  Workspace ws(mBase);
+  auto srcRoot = mBase / "src";
+  fs::create_directories(srcRoot);
+
+  EXPECT_NO_THROW(ws.restoreBackup(srcRoot));
   EXPECT_TRUE(fs::is_empty(srcRoot));
 }
 }  // namespace sentinel

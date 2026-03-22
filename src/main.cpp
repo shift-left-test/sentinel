@@ -4,24 +4,26 @@
  */
 
 #include <fmt/core.h>
+#include <csignal>
 #include <filesystem>  // NOLINT
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 #include "sentinel/CliConfigParser.hpp"
-#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/ConfigResolver.hpp"
+#include "sentinel/ConfigValidator.hpp"
 #include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/SignalHandler.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/YamlConfigParser.hpp"
+#include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/BaselineBuildStage.hpp"
 #include "sentinel/stages/BaselineTestStage.hpp"
-#include "sentinel/stages/ConfigValidationStage.hpp"
 #include "sentinel/stages/DryRunStage.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
-#include "sentinel/stages/InitStage.hpp"
 #include "sentinel/stages/PopulateStage.hpp"
 #include "sentinel/stages/ReportStage.hpp"
 #include "sentinel/version.hpp"
@@ -50,6 +52,19 @@ int main(int argc, char** argv) {
     // 1. Get CLI config
     sentinel::Config cliCfg = cliParser.getConfig();
 
+    // Handle --init: write config template and exit (before workspace creation)
+    if (cliCfg.init) {
+      const char* const kConfigFileName = "sentinel.yaml";
+      if (fs::exists(kConfigFileName) && !(cliCfg.force && *cliCfg.force)) {
+        if (!sentinel::Console::confirm("'{}' already exists. Overwrite?", kConfigFileName)) {
+          sentinel::Console::out("Aborted.");
+          return 0;
+        }
+      }
+      sentinel::YamlConfigParser::writeTemplate(kConfigFileName);
+      return 0;
+    }
+
     // 2. Determine workspace path early for mode detection
     fs::path workDirPath = cliCfg.workDir ? fs::absolute(*cliCfg.workDir) : fs::absolute("./.sentinel");
     auto ws = std::make_shared<sentinel::Workspace>(workDirPath);
@@ -66,17 +81,15 @@ int main(int argc, char** argv) {
     sentinel::Config yamlCfg;
     fs::path configPath = cliParser.getConfigFile();
 
-    if (!cliCfg.init) {
-      if (alreadyComplete || resuming) {
-        configPath = workDirPath / "config.yaml";
+    if (alreadyComplete || resuming) {
+      configPath = workDirPath / "config.yaml";
+      yamlCfg = sentinel::YamlConfigParser::loadFromFile(configPath);
+    } else {
+      if (configPath.empty() && fs::exists("sentinel.yaml")) {
+        configPath = "sentinel.yaml";
+      }
+      if (!configPath.empty()) {
         yamlCfg = sentinel::YamlConfigParser::loadFromFile(configPath);
-      } else {
-        if (configPath.empty() && fs::exists("sentinel.yaml")) {
-          configPath = "sentinel.yaml";
-        }
-        if (!configPath.empty()) {
-          yamlCfg = sentinel::YamlConfigParser::loadFromFile(configPath);
-        }
       }
     }
 
@@ -90,6 +103,15 @@ int main(int argc, char** argv) {
       sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
     }
 
+    // Validate config before starting the pipeline.
+    // Skipped for resumed/already-complete runs: the config was already validated at the start
+    // of the original run and is reloaded from workspace (config.yaml).
+    if (!alreadyComplete && !resuming) {
+      if (!sentinel::ConfigValidator::validate(cfg)) {
+        return 0;  // user declined warning prompt
+      }
+    }
+
     // 6. Create StatusLine
     auto statusLine = std::make_shared<sentinel::StatusLine>();
     statusLine->setDryRun(dryRun);
@@ -98,13 +120,11 @@ int main(int argc, char** argv) {
     }
 
     // 7. Initialize workspace for fresh runs
-    if (!alreadyComplete && !resuming && !cfg.init) {
+    if (!alreadyComplete && !resuming) {
       ws->initialize();
     }
 
     // 8. Assemble stage chain
-    auto initStage = std::make_shared<sentinel::InitStage>(cfg, statusLine);
-    auto configValidation = std::make_shared<sentinel::ConfigValidationStage>(cfg, statusLine, ws);
     auto baselineBuild = std::make_shared<sentinel::BaselineBuildStage>(cfg, statusLine, ws);
     auto baselineTest = std::make_shared<sentinel::BaselineTestStage>(cfg, statusLine, ws);
     auto populate = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, ws);
@@ -112,14 +132,17 @@ int main(int argc, char** argv) {
     auto evaluation = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, ws);
     auto report = std::make_shared<sentinel::ReportStage>(cfg, statusLine, ws);
 
-    initStage->setNext(configValidation)->setNext(baselineBuild)->setNext(baselineTest)
-             ->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
+    baselineBuild->setNext(baselineTest)->setNext(populate)
+               ->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
     // 9. Install signal handlers before pipeline starts
-    sentinel::installSignalHandlers(statusLine.get(), *ws);
+    const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
+                                      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
+    sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(*cfg.sourceDir); });
+    sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
     // 10. Run pipeline
-    initStage->run();
+    baselineBuild->run();
     return 0;
   } catch (const args::Help& e) {
     if (std::strcmp(e.what(), "version") == 0) {

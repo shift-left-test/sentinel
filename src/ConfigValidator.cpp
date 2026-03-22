@@ -5,77 +5,62 @@
 
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
+#include "sentinel/Config.hpp"
+#include "sentinel/ConfigValidator.hpp"
 #include "sentinel/Console.hpp"
-#include "sentinel/stages/ConfigValidationStage.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-ConfigValidationStage::ConfigValidationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                             std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
-
-bool ConfigValidationStage::execute() {
-  // Skip on resume or already-complete
-  bool alreadyComplete = mWorkspace->isComplete();
-  bool resuming = !alreadyComplete && mWorkspace->hasPreviousRun();
-  if (alreadyComplete || resuming) return true;
-
-  // Validate required options
-  if (mConfig.buildCmd->empty()) {
+bool ConfigValidator::validate(const Config& config) {
+  // Precondition: buildCmd, testCmd, testResultDir are always set by ConfigResolver.
+  if (config.buildCmd->empty()) {
     throw InvalidArgumentException("Option --build-command is required.");
   }
-  if (mConfig.testCmd->empty()) {
+  if (config.testCmd->empty()) {
     throw InvalidArgumentException("Option --test-command is required.");
   }
-  if (mConfig.testResultDir->empty()) {
+  if (config.testResultDir->empty()) {
     throw InvalidArgumentException("Option --test-result-dir is required.");
   }
 
-  // Validate threshold
-  if (mConfig.threshold && (*mConfig.threshold < 0.0 || *mConfig.threshold > 100.0)) {
+  if (config.threshold && (*config.threshold < 0.0 || *config.threshold > 100.0)) {
     throw InvalidArgumentException(
         fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].",
-                    *mConfig.threshold));
+                    *config.threshold));
   }
 
-  // Validate partition
-  if (mConfig.partition && !mConfig.partition->empty()) {
+  if (config.partition && !config.partition->empty()) {
     try {
-      Partition::parse(*mConfig.partition);
+      Partition::parse(*config.partition);
     } catch (const std::invalid_argument& e) {
       throw InvalidArgumentException(e.what());
     }
-    if (!mConfig.seed) {
+    if (!config.seed) {
       throw InvalidArgumentException("--partition requires an explicit --seed value.");
     }
   }
 
-  return checkWarnings();
+  return checkWarnings(config);
 }
 
-bool ConfigValidationStage::checkWarnings() {
+bool ConfigValidator::checkWarnings(const Config& config) {
   std::vector<std::string> warnings;
 
-  // limit=0: evaluates every candidate mutant, which may take hours.
-  if (mConfig.limit && *mConfig.limit == 0) {
+  if (config.limit && *config.limit == 0) {
     warnings.push_back("limit: 0 - all candidate mutants will be evaluated. This may take a very long time.");
   }
 
-  // timeout=0: no per-mutant time cap; a hanging test blocks the run forever.
-  if (mConfig.timeout && *mConfig.timeout == "0") {
+  if (config.timeout && *config.timeout == "0") {
     warnings.push_back("timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
   }
 
-  // --exclude checks
-  if (mConfig.excludes) {
-    for (const auto& excl : *mConfig.excludes) {
+  if (config.excludes) {
+    for (const auto& excl : *config.excludes) {
       if (!excl.empty() && excl.back() == '/') {
         warnings.push_back(fmt::format("exclude: '{}' ends with '/'. "
                                        "Patterns are matched against file paths, not directories.", excl));
@@ -85,14 +70,11 @@ bool ConfigValidationStage::checkWarnings() {
     }
   }
 
-  // --pattern checks
-  if (mConfig.patterns) {
-    fs::path srcRoot = *mConfig.sourceDir;
-
-    for (const auto& pat : *mConfig.patterns) {
+  if (config.patterns) {
+    fs::path srcRoot = config.sourceDir ? *config.sourceDir : fs::current_path();
+    for (const auto& pat : *config.patterns) {
       fs::path patPath(pat);
       if (patPath.is_absolute()) {
-        // sourceDir is canonical absolute
         auto rel = patPath.lexically_relative(srcRoot);
         if (rel.empty() || rel.native().find("..") != std::string::npos) {
           warnings.push_back(fmt::format("pattern: '{}' is an absolute path outside source-dir.", pat));
@@ -104,7 +86,7 @@ bool ConfigValidationStage::checkWarnings() {
     }
   }
 
-  if (!warnings.empty() && !(mConfig.force && *mConfig.force)) {
+  if (!warnings.empty() && !(config.force && *config.force)) {
     Console::out("\nConfiguration warnings:");
     for (const auto& w : warnings) {
       Console::out("  [!] {}", w);

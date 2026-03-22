@@ -13,7 +13,6 @@
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
-#include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/stages/ReportStage.hpp"
 
 namespace sentinel {
@@ -41,7 +40,6 @@ bool ReportStage::execute() {
   }
 
   mStatusLine->disable();
-  clearSignalStatusLine();
 
   // Compute mutation score and check threshold.
   if (mConfig.threshold) {
