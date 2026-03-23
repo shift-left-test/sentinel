@@ -22,7 +22,9 @@ const std::shared_ptr<Logger> sLogger = Logger::getLogger("SignalHandler");
 std::vector<std::function<void()>> sCallbacks;
 }  // namespace
 
-void SignalHandler::clear() { sCallbacks.clear(); }
+void SignalHandler::clear() {
+  sCallbacks.clear();
+}
 
 void SignalHandler::add(const std::vector<int>& signals, std::function<void()> callback) {
   sCallbacks.push_back(std::move(callback));

@@ -4,9 +4,9 @@
  */
 
 #include <fmt/core.h>
-#include <string_view>
 #include <memory>
 #include <string>
+#include <string_view>
 #include "sentinel/Logger.hpp"
 #include "sentinel/QTestXmlParser.hpp"
 

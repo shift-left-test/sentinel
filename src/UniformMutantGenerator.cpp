@@ -64,14 +64,13 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
       logger->verbose("Checking for mutants in {}", fileIt->first.string());
-      futures.push_back(
-          std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
-            Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename.string());
-            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-            tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
-            return localMutables;
-          }));
+      futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
+        Mutants localMutables;
+        clang::tooling::ClangTool tool(*db, filename.string());
+        tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+        tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
+        return localMutables;
+      }));
     }
     for (auto& fut : futures) {
       auto localMutables = fut.get();
@@ -87,9 +86,8 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
     mutantsByFile[m.getPath()].push_back(&m);
   }
   for (auto& entry : mutantsByFile) {
-    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
-      return a->getFirst().line < b->getFirst().line;
-    });
+    std::sort(entry.second.begin(), entry.second.end(),
+              [](const Mutant* a, const Mutant* b) { return a->getFirst().line < b->getFirst().line; });
   }
 
   // Randomly select one Mutant on each target line.
@@ -118,12 +116,12 @@ Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::si
 
     // Binary search: upper_bound finds end of mutants with first.line <= targetLine
     auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
-        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+                                  [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
 
     // Filter: only keep mutants where last.line >= targetLine
     std::vector<const Mutant*> candidates;
     std::copy_if(fileVec.begin(), endIt, std::back_inserter(candidates),
-        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+                 [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
 
     if (candidates.empty()) {
       continue;
@@ -203,8 +201,7 @@ bool UniformMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   return true;
 }
 
-UniformMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
-                                                                 Mutants* mutables,
+UniformMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
                                                                  const std::vector<std::size_t>& targetLines,
                                                                  const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
@@ -238,7 +235,8 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> UniformMutantGenerator::m
    public:
     explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines,
                                          const std::vector<std::string>& selectedOps) :
-        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {}
+        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
+    }
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {

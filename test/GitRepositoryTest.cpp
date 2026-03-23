@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "sentinel/GitRepository.hpp"
 #include "harness/git-harness/GitHarness.hpp"
 #include "helper/CaptureHelper.hpp"
+#include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace fs = std::filesystem;
 
@@ -117,7 +117,7 @@ TEST_F(GitRepositoryTest, testExcludes) {
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
 
   // nothing
   {
@@ -144,7 +144,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
 TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);
@@ -174,7 +174,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
 TEST_F(GitRepositoryTest, testGetSourceLines) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
   std::string stageFilename = repo_name / "temp.cpp";
 
   repo->addFile(stageFiles[0], content);
@@ -212,7 +212,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);
@@ -246,7 +246,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
 TEST_F(GitRepositoryTest, testGetSourceLinesWithDevtoolTag) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);
@@ -266,15 +266,15 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithDevtoolTag) {
 TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
   GitRepository gitRepo(repo_name);
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp"};
 
   repo->addFile(stageFiles[0], content);
   repo->stageFile(stageFiles);
   repo->commit("init");
 
   // branch work
-  std::vector<std::string> targetBranches {"sub"};
-  std::vector<std::string> subStageFiles {"test.cpp"};
+  std::vector<std::string> targetBranches{"sub"};
+  std::vector<std::string> subStageFiles{"test.cpp"};
   repo->createBranch(targetBranches[0]);
   repo->addFile(subStageFiles[0], "int add(int a, int b)\n{\n}\n");
   repo->stageFile(subStageFiles);
@@ -297,11 +297,11 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
 
 TEST_F(GitRepositoryTest, testIsTarget) {
   std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles {"temp.cpp", "temp.c", "test/test.cpp"};
+  std::vector<std::string> stageFiles{"temp.cpp", "temp.c", "test/test.cpp"};
 
   repo->addFolder("test");
 
-  for (auto &file : stageFiles) {
+  for (auto& file : stageFiles) {
     repo->addFile(file, content);
   }
   GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {}, {"*/test/*"});

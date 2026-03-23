@@ -22,9 +22,9 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                             std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
+PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
+    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+}
 
 bool PopulateStage::execute() {
   // Skip if mutants already written (resume or dry-run re-run)
@@ -32,8 +32,8 @@ bool PopulateStage::execute() {
 
   mStatusLine->setPhase(StatusLine::Phase::POPULATE);
 
-  auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions,
-                                              *mConfig.patterns, *mConfig.excludes);
+  auto repo =
+      std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions, *mConfig.patterns, *mConfig.excludes);
   repo->addSkipDir(mWorkspace->getRoot());
   SourceLines sourceLines = repo->getSourceLines(*mConfig.scope);
 
@@ -43,15 +43,14 @@ bool PopulateStage::execute() {
   auto generator = MutantGenerator::getInstance(*mConfig.generator, *mConfig.compileDbDir);
   generator->setOperators(*mConfig.operators);
   MutationFactory factory(generator);
-  auto mutants = factory.populate(*mConfig.sourceDir, sourceLines, *mConfig.limit, seed,
-                                  *mConfig.generator);
+  auto mutants = factory.populate(*mConfig.sourceDir, sourceLines, *mConfig.limit, seed, *mConfig.generator);
   std::size_t candidateCount = generator->getCandidateCount();
 
   if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
-    throw std::runtime_error(fmt::format(
-        "Too many mutants: {} generated, maximum is {}. "
-        "Use --limit to reduce the number of mutants.",
-        mutants.size(), Workspace::kMaxMutantCount));
+    throw std::runtime_error(
+        fmt::format("Too many mutants: {} generated, maximum is {}. "
+                    "Use --limit to reduce the number of mutants.",
+                    mutants.size(), Workspace::kMaxMutantCount));
   }
 
   // Apply partition slice

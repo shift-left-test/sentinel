@@ -191,27 +191,27 @@ partition: 1/3
 TEST_F(ConfigTest, testWorkspaceConfigRoundTrip) {
   // Simulate what buildWorkspaceYaml writes when threshold and partition are set
   writeFile("config.yaml",
-    "version: 1\n"
-    "source-dir: /tmp/src\n"
-    "compiledb-dir: /tmp\n"
-    "scope: all\n"
-    "extension:\n"
-    "  - cpp\n"
-    "pattern: []\n"
-    "exclude: []\n"
-    "limit: 0\n"
-    "build-command: make\n"
-    "test-command: ctest\n"
-    "test-result-dir: /tmp/results\n"
-    "test-result-ext:\n"
-    "  - xml\n"
-    "coverage: []\n"
-    "generator: uniform\n"
-    "timeout: 60\n"
-    "kill-after: 60\n"
-    "operator: []\n"
-    "threshold: 85.5\n"
-    "partition: 2/4\n");
+            "version: 1\n"
+            "source-dir: /tmp/src\n"
+            "compiledb-dir: /tmp\n"
+            "scope: all\n"
+            "extension:\n"
+            "  - cpp\n"
+            "pattern: []\n"
+            "exclude: []\n"
+            "limit: 0\n"
+            "build-command: make\n"
+            "test-command: ctest\n"
+            "test-result-dir: /tmp/results\n"
+            "test-result-ext:\n"
+            "  - xml\n"
+            "coverage: []\n"
+            "generator: uniform\n"
+            "timeout: 60\n"
+            "kill-after: 60\n"
+            "operator: []\n"
+            "threshold: 85.5\n"
+            "partition: 2/4\n");
 
   auto cfg = YamlConfigParser::loadFromFile(configPath("config.yaml"));
 

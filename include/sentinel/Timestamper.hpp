@@ -19,10 +19,7 @@ class Timestamper {
   /**
    * @brief Format enumeration.
    */
-  enum class Format {
-    Clock,
-    HumanReadable
-  };
+  enum class Format { Clock, HumanReadable };
 
   /**
    * @brief Default constructor.

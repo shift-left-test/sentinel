@@ -5,8 +5,8 @@
 
 #include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
-#include <cctype>
 #include <algorithm>
+#include <cctype>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <stdexcept>
@@ -47,8 +47,7 @@ void Workspace::initialize() {
 void Workspace::saveConfig(const std::string& yamlContent) {
   std::ofstream out(mRoot / "config.yaml");
   if (!out) {
-    throw std::runtime_error(
-        fmt::format("Failed to write workspace config: {}", (mRoot / "config.yaml").string()));
+    throw std::runtime_error(fmt::format("Failed to write workspace config: {}", (mRoot / "config.yaml").string()));
   }
   out << yamlContent;
 }
@@ -234,8 +233,7 @@ std::vector<std::pair<int, Mutant>> Workspace::loadMutants() const {
   return mutants;
 }
 
-void Workspace::copyTestReportTo(const fs::path& from, const fs::path& to,
-                                 const std::vector<std::string>& exts) {
+void Workspace::copyTestReportTo(const fs::path& from, const fs::path& to, const std::vector<std::string>& exts) {
   fs::remove_all(to);
   fs::create_directories(to);
   if (fs::is_directory(from)) {

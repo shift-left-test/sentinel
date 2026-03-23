@@ -24,8 +24,7 @@ class ReportStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  ReportStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
-              std::shared_ptr<Workspace> workspace);
+  ReportStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;

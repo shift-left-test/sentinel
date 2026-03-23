@@ -70,8 +70,9 @@ static std::string buildWorkspaceYaml(const Config& cfg) {
 }
 
 BaselineTestStage::BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                     std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
+                                     std::shared_ptr<Workspace> workspace) :
+    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+}
 
 bool BaselineTestStage::execute() {
   fs::path testLog = mWorkspace->getOriginalTestLog();
@@ -85,9 +86,8 @@ bool BaselineTestStage::execute() {
   }
 
   Timestamper ts;
-  Subprocess testProc(*mConfig.testCmd, computedTimeLimit,
-                      std::stoul(*mConfig.killAfter),
-                      testLog.string(), *mConfig.silent);
+  Subprocess testProc(*mConfig.testCmd, computedTimeLimit, std::stoul(*mConfig.killAfter), testLog.string(),
+                      *mConfig.silent);
   ts.reset();
   testProc.execute();
 
@@ -99,19 +99,15 @@ bool BaselineTestStage::execute() {
     mWorkspace->saveStatus(status);
   }
 
-  Workspace::copyTestReportTo(*mConfig.testResultDir,
-                   mWorkspace->getOriginalResultsDir(),
-                   *mConfig.testResultExts);
+  Workspace::copyTestReportTo(*mConfig.testResultDir, mWorkspace->getOriginalResultsDir(), *mConfig.testResultExts);
 
   if (fs::is_empty(mWorkspace->getOriginalResultsDir())) {
-    throw std::runtime_error(fmt::format(
-        "No test result files found in '{}' after running test command. See: {}",
-        mConfig.testResultDir->string(), testLog.string()));
+    throw std::runtime_error(fmt::format("No test result files found in '{}' after running test command. See: {}",
+                                         mConfig.testResultDir->string(), testLog.string()));
   }
 
   mWorkspace->saveConfig(buildWorkspaceYaml(mConfig));
   return true;
 }
-
 
 }  // namespace sentinel

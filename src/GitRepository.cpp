@@ -36,7 +36,8 @@ class SafeGit2ObjPtr {
   T* obj;
 
  public:
-  SafeGit2ObjPtr() : obj(nullptr) {}
+  SafeGit2ObjPtr() : obj(nullptr) {
+  }
   ~SafeGit2ObjPtr() {
     if (obj) {
       Free(obj);
@@ -85,7 +86,8 @@ class DiffData {
    * @param gitWorkdir actual git working directory root (may differ from sourceRoot)
    */
   DiffData(GitRepository* gitRepo, std::filesystem::path gitWorkdir) :
-      mGitRepo(gitRepo), mGitWorkdir(std::move(gitWorkdir)) {}
+      mGitRepo(gitRepo), mGitWorkdir(std::move(gitWorkdir)) {
+  }
 
   /**
    * @brief add Source Line
@@ -161,9 +163,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
  * continues into subdirectories so that arbitrarily-nested multi-repo
  * layouts (e.g. Android repo) are discovered fully.
  */
-static std::vector<std::filesystem::path> collectGitRepos(
-    const std::filesystem::path& dir,
-    const std::vector<std::filesystem::path>& skipDirs) {
+static std::vector<std::filesystem::path> collectGitRepos(const std::filesystem::path& dir,
+                                                          const std::vector<std::filesystem::path>& skipDirs) {
   std::vector<fs::path> result;
   if (!fs::is_directory(dir)) {
     return result;
@@ -185,16 +186,12 @@ static std::vector<std::filesystem::path> collectGitRepos(
       }
       // Skip hidden directories (e.g. .git, .cache, .ccache, .github).
       // They never contain nested source repos and traversing them is wasteful.
-      if (!entry.path().filename().string().empty() &&
-          entry.path().filename().string().front() == '.') {
+      if (!entry.path().filename().string().empty() && entry.path().filename().string().front() == '.') {
         continue;
       }
       // Skip sentinel-managed directories (workspace, output, etc.)
       bool skip = false;
-      skip = std::any_of(skipDirs.begin(), skipDirs.end(),
-                         [&](const auto& sd) {
-                           return entry.path() == sd;
-                         });
+      skip = std::any_of(skipDirs.begin(), skipDirs.end(), [&](const auto& sd) { return entry.path() == sd; });
       if (skip) {
         continue;
       }
@@ -202,8 +199,7 @@ static std::vector<std::filesystem::path> collectGitRepos(
       result.insert(result.end(), sub.begin(), sub.end());
     }
   } catch (const fs::filesystem_error& e) {
-    Logger::getLogger(cGitRepositoryLoggerName)->warn(
-        "Skipping unreadable directory '{}': {}", dir.string(), e.what());
+    Logger::getLogger(cGitRepositoryLoggerName)->warn("Skipping unreadable directory '{}': {}", dir.string(), e.what());
   }
   return result;
 }
@@ -215,7 +211,7 @@ static std::vector<std::filesystem::path> collectGitRepos(
  * multi-repo walk without duplicating the commit-traversal logic.
  */
 static void applyDiffScope(git_repository* repo, const std::string& scope, git_diff_options* opts, DiffData* d,
-                            const std::filesystem::path& gitWorkdir) {
+                           const std::filesystem::path& gitWorkdir) {
   auto logger = Logger::getLogger(cGitRepositoryLoggerName);
 
   if (scope == "all") {
@@ -328,9 +324,7 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
     }
   }
 
-  auto matcher = [&](const auto& exclude) {
-    return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0;
-  };
+  auto matcher = [&](const auto& exclude) { return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0; };
   if (std::any_of(mExcludes.begin(), mExcludes.end(), matcher)) {
     return false;
   }

@@ -19,10 +19,13 @@ class EvaluationStageTest : public ::testing::Test {
     fs::remove_all(mBase);
     fs::create_directories(mBase);
   }
-  void TearDown() override { fs::remove_all(mBase); }
+  void TearDown() override {
+    fs::remove_all(mBase);
+  }
   void writeFile(const fs::path& p, const std::string& content) {
     fs::create_directories(p.parent_path());
-    std::ofstream f(p); f << content;
+    std::ofstream f(p);
+    f << content;
   }
   fs::path mBase;
 };

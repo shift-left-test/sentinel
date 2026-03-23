@@ -19,8 +19,8 @@
 #include "sentinel/docGenerator/IndexHtmlGenerator.hpp"
 #include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/io.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
+#include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
@@ -28,11 +28,12 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 HtmlReport::HtmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
-    Report(results, sourcePath) {}
+    Report(results, sourcePath) {
+}
 
-HtmlReport::HtmlReport(const std::filesystem::path& resultsPath,
-                       const std::filesystem::path& sourcePath) :
-    Report(resultsPath, sourcePath) {}
+HtmlReport::HtmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
+    Report(resultsPath, sourcePath) {
+}
 
 void HtmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make HTML Report");
@@ -63,8 +64,7 @@ void HtmlReport::save(const std::filesystem::path& dirPath) {
 }
 
 void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
-                               const std::filesystem::path& currentDirPath,
-                               const std::filesystem::path& outputDir) {
+                               const std::filesystem::path& currentDirPath, const std::filesystem::path& outputDir) {
   std::size_t sizeOfTargetFiles = 0;
   std::size_t numerator = 0;
   std::size_t denominator = 0;
@@ -119,8 +119,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   mLogger->info("Save to {}", (outputDir / fileName).string());
 }
 
-void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs,
-                                const std::filesystem::path& srcPath,
+void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
                                 const std::filesystem::path& outputDir) {
   auto absSrcPath = mSourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {

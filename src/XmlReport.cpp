@@ -18,10 +18,12 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 XmlReport::XmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
-    Report(results, sourcePath) {}
+    Report(results, sourcePath) {
+}
 
 XmlReport::XmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
-    Report(resultsPath, sourcePath) {}
+    Report(resultsPath, sourcePath) {
+}
 
 void XmlReport::save(const std::filesystem::path& dirPath) {
   mLogger->info("Make XML Report");

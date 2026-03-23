@@ -4,11 +4,11 @@
  */
 
 #include <gtest/gtest.h>
+#include <chrono>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <stdexcept>
 #include <string>
-#include <chrono>
 #include <thread>
 #include "sentinel/Subprocess.hpp"
 

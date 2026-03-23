@@ -4,8 +4,8 @@
  */
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <gtest/gtest.h>
+#include <unistd.h>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
@@ -33,7 +33,9 @@ class ConfigValidatorTest : public ::testing::Test {
     mConfig.patterns = std::vector<std::string>{};
     mConfig.sourceDir = mBase;
   }
-  void TearDown() override { fs::remove_all(mBase); }
+  void TearDown() override {
+    fs::remove_all(mBase);
+  }
 
   Config mConfig;
   fs::path mBase;

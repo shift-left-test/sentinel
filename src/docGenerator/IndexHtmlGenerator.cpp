@@ -20,7 +20,8 @@ IndexHtmlGenerator::IndexHtmlGenerator(bool root, const std::filesystem::path& d
     mSizeOfTargetFiles(sizeOfTargetFiles),
     mCoverage(coverage),
     mNumerator(numerator),
-    mDenominator(denominator) {}
+    mDenominator(denominator) {
+}
 
 void IndexHtmlGenerator::pushItemToTable(const std::string& subName, int subCoverage, std::size_t subNumerator,
                                          std::size_t subDenominator, std::size_t numOfFiles) {

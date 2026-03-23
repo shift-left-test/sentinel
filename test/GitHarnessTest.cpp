@@ -198,7 +198,7 @@ TEST_F(GitHarnessTest, testAddCodeFailWhenFileNotExists) {
 // Expected Output: target lines are deleted from target file
 TEST_F(GitHarnessTest, testDeleteCodeWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::size_t> target_lines {2, 4};
+  std::vector<std::size_t> target_lines{2, 4};
   repo->addFile("temp.cpp", initial_content).deleteCode("temp.cpp", target_lines);
 
   std::string filename = repo_name / "temp.cpp";
@@ -212,7 +212,7 @@ TEST_F(GitHarnessTest, testDeleteCodeWorks) {
 // Expected Output: no lines are deleted
 TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::size_t> target_lines {0, 400};
+  std::vector<std::size_t> target_lines{0, 400};
   repo->addFile("temp.cpp", initial_content).deleteCode("temp.cpp", target_lines);
 
   std::string filename = repo_name / "temp.cpp";
@@ -225,7 +225,7 @@ TEST_F(GitHarnessTest, testDeleteCodeFailWhenTargetLineOutOfBound) {
 // Action: add code to nonexistent file
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testDeleteCodeFailWhenFileNotExists) {
-  std::vector<std::size_t> target_lines {2};
+  std::vector<std::size_t> target_lines{2};
   EXPECT_THROW(repo->deleteCode("temp.cpp", target_lines), std::runtime_error);
 }
 
@@ -236,11 +236,11 @@ TEST_F(GitHarnessTest, testStageFileWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
   repo->addFile("temp2.cpp", initial_content);
-  std::vector<std::string> target_files {"temp.cpp"};
+  std::vector<std::string> target_files{"temp.cpp"};
 
   // Get list of staged and unstaged files before git add
   git_status_list* status;
-  git_status_options statusopt {1};
+  git_status_options statusopt{1};
   statusopt.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
   statusopt.flags =
       GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX | GIT_STATUS_OPT_SORT_CASE_SENSITIVELY;
@@ -274,7 +274,7 @@ TEST_F(GitHarnessTest, testStageFileWorks) {
 // Action: git add a file that does not exist
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testStageFileFailWhenFileNotExist) {
-  std::vector<std::string> target_files {"temp.cpp"};
+  std::vector<std::string> target_files{"temp.cpp"};
   EXPECT_THROW(repo->stageFile(target_files), std::runtime_error);
 }
 
@@ -283,10 +283,10 @@ TEST_F(GitHarnessTest, testStageFileFailWhenFileNotExist) {
 TEST_F(GitHarnessTest, testCommitWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
   repo->addFile("temp.cpp", initial_content);
-  std::vector<std::string> target_files {"temp.cpp"};
+  std::vector<std::string> target_files{"temp.cpp"};
   repo->stageFile(target_files);
 
-  std::string message {"test commit_Normal"};
+  std::string message{"test commit_Normal"};
   repo->commit(message);
 
   git_oid head_oid, latest_oid;
@@ -311,13 +311,13 @@ TEST_F(GitHarnessTest, testGetLatestCommitFailWhenNoCommitWasMade) {
 // Expected Output: target commit is tagged
 TEST_F(GitHarnessTest, testAddTagLightweightWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::string> target_files {"temp.cpp"};
-  std::string message {"test commit_Normal"};
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string message{"test commit_Normal"};
 
   repo->addFile("temp.cpp", initial_content).stageFile(target_files).commit(message);
 
-  std::string tag_name {"v0.1"};
-  std::string target_oid_str {repo->getLatestCommitId()};
+  std::string tag_name{"v0.1"};
+  std::string target_oid_str{repo->getLatestCommitId()};
   repo->addTagLightweight(tag_name, target_oid_str);
 
   git_object* obj;
@@ -341,13 +341,13 @@ TEST_F(GitHarnessTest, testAddTagLightweightWorks) {
 // Expected Output: error message
 TEST_F(GitHarnessTest, testAddTagLightweightFailWhenCommitAlreadyTagged) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::string message {"test commit_Normal"};
-  std::string tag_name {"v0.1"};
-  std::vector<std::string> target_files {"temp.cpp"};
+  std::string message{"test commit_Normal"};
+  std::string tag_name{"v0.1"};
+  std::vector<std::string> target_files{"temp.cpp"};
 
   // Create and tag the first commit.
   repo->addFile("temp.cpp", initial_content).stageFile(target_files).commit(message);
-  std::string target_oid {repo->getLatestCommitId()};
+  std::string target_oid{repo->getLatestCommitId()};
   EXPECT_THROW(repo->addTagLightweight("", target_oid), std::runtime_error);
   repo->addTagLightweight(tag_name, target_oid);
 
@@ -362,13 +362,13 @@ TEST_F(GitHarnessTest, testAddTagLightweightFailWhenCommitAlreadyTagged) {
 
 TEST_F(GitHarnessTest, testCreateBranchWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::string> target_files {"temp.cpp"};
-  std::string init_message {"init commit"};
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
 
   repo->addFile("temp.cpp", initial_content);
   repo->stageFile(target_files).commit(init_message);
 
-  std::string branch_name {"b1"};
+  std::string branch_name{"b1"};
   repo->createBranch(branch_name);
 
   // Check if branch b1 exists
@@ -379,17 +379,17 @@ TEST_F(GitHarnessTest, testCreateBranchWorks) {
 
 TEST_F(GitHarnessTest, testCheckoutBranchWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::string> target_files {"temp.cpp"};
-  std::string init_message {"init commit"};
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
 
   repo->addFile("temp.cpp", initial_content);
   repo->stageFile(target_files).commit(init_message);
 
-  std::string branch_name {"b1"};
+  std::string branch_name{"b1"};
   repo->createBranch(branch_name);
 
-  std::vector<std::string> target_files2 {"temp2.cpp"};
-  std::string b1_message {"b1 commit"};
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b1_message{"b1 commit"};
 
   repo->addFile("temp2.cpp", initial_content);
   repo->stageFile(target_files2).commit(b1_message);
@@ -410,22 +410,22 @@ TEST_F(GitHarnessTest, testCheckoutBranchWorks) {
 
 TEST_F(GitHarnessTest, testMergeWorks) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::string> target_files {"temp.cpp"};
-  std::string init_message {"init commit"};
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
 
   repo->addFile("temp.cpp", initial_content);
   repo->stageFile(target_files).commit(init_message);
 
   // Create branch b1 and add a new file.
-  std::vector<std::string> target_files1 {"temp1.cpp"};
-  std::string b1_message {"b1: add temp1.cpp"};
+  std::vector<std::string> target_files1{"temp1.cpp"};
+  std::string b1_message{"b1: add temp1.cpp"};
   repo->createBranch("b1");
   repo->addFile("temp1.cpp", initial_content);
   repo->stageFile(target_files1).commit(b1_message);
 
   // Create branch b2 and add a new file.
-  std::vector<std::string> target_files2 {"temp2.cpp"};
-  std::string b2_message {"b2: add temp2.cpp"};
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b2_message{"b2: add temp2.cpp"};
   repo->checkoutBranch("master");
   repo->createBranch("b2");
   repo->addFile("temp2.cpp", initial_content);
@@ -433,12 +433,12 @@ TEST_F(GitHarnessTest, testMergeWorks) {
 
   // Add a new file in master branch
   repo->checkoutBranch("master");
-  std::vector<std::string> target_files3 {"temp3.cpp"};
-  std::string master_message {"master: add temp3.cpp"};
+  std::vector<std::string> target_files3{"temp3.cpp"};
+  std::string master_message{"master: add temp3.cpp"};
   repo->addFile("temp3.cpp", initial_content);
   repo->stageFile(target_files3).commit(master_message);
 
-  std::vector<std::string> target_branches {"b1", "b2"};
+  std::vector<std::string> target_branches{"b1", "b2"};
   repo->merge(target_branches);
 
   // After merge, HEAD and master should point to the same commit.
@@ -457,22 +457,22 @@ TEST_F(GitHarnessTest, testMergeWorks) {
 
 TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
   std::string initial_content = "int main() {\n\treturn 0;\n}\n//comment\n";
-  std::vector<std::string> target_files {"temp.cpp"};
-  std::string init_message {"init commit"};
+  std::vector<std::string> target_files{"temp.cpp"};
+  std::string init_message{"init commit"};
 
   repo->addFile("temp.cpp", initial_content);
   repo->stageFile(target_files).commit(init_message);
 
   // Create branch b1 and add a new file.
-  std::vector<std::string> target_files1 {"temp1.cpp"};
-  std::string b1_message {"b1: add temp1.cpp"};
+  std::vector<std::string> target_files1{"temp1.cpp"};
+  std::string b1_message{"b1: add temp1.cpp"};
   repo->createBranch("b1");
   repo->addFile("temp1.cpp", initial_content);
   repo->stageFile(target_files1).commit(b1_message);
 
   // Create branch b2 and add a new file.
-  std::vector<std::string> target_files2 {"temp2.cpp"};
-  std::string b2_message {"b2: add temp2.cpp"};
+  std::vector<std::string> target_files2{"temp2.cpp"};
+  std::string b2_message{"b2: add temp2.cpp"};
   repo->checkoutBranch("master");
   repo->createBranch("b2");
   repo->addFile("temp2.cpp", initial_content);
@@ -480,8 +480,8 @@ TEST_F(GitHarnessTest, testMergeWorksWhenUsingVariadicArguments) {
 
   // Add a new file in master branch
   repo->checkoutBranch("master");
-  std::vector<std::string> target_files3 {"temp3.cpp"};
-  std::string master_message {"master: add temp3.cpp"};
+  std::vector<std::string> target_files3{"temp3.cpp"};
+  std::string master_message{"master: add temp3.cpp"};
   repo->addFile("temp3.cpp", initial_content);
   repo->stageFile(target_files3).commit(master_message);
 

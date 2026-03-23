@@ -4,8 +4,8 @@
  */
 
 #include <fmt/core.h>
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <string>
 #include "sentinel/Timestamper.hpp"
 

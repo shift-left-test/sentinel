@@ -117,9 +117,8 @@ void Report::printSummary() const {
       skipStr = "... ";
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
-    Console::out(defFormat, skipStr + p.first.string().substr(filePos), flen,
-                 p.second.detected, klen, p.second.total, mlen,
-                 scoreStr, clen);
+    Console::out(defFormat, skipStr + p.first.string().substr(filePos), flen, p.second.detected, klen, p.second.total,
+                 mlen, scoreStr, clen);
   }
   Console::out("{0:-^{1}}", "", maxlen);
 
@@ -128,33 +127,29 @@ void Report::printSummary() const {
     finalScore = (100.0 * static_cast<double>(totNumberOfDetectedMutation)) / static_cast<double>(totNumberOfMutation);
   }
   std::string finalScoreStr = finalScore >= 0.0 ? fmt::format("{:.1f}%", finalScore) : "-%";
-  Console::out(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen,
-               totNumberOfMutation, mlen, finalScoreStr, clen);
+  Console::out(defFormat, "TOTAL", flen, totNumberOfDetectedMutation, klen, totNumberOfMutation, mlen, finalScoreStr,
+               clen);
   Console::out("{0:=^{1}}", "", maxlen);
 
   if ((totNumberOfBuildFailure + totNumberOfRuntimeError + totNumberOfTimeout) != 0) {
     std::string skipped;
     if (totNumberOfBuildFailure > 0) {
-      skipped += fmt::format("{} build failure{}", totNumberOfBuildFailure,
-                             totNumberOfBuildFailure == 1 ? "" : "s");
+      skipped += fmt::format("{} build failure{}", totNumberOfBuildFailure, totNumberOfBuildFailure == 1 ? "" : "s");
     }
     if (totNumberOfRuntimeError > 0) {
       if (!skipped.empty()) skipped += "  \xc2\xb7  ";
-      skipped += fmt::format("{} runtime error{}", totNumberOfRuntimeError,
-                             totNumberOfRuntimeError == 1 ? "" : "s");
+      skipped += fmt::format("{} runtime error{}", totNumberOfRuntimeError, totNumberOfRuntimeError == 1 ? "" : "s");
     }
     if (totNumberOfTimeout > 0) {
       if (!skipped.empty()) skipped += "  \xc2\xb7  ";
-      skipped += fmt::format("{} timeout{}", totNumberOfTimeout,
-                             totNumberOfTimeout == 1 ? "" : "s");
+      skipped += fmt::format("{} timeout{}", totNumberOfTimeout, totNumberOfTimeout == 1 ? "" : "s");
     }
     Console::out("Skipped: {}", skipped);
     Console::out("{0:=^{1}}", "", maxlen);
   }
 }
 
-std::filesystem::path Report::getRelativePath(const std::filesystem::path& path,
-                                              const std::filesystem::path& start) {
+std::filesystem::path Report::getRelativePath(const std::filesystem::path& path, const std::filesystem::path& start) {
   return fs::canonical(path).lexically_relative(fs::canonical(start));
 }
 

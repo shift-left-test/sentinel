@@ -21,8 +21,7 @@ namespace sentinel::io {
 inline void ensureDirectoryExists(const std::filesystem::path& dirPath) {
   if (std::filesystem::exists(dirPath)) {
     if (!std::filesystem::is_directory(dirPath)) {
-      throw InvalidArgumentException(
-          fmt::format("'{}' is not a directory", dirPath.string()));
+      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath.string()));
     }
   } else {
     std::filesystem::create_directories(dirPath);

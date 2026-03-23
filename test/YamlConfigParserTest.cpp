@@ -47,7 +47,10 @@ TEST_F(YamlConfigParserTest, testWriteTemplateThrowsWhenPathIsDirectory) {
 }
 
 TEST_F(YamlConfigParserTest, testWriteTemplateOverwritesExistingFile) {
-  { std::ofstream f("sentinel.yaml"); f << "old content"; }
+  {
+    std::ofstream f("sentinel.yaml");
+    f << "old content";
+  }
   YamlConfigParser::writeTemplate("sentinel.yaml");
   std::ifstream f("sentinel.yaml");
   std::string content((std::istreambuf_iterator<char>(f)), {});

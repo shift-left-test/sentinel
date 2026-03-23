@@ -40,7 +40,9 @@ class MutantGenerator {
    *
    * @param ops list of operator names (e.g. "AOR", "BOR")
    */
-  void setOperators(const std::vector<std::string>& ops) { mSelectedOperators = ops; }
+  void setOperators(const std::vector<std::string>& ops) {
+    mSelectedOperators = ops;
+  }
 
   /**
    * @brief Return a new mutant generator instance based on the specified options
@@ -57,7 +59,9 @@ class MutantGenerator {
    *
    * @return candidate count from the last populate() call
    */
-  std::size_t getCandidateCount() const { return mCandidateCount; }
+  std::size_t getCandidateCount() const {
+    return mCandidateCount;
+  }
 
  protected:
   /**

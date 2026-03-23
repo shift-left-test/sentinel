@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <filesystem>  // NOLINT
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 #include "sentinel/CoverageInfo.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {

@@ -11,8 +11,8 @@
 #include <future>
 #include <map>
 #include <memory>
-#include <set>
 #include <random>
+#include <set>
 #include <string>
 #include <thread>
 #include <utility>
@@ -64,14 +64,13 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
       logger->verbose("Checking for mutants in {}", fileIt->first.string());
-      futures.push_back(
-          std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
-            Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename.string());
-            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-            tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
-            return localMutables;
-          }));
+      futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
+        Mutants localMutables;
+        clang::tooling::ClangTool tool(*db, filename.string());
+        tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+        tool.run(myNewFrontendActionFactory(&localMutables, lines, mSelectedOperators).get());
+        return localMutables;
+      }));
     }
     for (auto& fut : futures) {
       auto localMutables = fut.get();
@@ -88,9 +87,8 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
     mutantsByFile[m.getPath()].push_back(&m);
   }
   for (auto& entry : mutantsByFile) {
-    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
-      return a->getFirst().line < b->getFirst().line;
-    });
+    std::sort(entry.second.begin(), entry.second.end(),
+              [](const Mutant* a, const Mutant* b) { return a->getFirst().line < b->getFirst().line; });
   }
 
   std::mt19937 rng(randomSeed);
@@ -114,10 +112,10 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
     const auto& fileVec = mutantsByFileIt->second;
 
     auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
-        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+                                  [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
     std::vector<const Mutant*> lineCandidates;
     std::copy_if(fileVec.begin(), endIt, std::back_inserter(lineCandidates),
-        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+                 [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
 
     if (lineCandidates.empty()) {
       continue;
@@ -199,8 +197,7 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   return true;
 }
 
-RandomMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
-                                                                Mutants* mutables,
+RandomMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
                                                                 const std::vector<std::size_t>& targetLines,
                                                                 const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
@@ -234,7 +231,8 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> RandomMutantGenerator::my
    public:
     explicit SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines,
                                          const std::vector<std::string>& selectedOps) :
-        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {}
+        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
+    }
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {

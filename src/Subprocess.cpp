@@ -99,12 +99,12 @@ int Subprocess::execute() {
     // If sentinel catch below signals,
     // then send SIGKILL to child process group.
     // And send last signal to sentinel just before return this function
-    signal::setMultipleSignalHandlers(
-        {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP}, [](int signum) {
-          Console::out(R"asdf( Stopping due to {}...)asdf", strsignal(signum));
-          kill(-Subprocess::childPid, SIGKILL);
-          Subprocess::pendSig = signum;
-        });
+    signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
+                                      [](int signum) {
+                                        Console::out(R"asdf( Stopping due to {}...)asdf", strsignal(signum));
+                                        kill(-Subprocess::childPid, SIGKILL);
+                                        Subprocess::pendSig = signum;
+                                      });
 
     // Just catch SIGCHLD
     signal::setMultipleSignalHandlers({SIGCHLD}, [](int signum) {});

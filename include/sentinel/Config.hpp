@@ -32,8 +32,7 @@ struct Partition {
   static Partition parse(const std::string& s) {
     auto slash = s.find('/');
     if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
-      throw std::invalid_argument(
-          fmt::format("Invalid partition value: '{}'. Expected format: N/TOTAL.", s));
+      throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. Expected format: N/TOTAL.", s));
     }
     std::size_t idx = 0;
     std::size_t cnt = 0;
@@ -45,8 +44,7 @@ struct Partition {
           fmt::format("Invalid partition value: '{}'. N and TOTAL must be positive integers.", s));
     }
     if (cnt == 0 || idx == 0 || idx > cnt) {
-      throw std::invalid_argument(
-          fmt::format("Invalid partition value: '{}'. N must be between 1 and TOTAL.", s));
+      throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. N must be between 1 and TOTAL.", s));
     }
     return {idx, cnt};
   }
@@ -87,13 +85,13 @@ struct Config {
   /** @brief File extensions for test result files. */
   std::optional<std::vector<std::string>> testResultExts;
   /** @brief Time limit for test execution. */
-  std::optional<std::string> timeout;   // "auto", "0", or seconds
+  std::optional<std::string> timeout;  // "auto", "0", or seconds
   /** @brief Time to wait before killing a hung process. */
   std::optional<std::string> killAfter;
 
   // Mutation options
   /** @brief Scope of mutation (e.g., "commit" or "all"). */
-  std::optional<std::string> scope;       // "commit" or "all"
+  std::optional<std::string> scope;  // "commit" or "all"
   /** @brief File extensions to consider for mutation. */
   std::optional<std::vector<std::string>> extensions;
   /** @brief Glob patterns for files to include. */
@@ -103,7 +101,7 @@ struct Config {
   /** @brief Maximum number of mutants to generate. */
   std::optional<size_t> limit;
   /** @brief Mutant generation strategy. */
-  std::optional<std::string> generator;   // "uniform", "random", "weighted"
+  std::optional<std::string> generator;  // "uniform", "random", "weighted"
   /** @brief Random seed for mutant generation. */
   std::optional<unsigned int> seed;
   /** @brief List of mutation operators to apply. */
@@ -113,7 +111,7 @@ struct Config {
   /** @brief Mutation score threshold for success. */
   std::optional<double> threshold;
   /** @brief Partition for parallel execution (e.g., "N/TOTAL"). */
-  std::optional<std::string> partition;   // "N/TOTAL"
+  std::optional<std::string> partition;  // "N/TOTAL"
 
   // Special control flags (not usually in YAML)
   /** @brief Initialize sentinel in the current directory. */

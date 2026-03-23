@@ -24,8 +24,9 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 EvaluationStage::EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                 std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
+                                 std::shared_ptr<Workspace> workspace) :
+    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+}
 
 bool EvaluationStage::execute() {
   if (mWorkspace->isComplete()) return true;  // already-complete: go to report
@@ -57,27 +58,24 @@ bool EvaluationStage::execute() {
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
     mWorkspace->setLock(id);
-    mStatusLine->setMutantInfo(id, m.getOperator(),
-                               m.getPath().filename().string(), m.getFirst().line);
+    mStatusLine->setMutantInfo(id, m.getOperator(), m.getPath().filename().string(), m.getFirst().line);
 
     auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
     repo->getSourceTree()->modify(m, backupDir.string());
 
-    Subprocess mBuild(*mConfig.buildCmd, 0, 0,
-                      mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
+    Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
     mBuild.execute();
 
     TestExecutionState testState = TestExecutionState::SUCCESS;
     if (mBuild.isSuccessfulExit()) {
       fs::remove_all(*mConfig.testResultDir);
-      Subprocess mTest(*mConfig.testCmd, computedTimeLimit, killAfterSecs,
-                       mWorkspace->getMutantTestLog(id).string(), *mConfig.silent);
+      Subprocess mTest(*mConfig.testCmd, computedTimeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
+                       *mConfig.silent);
       mTest.execute();
       if (mTest.isTimedOut()) {
         testState = TestExecutionState::TIMEOUT;
       } else {
-        Workspace::copyTestReportTo(*mConfig.testResultDir, actualDir,
-                                    *mConfig.testResultExts);
+        Workspace::copyTestReportTo(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
       }
     } else {
       testState = TestExecutionState::BUILD_FAILURE;

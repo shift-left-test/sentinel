@@ -7,9 +7,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
 

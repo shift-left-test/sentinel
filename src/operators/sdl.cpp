@@ -101,7 +101,7 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   }
 
   if (isValidMutantSourceRange(&stmtStartLoc, &stmtEndLoc)) {
-    std::string path {mSrcMgr.getFilename(stmtStartLoc)};
+    std::string path{mSrcMgr.getFilename(stmtStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),

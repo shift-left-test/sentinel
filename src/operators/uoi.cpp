@@ -93,7 +93,7 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
     return;
   }
 
-  std::string path {mSrcMgr.getFilename(stmtStartLoc)};
+  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
   std::string stmtStr = convertStmtToString(e);
 

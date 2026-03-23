@@ -1,9 +1,8 @@
 // Copyright (c) 2026 LG Electronics Inc.
 // SPDX-License-Identifier: MIT
 
-#include "Stack.hpp"
-
 #include <stdexcept>
+#include "Stack.hpp"
 
 void Stack::push(int value) {
   mData.push_back(value);

@@ -10,9 +10,9 @@
 #include <stdexcept>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
-#include "sentinel/MutationResults.hpp"
-#include "sentinel/MutationResult.hpp"
 #include "sentinel/Mutant.hpp"
+#include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 
 namespace fs = std::filesystem;
 

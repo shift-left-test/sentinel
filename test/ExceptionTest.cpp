@@ -7,8 +7,8 @@
 #include <cerrno>
 #include <stdexcept>
 #include "sentinel/MutationState.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/RepositoryException.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
 
@@ -46,8 +46,7 @@ TEST_F(ExceptionTest, testThresholdErrorType) {
 }
 
 TEST_F(ExceptionTest, testThresholdErrorMessage) {
-  EXPECT_STREQ("Mutation score 60.0% is below threshold 80.0%",
-               ThresholdError(60.0, 80.0).what());
+  EXPECT_STREQ("Mutation score 60.0% is below threshold 80.0%", ThresholdError(60.0, 80.0).what());
 }
 
 class MutationStateTest : public ::testing::Test {};

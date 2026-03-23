@@ -19,9 +19,9 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-ReportStage::ReportStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                         std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
+ReportStage::ReportStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
+    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+}
 
 bool ReportStage::execute() {
   mStatusLine->setPhase(StatusLine::Phase::REPORT);
@@ -47,8 +47,7 @@ bool ReportStage::execute() {
     std::size_t total = results.size();
     if (total > 0) {
       std::size_t killed = static_cast<std::size_t>(
-          std::count_if(results.begin(), results.end(),
-                        [](const MutationResult& r) { return r.getDetected(); }));
+          std::count_if(results.begin(), results.end(), [](const MutationResult& r) { return r.getDetected(); }));
       double score = 100.0 * static_cast<double>(killed) / static_cast<double>(total);
       if (score < *mConfig.threshold) {
         throw ThresholdError(score, *mConfig.threshold);

@@ -23,8 +23,7 @@ class BaselineBuildStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  BaselineBuildStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
-                     std::shared_ptr<Workspace> workspace);
+  BaselineBuildStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;

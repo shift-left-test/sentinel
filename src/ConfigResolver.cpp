@@ -13,8 +13,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
-                               const std::filesystem::path& yamlPath) {
+Config ConfigResolver::resolve(const Config& cli, const Config& yaml, const std::filesystem::path& yamlPath) {
   Config result;
 
   // 1. Merge core fields with default values
@@ -31,8 +30,7 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml,
   mergeField(result.compileDbDir, cli.compileDbDir, yaml.compileDbDir, fs::path("."));
   mergeField(result.testCmd, cli.testCmd, yaml.testCmd, std::string(""));
   mergeField(result.testResultDir, cli.testResultDir, yaml.testResultDir, fs::path(""));
-  mergeField(result.testResultExts, cli.testResultExts, yaml.testResultExts,
-             std::vector<std::string>{"xml", "XML"});
+  mergeField(result.testResultExts, cli.testResultExts, yaml.testResultExts, std::vector<std::string>{"xml", "XML"});
   mergeField(result.timeout, cli.timeout, yaml.timeout, std::string("auto"));
   mergeField(result.killAfter, cli.killAfter, yaml.killAfter, std::string("60"));
 

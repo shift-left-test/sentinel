@@ -5,9 +5,9 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
@@ -342,7 +342,7 @@ GitHarness& GitHarness::merge(const std::string& branch) {
                    "merge failed");
 
   // Prepare commit message
-  std::string commit_msg {"Merge branch " + branch + " into "};
+  std::string commit_msg{"Merge branch " + branch + " into "};
   git_reference* head_ref;
   libgitErrorCheck(git_repository_head(&head_ref, repo), "failed to get repo HEAD");
   commit_msg += git_reference_name(head_ref);

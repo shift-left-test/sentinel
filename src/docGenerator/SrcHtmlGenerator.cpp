@@ -5,13 +5,14 @@
 
 #include <fmt/core.h>
 #include <string>
-#include <vector>
 #include <tuple>
+#include <vector>
 #include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
-SrcHtmlGenerator::SrcHtmlGenerator(const std::string& srcName, bool srcRoot) : mSrcName(srcName), mSrcRoot(srcRoot) {}
+SrcHtmlGenerator::SrcHtmlGenerator(const std::string& srcName, bool srcRoot) : mSrcName(srcName), mSrcRoot(srcRoot) {
+}
 
 void SrcHtmlGenerator::pushLine(
     std::size_t curLineNum, const std::string& curClass, std::size_t numCurLineMrs, const std::string& curCode,

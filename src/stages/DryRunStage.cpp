@@ -18,10 +18,8 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
-                               const std::vector<std::pair<int, Mutant>>& indexedMutants,
-                               std::size_t candidateCount,
-                               const fs::path& workspaceDir,
-                               std::size_t partIdx, std::size_t partCount) {
+                               const std::vector<std::pair<int, Mutant>>& indexedMutants, std::size_t candidateCount,
+                               const fs::path& workspaceDir, std::size_t partIdx, std::size_t partCount) {
   Console::out("\n=== Sentinel Dry Run ===");
   Console::out("  source-dir:    {}", cfg.sourceDir->string());
   Console::out("  build-command: {}", cfg.buildCmd.value_or(""));
@@ -50,8 +48,8 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
 
   if (cfg.verbose && *cfg.verbose) {
     for (const auto& [id, m] : indexedMutants) {
-      Console::out("          [{:3d}] {} @ {}:{}", id, m.getOperator(),
-                   m.getPath().filename().string(), m.getFirst().line);
+      Console::out("          [{:3d}] {} @ {}:{}", id, m.getOperator(), m.getPath().filename().string(),
+                   m.getFirst().line);
     }
   }
 
@@ -60,9 +58,9 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
   }
 }
 
-DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                         std::shared_ptr<Workspace> workspace)
-    : Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {}
+DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
+    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+}
 
 bool DryRunStage::execute() {
   if (!mConfig.dryRun) return true;
@@ -83,8 +81,8 @@ bool DryRunStage::execute() {
   mStatusLine->setTotalMutants(indexedMutants.size());
   mStatusLine->disable();
 
-  printDryRunSummary(mConfig, computedTimeLimit, indexedMutants,
-                     candidateCount, mWorkspace->getRoot(), partIdx, partCount);
+  printDryRunSummary(mConfig, computedTimeLimit, indexedMutants, candidateCount, mWorkspace->getRoot(), partIdx,
+                     partCount);
   return false;
 }
 

@@ -68,10 +68,10 @@ class Subprocess {
   bool mSilent = false;
   bool mTimedOut = false;
   int mStatus = -1;
-  static volatile pid_t childPid;          ///< PID of the running child process.
-  static volatile std::size_t killAfter;   ///< Seconds before SIGKILL after timeout.
-  static volatile bool timedOut;           ///< Set to true by the SIGALRM handler.
-  static volatile int pendSig;             ///< Pending signal to forward to child.
+  static volatile pid_t childPid;  ///< PID of the running child process.
+  static volatile std::size_t killAfter;  ///< Seconds before SIGKILL after timeout.
+  static volatile bool timedOut;  ///< Set to true by the SIGALRM handler.
+  static volatile int pendSig;  ///< Pending signal to forward to child.
 };
 
 }  // namespace sentinel

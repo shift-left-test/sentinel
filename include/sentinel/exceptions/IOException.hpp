@@ -23,7 +23,8 @@ class IOException : public std::runtime_error {
    *
    * @param error code
    */
-  explicit IOException(int error) : IOException(error, std::strerror(error)) {}
+  explicit IOException(int error) : IOException(error, std::strerror(error)) {
+  }
 
   /**
    * @brief Default constructor
@@ -31,7 +32,8 @@ class IOException : public std::runtime_error {
    * @param error code
    * @param message of the error
    */
-  IOException(int error, const std::string& message) : std::runtime_error(message.c_str()), mError(error) {}
+  IOException(int error, const std::string& message) : std::runtime_error(message.c_str()), mError(error) {
+  }
 
   /**
    * @brief Return the error code

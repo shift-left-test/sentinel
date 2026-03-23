@@ -74,15 +74,14 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
       for (const auto& sl : fileIt->second) {
         localDm[sl] = -1;
       }
-      futures.push_back(std::async(
-          std::launch::async,
-          [db, filename = fileIt->first, fileLines = fileIt->second, ldm = std::move(localDm), this]() mutable {
-            Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename.string());
-            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-            tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
-            return std::make_pair(std::move(localMutables), std::move(ldm));
-          }));
+      futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, fileLines = fileIt->second,
+                                                        ldm = std::move(localDm), this]() mutable {
+        Mutants localMutables;
+        clang::tooling::ClangTool tool(*db, filename.string());
+        tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+        tool.run(myNewFrontendActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
+        return std::make_pair(std::move(localMutables), std::move(ldm));
+      }));
     }
     for (auto& fut : futures) {
       auto result = fut.get();
@@ -109,9 +108,8 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     mutantsByFile[m.getPath()].push_back(&m);
   }
   for (auto& entry : mutantsByFile) {
-    std::sort(entry.second.begin(), entry.second.end(), [](const Mutant* a, const Mutant* b) {
-      return a->getFirst().line < b->getFirst().line;
-    });
+    std::sort(entry.second.begin(), entry.second.end(),
+              [](const Mutant* a, const Mutant* b) { return a->getFirst().line < b->getFirst().line; });
   }
 
   // Cache canonical path per unique source path to avoid repeated fs::canonical() calls.
@@ -142,12 +140,12 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
 
     // Binary search: upper_bound finds end of mutants with first.line <= targetLine
     auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
-        [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+                                  [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
 
     // Filter: only keep mutants where last.line >= targetLine
     std::vector<const Mutant*> candidates;
     std::copy_if(fileVec.begin(), endIt, std::back_inserter(candidates),
-        [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+                 [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
 
     if (candidates.empty()) {
       continue;
@@ -282,10 +280,8 @@ int WeightedMutantGenerator::SentinelASTVisitor::getDepth(clang::Stmt* s) {
   return depth;
 }
 
-WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI,
-                                                                  Mutants* mutables,
-                                                                  const SourceLines& targetLines,
-                                                                  DepthMap* depthMap,
+WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+                                                                  const SourceLines& targetLines, DepthMap* depthMap,
                                                                   const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
 }
@@ -295,8 +291,7 @@ void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::
   mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
 }
 
-WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
-                                                                    const SourceLines& targetLines,
+WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines,
                                                                     DepthMap* depthMap,
                                                                     const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
@@ -321,7 +316,8 @@ std::unique_ptr<clang::tooling::FrontendActionFactory> WeightedMutantGenerator::
    public:
     SimpleFrontendActionFactory(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap,
                                 const std::vector<std::string>& selectedOps) :
-        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {}
+        mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
+    }
 
 #if LLVM_VERSION_MAJOR >= 10
     std::unique_ptr<clang::FrontendAction> create() override {

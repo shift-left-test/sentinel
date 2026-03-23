@@ -21,8 +21,8 @@ namespace fs = std::filesystem;
 
 const char* cGitSourceTreeLoggerName = "GitSourceTree";
 
-GitSourceTree::GitSourceTree(const std::filesystem::path& baseDirectory) :
-    SourceTree(baseDirectory) {}
+GitSourceTree::GitSourceTree(const std::filesystem::path& baseDirectory) : SourceTree(baseDirectory) {
+}
 
 void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& backupPath) {
   // Backup target file to be mutated

@@ -157,7 +157,7 @@ TEST_F(WorkspaceTest, testDonePreservesAllMutationStates) {
   fs::path p = mSrcFile;
 
   const std::vector<MutationState> states = {MutationState::KILLED, MutationState::SURVIVED,
-                                              MutationState::BUILD_FAILURE, MutationState::TIMEOUT};
+                                             MutationState::BUILD_FAILURE, MutationState::TIMEOUT};
   int id = 1;
   for (auto state : states) {
     Mutant m("AOR", p, "func", id, 1, id, 5, "+");
@@ -204,7 +204,7 @@ TEST_F(WorkspaceTest, testLoadMutantsIgnoresNonMutantDirectories) {
 
   // Non-mutant dirs should be ignored by loadMutants
   fs::create_directories(mRoot / "original");  // already exists
-  fs::create_directories(mRoot / "backup");    // already exists
+  fs::create_directories(mRoot / "backup");  // already exists
 
   auto mutants = ws.loadMutants();
   EXPECT_EQ(1u, mutants.size());

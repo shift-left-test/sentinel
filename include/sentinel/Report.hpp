@@ -67,8 +67,8 @@ class Report {
    */
   struct DirStats {
     std::vector<const MutationResult*> results;  ///< All mutation results in the directory
-    std::size_t total = 0;      ///< Total number of mutations
-    std::size_t detected = 0;   ///< Number of detected (killed) mutations
+    std::size_t total = 0;  ///< Total number of mutations
+    std::size_t detected = 0;  ///< Number of detected (killed) mutations
     std::size_t fileCount = 0;  ///< Number of distinct source files
   };
 
@@ -77,7 +77,7 @@ class Report {
    */
   struct FileStats {
     std::vector<const MutationResult*> results;  ///< All mutation results in the file
-    std::size_t total = 0;     ///< Total number of mutations
+    std::size_t total = 0;  ///< Total number of mutations
     std::size_t detected = 0;  ///< Number of detected (killed) mutations
   };
 

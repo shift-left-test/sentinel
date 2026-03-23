@@ -20,10 +20,11 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Evaluator::Evaluator(const std::filesystem::path& expectedResultDir,
-                     const std::filesystem::path& sourcePath) :
-    mSourcePath(sourcePath), mCanonicalSourcePath(fs::canonical(sourcePath)),
-    mExpectedResult(expectedResultDir.string()), mLogger(Logger::getLogger("Evaluator")) {
+Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath) :
+    mSourcePath(sourcePath),
+    mCanonicalSourcePath(fs::canonical(sourcePath)),
+    mExpectedResult(expectedResultDir.string()),
+    mLogger(Logger::getLogger("Evaluator")) {
   mLogger->info("Load Expected Result: {}", expectedResultDir.string());
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
@@ -79,10 +80,8 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
     skipStr = "... ";
   }
 
-  mLogger->verbose("{mu:>5} : {loc:.<{flen}} {status}",
-                   fmt::arg("mu", mut.getOperator()),
-                   fmt::arg("loc", skipStr + mutLoc.substr(filePos)),
-                   fmt::arg("flen", flen),
+  mLogger->verbose("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
+                   fmt::arg("loc", skipStr + mutLoc.substr(filePos)), fmt::arg("flen", flen),
                    fmt::arg("status", MutationStateToStr(state)));
 
   MutationResult ret(mut, killingTC, errorTC, state);
@@ -100,8 +99,7 @@ const MutationResults& Evaluator::getMutationResults() const {
   return mMutationResults;
 }
 
-MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut,
-                                                       const std::filesystem::path& ActualResultDir,
+MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& ActualResultDir,
                                                        const std::filesystem::path& evalFilePath,
                                                        TestExecutionState testState) {
   auto outDir = evalFilePath.parent_path();

@@ -13,10 +13,10 @@
 #include <string>
 #include "helper/CaptureHelper.hpp"
 #include "helper/SentinelReportTestBase.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/Report.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/Report.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;

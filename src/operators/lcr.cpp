@@ -23,13 +23,13 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
 
   // create mutables by changing the operator
-  std::string token {bo->getOpcodeStr()};
+  std::string token{bo->getOpcodeStr()};
   clang::SourceLocation opStartLoc = bo->getOperatorLoc();
   clang::SourceLocation opEndLoc =
       mSrcMgr.translateLineCol(mSrcMgr.getMainFileID(), mSrcMgr.getExpansionLineNumber(opStartLoc),
                                mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
-    std::string path {mSrcMgr.getFilename(opStartLoc)};
+    std::string path{mSrcMgr.getFilename(opStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
     for (const auto& mutatedToken : mLogicalOperators) {
@@ -50,7 +50,7 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
     return;
   }
 
-  std::string path {mSrcMgr.getFilename(stmtStartLoc)};
+  std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
   mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),

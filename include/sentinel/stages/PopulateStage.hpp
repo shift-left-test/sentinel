@@ -23,8 +23,7 @@ class PopulateStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine,
-                std::shared_ptr<Workspace> workspace);
+  PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool execute() override;

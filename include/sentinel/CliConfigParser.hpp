@@ -35,7 +35,9 @@ class CliConfigParser {
   /**
    * @brief Returns the path to the config file if specified via --config.
    */
-  std::filesystem::path getConfigFile() { return mConfigFile ? mConfigFile.Get() : ""; }
+  std::filesystem::path getConfigFile() {
+    return mConfigFile ? mConfigFile.Get() : "";
+  }
 
  private:
   // Groups

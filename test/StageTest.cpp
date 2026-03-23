@@ -16,14 +16,19 @@ namespace sentinel {
 // Minimal concrete stage for testing
 class RecordingStage : public Stage {
  public:
-  RecordingStage(const Config& cfg, std::shared_ptr<StatusLine> sl, bool returnVal)
-      : Stage(cfg, std::move(sl)), mReturn(returnVal) {}
-  bool wasExecuted() const { return mExecuted; }
+  RecordingStage(const Config& cfg, std::shared_ptr<StatusLine> sl, bool returnVal) :
+      Stage(cfg, std::move(sl)), mReturn(returnVal) {
+  }
+  bool wasExecuted() const {
+    return mExecuted;
+  }
+
  protected:
   bool execute() override {
     mExecuted = true;
     return mReturn;
   }
+
  private:
   bool mReturn;
   bool mExecuted = false;
@@ -60,9 +65,9 @@ TEST_F(StageTest, testHandleStopsWhenExecuteReturnsFalse) {
 }
 
 TEST_F(StageTest, testSetNextReturnsNextForChaining) {
-  auto first  = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
-  auto third  = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto third = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
   first->setNext(second)->setNext(third);
   first->run();
   EXPECT_TRUE(first->wasExecuted());

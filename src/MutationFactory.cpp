@@ -8,8 +8,8 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <set>
 #include <random>
+#include <set>
 #include <string>
 #include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
@@ -23,7 +23,8 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {}
+MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {
+}
 
 Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
                                   std::size_t maxMutants, unsigned randomSeed, const std::string& generatorStr) {
@@ -94,8 +95,7 @@ Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const So
     Console::out("Generator : {}  |  Seed: {}", generatorStr, randomSeed);
   }
   Console::out("Analyzed  : {} file{}", numFiles, numFiles == 1 ? "" : "s");
-  Console::out("Selected  : {} out of {} candidate{}",
-               mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
+  Console::out("Selected  : {} out of {} candidate{}", mutables.size(), candidateCount, candidateCount == 1 ? "" : "s");
   Console::out("{0:=^{1}}", "", maxlen);
 
   return mutables;

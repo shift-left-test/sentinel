@@ -5,22 +5,23 @@
 
 #include <fmt/core.h>
 #include <sys/stat.h>
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <sstream>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/MutationResult.hpp"
+#include <string>
 #include "sentinel/Mutant.hpp"
+#include "sentinel/MutationResult.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
 MutationResult::MutationResult(const Mutant& m, const std::string& killingTest, const std::string& errorTest,
                                MutationState state) :
-    mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {}
+    mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {
+}
 
 std::string MutationResult::getKillingTest() const {
   return mKillingTest;

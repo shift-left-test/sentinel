@@ -25,7 +25,8 @@ struct Location {
    * @param lineNum number
    * @param colNum number
    */
-  Location(std::size_t lineNum, std::size_t colNum) : line(lineNum), column(colNum) {}
+  Location(std::size_t lineNum, std::size_t colNum) : line(lineNum), column(colNum) {
+  }
 
   /**
    * @brief line number

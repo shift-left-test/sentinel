@@ -155,24 +155,23 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
 
   static constexpr int kSupportedVersion = 1;
   if (!root["version"]) {
-    throw std::runtime_error(fmt::format(
-        "Config file '{}': missing required field 'version'. "
-        "Add 'version: {}' to the top of your config file.",
-        path.string(), kSupportedVersion));
+    throw std::runtime_error(
+        fmt::format("Config file '{}': missing required field 'version'. "
+                    "Add 'version: {}' to the top of your config file.",
+                    path.string(), kSupportedVersion));
   }
   int version = 0;
   try {
     version = root["version"].as<int>();
   } catch (const YAML::Exception&) {
-    throw std::runtime_error(fmt::format(
-        "Config file '{}': 'version' must be an integer. "
-        "Add 'version: {}' to the top of your config file.",
-        path.string(), kSupportedVersion));
+    throw std::runtime_error(
+        fmt::format("Config file '{}': 'version' must be an integer. "
+                    "Add 'version: {}' to the top of your config file.",
+                    path.string(), kSupportedVersion));
   }
   if (version != kSupportedVersion) {
-    throw std::runtime_error(fmt::format(
-        "Config file '{}': unsupported version {}. This sentinel supports version {}.",
-        path.string(), version, kSupportedVersion));
+    throw std::runtime_error(fmt::format("Config file '{}': unsupported version {}. This sentinel supports version {}.",
+                                         path.string(), version, kSupportedVersion));
   }
 
   Config cfg;

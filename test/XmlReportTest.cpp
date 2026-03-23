@@ -10,10 +10,10 @@
 #include <regex>
 #include <sstream>
 #include <string>
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/util/string.hpp"
 #include "sentinel/XmlReport.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
 

@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 
     // 3. Detect run mode
     bool dryRun = cliCfg.dryRun;
-    bool force  = cliCfg.force && *cliCfg.force;
+    bool force = cliCfg.force && *cliCfg.force;
     bool alreadyComplete = false;
     bool resuming = false;
     if (!force && !dryRun && ws->hasPreviousRun()) {
@@ -141,12 +141,10 @@ int main(int argc, char** argv) {
     auto evaluation = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, ws);
     auto report = std::make_shared<sentinel::ReportStage>(cfg, statusLine, ws);
 
-    baselineBuild->setNext(baselineTest)->setNext(populate)
-               ->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
+    baselineBuild->setNext(baselineTest)->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
     // 9. Install signal handlers before pipeline starts
-    const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV,
-                                      SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
+    const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
     sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(*cfg.sourceDir); });
     sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 

@@ -21,10 +21,9 @@ class ThresholdError : public std::runtime_error {
    * @param score     Actual mutation score (percentage).
    * @param threshold Required minimum score (percentage).
    */
-  ThresholdError(double score, double threshold)
-      : std::runtime_error(
-            fmt::format("Mutation score {:.1f}% is below threshold {:.1f}%",
-                        score, threshold)) {}
+  ThresholdError(double score, double threshold) :
+      std::runtime_error(fmt::format("Mutation score {:.1f}% is below threshold {:.1f}%", score, threshold)) {
+  }
 };
 
 }  // namespace sentinel

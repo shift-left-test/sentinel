@@ -6,8 +6,8 @@
 #ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
 #define INCLUDE_SENTINEL_MUTANTS_HPP_
 
-#include <vector>
 #include <string>
+#include <vector>
 #include "sentinel/Container.hpp"
 #include "sentinel/Mutant.hpp"
 

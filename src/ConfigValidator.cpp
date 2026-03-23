@@ -30,8 +30,7 @@ bool ConfigValidator::validate(const Config& config) {
 
   if (config.threshold && (*config.threshold < 0.0 || *config.threshold > 100.0)) {
     throw InvalidArgumentException(
-        fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].",
-                    *config.threshold));
+        fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].", *config.threshold));
   }
 
   if (config.partition && !config.partition->empty()) {
@@ -62,8 +61,10 @@ bool ConfigValidator::checkWarnings(const Config& config) {
   if (config.excludes) {
     for (const auto& excl : *config.excludes) {
       if (!excl.empty() && excl.back() == '/') {
-        warnings.push_back(fmt::format("exclude: '{}' ends with '/'. "
-                                       "Patterns are matched against file paths, not directories.", excl));
+        warnings.push_back(
+            fmt::format("exclude: '{}' ends with '/'. "
+                        "Patterns are matched against file paths, not directories.",
+                        excl));
       } else if (!excl.empty() && excl.front() != '*' && !fs::path(excl).is_absolute()) {
         warnings.push_back(fmt::format("exclude: '{}' is a relative pattern without a leading '*'.", excl));
       }
@@ -79,8 +80,10 @@ bool ConfigValidator::checkWarnings(const Config& config) {
         if (rel.empty() || rel.native().find("..") != std::string::npos) {
           warnings.push_back(fmt::format("pattern: '{}' is an absolute path outside source-dir.", pat));
         } else {
-          warnings.push_back(fmt::format("pattern: '{}' is an absolute path. "
-                                         "Git pathspec uses paths relative to repository root.", pat));
+          warnings.push_back(
+              fmt::format("pattern: '{}' is an absolute path. "
+                          "Git pathspec uses paths relative to repository root.",
+                          pat));
         }
       }
     }

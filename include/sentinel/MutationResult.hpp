@@ -9,8 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "sentinel/MutationState.hpp"
 #include "sentinel/Mutant.hpp"
+#include "sentinel/MutationState.hpp"
 
 namespace sentinel {
 

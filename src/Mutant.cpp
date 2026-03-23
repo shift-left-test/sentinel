@@ -16,7 +16,8 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Mutant::Mutant() : mFirst {0, 0}, mLast {0, 0} {}
+Mutant::Mutant() : mFirst{0, 0}, mLast{0, 0} {
+}
 
 Mutant::Mutant(const std::string& mutationOperator, const std::filesystem::path& path,
                const std::string& qualifiedFuncName, std::size_t firstLine, std::size_t firstColumn,
@@ -25,8 +26,8 @@ Mutant::Mutant(const std::string& mutationOperator, const std::filesystem::path&
     mToken(token),
     mOperator(mutationOperator),
     mQualifiedFunction(qualifiedFuncName),
-    mFirst {firstLine, firstColumn},
-    mLast {lastLine, lastColumn} {
+    mFirst{firstLine, firstColumn},
+    mLast{lastLine, lastColumn} {
   std::size_t pos = qualifiedFuncName.find_last_of(':');
   if (pos == std::string::npos) {
     mClass = "";

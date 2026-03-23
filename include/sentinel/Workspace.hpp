@@ -20,10 +20,10 @@ namespace sentinel {
  * @brief Runtime state persisted between pipeline stages in workspace/status.yaml.
  */
 struct WorkspaceStatus {
-  std::optional<std::size_t> baselineTime;    ///< Computed timeout seconds (timeout:auto only)
+  std::optional<std::size_t> baselineTime;  ///< Computed timeout seconds (timeout:auto only)
   std::optional<std::size_t> candidateCount;  ///< Total candidates before partition
-  std::optional<std::size_t> partIndex;       ///< Partition index N (0 = no partition)
-  std::optional<std::size_t> partCount;       ///< Partition total (0 = no partition)
+  std::optional<std::size_t> partIndex;  ///< Partition index N (0 = no partition)
+  std::optional<std::size_t> partCount;  ///< Partition total (0 = no partition)
 };
 
 /**
@@ -180,8 +180,7 @@ class Workspace {
    * @param to   Destination directory (cleared and recreated).
    * @param exts File extensions to include (empty = all files).
    */
-  static void copyTestReportTo(const std::filesystem::path& from,
-                               const std::filesystem::path& to,
+  static void copyTestReportTo(const std::filesystem::path& from, const std::filesystem::path& to,
                                const std::vector<std::string>& exts);
 
   /**

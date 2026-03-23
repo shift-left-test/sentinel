@@ -48,7 +48,8 @@ class CaptureHelper {
   }
 
  private:
-  explicit CaptureHelper(std::ostream* ioStream) : mStream(ioStream), mIsCapturing(false), mOriginalBuffer(nullptr) {}
+  explicit CaptureHelper(std::ostream* ioStream) : mStream(ioStream), mIsCapturing(false), mOriginalBuffer(nullptr) {
+  }
 
   std::ostream* mStream;
   bool mIsCapturing;

@@ -27,12 +27,14 @@ class MutationOperator {
    * @param Context Clang ASTContext object
    */
   MutationOperator(const std::string& name, clang::ASTContext* Context) :
-      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {}
+      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {
+  }
 
   /**
    * @brief Default destructor
    */
-  virtual ~MutationOperator() {}
+  virtual ~MutationOperator() {
+  }
 
   /**
    * @brief Return the name of the mutation operator

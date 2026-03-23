@@ -4,11 +4,11 @@
  */
 
 #include <fmt/core.h>
-#include <string_view>
 #include <memory>
 #include <string>
-#include "sentinel/Logger.hpp"
+#include <string_view>
 #include "sentinel/CTestXmlParser.hpp"
+#include "sentinel/Logger.hpp"
 
 namespace sentinel {
 

@@ -60,8 +60,7 @@ void StatusLine::setTotalMutants(size_t total) {
   redraw();
 }
 
-void StatusLine::setMutantInfo(size_t current, const std::string& op,
-                               const std::filesystem::path& file, size_t line) {
+void StatusLine::setMutantInfo(size_t current, const std::string& op, const std::filesystem::path& file, size_t line) {
   mCurrent = current;
   mOp = op;
   mFile = file;
