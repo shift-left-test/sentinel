@@ -62,7 +62,7 @@ endmacro()
 function(build_library)
   set(options EXTERNAL NO_INSTALL)
   set(oneValueArgs TYPE NAME PREFIX SUFFIX VERSION ALIAS)
-  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS INSTALL_HEADERS CFLAGS CPPFLAGS CXXFLAGS COMPILE_OPTIONS LINK_OPTIONS)
+  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS INSTALL_HEADERS COMPILE_DEFINITIONS COMPILE_OPTIONS LINK_OPTIONS)
   cmake_parse_arguments(BUILD
     "${options}"
     "${oneValueArgs}"
@@ -137,16 +137,8 @@ function(build_library)
       SOVERSION ${BUILD_VERSION_MAJOR})
   endif()
 
-  if(BUILD_CFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CFLAGS})
-  endif()
-
-  if(BUILD_CPPFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CPPFLAGS})
-  endif()
-
-  if(BUILD_CXXFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CXXFLAGS})
+  if(BUILD_COMPILE_DEFINITIONS)
+    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_COMPILE_DEFINITIONS})
   endif()
 
   if(BUILD_COMPILE_OPTIONS)
@@ -154,7 +146,7 @@ function(build_library)
   endif()
 
   if(BUILD_LINK_OPTIONS)
-    set_property(TARGET ${BUILD_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${BUILD_LINK_OPTIONS}")
+    target_link_options(${BUILD_NAME} PRIVATE ${BUILD_LINK_OPTIONS})
   endif()
 
   if(BUILD_LIBS)
@@ -183,7 +175,7 @@ endmacro()
 function(build_executable)
   set(options NO_INSTALL)
   set(oneValueArgs TYPE NAME PREFIX SUFFIX VERSION ALIAS)
-  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS CFLAGS CPPFLAGS CXXFLAGS COMPILE_OPTIONS LINK_OPTIONS)
+  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS COMPILE_DEFINITIONS COMPILE_OPTIONS LINK_OPTIONS)
   cmake_parse_arguments(BUILD
     "${options}"
     "${oneValueArgs}"
@@ -261,16 +253,8 @@ function(build_executable)
     message(WARNING "Unsupported variable ALIAS found at ${CMAKE_CURRENT_LIST_FILE}")
   endif()
 
-  if(BUILD_CFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CFLAGS})
-  endif()
-
-  if(BUILD_CPPFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CPPFLAGS})
-  endif()
-
-  if(BUILD_CXXFLAGS)
-    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_CXXFLAGS})
+  if(BUILD_COMPILE_DEFINITIONS)
+    target_compile_definitions(${BUILD_NAME} PUBLIC ${BUILD_COMPILE_DEFINITIONS})
   endif()
 
   if(BUILD_COMPILE_OPTIONS)
@@ -278,7 +262,7 @@ function(build_executable)
   endif()
 
   if(BUILD_LINK_OPTIONS)
-    set_property(TARGET ${BUILD_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${BUILD_LINK_OPTIONS}")
+    target_link_options(${BUILD_NAME} PRIVATE ${BUILD_LINK_OPTIONS})
   endif()
 
   if(BUILD_LIBS)
@@ -299,7 +283,7 @@ endmacro()
 function(build_interface)
   set(options EXTERNAL NO_INSTALL)
   set(oneValueArgs NAME ALIAS)
-  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS INSTALL_HEADERS CFLAGS CPPFLAGS CXXFLAGS COMPILE_OPTIONS LINK_OPTIONS)
+  set(multiValueArgs SRCS LIBS PUBLIC_HEADERS PUBLIC_SYSTEM_HEADERS PRIVATE_HEADERS PRIVATE_SYSTEM_HEADERS INSTALL_HEADERS COMPILE_DEFINITIONS COMPILE_OPTIONS LINK_OPTIONS)
   cmake_parse_arguments(BUILD
     "${options}"
     "${oneValueArgs}"
@@ -344,16 +328,8 @@ function(build_interface)
     add_library(${BUILD_NAME}::lib ALIAS ${BUILD_NAME})
   endif()
 
-  if(BUILD_CFLAGS)
-    target_compile_definitions(${BUILD_NAME} INTERFACE ${BUILD_CFLAGS})
-  endif()
-
-  if(BUILD_CPPFLAGS)
-    target_compile_definitions(${BUILD_NAME} INTERFACE ${BUILD_CPPFLAGS})
-  endif()
-
-  if(BUILD_CXXFLAGS)
-    target_compile_definitions(${BUILD_NAME} INTERFACE ${BUILD_CXXFLAGS})
+  if(BUILD_COMPILE_DEFINITIONS)
+    target_compile_definitions(${BUILD_NAME} INTERFACE ${BUILD_COMPILE_DEFINITIONS})
   endif()
 
   if(BUILD_COMPILE_OPTIONS)
@@ -361,7 +337,7 @@ function(build_interface)
   endif()
 
   if(BUILD_LINK_OPTIONS)
-    set_property(TARGET ${BUILD_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${BUILD_LINK_OPTIONS}")
+    target_link_options(${BUILD_NAME} PRIVATE ${BUILD_LINK_OPTIONS})
   endif()
 
   if(BUILD_LIBS)
@@ -379,7 +355,7 @@ endmacro()
 
 function(build_debian_package)
   set(oneValueArgs MAINTAINER CONTACT HOMEPAGE VENDOR SUMMARY SECTION PRIORITY)
-  set(multiValueArgs DEPENDS)
+  set(multiValueArgs)
   cmake_parse_arguments(PKG
     ""
     "${oneValueArgs}"
@@ -439,10 +415,7 @@ function(build_debian_package)
     endif()
   endif()
 
-  if(PKG_DEPENDS)
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS ${PKG_DEPENDS})
-  endif()
+  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
   set(CPACK_PACKAGE_FILE_NAME
     "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")

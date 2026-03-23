@@ -4,20 +4,10 @@
 #  LIBGIT2_LIBRARIES    - The libraries needed to use libgit2
 #  LIBGIT2_DEFINITIONS  - Compiler switches required for using libgit2
 
-set(LIBGIT2_DEFINITIONS ${PC_LIBGIT2_CFLAGS_OTHER})
-
-find_path(LIBGIT2_INCLUDE_DIR NAMES git2.h
-   HINTS
-   ${PC_LIBGIT2_INCLUDEDIR}
-   ${PC_LIBGIT2_INCLUDE_DIRS}
-)
+find_path(LIBGIT2_INCLUDE_DIR NAMES git2.h)
 mark_as_advanced(LIBGIT2_INCLUDE_DIR)
 
-find_library(LIBGIT2_LIBRARIES NAMES git2
-   HINTS
-   ${PC_LIBGIT2_LIBDIR}
-   ${PC_LIBGIT2_LIBRARY_DIRS}
-)
+find_library(LIBGIT2_LIBRARIES NAMES git2)
 mark_as_advanced(LIBGIT2_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)

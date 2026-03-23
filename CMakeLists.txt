@@ -1,7 +1,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project(sentinel VERSION 0.4.8)
 
@@ -37,5 +37,4 @@ build_debian_package(
   VENDOR "LG Electronics"
   SUMMARY "the mutation testing tool for C/C++ projects"
   SECTION "devel"
-  DEPENDS "libgit2-dev"
 )

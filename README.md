@@ -86,7 +86,7 @@ Sentinel will build the project, run the test suite, evaluate mutants, and write
 | Requirement | Version  |
 |-------------|----------|
 | LLVM/Clang  | 11+      |
-| CMake       | 3.8+     |
+| CMake       | 3.13+    |
 | libgit2     | any      |
 | Docker      | optional (recommended for setup) |
 
