@@ -19,6 +19,7 @@
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/YamlConfigParser.hpp"
+#include "sentinel/YamlConfigWriter.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/BaselineBuildStage.hpp"
 #include "sentinel/stages/BaselineTestStage.hpp"
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
           return 0;
         }
       }
-      sentinel::YamlConfigParser::writeTemplate(kConfigFileName);
+      sentinel::YamlConfigWriter::writeTemplate(kConfigFileName);
       return 0;
     }
 

@@ -23,7 +23,7 @@ build_test_program(
        CliConfigParserTest.cpp StatusLineTest.cpp
        TimestamperTest.cpp AORTest.cpp BORTest.cpp LCRTest.cpp RORTest.cpp SDLTest.cpp SORTest.cpp UOITest.cpp
        DocGeneratorTest.cpp StageTest.cpp ConfigValidatorTest.cpp BaselineTestStageTest.cpp
-       EvaluationStageTest.cpp SignalHandlerTest.cpp YamlConfigParserTest.cpp
+       EvaluationStageTest.cpp SignalHandlerTest.cpp YamlConfigParserTest.cpp YamlConfigWriterTest.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include ${CMAKE_SOURCE_DIR}/test/harness
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS} ${CMAKE_DL_LIBS}
 )
