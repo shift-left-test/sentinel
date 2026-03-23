@@ -120,6 +120,18 @@ struct Config {
   bool dryRun = false;
   /** @brief Disable the status line in the console. */
   bool noStatusLine = false;
+
+  /**
+   * @brief Resolve all path fields to absolute paths.
+   *
+   * CLI-sourced paths are resolved relative to the current working directory.
+   * YAML-sourced paths are resolved relative to the directory containing @p yamlPath.
+   * If @p yamlPath is empty, YAML-sourced paths are also resolved relative to the current working directory.
+   *
+   * @param yamlPath  Path to the YAML config file (used to derive the base directory).
+   * @param cliConfig Original CLI config used to identify CLI-sourced fields.
+   */
+  void toAbsolutePaths(const std::filesystem::path& yamlPath, const Config& cliConfig);
 };
 
 }  // namespace sentinel

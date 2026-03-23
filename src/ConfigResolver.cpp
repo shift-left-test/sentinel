@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
@@ -54,34 +53,7 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml, const std:
   result.noStatusLine = cli.noStatusLine;
 
   // 4. Path Resolution
-  // If we have a yaml file, resolve relative paths from YAML relative to its directory.
-  // Otherwise, resolve everything relative to current working directory.
-  fs::path yamlBaseDir = yamlPath.empty() ? fs::current_path() : fs::absolute(yamlPath).parent_path();
-
-  auto resolveOne = [&](fs::path& p, bool fromCli) {
-    if (!p.empty()) {
-      if (p.is_relative()) {
-        p = fromCli ? fs::absolute(p).lexically_normal() : (yamlBaseDir / p).lexically_normal();
-      } else {
-        p = p.lexically_normal();
-      }
-    }
-  };
-
-  auto resolvePath = [&](std::optional<fs::path>& optPath, const std::optional<fs::path>& cliVal) {
-    if (optPath) resolveOne(*optPath, cliVal.has_value());
-  };
-
-  resolvePath(result.sourceDir, cli.sourceDir);
-  resolvePath(result.workDir, cli.workDir);
-  resolvePath(result.outputDir, cli.outputDir);
-  resolvePath(result.compileDbDir, cli.compileDbDir);
-  resolvePath(result.testResultDir, cli.testResultDir);
-
-  if (result.coverageFiles) {
-    bool fromCli = cli.coverageFiles.has_value();
-    for (auto& p : *result.coverageFiles) resolveOne(p, fromCli);
-  }
+  result.toAbsolutePaths(yamlPath, cli);
 
   return result;
 }

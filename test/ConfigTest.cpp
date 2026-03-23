@@ -326,4 +326,45 @@ TEST_F(ConfigTest, testPartitionParseThrowsWhenIndexExceedsCount) {
   EXPECT_THROW(Partition::parse("5/4"), std::invalid_argument);
 }
 
+TEST_F(ConfigTest, testToAbsolutePathsResolvesYamlRelativePaths) {
+  Config cfg;
+  cfg.sourceDir = fs::path("src");
+  cfg.workDir = fs::path(".sentinel");
+
+  cfg.toAbsolutePaths(mTmpDir / "sentinel.yaml", Config{});
+
+  EXPECT_EQ((mTmpDir / "src").lexically_normal(), *cfg.sourceDir);
+  EXPECT_EQ((mTmpDir / ".sentinel").lexically_normal(), *cfg.workDir);
+}
+
+TEST_F(ConfigTest, testToAbsolutePathsResolvesCliRelativePathsFromCwd) {
+  Config cfg;
+  cfg.sourceDir = fs::path("src");
+
+  Config cliConfig;
+  cliConfig.sourceDir = fs::path("src");
+
+  cfg.toAbsolutePaths(mTmpDir / "sentinel.yaml", cliConfig);
+
+  EXPECT_EQ(fs::absolute("src").lexically_normal(), *cfg.sourceDir);
+}
+
+TEST_F(ConfigTest, testToAbsolutePathsLeavesAbsolutePathsUnchanged) {
+  Config cfg;
+  cfg.sourceDir = mTmpDir / "src";
+
+  cfg.toAbsolutePaths(mTmpDir / "sentinel.yaml", Config{});
+
+  EXPECT_EQ((mTmpDir / "src").lexically_normal(), *cfg.sourceDir);
+}
+
+TEST_F(ConfigTest, testToAbsolutePathsResolvesCoverageFiles) {
+  Config cfg;
+  cfg.coverageFiles = std::vector<fs::path>{"coverage.info"};
+
+  cfg.toAbsolutePaths(mTmpDir / "sentinel.yaml", Config{});
+
+  EXPECT_EQ((mTmpDir / "coverage.info").lexically_normal(), (*cfg.coverageFiles)[0]);
+}
+
 }  // namespace sentinel
