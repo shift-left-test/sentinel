@@ -27,6 +27,8 @@ class EvaluationStage : public Stage {
   EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
+  bool shouldSkip() const override;
+  StatusLine::Phase getPhase() const override;
   bool execute() override;
 
  private:

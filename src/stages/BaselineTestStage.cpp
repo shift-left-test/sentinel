@@ -74,11 +74,16 @@ BaselineTestStage::BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLi
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
+bool BaselineTestStage::shouldSkip() const {
+  return fs::exists(mWorkspace->getOriginalTestLog()) && mWorkspace->hasPreviousRun();
+}
+
+StatusLine::Phase BaselineTestStage::getPhase() const {
+  return StatusLine::Phase::TEST_ORIG;
+}
+
 bool BaselineTestStage::execute() {
   fs::path testLog = mWorkspace->getOriginalTestLog();
-  if (fs::exists(testLog) && mWorkspace->hasPreviousRun()) return true;  // already done
-
-  mStatusLine->setPhase(StatusLine::Phase::TEST_ORIG);
 
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout != "auto") {

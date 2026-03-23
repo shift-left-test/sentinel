@@ -28,12 +28,17 @@ EvaluationStage::EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> 
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool EvaluationStage::execute() {
-  if (mWorkspace->isComplete()) return true;  // already-complete: go to report
+bool EvaluationStage::shouldSkip() const {
+  return mWorkspace->isComplete();
+}
 
+StatusLine::Phase EvaluationStage::getPhase() const {
+  return StatusLine::Phase::MUTANT;
+}
+
+bool EvaluationStage::execute() {
   auto indexedMutants = mWorkspace->loadMutants();
   mStatusLine->setTotalMutants(indexedMutants.size());
-  mStatusLine->setPhase(StatusLine::Phase::MUTANT);
 
   // Determine timeout
   std::size_t computedTimeLimit = 0;

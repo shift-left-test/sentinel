@@ -46,6 +46,19 @@ class Stage {
 
  protected:
   /**
+   * @brief Return true if this stage should be skipped.
+   *
+   * When skipped, execute() is not called and the phase is not set.
+   * The chain continues to the next stage as if execute() returned true.
+   */
+  virtual bool shouldSkip() const = 0;
+
+  /**
+   * @brief Return the StatusLine phase to display when this stage runs.
+   */
+  virtual StatusLine::Phase getPhase() const = 0;
+
+  /**
    * @brief Perform this stage's work.
    * @return true to continue the chain, false to stop.
    */

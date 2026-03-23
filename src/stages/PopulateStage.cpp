@@ -26,12 +26,15 @@ PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl, 
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
+bool PopulateStage::shouldSkip() const {
+  return !mWorkspace->loadMutants().empty();
+}
+
+StatusLine::Phase PopulateStage::getPhase() const {
+  return StatusLine::Phase::POPULATE;
+}
+
 bool PopulateStage::execute() {
-  // Skip if mutants already written (resume or dry-run re-run)
-  if (!mWorkspace->loadMutants().empty()) return true;
-
-  mStatusLine->setPhase(StatusLine::Phase::POPULATE);
-
   auto repo =
       std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions, *mConfig.patterns, *mConfig.excludes);
   repo->addSkipDir(mWorkspace->getRoot());

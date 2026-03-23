@@ -23,9 +23,15 @@ ReportStage::ReportStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std:
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool ReportStage::execute() {
-  mStatusLine->setPhase(StatusLine::Phase::REPORT);
+bool ReportStage::shouldSkip() const {
+  return false;
+}
 
+StatusLine::Phase ReportStage::getPhase() const {
+  return StatusLine::Phase::REPORT;
+}
+
+bool ReportStage::execute() {
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
   for (const auto& [id, m] : mWorkspace->loadMutants()) {
     evaluator.injectResult(mWorkspace->getDoneResult(id));
@@ -38,8 +44,6 @@ bool ReportStage::execute() {
     HtmlReport htmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
     htmlReport.save(*mConfig.outputDir);
   }
-
-  mStatusLine->disable();
 
   // Compute mutation score and check threshold.
   if (mConfig.threshold) {

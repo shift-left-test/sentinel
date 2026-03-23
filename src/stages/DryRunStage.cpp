@@ -62,9 +62,15 @@ DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std:
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool DryRunStage::execute() {
-  if (!mConfig.dryRun) return true;
+bool DryRunStage::shouldSkip() const {
+  return !mConfig.dryRun;
+}
 
+StatusLine::Phase DryRunStage::getPhase() const {
+  return StatusLine::Phase::POPULATE;
+}
+
+bool DryRunStage::execute() {
   auto indexedMutants = mWorkspace->loadMutants();
   auto status = mWorkspace->loadStatus();
 
@@ -79,7 +85,6 @@ bool DryRunStage::execute() {
   std::size_t partCount = status.partCount.value_or(0);
 
   mStatusLine->setTotalMutants(indexedMutants.size());
-  mStatusLine->disable();
 
   printDryRunSummary(mConfig, computedTimeLimit, indexedMutants, candidateCount, mWorkspace->getRoot(), partIdx,
                      partCount);

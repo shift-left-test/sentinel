@@ -19,8 +19,19 @@ std::shared_ptr<Stage> Stage::setNext(std::shared_ptr<Stage> next) {
 }
 
 void Stage::run() {
-  if (!execute()) return;
+  if (!shouldSkip()) {
+    mStatusLine->setPhase(getPhase());
+    try {
+      if (!execute()) {
+        mStatusLine->disable(); return;
+      }
+    } catch (...) {
+      mStatusLine->disable();
+      throw;
+    }
+  }
   if (mNext) mNext->run();
+  else mStatusLine->disable();
 }
 
 }  // namespace sentinel

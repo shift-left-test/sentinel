@@ -22,11 +22,16 @@ BaselineBuildStage::BaselineBuildStage(const Config& cfg, std::shared_ptr<Status
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
+bool BaselineBuildStage::shouldSkip() const {
+  return fs::exists(mWorkspace->getOriginalBuildLog());
+}
+
+StatusLine::Phase BaselineBuildStage::getPhase() const {
+  return StatusLine::Phase::BUILD_ORIG;
+}
+
 bool BaselineBuildStage::execute() {
   fs::path buildLog = mWorkspace->getOriginalBuildLog();
-  if (fs::exists(buildLog)) return true;  // already done
-
-  mStatusLine->setPhase(StatusLine::Phase::BUILD_ORIG);
   Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), *mConfig.silent);
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
