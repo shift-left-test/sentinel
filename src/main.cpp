@@ -72,14 +72,15 @@ int main(int argc, char** argv) {
     // 3. Detect run mode
     bool dryRun = cliCfg.dryRun;
     bool force  = cliCfg.force && *cliCfg.force;
-    bool alreadyComplete = ws->hasPreviousRun() && ws->isComplete() && !force && !dryRun;
+    bool alreadyComplete = false;
     bool resuming = false;
-    if (!alreadyComplete && ws->hasPreviousRun() && !force && !dryRun) {
+    if (!force && !dryRun && ws->hasPreviousRun()) {
       if (!sentinel::Console::confirm("Previous run found in '{}'. Resume?", workDirPath.string())) {
         sentinel::Console::out("Aborted.");
         return 0;
       }
-      resuming = true;
+      alreadyComplete = ws->isComplete();
+      resuming = !alreadyComplete;
     }
 
     // 4. Load and resolve config
@@ -106,6 +107,9 @@ int main(int argc, char** argv) {
       sentinel::Logger::setLevel(sentinel::Logger::Level::DEBUG);
     } else if (cfg.verbose && *cfg.verbose) {
       sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
+    }
+    if (dryRun && ws->hasPreviousRun()) {
+      logger->debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath.string());
     }
 
     // Validate config before starting the pipeline.
