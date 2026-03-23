@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationResults.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/util/io.hpp"
 
@@ -17,12 +17,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-XmlReport::XmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
-    Report(results, sourcePath) {
-}
-
-XmlReport::XmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
-    Report(resultsPath, sourcePath) {
+XmlReport::XmlReport(const MutationSummary& summary) : Report(summary) {
 }
 
 void XmlReport::save(const std::filesystem::path& dirPath) {
@@ -37,7 +32,7 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
 
   tinyxml2::XMLElement* pMutations = doc->NewElement("mutations");
 
-  for (const auto& r : mResults) {
+  for (const auto& r : mSummary.results) {
     auto currentState = r.getMutationState();
     bool skip = false;
     if (currentState == MutationState::BUILD_FAILURE || currentState == MutationState::RUNTIME_ERROR ||
@@ -54,7 +49,7 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
 
     addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename().string());
     addChildToParent(doc.get(), pMutation, "sourceFilePath",
-                     getRelativePath(r.getMutant().getPath(), mSourcePath).string());
+                     MutationSummary::getRelativePath(r.getMutant().getPath(), mSummary.sourcePath).string());
     addChildToParent(doc.get(), pMutation, "mutatedClass", r.getMutant().getClass());
     addChildToParent(doc.get(), pMutation, "mutatedMethod", r.getMutant().getFunction());
     addChildToParent(doc.get(), pMutation, "lineNumber", std::to_string(r.getMutant().getFirst().line));

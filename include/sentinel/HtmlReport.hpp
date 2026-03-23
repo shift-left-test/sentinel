@@ -19,26 +19,17 @@ namespace sentinel {
 class HtmlReport : public Report {
  public:
   /**
-   * @brief Default constructor
+   * @brief Construct an HTML report view from a precomputed summary.
    *
-   * @param results mutation results
-   * @param sourcePath directory path of source files
+   * @param summary Aggregated mutation data to render.
    */
-  HtmlReport(const MutationResults& results, const std::filesystem::path& sourcePath);
+  explicit HtmlReport(const MutationSummary& summary);
 
   /**
-   * @brief Default constructor
+   * @brief Save the report in HTML format to @p dirPath.
    *
-   * @param resultsPath directory path of mutation results
-   * @param sourcePath directory path of source files
-   */
-  HtmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
-
-  /**
-   * @brief save html format result to path
-   *
-   * @param dirPath
-   * @throw InvalidArgumentException when path is not directory
+   * @param dirPath Directory to save the HTML files into.
+   * @throw InvalidArgumentException when path is not a directory.
    */
   void save(const std::filesystem::path& dirPath) override;
 

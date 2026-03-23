@@ -15,6 +15,7 @@
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
@@ -56,7 +57,7 @@ class ReportTest : public SentinelReportTestBase {
 
 class ReportForTest : public Report {
  public:
-  using Report::Report;
+  explicit ReportForTest(const MutationSummary& summary) : Report(summary) {}
   void save(const std::filesystem::path& dirPath) override {
     if (fs::exists(dirPath)) {
       return;
@@ -69,7 +70,7 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   fs::create_directories(MUT_RESULT_DIR);
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
 
-  ReportForTest report(MRPath, SOURCE_DIR);
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
   captureStdout();
   report.printSummary();
   std::string out = capturedStdout();
@@ -99,7 +100,7 @@ TOTAL                                                      0         0        -%
 
   MRs.save(MRPath);
 
-  ReportForTest report2(MRPath, SOURCE_DIR);
+  ReportForTest report2(MutationSummary(MRPath, SOURCE_DIR));
   captureStdout();
   report2.printSummary();
   std::string out2 = capturedStdout();
@@ -142,7 +143,7 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR);
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
   captureStdout();
   report.printSummary();
@@ -189,7 +190,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR);
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
   captureStdout();
   report.printSummary();
@@ -236,7 +237,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  ReportForTest report(MRPath, SOURCE_DIR);
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
   captureStdout();
   report.printSummary();

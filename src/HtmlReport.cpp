@@ -27,12 +27,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-HtmlReport::HtmlReport(const MutationResults& results, const std::filesystem::path& sourcePath) :
-    Report(results, sourcePath) {
-}
-
-HtmlReport::HtmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath) :
-    Report(resultsPath, sourcePath) {
+HtmlReport::HtmlReport(const MutationSummary& summary) : Report(summary) {
 }
 
 void HtmlReport::save(const std::filesystem::path& dirPath) {
@@ -45,20 +40,20 @@ void HtmlReport::save(const std::filesystem::path& dirPath) {
   ofs << cg.str();
   ofs.close();
 
-  if (totNumberOfMutation == 0) {
+  if (mSummary.totNumberOfMutation == 0) {
     std::ofstream ofs2(dirPath / "index.html", std::ofstream::out);
     ofs2 << EmptyIndexHtmlGenerator().str();
     ofs2.close();
     return;
   }
 
-  makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, true, "", dirPath);
+  makeIndexHtml(mSummary.totNumberOfMutation, mSummary.totNumberOfDetectedMutation, true, "", dirPath);
 
-  for (const auto& p : groupByDirPath) {
-    makeIndexHtml(totNumberOfMutation, totNumberOfDetectedMutation, false, p.first, dirPath);
+  for (const auto& p : mSummary.groupByDirPath) {
+    makeIndexHtml(mSummary.totNumberOfMutation, mSummary.totNumberOfDetectedMutation, false, p.first, dirPath);
   }
 
-  for (const auto& p : groupByPath) {
+  for (const auto& p : mSummary.groupByPath) {
     makeSourceHtml(p.second.results, p.first, dirPath);
   }
 }
@@ -69,20 +64,20 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   std::size_t numerator = 0;
   std::size_t denominator = 0;
   if (root) {
-    sizeOfTargetFiles = groupByPath.size();
+    sizeOfTargetFiles = mSummary.groupByPath.size();
     numerator = totNumberOfDetectedMutation;
     denominator = totNumberOfMutation;
   } else {
-    sizeOfTargetFiles = groupByDirPath[currentDirPath].fileCount;
-    numerator = groupByDirPath[currentDirPath].detected;
-    denominator = groupByDirPath[currentDirPath].total;
+    sizeOfTargetFiles = mSummary.groupByDirPath.at(currentDirPath).fileCount;
+    numerator = mSummary.groupByDirPath.at(currentDirPath).detected;
+    denominator = mSummary.groupByDirPath.at(currentDirPath).total;
   }
   unsigned int cov = 100 * numerator / denominator;
 
   IndexHtmlGenerator ihg(root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator);
 
   if (root) {
-    for (const auto& p : groupByDirPath) {
+    for (const auto& p : mSummary.groupByDirPath) {
       std::size_t numOfFiles = p.second.fileCount;
       std::size_t subDetected = p.second.detected;
       std::size_t subMut = p.second.total;
@@ -90,7 +85,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
       ihg.pushItemToTable(p.first, subCov, subDetected, subMut, numOfFiles);
     }
   } else {
-    for (const auto& p : groupByPath) {
+    for (const auto& p : mSummary.groupByPath) {
       fs::path curDirpath = p.first.parent_path();
       if (currentDirPath != curDirpath) {
         continue;
@@ -121,7 +116,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
 
 void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
                                 const std::filesystem::path& outputDir) {
-  auto absSrcPath = mSourcePath / srcPath;
+  auto absSrcPath = mSummary.sourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
     throw InvalidArgumentException(fmt::format("Source doesn't exist: {0}", absSrcPath.string()));
   }

@@ -19,27 +19,17 @@ namespace sentinel {
 class XmlReport : public Report {
  public:
   /**
-   * @brief Default constructor
+   * @brief Construct an XML report view from a precomputed summary.
    *
-   * @param results mutation results
-   * @param sourcePath directory path of source files
+   * @param summary Aggregated mutation data to render.
    */
-  XmlReport(const MutationResults& results, const std::filesystem::path& sourcePath);
+  explicit XmlReport(const MutationSummary& summary);
 
   /**
-   * @brief Default constructor
+   * @brief Save the report in XML format to @p dirPath.
    *
-   * @param resultsPath directory path of mutation results
-   * @param sourcePath directory path of source files
-   */
-  XmlReport(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
-
-  /**
-   * @brief save xml format result to path
-   *
-   * @param dirPath
-   *
-   * @throw InvalidArgumentException when path is not directory
+   * @param dirPath Directory to save mutations.xml into.
+   * @throw InvalidArgumentException when path is not a directory.
    */
   void save(const std::filesystem::path& dirPath) override;
 

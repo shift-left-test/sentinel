@@ -9,6 +9,7 @@
 #include <utility>
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/MutationResults.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XmlReport.hpp"
@@ -37,12 +38,12 @@ bool ReportStage::execute() {
     results.push_back(mWorkspace->getDoneResult(id));
   }
 
-  XmlReport xmlReport(results, *mConfig.sourceDir);
+  MutationSummary summary(results, *mConfig.sourceDir);
+  XmlReport xmlReport(summary);
   xmlReport.printSummary();
   if (mConfig.outputDir && !mConfig.outputDir->empty()) {
     xmlReport.save(*mConfig.outputDir);
-    HtmlReport htmlReport(results, *mConfig.sourceDir);
-    htmlReport.save(*mConfig.outputDir);
+    HtmlReport(summary).save(*mConfig.outputDir);
   }
 
   // Compute mutation score and check threshold.

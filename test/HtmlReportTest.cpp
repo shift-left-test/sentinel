@@ -14,6 +14,7 @@
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -968,7 +969,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  HtmlReport htmlreport(MRPath, SOURCE_DIR);
+  HtmlReport htmlreport(MutationSummary(MRPath, SOURCE_DIR));
 
   htmlreport.save(OUT_DIR);
 
@@ -991,12 +992,12 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
 }
 
 TEST_F(HtmlReportTest, testConstructorFailWhenInvalidPathGiven) {
-  EXPECT_THROW(HtmlReport htmlreport("unknown", "unknown"), InvalidArgumentException);
+  EXPECT_THROW(HtmlReport(MutationSummary("unknown", "unknown")), InvalidArgumentException);
 }
 
 TEST_F(HtmlReportTest, testMakeHtmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  HtmlReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   htmlreport.save(OUT_DIR);
   auto outXMLPath = OUT_DIR / "index.html";
@@ -1017,7 +1018,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
 
   EXPECT_THROW(htmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(htmlreport.save("unknown"));
@@ -1046,7 +1047,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidSourcePath) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
   fs::remove(tmpPath);
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
@@ -1060,7 +1061,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MRs, SOURCE_DIR);
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 
   auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
@@ -1071,7 +1072,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs2;
   MRs2.push_back(MR2);
 
-  HtmlReport htmlreport2(MRs2, SOURCE_DIR);
+  HtmlReport htmlreport2(MutationSummary(MRs2, SOURCE_DIR));
   EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
 }
 

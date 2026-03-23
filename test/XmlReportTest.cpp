@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
@@ -145,7 +146,7 @@ TEST_F(XmlReportTest, testMakeXmlReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult1";
   MRs.save(MRPath);
 
-  XmlReport xmlreport(MRPath, SOURCE_DIR);
+  XmlReport xmlreport(MutationSummary(MRPath, SOURCE_DIR));
 
   xmlreport.save(OUT_DIR);
 
@@ -167,7 +168,7 @@ TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  XmlReport xmlreport(MRs, SOURCE_DIR);
+  XmlReport xmlreport(MutationSummary(MRs, SOURCE_DIR));
 
   EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(xmlreport.save("unknown"));
@@ -177,7 +178,7 @@ TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
 
 TEST_F(XmlReportTest, testMakeXmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  XmlReport xmlreport(MRs, SOURCE_DIR);
+  XmlReport xmlreport(MutationSummary(MRs, SOURCE_DIR));
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   xmlreport.save(OUT_DIR);
 

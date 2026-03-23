@@ -11,7 +11,7 @@ build_static_library(
        MutantGenerator.cpp UniformMutantGenerator.cpp RandomMutantGenerator.cpp WeightedMutantGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp XmlParser.cpp GoogleTestXmlParser.cpp CTestXmlParser.cpp QTestXmlParser.cpp Evaluator.cpp
        MutationResult.cpp GitSourceTree.cpp Timestamper.cpp
-       Report.cpp XmlReport.cpp HtmlReport.cpp
+       MutationSummary.cpp Report.cpp XmlReport.cpp HtmlReport.cpp
        Logger.cpp operators/aor.cpp operators/bor.cpp operators/lcr.cpp
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp Subprocess.cpp
