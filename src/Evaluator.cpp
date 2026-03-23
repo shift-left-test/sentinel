@@ -12,7 +12,6 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/io.hpp"
 
@@ -86,17 +85,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
 
   MutationResult ret(mut, killingTC, errorTC, state);
 
-  mMutationResults.push_back(ret);
-
   return ret;
-}
-
-void Evaluator::injectResult(const MutationResult& result) {
-  mMutationResults.push_back(result);
-}
-
-const MutationResults& Evaluator::getMutationResults() const {
-  return mMutationResults;
 }
 
 MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& ActualResultDir,

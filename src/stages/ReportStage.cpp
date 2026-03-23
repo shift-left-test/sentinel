@@ -7,8 +7,8 @@
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <utility>
-#include "sentinel/Evaluator.hpp"
 #include "sentinel/HtmlReport.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XmlReport.hpp"
@@ -32,22 +32,21 @@ StatusLine::Phase ReportStage::getPhase() const {
 }
 
 bool ReportStage::execute() {
-  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
+  MutationResults results;
   for (const auto& [id, m] : mWorkspace->loadMutants()) {
-    evaluator.injectResult(mWorkspace->getDoneResult(id));
+    results.push_back(mWorkspace->getDoneResult(id));
   }
 
-  XmlReport xmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
+  XmlReport xmlReport(results, *mConfig.sourceDir);
   xmlReport.printSummary();
   if (mConfig.outputDir && !mConfig.outputDir->empty()) {
     xmlReport.save(*mConfig.outputDir);
-    HtmlReport htmlReport(evaluator.getMutationResults(), *mConfig.sourceDir);
+    HtmlReport htmlReport(results, *mConfig.sourceDir);
     htmlReport.save(*mConfig.outputDir);
   }
 
   // Compute mutation score and check threshold.
   if (mConfig.threshold) {
-    const auto& results = evaluator.getMutationResults();
     std::size_t total = results.size();
     if (total > 0) {
       std::size_t killed = static_cast<std::size_t>(

@@ -10,9 +10,7 @@
 #include <memory>
 #include <string>
 #include "sentinel/Logger.hpp"
-#include "sentinel/Mutants.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationResults.hpp"
 #include "sentinel/Result.hpp"
 
 namespace sentinel {
@@ -63,29 +61,11 @@ class Evaluator {
   MutationResult compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& ActualResultDir,
                                               const std::filesystem::path& evalFilePath, TestExecutionState testState);
 
-  /**
-   * @brief Directly inject a previously computed MutationResult (used on resume).
-   *
-   * Adds @p result to the internal results list without re-running any comparison.
-   *
-   * @param result  MutationResult deserialized from a prior run.
-   */
-  void injectResult(const MutationResult& result);
-
-  /**
-   * @brief Return mutation results
-   *
-   * @return MutationResults
-   */
-  const MutationResults& getMutationResults() const;
-
  private:
   std::shared_ptr<Logger> mLogger;
   std::filesystem::path mSourcePath;
   std::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
-  Mutants mMutants;
   Result mExpectedResult;
-  MutationResults mMutationResults;
 };
 
 }  // namespace sentinel

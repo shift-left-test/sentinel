@@ -58,7 +58,6 @@ bool EvaluationStage::execute() {
   for (const auto& [id, m] : indexedMutants) {
     if (mWorkspace->isDone(id)) {
       auto doneResult = mWorkspace->getDoneResult(id);
-      evaluator.injectResult(doneResult);
       mStatusLine->recordResult(static_cast<int>(doneResult.getMutationState()));
       continue;
     }

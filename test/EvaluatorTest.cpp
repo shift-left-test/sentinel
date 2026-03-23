@@ -228,10 +228,4 @@ TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   fs::remove(emptyPath);
 }
 
-TEST_F(EvaluatorTest, testInjectResultAddsToResults) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
-  MutationResult result(*mutable1, "TC1", "", MutationState::KILLED);
-  EXPECT_NO_THROW(mEvaluator.injectResult(result));
-  EXPECT_EQ(1u, mEvaluator.getMutationResults().size());
-}
 }  // namespace sentinel
