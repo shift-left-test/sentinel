@@ -7,6 +7,9 @@
 #define INCLUDE_SENTINEL_STAGES_EVALUATIONSTAGE_HPP_
 
 #include <memory>
+#include "sentinel/Evaluator.hpp"
+#include "sentinel/Mutant.hpp"
+#include "sentinel/MutationResult.hpp"
 #include "sentinel/Stage.hpp"
 #include "sentinel/Workspace.hpp"
 
@@ -33,6 +36,19 @@ class EvaluationStage : public Stage {
 
  private:
   std::shared_ptr<Workspace> mWorkspace;
+
+  /**
+   * @brief Apply a mutant, run build/test, compare results, then restore backup.
+   *
+   * @param m              Mutant to evaluate.
+   * @param id             1-based mutant ID (used for log paths).
+   * @param timeLimit      Test timeout in seconds (0 = no limit).
+   * @param killAfterSecs  Seconds to wait before force-killing a timed-out process.
+   * @param evaluator      Evaluator used to compare expected vs actual results.
+   * @return MutationResult for the evaluated mutant.
+   */
+  MutationResult evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
+                                Evaluator& evaluator);
 };
 
 }  // namespace sentinel

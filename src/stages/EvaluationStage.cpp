@@ -51,8 +51,6 @@ bool EvaluationStage::execute() {
   }
   const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
 
-  const fs::path backupDir = mWorkspace->getBackupDir();
-  const fs::path actualDir = mWorkspace->getActualDir();
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
 
   for (const auto& [id, m] : indexedMutants) {
@@ -65,37 +63,47 @@ bool EvaluationStage::execute() {
     mWorkspace->setLock(id);
     mStatusLine->setMutantInfo(id, m.getOperator(), m.getPath().filename().string(), m.getFirst().line);
 
-    auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
-    repo->getSourceTree()->modify(m, backupDir.string());
+    MutationResult result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, evaluator);
 
-    Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
-    mBuild.execute();
-
-    TestExecutionState testState = TestExecutionState::SUCCESS;
-    if (mBuild.isSuccessfulExit()) {
-      fs::remove_all(*mConfig.testResultDir);
-      Subprocess mTest(*mConfig.testCmd, computedTimeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
-                       *mConfig.silent);
-      mTest.execute();
-      if (mTest.isTimedOut()) {
-        testState = TestExecutionState::TIMEOUT;
-      } else {
-        io::syncFiles(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
-      }
-    } else {
-      testState = TestExecutionState::BUILD_FAILURE;
-    }
-
-    MutationResult result = evaluator.compare(m, actualDir, testState);
-    mWorkspace->restoreBackup(*mConfig.sourceDir);
     mWorkspace->clearLock(id);
     mWorkspace->setDone(id, result);
     mStatusLine->recordResult(static_cast<int>(result.getMutationState()));
-    fs::remove_all(actualDir);
   }
 
   mWorkspace->setComplete();
   return true;
+}
+
+MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
+                                               std::size_t killAfterSecs, Evaluator& evaluator) {
+  const fs::path backupDir = mWorkspace->getBackupDir();
+  const fs::path actualDir = mWorkspace->getActualDir();
+
+  auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
+  repo->getSourceTree()->modify(m, backupDir.string());
+
+  Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
+  mBuild.execute();
+
+  TestExecutionState testState = TestExecutionState::SUCCESS;
+  if (mBuild.isSuccessfulExit()) {
+    fs::remove_all(*mConfig.testResultDir);
+    Subprocess mTest(*mConfig.testCmd, timeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
+                     *mConfig.silent);
+    mTest.execute();
+    if (mTest.isTimedOut()) {
+      testState = TestExecutionState::TIMEOUT;
+    } else {
+      io::syncFiles(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
+    }
+  } else {
+    testState = TestExecutionState::BUILD_FAILURE;
+  }
+
+  MutationResult result = evaluator.compare(m, actualDir, testState);
+  mWorkspace->restoreBackup(*mConfig.sourceDir);
+  fs::remove_all(actualDir);
+  return result;
 }
 
 }  // namespace sentinel
