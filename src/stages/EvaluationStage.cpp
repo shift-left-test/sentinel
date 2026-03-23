@@ -18,6 +18,7 @@
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
+#include "sentinel/util/io.hpp"
 
 namespace sentinel {
 
@@ -80,7 +81,7 @@ bool EvaluationStage::execute() {
       if (mTest.isTimedOut()) {
         testState = TestExecutionState::TIMEOUT;
       } else {
-        Workspace::copyTestReportTo(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
+        io::syncFiles(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
       }
     } else {
       testState = TestExecutionState::BUILD_FAILURE;

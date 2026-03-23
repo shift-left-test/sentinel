@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/io.hpp"
 
@@ -22,6 +23,12 @@ class IoTest : public ::testing::Test {
 
   void TearDown() override {
     fs::remove_all(mTestDir);
+  }
+
+  void writeFile(const fs::path& p, const std::string& content) {
+    fs::create_directories(p.parent_path());
+    std::ofstream f(p);
+    f << content;
   }
 
   fs::path mTestDir;
@@ -54,6 +61,59 @@ TEST_F(IoTest, testEnsureDirectoryExistsThrowsWhenPathIsAFile) {
   EXPECT_TRUE(fs::exists(filePath));
   EXPECT_FALSE(fs::is_directory(filePath));
   EXPECT_THROW(io::ensureDirectoryExists(filePath), InvalidArgumentException);
+}
+
+TEST_F(IoTest, testSyncFilesFiltersByExtension) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+  writeFile(from / "a.xml", "<xml/>");
+  writeFile(from / "b.txt", "text");
+
+  io::syncFiles(from, to, {"xml"});
+
+  EXPECT_TRUE(fs::exists(to / "a.xml"));
+  EXPECT_FALSE(fs::exists(to / "b.txt"));
+}
+
+TEST_F(IoTest, testSyncFilesAllFilesWhenExtsEmpty) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+  writeFile(from / "a.xml", "<xml/>");
+  writeFile(from / "b.txt", "text");
+
+  io::syncFiles(from, to, {});
+
+  EXPECT_TRUE(fs::exists(to / "a.xml"));
+  EXPECT_TRUE(fs::exists(to / "b.txt"));
+}
+
+TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+  fs::create_directories(to);
+  writeFile(to / "old.xml", "old");
+  writeFile(from / "new.xml", "<xml/>");
+
+  io::syncFiles(from, to, {"xml"});
+
+  EXPECT_FALSE(fs::exists(to / "old.xml"));
+  EXPECT_TRUE(fs::exists(to / "new.xml"));
+}
+
+TEST_F(IoTest, testSyncFilesOverloadCopiesAllFiles) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+  writeFile(from / "a.xml", "<xml/>");
+  writeFile(from / "b.txt", "text");
+
+  io::syncFiles(from, to);
+
+  EXPECT_TRUE(fs::exists(to / "a.xml"));
+  EXPECT_TRUE(fs::exists(to / "b.txt"));
 }
 
 }  // namespace sentinel

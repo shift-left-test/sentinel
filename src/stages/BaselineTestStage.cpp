@@ -18,6 +18,7 @@
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/Workspace.hpp"
+#include "sentinel/util/io.hpp"
 #include "sentinel/stages/BaselineTestStage.hpp"
 
 namespace sentinel {
@@ -104,7 +105,7 @@ bool BaselineTestStage::execute() {
     mWorkspace->saveStatus(status);
   }
 
-  Workspace::copyTestReportTo(*mConfig.testResultDir, mWorkspace->getOriginalResultsDir(), *mConfig.testResultExts);
+  io::syncFiles(*mConfig.testResultDir, mWorkspace->getOriginalResultsDir(), *mConfig.testResultExts);
 
   if (fs::is_empty(mWorkspace->getOriginalResultsDir())) {
     throw std::runtime_error(fmt::format("No test result files found in '{}' after running test command. See: {}",
