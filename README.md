@@ -311,53 +311,56 @@ Run `sentinel --init` to write a fully commented template to the current directo
 # Uncomment and edit the options you need.
 # CLI arguments always take priority over values in this file.
 
-# Directory for output reports (default: none)
+## Config file format version (required)
+version: 1
+
+## Directory for output reports (default: none)
 # output-dir: ./sentinel_output
 
-# Workspace directory for all sentinel run artifacts (default: ./.sentinel)
+## Workspace directory for all sentinel run artifacts (default: ./.sentinel)
 # workspace: ./.sentinel
 
 # --- Run options ---
 
-# Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
+## Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
 # threshold: 80
 
-# Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
+## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
 # partition: 1/1
 
 # --- Build & test options ---
 
-# Source root directory (default: .)
+## Source root directory (default: .)
 # source-dir: .
 
-# Shell command to build the source
+## Shell command to build the source
 # build-command: make
 
-# Path to directory containing compile_commands.json (default: .)
+## Path to directory containing compile_commands.json (default: .)
 # compiledb-dir: .
 
-# Shell command to execute tests
+## Shell command to execute tests
 # test-command: make test
 
-# Path to the test report directory
+## Path to the test report directory
 # test-result-dir: ./test-results
 
-# File extension of the test report (default: xml)
+## File extension of the test report (default: xml)
 # test-result-ext:
 #   - xml
 
-# Test time limit in seconds (default: auto — 2x baseline run time; 0 = no limit)
+## Test time limit in seconds (default: auto - 2x original test time; 0 = no limit)
 # timeout: auto
 
-# Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
+## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
 # kill-after: 60
 
 # --- Mutation options ---
 
-# Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)
+## Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)
 # scope: all
 
-# Source file extensions to mutate (default: cxx cpp cc c c++ cu)
+## Source file extensions to mutate (default: cxx cpp cc c c++ cu)
 # extension:
 #   - cpp
 #   - cxx
@@ -366,33 +369,35 @@ Run `sentinel --init` to write a fully commented template to the current directo
 #   - c++
 #   - cu
 
-# Paths or glob patterns to constrain the diff (default: none — entire source)
+## Paths or glob patterns to constrain the diff (default: none - entire source)
 # pattern: []
 
-# Paths excluded from mutation; fnmatch-style patterns (default: none)
+## Paths excluded from mutation; fnmatch-style patterns (default: none)
 # exclude: []
 
-# Maximum number of mutants to generate (default: 0 = unlimited)
+## Maximum number of mutants to generate (default: 0 = unlimited)
 # limit: 0
 
-# Mutant generator type: 'uniform', 'random', or 'weighted' (default: uniform)
+## Mutant selection strategy (default: uniform)
+##   uniform  - one mutant per operator per source line
+##   random   - randomly sampled from all possible mutants
+##   weighted - samples more mutants from complex code
 # generator: uniform
 
-# Random seed for mutant selection (default: auto — picked randomly)
+## Random seed for mutant selection (default: auto - picked randomly)
 # seed: auto
 
-# Mutation operators to use; omit to use all operators (default: all)
-# Valid values: AOR, BOR, LCR, ROR, SDL, SOR, UOI
+## Mutation operators to use; omit to use all operators (default: all)
 # operator:
-#   - AOR
-#   - BOR
-#   - LCR
-#   - ROR
-#   - SDL
-#   - SOR
-#   - UOI
+#   - AOR  # Arithmetic Operator Replacement  (+, -, *, /)
+#   - BOR  # Bitwise Operator Replacement     (&, |, ^)
+#   - LCR  # Logical Connector Replacement    (&&, ||)
+#   - ROR  # Relational Operator Replacement  (<, >, ==, !=)
+#   - SDL  # Statement Deletion
+#   - SOR  # Shift Operator Replacement       (<<, >>)
+#   - UOI  # Unary Operator Insertion         (-x, !x)
 
-# lcov-format coverage result files; limits mutation to covered lines only (default: none)
+## lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
 ```
 
