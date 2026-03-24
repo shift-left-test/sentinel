@@ -19,7 +19,7 @@
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/util/io.hpp"
-#include "sentinel/stages/BaselineTestStage.hpp"
+#include "sentinel/stages/OriginalTestStage.hpp"
 
 namespace sentinel {
 
@@ -70,20 +70,20 @@ static std::string buildWorkspaceYaml(const Config& cfg) {
   return out.c_str();
 }
 
-BaselineTestStage::BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+OriginalTestStage::OriginalTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
                                      std::shared_ptr<Workspace> workspace) :
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool BaselineTestStage::shouldSkip() const {
+bool OriginalTestStage::shouldSkip() const {
   return fs::exists(mWorkspace->getOriginalTestLog()) && mWorkspace->hasPreviousRun();
 }
 
-StatusLine::Phase BaselineTestStage::getPhase() const {
+StatusLine::Phase OriginalTestStage::getPhase() const {
   return StatusLine::Phase::TEST_ORIG;
 }
 
-bool BaselineTestStage::execute() {
+bool OriginalTestStage::execute() {
   fs::path testLog = mWorkspace->getOriginalTestLog();
 
   std::size_t computedTimeLimit = 0;
@@ -101,7 +101,7 @@ bool BaselineTestStage::execute() {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(ts.toDouble() * 2.0));
     if (computedTimeLimit < 1) computedTimeLimit = 1;
     WorkspaceStatus status;
-    status.baselineTime = computedTimeLimit;
+    status.originalTime = computedTimeLimit;
     mWorkspace->saveStatus(status);
   }
 

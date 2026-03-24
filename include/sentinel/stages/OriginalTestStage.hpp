@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
-#define INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
+#ifndef INCLUDE_SENTINEL_STAGES_ORIGINALTESTSTAGE_HPP_
+#define INCLUDE_SENTINEL_STAGES_ORIGINALTESTSTAGE_HPP_
 
 #include <memory>
 #include "sentinel/Stage.hpp"
@@ -13,11 +13,11 @@
 namespace sentinel {
 
 /**
- * @brief Runs the baseline test. Records elapsed time for auto-timeout.
+ * @brief Runs the original test. Records elapsed time for auto-timeout.
  *        Saves workspace config.yaml after verifying test results.
  *        Skips if already completed in a prior run.
  */
-class BaselineTestStage : public Stage {
+class OriginalTestStage : public Stage {
  public:
   /**
    * @brief Constructor.
@@ -25,7 +25,7 @@ class BaselineTestStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  BaselineTestStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
+  OriginalTestStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool shouldSkip() const override;
@@ -38,4 +38,4 @@ class BaselineTestStage : public Stage {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_STAGES_BASELINETESTSTAGE_HPP_
+#endif  // INCLUDE_SENTINEL_STAGES_ORIGINALTESTSTAGE_HPP_

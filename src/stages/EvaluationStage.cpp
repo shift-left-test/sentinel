@@ -45,7 +45,7 @@ bool EvaluationStage::execute() {
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout == "auto") {
     auto status = mWorkspace->loadStatus();
-    computedTimeLimit = status.baselineTime.value_or(0);
+    computedTimeLimit = status.originalTime.value_or(0);
   } else {
     computedTimeLimit = std::stoul(*mConfig.timeout);
   }

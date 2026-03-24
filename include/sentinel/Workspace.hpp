@@ -20,7 +20,7 @@ namespace sentinel {
  * @brief Runtime state persisted between pipeline stages in workspace/status.yaml.
  */
 struct WorkspaceStatus {
-  std::optional<std::size_t> baselineTime;  ///< Computed timeout seconds (timeout:auto only)
+  std::optional<std::size_t> originalTime;  ///< Computed timeout seconds (timeout:auto only)
   std::optional<std::size_t> candidateCount;  ///< Total candidates before partition
   std::optional<std::size_t> partIndex;  ///< Partition index N (0 = no partition)
   std::optional<std::size_t> partCount;  ///< Partition total (0 = no partition)
@@ -30,7 +30,7 @@ struct WorkspaceStatus {
  * @brief Manages the sentinel workspace directory.
  *
  * Directory layout:
- *   &lt;root&gt;/config.yaml            — run options (written after baseline succeeds)
+ *   &lt;root&gt;/config.yaml            — run options (written after original run succeeds)
  *   &lt;root&gt;/original/build.log     — baseline build stdout/stderr
  *   &lt;root&gt;/original/test.log      — baseline test stdout/stderr
  *   &lt;root&gt;/original/results/      — baseline test result XML files

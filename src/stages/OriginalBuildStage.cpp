@@ -11,31 +11,31 @@
 #include <utility>
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
-#include "sentinel/stages/BaselineBuildStage.hpp"
+#include "sentinel/stages/OriginalBuildStage.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-BaselineBuildStage::BaselineBuildStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+OriginalBuildStage::OriginalBuildStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
                                        std::shared_ptr<Workspace> workspace) :
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool BaselineBuildStage::shouldSkip() const {
+bool OriginalBuildStage::shouldSkip() const {
   return fs::exists(mWorkspace->getOriginalBuildLog());
 }
 
-StatusLine::Phase BaselineBuildStage::getPhase() const {
+StatusLine::Phase OriginalBuildStage::getPhase() const {
   return StatusLine::Phase::BUILD_ORIG;
 }
 
-bool BaselineBuildStage::execute() {
+bool OriginalBuildStage::execute() {
   fs::path buildLog = mWorkspace->getOriginalBuildLog();
   Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), *mConfig.silent);
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
-    throw std::runtime_error(fmt::format("Baseline build failed. See: {}", buildLog.string()));
+    throw std::runtime_error(fmt::format("Original build failed. See: {}", buildLog.string()));
   }
   if (!fs::exists(*mConfig.compileDbDir / "compile_commands.json")) {
     throw std::runtime_error(

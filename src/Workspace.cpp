@@ -58,15 +58,15 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (fs::exists(p)) {
     current = loadStatus();
   }
-  if (status.baselineTime.has_value()) current.baselineTime = status.baselineTime;
+  if (status.originalTime.has_value()) current.originalTime = status.originalTime;
   if (status.candidateCount.has_value()) current.candidateCount = status.candidateCount;
   if (status.partIndex.has_value()) current.partIndex = status.partIndex;
   if (status.partCount.has_value()) current.partCount = status.partCount;
 
   YAML::Emitter out;
   out << YAML::BeginMap;
-  if (current.baselineTime.has_value()) {
-    out << YAML::Key << "baseline-time" << YAML::Value << *current.baselineTime;
+  if (current.originalTime.has_value()) {
+    out << YAML::Key << "original-time" << YAML::Value << *current.originalTime;
   }
   if (current.candidateCount.has_value()) {
     out << YAML::Key << "candidate-count" << YAML::Value << *current.candidateCount;
@@ -92,7 +92,7 @@ WorkspaceStatus Workspace::loadStatus() const {
   if (!fs::exists(p)) return status;
   try {
     YAML::Node node = YAML::LoadFile(p.string());
-    if (node["baseline-time"]) status.baselineTime = node["baseline-time"].as<std::size_t>();
+    if (node["original-time"]) status.originalTime = node["original-time"].as<std::size_t>();
     if (node["candidate-count"]) status.candidateCount = node["candidate-count"].as<std::size_t>();
     if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
     if (node["part-count"]) status.partCount = node["part-count"].as<std::size_t>();

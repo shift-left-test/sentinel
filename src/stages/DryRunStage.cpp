@@ -32,7 +32,7 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
   }
   Console::out("  workspace:     {}", workspaceDir);
 
-  Console::out("\n  {}  Original build", "[ OK ]");  // Baseline run already happened
+  Console::out("\n  {}  Original build", "[ OK ]");  // Original run already happened
 
   if (cfg.timeout == "auto") {
     Console::out("  {}  Original tests  (auto-timeout: {}s)", "[ OK ]", computedTimeLimit);
@@ -76,7 +76,7 @@ bool DryRunStage::execute() {
 
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout == "auto") {
-    computedTimeLimit = status.baselineTime.value_or(0);
+    computedTimeLimit = status.originalTime.value_or(0);
   } else {
     computedTimeLimit = std::stoul(*mConfig.timeout);
   }

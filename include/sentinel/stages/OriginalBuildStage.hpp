@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef INCLUDE_SENTINEL_STAGES_BASELINEBUILDSTAGE_HPP_
-#define INCLUDE_SENTINEL_STAGES_BASELINEBUILDSTAGE_HPP_
+#ifndef INCLUDE_SENTINEL_STAGES_ORIGINALBUILDSTAGE_HPP_
+#define INCLUDE_SENTINEL_STAGES_ORIGINALBUILDSTAGE_HPP_
 
 #include <memory>
 #include "sentinel/Stage.hpp"
@@ -13,9 +13,9 @@
 namespace sentinel {
 
 /**
- * @brief Runs the baseline build. Skips if already completed in a prior run.
+ * @brief Runs the original build. Skips if already completed in a prior run.
  */
-class BaselineBuildStage : public Stage {
+class OriginalBuildStage : public Stage {
  public:
   /**
    * @brief Constructor.
@@ -23,7 +23,7 @@ class BaselineBuildStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  BaselineBuildStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
+  OriginalBuildStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool shouldSkip() const override;
@@ -36,4 +36,4 @@ class BaselineBuildStage : public Stage {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_STAGES_BASELINEBUILDSTAGE_HPP_
+#endif  // INCLUDE_SENTINEL_STAGES_ORIGINALBUILDSTAGE_HPP_
