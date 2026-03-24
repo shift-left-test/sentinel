@@ -18,9 +18,9 @@ class SDL : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit SDL(clang::ASTContext* Context) : MutationOperator("SDL", Context) {
+  explicit SDL(clang::ASTContext* context) : MutationOperator("SDL", context) {
   }
 
   /**

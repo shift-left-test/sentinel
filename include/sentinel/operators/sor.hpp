@@ -20,9 +20,9 @@ class SOR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit SOR(clang::ASTContext* Context) : MutationOperator("SOR", Context) {
+  explicit SOR(clang::ASTContext* context) : MutationOperator("SOR", context) {
   }
 
   /**

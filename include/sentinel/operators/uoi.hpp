@@ -18,9 +18,9 @@ class UOI : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit UOI(clang::ASTContext* Context) : MutationOperator("UOI", Context) {
+  explicit UOI(clang::ASTContext* context) : MutationOperator("UOI", context) {
   }
 
   /**

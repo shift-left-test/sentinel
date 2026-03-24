@@ -20,9 +20,9 @@ class BOR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit BOR(clang::ASTContext* Context) : MutationOperator("BOR", Context) {
+  explicit BOR(clang::ASTContext* context) : MutationOperator("BOR", context) {
   }
 
   /**

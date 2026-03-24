@@ -49,11 +49,11 @@ class HtmlReport : public Report {
   /**
    * @brief makeSourceHtml
    *
-   * @param MRs Mutation Results of a source file
+   * @param mrs Mutation Results of a source file
    * @param srcPath
    * @param outputDir
    */
-  void makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
+  void makeSourceHtml(const std::vector<const MutationResult*>& mrs, const std::filesystem::path& srcPath,
                       const std::filesystem::path& outputDir);
 };
 

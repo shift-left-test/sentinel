@@ -20,9 +20,9 @@ class AOR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit AOR(clang::ASTContext* Context) : MutationOperator("AOR", Context) {
+  explicit AOR(clang::ASTContext* context) : MutationOperator("AOR", context) {
   }
 
   /**

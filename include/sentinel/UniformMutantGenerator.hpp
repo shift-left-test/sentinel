@@ -56,12 +56,12 @@ class UniformMutantGenerator : public MutantGenerator {
     /**
      * @brief Default constructor
      *
-     * @param Context Clang AST context
+     * @param context Clang AST context
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      * @param selectedOps list of operator names to use (empty means all)
      */
-    SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables, const std::vector<std::size_t>& targetLines,
+    SentinelASTVisitor(clang::ASTContext* context, Mutants* mutables, const std::vector<std::size_t>& targetLines,
                        const std::vector<std::string>& selectedOps);
 
     /**
@@ -87,21 +87,21 @@ class UniformMutantGenerator : public MutantGenerator {
     /**
      * @brief Default constructor
      *
-     * @param CI Clang compiler instance
+     * @param ci Clang compiler instance
      * @param mutables list of generated mutables
      * @param targetLines list of target line numbers
      * @param selectedOps list of operator names to use (empty means all)
      */
-    SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+    SentinelASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables,
                         const std::vector<std::size_t>& targetLines, const std::vector<std::string>& selectedOps);
 
     /**
      * @brief A callback function triggered when ASTs for translation unit
      *        has been parsed and ready for traversal.
      *
-     * @param Context Clang object holding long-lived AST nodes.
+     * @param context Clang object holding long-lived AST nodes.
      */
-    void HandleTranslationUnit(clang::ASTContext& Context) override;
+    void HandleTranslationUnit(clang::ASTContext& context) override;
 
    private:
     // SentinelASTVisitor mVisitor;
@@ -129,10 +129,10 @@ class UniformMutantGenerator : public MutantGenerator {
      * @brief Create an ASTConsumer object to identify mutation locations
      *        in the AST of target file.
      *
-     * @param CI Clang compiler management object
-     * @param InFile target file
+     * @param ci Clang compiler management object
+     * @param inFile target file
      */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI, llvm::StringRef InFile) override;
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& ci, llvm::StringRef inFile) override;
 
    protected:
     void ExecuteAction() override;

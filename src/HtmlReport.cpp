@@ -115,7 +115,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   Logger::info("Save to {}", outputDir / fileName);
 }
 
-void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
+void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, const std::filesystem::path& srcPath,
                                 const std::filesystem::path& outputDir) {
   auto absSrcPath = mSummary.sourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
@@ -129,7 +129,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, c
   std::set<std::string> uniqueMutator;
 
   std::size_t maxLineNum = 0;
-  for (const MutationResult* mr : MRs) {
+  for (const MutationResult* mr : mrs) {
     auto tmpvector = string::split(mr->getKillingTest(), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {

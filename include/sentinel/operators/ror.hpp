@@ -23,9 +23,9 @@ class ROR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit ROR(clang::ASTContext* Context) : MutationOperator("ROR", Context) {
+  explicit ROR(clang::ASTContext* context) : MutationOperator("ROR", context) {
   }
 
   /**

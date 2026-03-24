@@ -141,21 +141,21 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   return Mutants(candidates.begin(), candidates.begin() + maxMutants);
 }
 
-RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
+RandomMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* context, Mutants* mutables,
                                                               const std::vector<std::size_t>& targetLines,
                                                               const std::vector<std::string>& selectedOps) :
-    mContext(Context), mSrcMgr(Context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
+    mContext(context), mSrcMgr(context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
   std::sort(mTargetLines.begin(), mTargetLines.end());
   auto include = [&selectedOps](const std::string& name) {
     return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
   };
-  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(Context));
-  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(Context));
-  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(Context));
-  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(Context));
-  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(Context));
-  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(Context));
-  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(Context));
+  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(context));
+  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(context));
+  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(context));
+  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(context));
+  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(context));
+  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(context));
+  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(context));
 }
 
 RandomMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() = default;
@@ -194,15 +194,15 @@ bool RandomMutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
   return true;
 }
 
-RandomMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+RandomMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables,
                                                                 const std::vector<std::size_t>& targetLines,
                                                                 const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
 }
 
-void RandomMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
-  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mSelectedOps);
-  mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+void RandomMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& context) {
+  SentinelASTVisitor mVisitor(&context, mMutants, mTargetLines, mSelectedOps);
+  mVisitor.TraverseDecl(context.getTranslationUnitDecl());
 }
 
 RandomMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
@@ -212,9 +212,9 @@ RandomMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutab
 }
 
 std::unique_ptr<clang::ASTConsumer> RandomMutantGenerator::GenerateMutantAction::CreateASTConsumer(
-    clang::CompilerInstance& CI, llvm::StringRef InFile) {
-  CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
-  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(CI, mMutants, mTargetLines, mSelectedOps));
+    clang::CompilerInstance& ci, llvm::StringRef inFile) {
+  ci.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+  return std::unique_ptr<clang::ASTConsumer>(new SentinelASTConsumer(ci, mMutants, mTargetLines, mSelectedOps));
 }
 
 void RandomMutantGenerator::GenerateMutantAction::ExecuteAction() {

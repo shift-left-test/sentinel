@@ -24,10 +24,10 @@ class MutationOperator {
    * @brief Default constructor
    *
    * @param name of mutation operator
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  MutationOperator(const std::string& name, clang::ASTContext* Context) :
-      mName(name), mContext(Context), mSrcMgr(Context->getSourceManager()) {
+  MutationOperator(const std::string& name, clang::ASTContext* context) :
+      mName(name), mContext(context), mSrcMgr(context->getSourceManager()) {
   }
 
   /**

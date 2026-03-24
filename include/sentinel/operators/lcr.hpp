@@ -20,9 +20,9 @@ class LCR : public MutationOperator {
   /**
    * @brief Default constructor
    *
-   * @param Context Clang ASTContext object
+   * @param context Clang ASTContext object
    */
-  explicit LCR(clang::ASTContext* Context) : MutationOperator("LCR", Context) {
+  explicit LCR(clang::ASTContext* context) : MutationOperator("LCR", context) {
   }
 
   /**

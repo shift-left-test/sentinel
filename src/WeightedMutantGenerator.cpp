@@ -171,24 +171,24 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   return temp_storage;
 }
 
-WeightedMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* Context, Mutants* mutables,
+WeightedMutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* context, Mutants* mutables,
                                                                 const SourceLines& targetLines, DepthMap* depthMap,
                                                                 const std::vector<std::string>& selectedOps) :
-    mContext(Context),
-    mSrcMgr(Context->getSourceManager()),
+    mContext(context),
+    mSrcMgr(context->getSourceManager()),
     mMutants(mutables),
     mTargetLines(targetLines),
     mDepthMap(depthMap) {
   auto include = [&selectedOps](const std::string& name) {
     return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
   };
-  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(Context));
-  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(Context));
-  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(Context));
-  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(Context));
-  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(Context));
-  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(Context));
-  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(Context));
+  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(context));
+  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(context));
+  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(context));
+  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(context));
+  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(context));
+  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(context));
+  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(context));
 }
 
 WeightedMutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() = default;
@@ -277,15 +277,15 @@ int WeightedMutantGenerator::SentinelASTVisitor::getDepth(clang::Stmt* s) {
   return depth;
 }
 
-WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& CI, Mutants* mutables,
+WeightedMutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables,
                                                                   const SourceLines& targetLines, DepthMap* depthMap,
                                                                   const std::vector<std::string>& selectedOps) :
     mMutants(mutables), mTargetLines(targetLines), mDepthMap(depthMap), mSelectedOps(selectedOps) {
 }
 
-void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
-  SentinelASTVisitor mVisitor(&Context, mMutants, mTargetLines, mDepthMap, mSelectedOps);
-  mVisitor.TraverseDecl(Context.getTranslationUnitDecl());
+void WeightedMutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& context) {
+  SentinelASTVisitor mVisitor(&context, mMutants, mTargetLines, mDepthMap, mSelectedOps);
+  mVisitor.TraverseDecl(context.getTranslationUnitDecl());
 }
 
 WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines,
@@ -295,10 +295,10 @@ WeightedMutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mut
 }
 
 std::unique_ptr<clang::ASTConsumer> WeightedMutantGenerator::GenerateMutantAction::CreateASTConsumer(
-    clang::CompilerInstance& CI, llvm::StringRef InFile) {
-  CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+    clang::CompilerInstance& ci, llvm::StringRef inFile) {
+  ci.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
   return std::unique_ptr<clang::ASTConsumer>(
-      new SentinelASTConsumer(CI, mMutants, mTargetLines, mDepthMap, mSelectedOps));
+      new SentinelASTConsumer(ci, mMutants, mTargetLines, mDepthMap, mSelectedOps));
 }
 
 void WeightedMutantGenerator::GenerateMutantAction::ExecuteAction() {
