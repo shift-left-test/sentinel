@@ -6,10 +6,8 @@
 #ifndef INCLUDE_SENTINEL_RESULT_HPP_
 #define INCLUDE_SENTINEL_RESULT_HPP_
 
-#include <memory>
 #include <string>
 #include <vector>
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 
 namespace sentinel {
@@ -48,7 +46,6 @@ class Result {
  private:
   std::vector<std::string> mPassedTC;
   std::vector<std::string> mFailedTC;
-  std::shared_ptr<Logger> mLogger;
 };
 
 }  // namespace sentinel

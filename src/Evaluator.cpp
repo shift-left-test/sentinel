@@ -6,7 +6,6 @@
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
-#include <memory>
 #include <string>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Logger.hpp"
@@ -22,9 +21,8 @@ namespace fs = std::filesystem;
 Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath),
     mCanonicalSourcePath(fs::canonical(sourcePath)),
-    mExpectedResult(expectedResultDir.string()),
-    mLogger(Logger::getLogger("Evaluator")) {
-  mLogger->info("Load Expected Result: {}", expectedResultDir.string());
+    mExpectedResult(expectedResultDir.string()) {
+  Logger::info("Load Expected Result: {}", expectedResultDir.string());
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
     throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir.string()));
@@ -40,27 +38,27 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
   switch (testState) {
     case TestExecutionState::BUILD_FAILURE:
       state = MutationState::BUILD_FAILURE;
-      mLogger->verbose("build failure ({})", ActualResultDir.string());
+      Logger::verbose("build failure ({})", ActualResultDir.string());
       break;
     case TestExecutionState::TIMEOUT:
       state = MutationState::TIMEOUT;
-      mLogger->verbose("timeout ({})", ActualResultDir.string());
+      Logger::verbose("timeout ({})", ActualResultDir.string());
       break;
     case TestExecutionState::UNCOVERED:
       state = MutationState::SURVIVED;
-      mLogger->verbose("uncovered by tests - survived");
+      Logger::verbose("uncovered by tests - survived");
       break;
     case TestExecutionState::SUCCESS: {
       Result mActualResult(ActualResultDir.string());
-      mLogger->verbose("comparing results: {}", ActualResultDir.string());
+      Logger::verbose("comparing results: {}", ActualResultDir.string());
       state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
       break;
     }
   }
-  mLogger->verbose("mutant: {}", mut.str());
-  mLogger->verbose("killing TC: {}", killingTC);
-  mLogger->verbose("error TC: {}", errorTC);
-  mLogger->verbose("state: {}", MutationStateToStr(state));
+  Logger::verbose("mutant: {}", mut.str());
+  Logger::verbose("killing TC: {}", killingTC);
+  Logger::verbose("error TC: {}", errorTC);
+  Logger::verbose("state: {}", MutationStateToStr(state));
 
   fs::path relPath = fs::canonical(mut.getPath()).lexically_relative(mCanonicalSourcePath);
 
@@ -79,7 +77,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
     skipStr = "... ";
   }
 
-  mLogger->verbose("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
+  Logger::verbose("{mu:>5} : {loc:.<{flen}} {status}", fmt::arg("mu", mut.getOperator()),
                    fmt::arg("loc", skipStr + mutLoc.substr(filePos)), fmt::arg("flen", flen),
                    fmt::arg("status", MutationStateToStr(state)));
 
@@ -100,7 +98,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const 
   outFile << ret << "\n";
   outFile.close();
 
-  mLogger->verbose("saved mutation result: {}", outDir.string());
+  Logger::verbose("saved mutation result: {}", outDir.string());
 
   return ret;
 }

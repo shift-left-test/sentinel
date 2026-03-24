@@ -7,6 +7,7 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Console.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
@@ -15,7 +16,7 @@
 namespace sentinel {
 
 Report::Report(const MutationSummary& summary) :
-    mSummary(summary), mLogger(Logger::getLogger("Report")) {
+    mSummary(summary) {
 }
 
 void Report::printSummary() const {
@@ -26,13 +27,13 @@ void Report::printSummary() const {
   std::size_t maxlen = flen + klen + mlen + clen + 2;
 
   int cnt = 0;
-  mLogger->verbose("# of MutationResults: {}", mSummary.results.size());
+  Logger::verbose("# of MutationResults: {}", mSummary.results.size());
   for (const MutationResult& mr : mSummary.results) {
-    mLogger->verbose("MutationResult #{}", ++cnt);
-    mLogger->verbose("  Mutant: {}", mr.getMutant().str());
-    mLogger->verbose("  killing TC: {}", mr.getKillingTest());
-    mLogger->verbose("  error TC: {}", mr.getErrorTest());
-    mLogger->verbose("  Mutation State: {}", MutationStateToStr(mr.getMutationState()));
+    Logger::verbose("MutationResult #{}", ++cnt);
+    Logger::verbose("  Mutant: {}", mr.getMutant().str());
+    Logger::verbose("  killing TC: {}", mr.getKillingTest());
+    Logger::verbose("  error TC: {}", mr.getErrorTest());
+    Logger::verbose("  Mutation State: {}", MutationStateToStr(mr.getMutationState()));
   }
 
   std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}";

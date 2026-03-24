@@ -31,8 +31,6 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static const char* cWeightedGeneratorLoggerName = "WeightedMutantGenerator";
-
 WeightedMutantGenerator::WeightedMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
@@ -55,7 +53,6 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
     targetLines[filename].push_back(sourceLine);
   }
 
-  auto logger = Logger::getLogger(cWeightedGeneratorLoggerName);
   // Launch async tasks in batches capped at hardware_concurrency to avoid overloading the system.
   // Each task receives its own per-file DepthMap slice; results are merged after all tasks finish.
   // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
@@ -69,7 +66,7 @@ Mutants WeightedMutantGenerator::populate(const SourceLines& sourceLines, std::s
   while (fileIt != targetLines.end()) {
     std::vector<std::future<FileResult>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->verbose("Checking for mutants in {}", fileIt->first.string());
+      Logger::verbose("Checking for mutants in {}", fileIt->first.string());
       DepthMap localDm;
       for (const auto& sl : fileIt->second) {
         localDm[sl] = -1;

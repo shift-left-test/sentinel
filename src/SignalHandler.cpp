@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
-#include <memory>
 #include <utility>
 #include <vector>
 #include "sentinel/Console.hpp"
@@ -18,7 +17,6 @@
 namespace sentinel {
 
 namespace {
-const std::shared_ptr<Logger> sLogger = Logger::getLogger("SignalHandler");
 std::vector<std::function<void()>> sCallbacks;
 }  // namespace
 
@@ -32,7 +30,7 @@ void SignalHandler::add(const std::vector<int>& signals, std::function<void()> c
 }
 
 void SignalHandler::dispatch(int signum) {
-  sLogger->debug("Signal received: {} ({})", signum, strsignal(signum));
+  Logger::debug("Signal received: {} ({})", signum, strsignal(signum));
   for (auto& cb : sCallbacks) {
     cb();
   }

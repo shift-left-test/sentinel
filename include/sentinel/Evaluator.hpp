@@ -7,9 +7,7 @@
 #define INCLUDE_SENTINEL_EVALUATOR_HPP_
 
 #include <filesystem>  // NOLINT
-#include <memory>
 #include <string>
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
 
@@ -62,7 +60,6 @@ class Evaluator {
                                               const std::filesystem::path& evalFilePath, TestExecutionState testState);
 
  private:
-  std::shared_ptr<Logger> mLogger;
   std::filesystem::path mSourcePath;
   std::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
   Result mExpectedResult;

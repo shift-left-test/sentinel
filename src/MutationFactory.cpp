@@ -28,8 +28,7 @@ MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generat
 
 Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
                                   std::size_t maxMutants, unsigned randomSeed, const std::string& generatorStr) {
-  auto logger = Logger::getLogger("populate");
-  logger->debug("random seed: {}", randomSeed);
+  Logger::debug("random seed: {}", randomSeed);
   Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
 
   // Count mutants per file and per operator

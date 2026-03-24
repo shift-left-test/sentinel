@@ -13,7 +13,6 @@
 #include <vector>
 #include "sentinel/CTestXmlParser.hpp"
 #include "sentinel/GoogleTestXmlParser.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/QTestXmlParser.hpp"
 #include "sentinel/Result.hpp"
 
@@ -21,7 +20,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Result::Result(const std::string& path) : mLogger(Logger::getLogger("Result")) {
+Result::Result(const std::string& path) {
   auto parser1 = std::make_shared<GoogleTestXmlParser>();
   auto parser2 = std::make_shared<CTestXmlParser>();
   auto parser3 = std::make_shared<QTestXmlParser>();

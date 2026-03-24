@@ -19,15 +19,11 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-const char* cGitSourceTreeLoggerName = "GitSourceTree";
-
 GitSourceTree::GitSourceTree(const std::filesystem::path& baseDirectory) : SourceTree(baseDirectory) {
 }
 
 void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& backupPath) {
   // Backup target file to be mutated
-  auto logger = Logger::getLogger(cGitSourceTreeLoggerName);
-
   fs::path targetFilename = fs::canonical(info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
   if (!string::startsWith(targetFilename.parent_path().string(), gitRootAbsolutePath.string())) {
@@ -39,7 +35,7 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
     fs::create_directories(newBackupPath);
   }
   fs::copy(targetFilename, newBackupPath, fs::copy_options::overwrite_existing);
-  logger->verbose("backup: {}", newBackupPath.string());
+  Logger::verbose("backup: {}", newBackupPath.string());
 
   // Apply mutation
   std::ifstream originalFile(targetFilename.string());

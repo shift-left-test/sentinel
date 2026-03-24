@@ -27,8 +27,6 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static const char* cRandomGeneratorLoggerName = "RandomMutantGenerator";
-
 RandomMutantGenerator::RandomMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
@@ -51,7 +49,6 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
-  auto logger = Logger::getLogger(cRandomGeneratorLoggerName);
   // Launch async tasks in batches capped at hardware_concurrency to avoid overloading the system.
   // ClangTool::run() calls chdir() internally (process-wide). Save cwd before launching tasks
   // and restore it after all tasks complete to neutralise the side effect.
@@ -63,7 +60,7 @@ Mutants RandomMutantGenerator::populate(const SourceLines& sourceLines, std::siz
   while (fileIt != targetLines.end()) {
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      logger->verbose("Checking for mutants in {}", fileIt->first.string());
+      Logger::verbose("Checking for mutants in {}", fileIt->first.string());
       futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
         Mutants localMutables;
         clang::tooling::ClangTool tool(*db, filename.string());

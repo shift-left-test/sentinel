@@ -7,8 +7,6 @@
 #define INCLUDE_SENTINEL_REPORT_HPP_
 
 #include <filesystem>  // NOLINT
-#include <memory>
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationSummary.hpp"
 
 namespace sentinel {
@@ -47,7 +45,6 @@ class Report {
 
  protected:
   MutationSummary mSummary;  ///< Aggregated mutation data
-  std::shared_ptr<Logger> mLogger;  ///< Report logger
 };
 
 }  // namespace sentinel

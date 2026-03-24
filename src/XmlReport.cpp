@@ -8,6 +8,7 @@
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
@@ -21,7 +22,7 @@ XmlReport::XmlReport(const MutationSummary& summary) : Report(summary) {
 }
 
 void XmlReport::save(const std::filesystem::path& dirPath) {
-  mLogger->info("Make XML Report");
+  Logger::info("Make XML Report");
   io::ensureDirectoryExists(dirPath);
 
   auto xmlPath = dirPath / "mutations.xml";
@@ -65,7 +66,7 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
 
   doc->InsertEndChild(pMutations);
   doc->SaveFile(xmlPath.c_str());
-  mLogger->info("Save to {}", xmlPath.string());
+  Logger::info("Save to {}", xmlPath.string());
 }
 
 void XmlReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,

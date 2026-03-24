@@ -4,7 +4,6 @@
  */
 
 #include <fmt/core.h>
-#include <memory>
 #include <string>
 #include <string_view>
 #include "sentinel/Logger.hpp"
@@ -13,32 +12,31 @@
 namespace sentinel {
 
 bool QTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
-  auto logger = Logger::getLogger("Result");
   std::string message = "This file doesn't follow QTest result format";
 
   tinyxml2::XMLElement* p = document->FirstChildElement("testsuite");
   if (p == nullptr) {
-    logger->debug(message);
+    Logger::debug(message);
     return false;
   }
 
   tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
   if (q == nullptr) {
-    logger->debug(message);
+    Logger::debug(message);
     return false;
   }
 
   for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
     const char* pResult = q->Attribute("result");
     if (pResult == nullptr) {
-      logger->debug(message);
+      Logger::debug(message);
       return false;
     }
 
     const char* pClassName = p->Attribute("name");
     const char* pName = q->Attribute("name");
     if (pClassName == nullptr || pName == nullptr) {
-      logger->debug(message);
+      Logger::debug(message);
       return false;
     }
 

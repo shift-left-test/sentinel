@@ -19,7 +19,7 @@ namespace sentinel {
  * @brief Common base fixture for ReportTest and HTMLReportTest.
  *
  * Sets up a temporary source-directory tree shared by both test suites and
- * cleans up the Logger cache in TearDown so that logger state does not leak
+ * resets the Logger level in TearDown so that logger state does not leak
  * between test cases.
  */
 class SentinelReportTestBase : public ::testing::Test {
@@ -47,12 +47,11 @@ class SentinelReportTestBase : public ::testing::Test {
   }
 
   /**
-   * @brief Remove the temp tree and reset the Logger cache.
+   * @brief Remove the temp tree and reset the Logger level.
    */
   void tearDownBase() {
     fs::remove_all(BASE);
     Logger::setLevel(Logger::Level::OFF);
-    Logger::clearCache();
   }
 
   fs::path BASE;

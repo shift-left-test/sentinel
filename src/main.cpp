@@ -91,14 +91,13 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   sentinel::Config cfg = sentinel::ConfigResolver::resolve(cliCfg, yamlCfg, configPath);
 
   // 5. Configure logger
-  auto logger = sentinel::Logger::getLogger("sentinel");
   if (cfg.debug && *cfg.debug) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::DEBUG);
   } else if (cfg.verbose && *cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
   if (dryRun && ws->hasPreviousRun()) {
-    logger->debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath.string());
+    sentinel::Logger::debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath.string());
   }
 
   // Validate config before starting the pipeline.

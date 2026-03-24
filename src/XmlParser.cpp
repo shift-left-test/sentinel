@@ -44,11 +44,10 @@ void XmlParser::collect(std::vector<std::string>* passed, std::vector<std::strin
 }
 
 void XmlParser::process(const std::string& path, std::vector<std::string>* passed, std::vector<std::string>* failed) {
-  auto logger = Logger::getLogger("Result");
   auto document = std::make_shared<tinyxml2::XMLDocument>();
   auto errcode = document->LoadFile(path.c_str());
   if (errcode != 0) {
-    logger->debug("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), path);
+    Logger::debug("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), path);
   }
 
   reset();

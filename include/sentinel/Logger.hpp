@@ -9,7 +9,6 @@
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <utility>
 #include "sentinel/Console.hpp"
@@ -34,29 +33,14 @@ class Logger {
     OFF = 6,
   };
 
-  Logger(const Logger&) = delete;
-  Logger& operator=(const Logger&) = delete;
+  Logger() = delete;
 
   /**
-   * @brief Return the logger instance
-   *
-   * @param name of the logger
-   * @return logger instance
-   */
-  static std::shared_ptr<Logger> getLogger(const std::string& name);
-
-  /**
-   * @brief Set the global logging level applied to all loggers.
+   * @brief Set the global logging level.
    *
    * @param level of the logging
    */
   static void setLevel(Logger::Level level);
-
-  /**
-   * @brief Clear the logger cache.
-   *        Primarily for use in tests to ensure isolation between test cases.
-   */
-  static void clearCache();
 
   /**
    * @brief Log a debug message
@@ -65,7 +49,7 @@ class Logger {
    * @param args arguments
    */
   template <typename... Args>
-  void debug(const std::string& pattern, Args&&... args) {
+  static void debug(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::DEBUG)) {
       Console::out("[debug] " + pattern, std::forward<Args>(args)...);
     }
@@ -78,7 +62,7 @@ class Logger {
    * @param args arguments
    */
   template <typename... Args>
-  void verbose(const std::string& pattern, Args&&... args) {
+  static void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
       Console::out("[verbose] " + pattern, std::forward<Args>(args)...);
     }
@@ -91,7 +75,7 @@ class Logger {
    * @param args arguments
    */
   template <typename... Args>
-  void info(const std::string& pattern, Args&&... args) {
+  static void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
       Console::out("[info] " + pattern, std::forward<Args>(args)...);
     }
@@ -104,7 +88,7 @@ class Logger {
    * @param args arguments
    */
   template <typename... Args>
-  void warn(const std::string& pattern, Args&&... args) {
+  static void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
       Console::err("[warn] " + pattern, std::forward<Args>(args)...);
     }
@@ -117,7 +101,7 @@ class Logger {
    * @param args arguments
    */
   template <typename... Args>
-  void error(const std::string& pattern, Args&&... args) {
+  static void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
       Console::err("[error] " + pattern, std::forward<Args>(args)...);
     }
@@ -125,22 +109,12 @@ class Logger {
 
  private:
   /**
-   * @brief Default constructor
-   *
-   * @param name of the logger
-   */
-  explicit Logger(const std::string& name);
-
-  /**
    * @brief Test if the level is allowed to log
    *
    * @param level of the logging
    * @return true if the level is allowed, false otherwise
    */
-  bool isAllowed(Logger::Level level);
-
- private:
-  std::string mName;
+  static bool isAllowed(Logger::Level level);
 };
 
 }  // namespace sentinel
