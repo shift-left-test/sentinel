@@ -46,10 +46,10 @@ Sentinel makes mutation testing practical for C/C++ projects by:
 ### 1. Start the Docker environment
 
 ```bash
-git clone https://github.com/shift-left-test/dockerfiles.git
-cd dockerfiles
-docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
-docker run --rm -it clang-dev-11
+git clone https://github.com/shift-left-test/sentinel
+cd sentinel
+docker build -t sentinel-dev .
+docker run --rm -it -v $(pwd):/workspace sentinel-dev
 ```
 
 ### 2. Build and install Sentinel
@@ -57,8 +57,7 @@ docker run --rm -it clang-dev-11
 Inside the Docker container:
 
 ```bash
-git clone https://github.com/shift-left-test/sentinel
-cd sentinel && cmake . && make all -j && make package
+cd /workspace && cmake . && make all -j && make package
 sudo apt-get install ./sentinel-0.4.8-amd64.deb
 ```
 
@@ -104,10 +103,10 @@ Sentinel will build the project, run the test suite, evaluate mutants, and write
 Use the preconfigured Docker image to avoid manual dependency setup.
 
 ```bash
-git clone https://github.com/shift-left-test/dockerfiles.git
-cd dockerfiles
-docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
-docker run --rm -it clang-dev-11
+git clone https://github.com/shift-left-test/sentinel
+cd sentinel
+docker build -t sentinel-dev .
+docker run --rm -it -v $(pwd):/workspace sentinel-dev
 ```
 
 ### Option 2: Build from Source
