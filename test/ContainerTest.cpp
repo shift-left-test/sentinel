@@ -126,18 +126,6 @@ TEST_F(ContainerTest, testErase) {
   EXPECT_EQ(1, integers[0]);
 }
 
-TEST_F(ContainerTest, testUnique) {
-  none.push_back(3);
-  none.push_back(1);
-  none.push_back(2);
-  none.push_back(1);
-  none.push_back(3);
-  none.unique();
-  EXPECT_EQ(3, none.size());
-  EXPECT_EQ(1, none[0]);
-  EXPECT_EQ(2, none[1]);
-  EXPECT_EQ(3, none[2]);
-}
 
 TEST_F(ContainerTest, testShuffleWithSameSeedProducesSameResult) {
   auto c1 = integers;

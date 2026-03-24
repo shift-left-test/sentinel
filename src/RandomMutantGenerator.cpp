@@ -76,8 +76,6 @@ Mutants RandomMutantGenerator::generate(const SourceLines& sourceLines, std::siz
   }
   fs::current_path(savedCwd);
 
-  mutables.unique();
-
   // Build candidates pool: one mutant per source line (consistent with Uniform/Weighted strategy).
   std::map<fs::path, std::vector<const Mutant*>> mutantsByFile;
   for (const auto& m : mutables) {

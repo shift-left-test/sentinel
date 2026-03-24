@@ -152,11 +152,6 @@ class Container {
   void sort();
 
   /**
-   * @brief Remove duplicated elements
-   */
-  void unique();
-
-  /**
    * @brief Shuffle the elements
    */
   void shuffle();
@@ -278,12 +273,6 @@ void Container<T>::sort(Comparator comparator) {
 template <typename T>
 void Container<T>::sort() {
   std::sort(mData.begin(), mData.end());
-}
-
-template <typename T>
-void Container<T>::unique() {
-  std::sort(mData.begin(), mData.end());
-  mData.erase(std::unique(mData.begin(), mData.end()), mData.end());
 }
 
 template <typename T>
