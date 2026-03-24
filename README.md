@@ -18,7 +18,7 @@
 - [Configuration File](#configuration-file)
 - [Coverage-Guided Mutation](#coverage-guided-mutation)
 - [Mutation Operators](#mutation-operators)
-- [Supported Test Runners](#supported-test-runners)
+- [Supported Test Result Formats](#supported-test-result-formats)
 - [Development](#development)
 - [Licenses](#licenses)
 
@@ -43,28 +43,33 @@ Sentinel makes mutation testing practical for C/C++ projects by:
 
 ## Quick Start
 
+### 1. Start the Docker environment
+
 ```bash
-# 1. Start the Docker environment
 git clone https://github.com/shift-left-test/dockerfiles.git
 cd dockerfiles
 docker build -f clang-dev/11/Dockerfile -t clang-dev-11 .
 docker run --rm -it clang-dev-11
+```
 
-# 2. Build and install Sentinel
+### 2. Build and install Sentinel
+
+Inside the Docker container:
+
+```bash
 git clone https://github.com/shift-left-test/sentinel
 cd sentinel && cmake . && make all -j && make package
 sudo apt-get install ./sentinel-0.4.8-amd64.deb
+```
 
-# 3. Configure and run mutation testing on your project
-cat > sentinel.yaml << 'EOF'
-version: 1
-build-command: make
-test-command: make test
-test-result-dir: ./test-results
-source-dir: .
-EOF
+### 3. Try it on the sample project
+
+```bash
+cd sentinel/sample
 sentinel
 ```
+
+Sentinel will build the project, run the tests, evaluate mutants, and write an HTML report to `./sentinel_output/`. See [Sample Project](#sample-project) for details.
 
 ---
 
@@ -442,11 +447,17 @@ The `--coverage` option can be repeated to merge multiple coverage files.
 
 ---
 
-## Supported Test Runners
+## Supported Test Result Formats
 
-- [GoogleTest](https://github.com/google/googletest)
-- [QTest](https://doc.qt.io/qt-6/qtest-overview.html)
-- [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html)
+Sentinel parses JUnit-style XML test results. The following formats are supported:
+
+| Format | Produced by |
+|--------|-------------|
+| GoogleTest XML | [GoogleTest](https://github.com/google/googletest) |
+| QTest XML | [QTest](https://doc.qt.io/qt-6/qtest-overview.html) |
+| CTest XML | [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) |
+
+The test runner must be configured to write results to the directory specified by `--test-result-dir`.
 
 ---
 
