@@ -67,7 +67,7 @@ bool DryRunStage::shouldSkip() const {
 }
 
 StatusLine::Phase DryRunStage::getPhase() const {
-  return StatusLine::Phase::POPULATE;
+  return StatusLine::Phase::GENERATION;
 }
 
 bool DryRunStage::execute() {

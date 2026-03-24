@@ -26,10 +26,10 @@ namespace fs = std::filesystem;
 MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generator) : mGenerator(generator) {
 }
 
-Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
+Mutants MutationFactory::generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
                                   std::size_t maxMutants, unsigned randomSeed, const std::string& generatorStr) {
   Logger::debug("random seed: {}", randomSeed);
-  Mutants mutables = mGenerator->populate(sourceLines, maxMutants, randomSeed);
+  Mutants mutables = mGenerator->generate(sourceLines, maxMutants, randomSeed);
 
   // Count mutants per file and per operator
   std::map<fs::path, std::size_t> groupByPath;
@@ -46,7 +46,7 @@ Mutants MutationFactory::populate(const std::filesystem::path& gitPath, const So
 
   // File table
   Console::out("{0:=^{1}}", "", maxlen);
-  Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutant Population Report", maxlen)));
+  Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutant Generation Report", maxlen)));
   Console::out("{0:=^{1}}", "", maxlen);
   Console::out(defFormat, "File", flen, "Mutants", mlen);
   Console::out("{0:-^{1}}", "", maxlen);

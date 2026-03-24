@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef INCLUDE_SENTINEL_STAGES_POPULATESTAGE_HPP_
-#define INCLUDE_SENTINEL_STAGES_POPULATESTAGE_HPP_
+#ifndef INCLUDE_SENTINEL_STAGES_GENERATIONSTAGE_HPP_
+#define INCLUDE_SENTINEL_STAGES_GENERATIONSTAGE_HPP_
 
 #include <memory>
 #include "sentinel/Stage.hpp"
@@ -13,9 +13,9 @@
 namespace sentinel {
 
 /**
- * @brief Generates and stores mutants in the workspace. Skips if already populated.
+ * @brief Generates and stores mutants in the workspace. Skips if mutants are already generated.
  */
-class PopulateStage : public Stage {
+class GenerationStage : public Stage {
  public:
   /**
    * @brief Constructor.
@@ -23,7 +23,7 @@ class PopulateStage : public Stage {
    * @param statusLine Shared status line.
    * @param workspace  Shared workspace.
    */
-  PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
+  GenerationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
 
  protected:
   bool shouldSkip() const override;
@@ -36,4 +36,4 @@ class PopulateStage : public Stage {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_STAGES_POPULATESTAGE_HPP_
+#endif  // INCLUDE_SENTINEL_STAGES_GENERATIONSTAGE_HPP_

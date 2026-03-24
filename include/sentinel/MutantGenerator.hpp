@@ -26,14 +26,14 @@ class MutantGenerator {
   virtual ~MutantGenerator() = default;
 
   /**
-   * @brief Populate mutables from the given source line
+   * @brief Generate mutables from the given source line
    *
    * @param sourceLines list of target source lines
    * @param maxMutants limit number of generated mutables
    * @param randomSeed random seed
    * @return mutables
    */
-  virtual Mutants populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) = 0;
+  virtual Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) = 0;
 
   /**
    * @brief Set mutation operators to use. If empty, all operators are used.
@@ -57,7 +57,7 @@ class MutantGenerator {
   /**
    * @brief Return the total number of candidate mutants found before the limit was applied.
    *
-   * @return candidate count from the last populate() call
+   * @return candidate count from the last generate() call
    */
   std::size_t getCandidateCount() const {
     return mCandidateCount;
@@ -70,7 +70,7 @@ class MutantGenerator {
   std::vector<std::string> mSelectedOperators;
 
   /**
-   * @brief total candidates found before limit was applied; set by each populate() implementation
+   * @brief total candidates found before limit was applied; set by each generate() implementation
    */
   std::size_t mCandidateCount = 0;
 };

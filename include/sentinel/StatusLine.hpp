@@ -24,7 +24,7 @@ class StatusLine {
   /**
    * @brief Execution phase shown in the status line.
    */
-  enum class Phase { INIT, BUILD_ORIG, TEST_ORIG, POPULATE, MUTANT, REPORT, DONE };
+  enum class Phase { INIT, BUILD_ORIG, TEST_ORIG, GENERATION, EVALUATION, REPORT, DONE };
 
   /**
    * @brief Default constructor.

@@ -16,7 +16,7 @@ namespace sentinel {
 
 class MutationFactoryTest : public SampleFileGeneratorForTest {};
 
-TEST_F(MutationFactoryTest, testPopulateWorks) {
+TEST_F(MutationFactoryTest, testGenerateWorks) {
   auto mStdoutCapture = CaptureHelper::getStdoutCapture();
 
   SourceLines sourceLines;
@@ -27,7 +27,7 @@ TEST_F(MutationFactoryTest, testPopulateWorks) {
   MutationFactory factory(generator);
 
   mStdoutCapture->capture();
-  Mutants selected = factory.populate(SAMPLE1_DIR, sourceLines, 3, 1234, "");
+  Mutants selected = factory.generate(SAMPLE1_DIR, sourceLines, 3, 1234, "");
   std::string out = mStdoutCapture->release();
 
   // 1 mutable on line 58, 1 mutable on line 59 are selected

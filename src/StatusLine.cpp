@@ -141,10 +141,10 @@ std::string StatusLine::phaseLabel() const {
       return "BUILD-ORIG";
     case Phase::TEST_ORIG:
       return "TEST-ORIG";
-    case Phase::POPULATE:
-      return "POPULATE";
-    case Phase::MUTANT:
-      return "MUTANT";
+    case Phase::GENERATION:
+      return "GENERATION";
+    case Phase::EVALUATION:
+      return "EVALUATION";
     case Phase::REPORT:
       return "REPORT";
     case Phase::DONE:
@@ -160,14 +160,14 @@ std::string StatusLine::buildStatusString() const {
     result += " [DRY-RUN]";
   }
 
-  // Phase label, padded to 10 chars for alignment across all phase names
-  result += fmt::format(" Phase: {:<10}", phaseLabel());
+  // Phase label, padded to 12 chars for alignment across all phase names
+  result += fmt::format(" Phase: {:<12}", phaseLabel());
 
   if (mTotal > 0) {
     result += fmt::format(" [{}/{}]", mCurrent, mTotal);
   }
 
-  if (mPhase == Phase::MUTANT && !mOp.empty()) {
+  if (mPhase == Phase::EVALUATION && !mOp.empty()) {
     result += fmt::format(" | {} {}:{}", mOp, mFile.string(), mLine);
   }
 

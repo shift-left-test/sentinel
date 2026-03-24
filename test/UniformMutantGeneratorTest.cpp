@@ -112,14 +112,14 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
   unsigned SEED = 1234;
 };
 
-TEST_F(UniformMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
+TEST_F(UniformMutantGeneratorTest, testGenerateFailWhenInvalidDirGiven) {
   UniformMutantGenerator generator{SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100, SEED), IOException);
+  EXPECT_THROW(Mutants mutants = generator.generate(*sourceLines, 100, SEED), IOException);
 }
 
-TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
+TEST_F(UniformMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   UniformMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 100, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 100, SEED);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -135,9 +135,9 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   }
 }
 
-TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
+TEST_F(UniformMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   UniformMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 3, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 3, SEED);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -155,10 +155,10 @@ TEST_F(UniformMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   UniformMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   UniformMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED + 1);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -167,22 +167,22 @@ TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithSameSeedWorks) {
   UniformMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   UniformMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
   EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
 }
 
-TEST_F(UniformMutantGeneratorTest, testPopulateWithZeroLimitReturnsAllCandidates) {
+TEST_F(UniformMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates) {
   UniformMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants unlimited = generator1.populate(*sourceLines, 0, SEED);
+  Mutants unlimited = generator1.generate(*sourceLines, 0, SEED);
 
   UniformMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants limited = generator2.populate(*sourceLines, 1000, SEED);
+  Mutants limited = generator2.generate(*sourceLines, 1000, SEED);
 
   // limit=0은 limit=큰수와 동일한 결과여야 함
   EXPECT_EQ(unlimited.size(), limited.size());

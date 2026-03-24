@@ -30,8 +30,8 @@ TEST_F(StatusLineTest, testSetPhaseDoesNotCrash) {
   EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::INIT));
   EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::BUILD_ORIG));
   EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::TEST_ORIG));
-  EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::POPULATE));
-  EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::MUTANT));
+  EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::GENERATION));
+  EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::EVALUATION));
   EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::REPORT));
   EXPECT_NO_THROW(sl.setPhase(StatusLine::Phase::DONE));
 }

@@ -29,7 +29,7 @@ namespace fs = std::filesystem;
 UniformMutantGenerator::UniformMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
-Mutants UniformMutantGenerator::populate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
+Mutants UniformMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;

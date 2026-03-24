@@ -34,7 +34,7 @@ bool EvaluationStage::shouldSkip() const {
 }
 
 StatusLine::Phase EvaluationStage::getPhase() const {
-  return StatusLine::Phase::MUTANT;
+  return StatusLine::Phase::EVALUATION;
 }
 
 bool EvaluationStage::execute() {

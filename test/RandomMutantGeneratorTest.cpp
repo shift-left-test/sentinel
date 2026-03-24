@@ -89,15 +89,15 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
   unsigned SEED = 1234;
 };
 
-TEST_F(RandomMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
+TEST_F(RandomMutantGeneratorTest, testGenerateFailWhenInvalidDirGiven) {
   RandomMutantGenerator generator{SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100, SEED), IOException);
+  EXPECT_THROW(Mutants mutants = generator.generate(*sourceLines, 100, SEED), IOException);
 }
 
-TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
+TEST_F(RandomMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator{SAMPLE1_DIR};
   // source line당 1개이므로 결과는 sourceLines 크기 이하
-  Mutants mutants = generator.populate(*sourceLines, 1000, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 1000, SEED);
 
   EXPECT_LE(mutants.size(), sourceLines->size());
   EXPECT_GT(mutants.size(), 0u);
@@ -106,9 +106,9 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   }
 }
 
-TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
+TEST_F(RandomMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   RandomMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 3, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants.size(), 3);
   for (const auto& e1 : mutants) {
@@ -118,10 +118,10 @@ TEST_F(RandomMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   RandomMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   RandomMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED + 1);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -130,22 +130,22 @@ TEST_F(RandomMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(RandomMutantGeneratorTest, testRandomWithSameSeedWorks) {
   RandomMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   RandomMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
   EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
 }
 
-TEST_F(RandomMutantGeneratorTest, testPopulateWithZeroLimitReturnsAllCandidates) {
+TEST_F(RandomMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates) {
   RandomMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants unlimited = generator1.populate(*sourceLines, 0, SEED);
+  Mutants unlimited = generator1.generate(*sourceLines, 0, SEED);
 
   RandomMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants large = generator2.populate(*sourceLines, 1000, SEED);
+  Mutants large = generator2.generate(*sourceLines, 1000, SEED);
 
   EXPECT_EQ(unlimited.size(), large.size());
   EXPECT_GT(unlimited.size(), 0u);

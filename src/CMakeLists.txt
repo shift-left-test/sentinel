@@ -18,7 +18,7 @@ build_static_library(
        docGenerator/IndexHtmlGenerator.cpp docGenerator/SrcHtmlGenerator.cpp
        CliConfigParser.cpp YamlConfigParser.cpp YamlConfigWriter.cpp Config.cpp ConfigResolver.cpp ConfigValidator.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp SignalHandler.cpp
        stages/OriginalBuildStage.cpp stages/OriginalTestStage.cpp
-       stages/PopulateStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
+       stages/GenerationStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include
   PUBLIC_SYSTEM_HEADERS ${CLANG_INCLUDE_DIRS}
   LIBS tinyxml2 fmt yaml-cpp ${LIBGIT2_LIBRARIES} stdc++fs args

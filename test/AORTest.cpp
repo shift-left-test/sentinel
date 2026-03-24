@@ -21,7 +21,7 @@ namespace fs = std::filesystem;
 
 class AORTest : public SampleFileGeneratorForTest {
  protected:
-  Mutants populate(int line, int limit = 100) {
+  Mutants generate(int line, int limit = 100) {
     auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
     generator->setOperators({"AOR"});
     MutationFactory factory(generator);
@@ -29,7 +29,7 @@ class AORTest : public SampleFileGeneratorForTest {
     capture->capture();
     SourceLines lines;
     lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    Mutants result = factory.populate(SAMPLE1_DIR, lines, limit, 1234);
+    Mutants result = factory.generate(SAMPLE1_DIR, lines, limit, 1234);
     capture->release();
     return result;
   }
@@ -37,7 +37,7 @@ class AORTest : public SampleFileGeneratorForTest {
 
 TEST_F(AORTest, testAORPopulatesOnArithmeticExpression) {
   // Line 59: "      ret = ret + i;" — AOR replaces "+" with -, *, /, %
-  Mutants mutants = populate(59);
+  Mutants mutants = generate(59);
   EXPECT_GT(mutants.size(), 0u);
   bool found = false;
   for (std::size_t i = 0; i < mutants.size(); ++i) {
@@ -49,7 +49,7 @@ TEST_F(AORTest, testAORPopulatesOnArithmeticExpression) {
 TEST_F(AORTest, testAORSkipsPointerArithmetic) {
   // Line 48: "  return (ptr_end - ptr_start) / sizeof(char);"
   // The "-" between pointers is pointer arithmetic — AOR must skip it.
-  Mutants mutants = populate(48);
+  Mutants mutants = generate(48);
   EXPECT_EQ(mutants.size(), 0u);
 }
 
@@ -78,7 +78,7 @@ TEST_F(AORTest, testAORSkipsMacroExpansion) {
   capture->capture();
   SourceLines lines;
   lines.push_back(SourceLine(macroSrc, 2));  // int main() { return ADD(1, 2); }
-  Mutants mutants = factory.populate(tmpDir, lines, 100, 1234);
+  Mutants mutants = factory.generate(tmpDir, lines, 100, 1234);
   capture->release();
 
   // AOR must not generate mutants for operators expanded from macros.

@@ -109,14 +109,14 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
   unsigned SEED = 1234;
 };
 
-TEST_F(WeightedMutantGeneratorTest, testPopulateFailWhenInvalidDirGiven) {
+TEST_F(WeightedMutantGeneratorTest, testGenerateFailWhenInvalidDirGiven) {
   WeightedMutantGenerator generator{SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.populate(*sourceLines, 100, SEED), IOException);
+  EXPECT_THROW(Mutants mutants = generator.generate(*sourceLines, 100, SEED), IOException);
 }
 
-TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
+TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 100, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 100, SEED);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -134,9 +134,9 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitNotExceeded) {
   }
 }
 
-TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
+TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.populate(*sourceLines, 4, SEED);
+  Mutants mutants = generator.generate(*sourceLines, 4, SEED);
 
   std::vector<std::size_t> lines = {32, 38, 39, 58, 59, 61, 76};
 
@@ -156,10 +156,10 @@ TEST_F(WeightedMutantGeneratorTest, testPopulateWorkWhenLimitExceeded) {
 
 TEST_F(WeightedMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   WeightedMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   WeightedMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED + 1);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -168,10 +168,10 @@ TEST_F(WeightedMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(WeightedMutantGeneratorTest, testRandomWithSameSeedWorks) {
   WeightedMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.populate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
 
   WeightedMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.populate(*sourceLines, 3, SEED);
+  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);

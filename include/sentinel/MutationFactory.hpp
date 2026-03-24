@@ -30,7 +30,7 @@ class MutationFactory {
   MutationFactory& operator=(const MutationFactory&) = delete;
 
   /**
-   * @brief Populate mutables from the given source lines
+   * @brief Generate mutables from the given source lines
    *
    * @param gitPath path to git repo
    * @param sourceLines lines of the source
@@ -39,7 +39,7 @@ class MutationFactory {
    * @param generatorStr name of the mutant selection strategy (e.g. "uniform", "random", "weighted")
    * @return list of mutables
    */
-  Mutants populate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
+  Mutants generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
                    unsigned randomSeed, const std::string& generatorStr = "");
 
  private:

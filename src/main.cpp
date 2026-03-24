@@ -25,7 +25,7 @@
 #include "sentinel/stages/OriginalTestStage.hpp"
 #include "sentinel/stages/DryRunStage.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
-#include "sentinel/stages/PopulateStage.hpp"
+#include "sentinel/stages/GenerationStage.hpp"
 #include "sentinel/stages/ReportStage.hpp"
 #include "sentinel/version.hpp"
 
@@ -124,12 +124,12 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   // 8. Assemble stage chain
   auto originalBuild = std::make_shared<sentinel::OriginalBuildStage>(cfg, statusLine, ws);
   auto originalTest = std::make_shared<sentinel::OriginalTestStage>(cfg, statusLine, ws);
-  auto populate = std::make_shared<sentinel::PopulateStage>(cfg, statusLine, ws);
+  auto generation = std::make_shared<sentinel::GenerationStage>(cfg, statusLine, ws);
   auto dryRunStage = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, ws);
   auto evaluation = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, ws);
   auto report = std::make_shared<sentinel::ReportStage>(cfg, statusLine, ws);
 
-  originalBuild->setNext(originalTest)->setNext(populate)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
+  originalBuild->setNext(originalTest)->setNext(generation)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
   // 9. Install signal handlers before pipeline starts
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};

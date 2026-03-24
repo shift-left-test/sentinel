@@ -16,25 +16,26 @@
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
-#include "sentinel/stages/PopulateStage.hpp"
+#include "sentinel/stages/GenerationStage.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-PopulateStage::PopulateStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
+GenerationStage::GenerationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
+                                 std::shared_ptr<Workspace> workspace) :
     Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
 }
 
-bool PopulateStage::shouldSkip() const {
+bool GenerationStage::shouldSkip() const {
   return !mWorkspace->loadMutants().empty();
 }
 
-StatusLine::Phase PopulateStage::getPhase() const {
-  return StatusLine::Phase::POPULATE;
+StatusLine::Phase GenerationStage::getPhase() const {
+  return StatusLine::Phase::GENERATION;
 }
 
-bool PopulateStage::execute() {
+bool GenerationStage::execute() {
   auto repo =
       std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions, *mConfig.patterns, *mConfig.excludes);
   repo->addSkipDir(mWorkspace->getRoot());
@@ -46,7 +47,7 @@ bool PopulateStage::execute() {
   auto generator = MutantGenerator::getInstance(*mConfig.generator, *mConfig.compileDbDir);
   generator->setOperators(*mConfig.operators);
   MutationFactory factory(generator);
-  auto mutants = factory.populate(*mConfig.sourceDir, sourceLines, *mConfig.limit, seed, *mConfig.generator);
+  auto mutants = factory.generate(*mConfig.sourceDir, sourceLines, *mConfig.limit, seed, *mConfig.generator);
   std::size_t candidateCount = generator->getCandidateCount();
 
   if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {

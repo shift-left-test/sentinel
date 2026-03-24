@@ -18,7 +18,7 @@ namespace sentinel {
 
 class SDLTest : public SampleFileGeneratorForTest {
  protected:
-  Mutants populate(const std::filesystem::path& srcPath, int line) {
+  Mutants generate(const std::filesystem::path& srcPath, int line) {
     auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
     generator->setOperators({"SDL"});
     MutationFactory factory(generator);
@@ -26,7 +26,7 @@ class SDLTest : public SampleFileGeneratorForTest {
     capture->capture();
     SourceLines lines;
     lines.push_back(SourceLine(srcPath, line));
-    Mutants result = factory.populate(SAMPLE1_DIR, lines, 100, 1234);
+    Mutants result = factory.generate(SAMPLE1_DIR, lines, 100, 1234);
     capture->release();
     return result;
   }
@@ -34,7 +34,7 @@ class SDLTest : public SampleFileGeneratorForTest {
 
 TEST_F(SDLTest, testSDLPopulatesOnSimpleStatement) {
   // Line 61: "    i++;" — a simple expression statement that can be deleted.
-  Mutants mutants = populate(SAMPLE1_PATH, 61);
+  Mutants mutants = generate(SAMPLE1_PATH, 61);
   EXPECT_GT(mutants.size(), 0u);
   for (std::size_t i = 0; i < mutants.size(); ++i) {
     EXPECT_EQ(mutants.at(i).getOperator(), "SDL");
@@ -44,7 +44,7 @@ TEST_F(SDLTest, testSDLPopulatesOnSimpleStatement) {
 TEST_F(SDLTest, testSDLMutatesBreakInForLoop) {
   // Line 28 of sample1b.cpp: "  for (;;) break;  // NOLINT"
   // The "break" is the single-statement body of the for loop — SDL deletes it.
-  Mutants mutants = populate(SAMPLE1B_PATH, 28);
+  Mutants mutants = generate(SAMPLE1B_PATH, 28);
   EXPECT_GT(mutants.size(), 0u);
   for (std::size_t i = 0; i < mutants.size(); ++i) {
     EXPECT_EQ(mutants.at(i).getOperator(), "SDL");
@@ -54,7 +54,7 @@ TEST_F(SDLTest, testSDLMutatesBreakInForLoop) {
 TEST_F(SDLTest, testSDLSkipsEmptyWhileBody) {
   // Line 30 of sample1b.cpp: "  while (true) {}"
   // Empty loop body — nothing to delete.
-  Mutants mutants = populate(SAMPLE1B_PATH, 30);
+  Mutants mutants = generate(SAMPLE1B_PATH, 30);
   EXPECT_EQ(mutants.size(), 0u);
 }
 

@@ -17,7 +17,7 @@ namespace sentinel {
 
 class RORTest : public SampleFileGeneratorForTest {
  protected:
-  Mutants populate(int line) {
+  Mutants generate(int line) {
     auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
     generator->setOperators({"ROR"});
     MutationFactory factory(generator);
@@ -25,7 +25,7 @@ class RORTest : public SampleFileGeneratorForTest {
     capture->capture();
     SourceLines lines;
     lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    Mutants result = factory.populate(SAMPLE1_DIR, lines, 100, 1234);
+    Mutants result = factory.generate(SAMPLE1_DIR, lines, 100, 1234);
     capture->release();
     return result;
   }
@@ -33,7 +33,7 @@ class RORTest : public SampleFileGeneratorForTest {
 
 TEST_F(RORTest, testRORPopulatesOnLessEqual) {
   // Line 32: "  return a <= b;"
-  Mutants mutants = populate(32);
+  Mutants mutants = generate(32);
   EXPECT_GT(mutants.size(), 0u);
   for (std::size_t i = 0; i < mutants.size(); ++i) {
     EXPECT_EQ(mutants.at(i).getOperator(), "ROR");
@@ -42,7 +42,7 @@ TEST_F(RORTest, testRORPopulatesOnLessEqual) {
 
 TEST_F(RORTest, testRORPopulatesOnGreaterThan) {
   // Line 41: "  if (d > Friday) {"
-  Mutants mutants = populate(41);
+  Mutants mutants = generate(41);
   EXPECT_GT(mutants.size(), 0u);
   for (std::size_t i = 0; i < mutants.size(); ++i) {
     EXPECT_EQ(mutants.at(i).getOperator(), "ROR");
