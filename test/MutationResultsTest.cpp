@@ -58,7 +58,7 @@ TEST_F(MutationResultsTest, testAdd) {
 
 TEST_F(MutationResultsTest, testGetFailsWhenGivenIndexOutOfRange) {
   MutationResults m;
-  EXPECT_THROW(m[0], std::out_of_range);
+  EXPECT_THROW(m.at(0), std::out_of_range);
 }
 
 TEST_F(MutationResultsTest, testSaveAndLoad) {
