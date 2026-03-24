@@ -30,7 +30,7 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
   if (partIdx != 0) {
     Console::out("  partition:     {}/{}", partIdx, partCount);
   }
-  Console::out("  workspace:     {}", workspaceDir.string());
+  Console::out("  workspace:     {}", workspaceDir);
 
   Console::out("\n  {}  Original build", "[ OK ]");  // Baseline run already happened
 
@@ -48,7 +48,7 @@ static void printDryRunSummary(const Config& cfg, std::size_t computedTimeLimit,
 
   if (cfg.verbose && *cfg.verbose) {
     for (const auto& [id, m] : indexedMutants) {
-      Console::out("          [{:3d}] {} @ {}:{}", id, m.getOperator(), m.getPath().filename().string(),
+      Console::out("          [{:3d}] {} @ {}:{}", id, m.getOperator(), m.getPath().filename(),
                    m.getFirst().line);
     }
   }

@@ -112,7 +112,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   std::ofstream ofs(outputDir / fileName, std::ofstream::out);
   ofs << contents;
   ofs.close();
-  Logger::info("Save to {}", (outputDir / fileName).string());
+  Logger::info("Save to {}", outputDir / fileName);
 }
 
 void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, const std::filesystem::path& srcPath,
@@ -255,7 +255,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& MRs, c
   ofs << contents;
   ofs.close();
 
-  Logger::info("Save to {}", fileName.string());
+  Logger::info("Save to {}", fileName);
 }
 
 }  // namespace sentinel

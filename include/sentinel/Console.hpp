@@ -9,8 +9,19 @@
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <unistd.h>
+#include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
+
+/// @cond INTERNAL
+template <>
+struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
+  template <typename FormatContext>
+  auto format(const std::filesystem::path& p, FormatContext& ctx) {
+    return fmt::formatter<std::string>::format(p.string(), ctx);
+  }
+};
+/// @endcond
 
 namespace sentinel::Console {
 
@@ -33,7 +44,7 @@ inline void print(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline void out(const std::string& pattern, Args&&... args) {
-  print("{}\n", fmt::format(pattern, std::forward<Args>(args)...));
+  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << '\n';
 }
 
 /**
@@ -63,7 +74,7 @@ inline void err(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline bool confirm(const std::string& pattern, Args&&... args) {
-  print("{} [y/N] ", fmt::format(pattern, std::forward<Args>(args)...));
+  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << " [y/N] ";
   flush();
 
   if (isatty(STDIN_FILENO) == 0) {

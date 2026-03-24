@@ -66,7 +66,7 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
 
   doc->InsertEndChild(pMutations);
   doc->SaveFile(xmlPath.c_str());
-  Logger::info("Save to {}", xmlPath.string());
+  Logger::info("Save to {}", xmlPath);
 }
 
 void XmlReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,

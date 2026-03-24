@@ -64,7 +64,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   bool alreadyComplete = false;
   bool resuming = false;
   if (!force && !dryRun && ws->hasPreviousRun()) {
-    if (!sentinel::Console::confirm("Previous run found in '{}'. Resume?", workDirPath.string())) {
+    if (!sentinel::Console::confirm("Previous run found in '{}'. Resume?", workDirPath)) {
       sentinel::Console::out("Aborted.");
       return 0;
     }
@@ -97,7 +97,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
   if (dryRun && ws->hasPreviousRun()) {
-    sentinel::Logger::debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath.string());
+    sentinel::Logger::debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
   }
 
   // Validate config before starting the pipeline.

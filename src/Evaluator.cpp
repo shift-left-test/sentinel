@@ -22,7 +22,7 @@ Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::
     mSourcePath(sourcePath),
     mCanonicalSourcePath(fs::canonical(sourcePath)),
     mExpectedResult(expectedResultDir.string()) {
-  Logger::info("Load Expected Result: {}", expectedResultDir.string());
+  Logger::info("Load Expected Result: {}", expectedResultDir);
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
     throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir.string()));
@@ -38,11 +38,11 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
   switch (testState) {
     case TestExecutionState::BUILD_FAILURE:
       state = MutationState::BUILD_FAILURE;
-      Logger::verbose("build failure ({})", ActualResultDir.string());
+      Logger::verbose("build failure ({})", ActualResultDir);
       break;
     case TestExecutionState::TIMEOUT:
       state = MutationState::TIMEOUT;
-      Logger::verbose("timeout ({})", ActualResultDir.string());
+      Logger::verbose("timeout ({})", ActualResultDir);
       break;
     case TestExecutionState::UNCOVERED:
       state = MutationState::SURVIVED;
@@ -50,7 +50,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
       break;
     case TestExecutionState::SUCCESS: {
       Result mActualResult(ActualResultDir.string());
-      Logger::verbose("comparing results: {}", ActualResultDir.string());
+      Logger::verbose("comparing results: {}", ActualResultDir);
       state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
       break;
     }
@@ -98,7 +98,7 @@ MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const 
   outFile << ret << "\n";
   outFile.close();
 
-  Logger::verbose("saved mutation result: {}", outDir.string());
+  Logger::verbose("saved mutation result: {}", outDir);
 
   return ret;
 }
