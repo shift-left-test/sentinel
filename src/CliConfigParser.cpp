@@ -17,9 +17,8 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                 {"config"}),
     mOutputDir(mGroupRunCtrl, "PATH", "Directory for output reports.", {'o', "output-dir"}),
     mWorkDir(mGroupRunCtrl, "PATH", "Workspace directory for all sentinel run artifacts.", {"workspace"}),
-    mVerbose(mGroupRunCtrl, "verbose", "Enable verbose logging.", {'v', "verbose"}),
     mSilent(mGroupRunCtrl, "silent", "Suppress build/test subprocess output to terminal.", {"silent"}),
-    mDebug(mGroupRunCtrl, "debug", "Enable debug logging.", {"debug"}),
+    mVerbose(mGroupRunCtrl, "verbose", "Enable verbose logging.", {"verbose"}),
     mForce(mGroupRunCtrl, "force", "Skip all prompts and start fresh.", {"force"}),
     mInit(mGroupRunCtrl, "init", "Write a sentinel.yaml config template to the current directory and exit", {"init"}),
     mDryRun(mGroupRunCtrl, "dry-run",
@@ -61,9 +60,8 @@ Config CliConfigParser::getConfig() {
   if (mSourceDir) cfg.sourceDir = mSourceDir.Get();
   if (mWorkDir) cfg.workDir = mWorkDir.Get();
   if (mOutputDir) cfg.outputDir = mOutputDir.Get();
-  if (mVerbose) cfg.verbose = true;
   if (mSilent) cfg.silent = true;
-  if (mDebug) cfg.debug = true;
+  if (mVerbose) cfg.verbose = true;
   if (mForce) cfg.force = true;
 
   if (mBuildCmd) cfg.buildCmd = mBuildCmd.Get();

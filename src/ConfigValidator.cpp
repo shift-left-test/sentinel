@@ -10,6 +10,7 @@
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/Console.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace sentinel {
@@ -90,12 +91,11 @@ bool ConfigValidator::checkWarnings(const Config& config) {
   }
 
   if (!warnings.empty() && !(config.force && *config.force)) {
-    Console::out("\nConfiguration warnings:");
+    Logger::warn("Configuration warnings:");
     for (const auto& w : warnings) {
-      Console::out("  [!] {}", w);
+      Logger::warn("  {}", w);
     }
-    if (!Console::confirm("\nProceed?")) {
-      Console::out("Aborted.");
+    if (!Console::confirm("")) {
       return false;
     }
   }

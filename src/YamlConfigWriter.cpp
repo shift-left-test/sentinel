@@ -114,7 +114,7 @@ void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
     throw std::runtime_error(fmt::format("Failed to create '{}'", path.string()));
   }
   out << kYamlTemplate;
-  Console::out("Generated '{}'", path);
+  Console::out("Created '{}'", path);
 }
 
 }  // namespace sentinel

@@ -16,27 +16,27 @@ bool GoogleTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document)
 
   tinyxml2::XMLElement* pRoot = document->FirstChildElement("testsuites");
   if (pRoot == nullptr) {
-    Logger::debug(message);
+    Logger::verbose(message);
     return false;
   }
 
   tinyxml2::XMLElement* p = pRoot->FirstChildElement("testsuite");
   if (p == nullptr) {
-    Logger::debug(message);
+    Logger::verbose(message);
     return false;
   }
 
   for (; p != nullptr; p = p->NextSiblingElement("testsuite")) {
     tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
     if (q == nullptr) {
-      Logger::debug(message);
+      Logger::verbose(message);
       return false;
     }
 
     for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
       const char* pStatus = q->Attribute("status");
       if (pStatus == nullptr) {
-        Logger::debug(message);
+        Logger::verbose(message);
         return false;
       }
 
@@ -44,7 +44,7 @@ bool GoogleTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document)
         const char* pClassName = q->Attribute("classname");
         const char* pName = q->Attribute("name");
         if (pClassName == nullptr || pName == nullptr) {
-          Logger::debug(message);
+          Logger::verbose(message);
           return false;
         }
 

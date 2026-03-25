@@ -141,8 +141,6 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
           [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void* payload) {
             // each_line_cb
             auto d = reinterpret_cast<DiffData*>(payload);
-            Logger::debug("{}:{}:{}", line->origin, delta->new_file.path, line->new_lineno);
-
             if (line->origin == '+') {
               d->addSourceLine(delta->new_file.path, line->new_lineno);
             }
@@ -220,7 +218,7 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
   SafeGit2ObjPtr<git_reference, git_reference_free> ref;
 
   if (git_reference_lookup(ref.getPtr(), repo, "refs/tags/devtool-base") == 0) {
-    Logger::info("found devtool tag in {}", gitWorkdir);
+    Logger::verbose("found devtool tag in {}", gitWorkdir);
     int error_code = git_reference_peel(obj.getPtr(), static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
     if (error_code != 0) {
       throw RepositoryException(fmt::format("Failed to peel tag: error code {}", error_code));
@@ -258,7 +256,7 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
   } catch (const fs::filesystem_error& e) {
     throw InvalidArgumentException(fmt::format("source_root option error: {}", e.what()));
   }
-  Logger::info("source root: {}", mSourceRoot);
+  Logger::verbose("source root: {}", mSourceRoot);
 
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),
@@ -267,10 +265,10 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
                    });
   }
 
-  Logger::debug("patterns: {}", string::join(", ", patterns));
+  Logger::verbose("patterns: {}", string::join(", ", patterns));
   mPatterns = patterns;
 
-  Logger::debug("excludes: {}", string::join(", ", excludes));
+  Logger::verbose("excludes: {}", string::join(", ", excludes));
   mExcludes = excludes;
 }
 
@@ -311,7 +309,7 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
   {
     auto mm = std::mismatch(mSourceRoot.begin(), mSourceRoot.end(), canonicalPath.begin(), canonicalPath.end());
     if (mm.first != mSourceRoot.end()) {
-      Logger::debug("skipped (outside source-dir): {}", canonicalPath);
+      Logger::verbose("skipped (outside source-dir): {}", canonicalPath);
       return false;
     }
   }
@@ -392,7 +390,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       continue;
     }
     fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
-    Logger::info("git workdir: {}", gitWorkdir);
+    Logger::verbose("git workdir: {}", gitWorkdir);
     processedWorkdirs.insert(gitWorkdir);
 
     std::vector<char*> cstrs;
@@ -419,7 +417,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       const char* rawWorkdir = git_repository_workdir(static_cast<git_repository*>(repo));
       if (rawWorkdir) {
         fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
-        Logger::info("git workdir (enclosing): {}", gitWorkdir);
+        Logger::verbose("git workdir (enclosing): {}", gitWorkdir);
 
         std::vector<char*> cstrs;
         git_diff_options opts = buildOpts(cstrs);

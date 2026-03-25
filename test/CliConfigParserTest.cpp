@@ -33,9 +33,8 @@ TEST_F(CliConfigParserTest, testDefaultConfigIsAllNullopt) {
   EXPECT_FALSE(cfg.sourceDir.has_value());
   EXPECT_FALSE(cfg.workDir.has_value());
   EXPECT_FALSE(cfg.outputDir.has_value());
-  EXPECT_FALSE(cfg.verbose.has_value());
   EXPECT_FALSE(cfg.silent.has_value());
-  EXPECT_FALSE(cfg.debug.has_value());
+  EXPECT_FALSE(cfg.verbose.has_value());
   EXPECT_FALSE(cfg.force.has_value());
   EXPECT_FALSE(cfg.buildCmd.has_value());
   EXPECT_FALSE(cfg.testCmd.has_value());
@@ -54,12 +53,6 @@ TEST_F(CliConfigParserTest, testOutputDirParsed) {
   Config cfg = parse({"--output-dir", "/tmp/out"});
   ASSERT_TRUE(cfg.outputDir.has_value());
   EXPECT_EQ(cfg.outputDir->string(), "/tmp/out");
-}
-
-TEST_F(CliConfigParserTest, testVerboseFlagParsed) {
-  Config cfg = parse({"--verbose"});
-  ASSERT_TRUE(cfg.verbose.has_value());
-  EXPECT_TRUE(*cfg.verbose);
 }
 
 TEST_F(CliConfigParserTest, testSilentFlagParsed) {

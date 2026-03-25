@@ -74,17 +74,22 @@ inline void err(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline bool confirm(const std::string& pattern, Args&&... args) {
-  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << " [y/N] ";
+  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << "\nProceed? [y/N] ";
   flush();
 
   if (isatty(STDIN_FILENO) == 0) {
     err("(non-interactive: defaulting to N)");
+    out("Aborted.");
     return false;
   }
 
   std::string answer;
   std::getline(std::cin, answer);
-  return (answer == "y" || answer == "Y");
+  if (answer != "y" && answer != "Y") {
+    out("Aborted.");
+    return false;
+  }
+  return true;
 }
 
 }  // namespace sentinel::Console

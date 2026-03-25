@@ -47,87 +47,59 @@ class LoggerTest : public ::testing::Test {
 
 TEST_F(LoggerTest, testInfoWithInitialLevel) {
   Logger::setLevel(Logger::Level::OFF);
-  captureStdout();
+  captureStderr();
   Logger::info("hello world");
-  EXPECT_STREQ("", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testDebugWithInfoLevel) {
-  captureStdout();
-  Logger::debug("hello world");
-  EXPECT_STREQ("", capturedStdout().c_str());
+  EXPECT_STREQ("", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testVerboseWithInfoLevel) {
-  captureStdout();
+  captureStderr();
   Logger::verbose("hello world");
-  EXPECT_STREQ("", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testDebugWithVerboseLevel) {
-  Logger::setLevel(Logger::Level::VERBOSE);
-  captureStdout();
-  Logger::debug("hello world");
-  EXPECT_STREQ("", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testVerboseWithVerboseLevel) {
-  Logger::setLevel(Logger::Level::VERBOSE);
-  captureStdout();
-  Logger::verbose("hello world");
-  EXPECT_STREQ("[verbose] hello world\n", capturedStdout().c_str());
-}
-
-TEST_F(LoggerTest, testInfoWithVerboseLevel) {
-  Logger::setLevel(Logger::Level::VERBOSE);
-  captureStdout();
-  Logger::info("hello world");
-  EXPECT_STREQ("[info] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testInfoWithInfoLevel) {
-  captureStdout();
+  captureStderr();
   Logger::info("hello world");
-  EXPECT_STREQ("[info] hello world\n", capturedStdout().c_str());
+  EXPECT_STREQ("[INFO]  hello world\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testWarnWithInfoLevel) {
   captureStderr();
   Logger::warn("hello world");
-  EXPECT_STREQ("[warn] hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("[WARN]  hello world\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testErrorWithInfoLevel) {
   captureStderr();
   Logger::error("hello world");
-  EXPECT_STREQ("[error] hello world\n", capturedStderr().c_str());
+  EXPECT_STREQ("[ERROR] hello world\n", capturedStderr().c_str());
 }
 
-TEST_F(LoggerTest, testDebugWithDebugLevel) {
-  Logger::setLevel(Logger::Level::DEBUG);
-  captureStdout();
-  Logger::debug("hello world");
-  EXPECT_STREQ("[debug] hello world\n", capturedStdout().c_str());
+TEST_F(LoggerTest, testVerboseWithDebugLevel) {
+  Logger::setLevel(Logger::Level::VERBOSE);
+  captureStderr();
+  Logger::verbose("hello world");
+  EXPECT_STREQ("[VERBOSE] hello world\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithAllLevel) {
   Logger::setLevel(Logger::Level::ALL);
   captureStdout();
   captureStderr();
-  Logger::debug("D");
-  Logger::verbose("V");
+  Logger::verbose("D");
   Logger::info("I");
   Logger::warn("W");
   Logger::error("E");
-  EXPECT_STREQ("[debug] D\n[verbose] V\n[info] I\n", capturedStdout().c_str());
-  EXPECT_STREQ("[warn] W\n[error] E\n", capturedStderr().c_str());
+  EXPECT_STREQ("", capturedStdout().c_str());
+  EXPECT_STREQ("[VERBOSE] D\n[INFO]  I\n[WARN]  W\n[ERROR] E\n", capturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithOffLevelSet) {
   Logger::setLevel(Logger::Level::OFF);
   captureStdout();
   captureStderr();
-  Logger::debug("D");
+  Logger::verbose("D");
   Logger::info("I");
   Logger::warn("W");
   Logger::error("E");
@@ -136,11 +108,11 @@ TEST_F(LoggerTest, testLogsWithOffLevelSet) {
 }
 
 TEST_F(LoggerTest, testSetLevelAffectsAllLogs) {
-  Logger::setLevel(Logger::Level::DEBUG);
-  captureStdout();
-  Logger::debug("1");
-  Logger::debug("2");
-  EXPECT_STREQ("[debug] 1\n[debug] 2\n", capturedStdout().c_str());
+  Logger::setLevel(Logger::Level::VERBOSE);
+  captureStderr();
+  Logger::verbose("1");
+  Logger::verbose("2");
+  EXPECT_STREQ("[VERBOSE] 1\n[VERBOSE] 2\n", capturedStderr().c_str());
 }
 
 }  // namespace sentinel

@@ -16,27 +16,27 @@ bool QTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
 
   tinyxml2::XMLElement* p = document->FirstChildElement("testsuite");
   if (p == nullptr) {
-    Logger::debug(message);
+    Logger::verbose(message);
     return false;
   }
 
   tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
   if (q == nullptr) {
-    Logger::debug(message);
+    Logger::verbose(message);
     return false;
   }
 
   for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
     const char* pResult = q->Attribute("result");
     if (pResult == nullptr) {
-      Logger::debug(message);
+      Logger::verbose(message);
       return false;
     }
 
     const char* pClassName = p->Attribute("name");
     const char* pName = q->Attribute("name");
     if (pClassName == nullptr || pName == nullptr) {
-      Logger::debug(message);
+      Logger::verbose(message);
       return false;
     }
 

@@ -82,7 +82,7 @@ int Subprocess::execute() {
     signal::setMultipleSignalHandlers(usingSignals, SIG_DFL);
 
     execlp("/bin/sh", "sh", "-c", mCmd.c_str(), nullptr);
-    Console::out("failed to exec {} (cause: {})", mCmd, std::strerror(errno));
+    Console::err("Failed to execute command: {}", std::strerror(errno));
     exit(1);
   } else if (pid > 0) {
     // Close unused pipe
@@ -101,7 +101,7 @@ int Subprocess::execute() {
     // And send last signal to sentinel just before return this function
     signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
                                       [](int signum) {
-                                        Console::out(R"asdf( Stopping due to {}...)asdf", strsignal(signum));
+                                        Console::err("\nStopping due to {}...", strsignal(signum));
                                         kill(-Subprocess::childPid, SIGKILL);
                                         Subprocess::pendSig = signum;
                                       });
@@ -115,14 +115,14 @@ int Subprocess::execute() {
       std::string tmpMsg;
       if (!Subprocess::timedOut) {
         Subprocess::timedOut = true;
-        tmpMsg = "Timeout when executing test command.";
+        tmpMsg = "Test timed out.";
         alarm(Subprocess::killAfter);
       } else {
         termSignal = SIGKILL;
-        tmpMsg = fmt::format("Failed to terminate child process within {}.", Subprocess::killAfter);
+        tmpMsg = fmt::format("Failed to terminate child process within {}s.", Subprocess::killAfter);
       }
       kill(-Subprocess::childPid, termSignal);
-      Console::out("{} Send a signal({}) to child process' process group.", tmpMsg, strsignal(termSignal));
+      Console::err("{} Sending {} to child process group.", tmpMsg, strsignal(termSignal));
     });
 
     // Alarm setting

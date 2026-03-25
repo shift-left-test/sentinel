@@ -7,92 +7,102 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Console.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
+
+namespace fs = std::filesystem;
+
+static constexpr std::size_t kReportWidth = 76;
+
+static std::string repeatUtf8(const char* ch, std::size_t width) {
+  std::string unit(ch);
+  std::string result;
+  result.reserve(unit.size() * width);
+  for (std::size_t i = 0; i < width; ++i) {
+    result += unit;
+  }
+  return result;
+}
 
 Report::Report(const MutationSummary& summary) :
     mSummary(summary) {
 }
 
 void Report::printSummary() const {
-  std::size_t flen = 50;
-  std::size_t klen = 10;
-  std::size_t mlen = 10;
-  std::size_t clen = 10;
-  std::size_t maxlen = flen + klen + mlen + clen + 2;
+  const std::string thick = repeatUtf8("\xe2\x94\x81", kReportWidth);   // ━
+  const std::string thin = repeatUtf8("\xe2\x94\x80", kReportWidth);    // ─
 
-  int cnt = 0;
-  Logger::verbose("# of MutationResults: {}", mSummary.results.size());
-  for (const MutationResult& mr : mSummary.results) {
-    Logger::verbose("MutationResult #{}", ++cnt);
-    Logger::verbose("  Mutant: {}", mr.getMutant().str());
-    Logger::verbose("  killing TC: {}", mr.getKillingTest());
-    Logger::verbose("  error TC: {}", mr.getErrorTest());
-    Logger::verbose("  Mutation State: {}", MutationStateToStr(mr.getMutationState()));
-  }
+  static constexpr std::size_t flen = 40;
+  static constexpr std::size_t klen = 8;
+  static constexpr std::size_t slen = 10;
+  static constexpr std::size_t mlen = 8;
+  static constexpr std::size_t clen = 8;
+  std::string rowFmt = "  {0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}{8:>{9}}";
 
-  std::string defFormat = "{0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}";
-  Console::out("{0:=^{1}}", "", maxlen);
-  Console::out(string::rtrim(fmt::format("{0:^{1}}", "Mutation Coverage Report", maxlen)));
-  Console::out("{0:=^{1}}", "", maxlen);
-  Console::out(defFormat, "File", flen, "Killed", klen, "Total", mlen, "Score", clen);
-  Console::out("{0:-^{1}}", "", maxlen);
+  // Header
+  Console::out("{}", thick);
+  Console::out("{:^{}}", "Mutation Coverage Report", kReportWidth);
+  Console::out("{}", thick);
+  Console::out(rowFmt, "File", flen, "Killed", klen, "Survived", slen, "Total", mlen, "Score", clen);
+  Console::out("{}", thin);
 
-  for (const auto& p : mSummary.groupByPath) {
+  // Per-file rows
+  for (const auto& [path, stats] : mSummary.groupByPath) {
     double curScore = -1.0;
-    if (p.second.total != 0) {
-      curScore = (100.0 * static_cast<double>(p.second.detected)) / static_cast<double>(p.second.total);
+    if (stats.total != 0) {
+      curScore = (100.0 * static_cast<double>(stats.detected)) / static_cast<double>(stats.total);
     }
-    int filePos = static_cast<int>(p.first.string().size()) - static_cast<int>(flen);
+    std::string filePath = path.string();
+    int overflow = static_cast<int>(filePath.size()) - static_cast<int>(flen);
     std::string skipStr;
-    if (filePos < 0) {
-      filePos = 0;
-    } else if (filePos > 1) {
-      filePos += 4;
+    if (overflow > 1) {
+      filePath = filePath.substr(overflow + 4);
       skipStr = "... ";
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
-    Console::out(defFormat, skipStr + p.first.string().substr(filePos), flen, p.second.detected, klen, p.second.total,
-                 mlen, scoreStr, clen);
+    std::size_t survived = stats.total - stats.detected;
+    Console::out(rowFmt, skipStr + filePath, flen, stats.detected, klen, survived, slen,
+                 stats.total, mlen, scoreStr, clen);
   }
-  Console::out("{0:-^{1}}", "", maxlen);
 
+  // Footer
+  Console::out("{}", thick);
   double finalScore = -1.0;
   if (mSummary.totNumberOfMutation != 0) {
     finalScore = (100.0 * static_cast<double>(mSummary.totNumberOfDetectedMutation)) /
                  static_cast<double>(mSummary.totNumberOfMutation);
   }
   std::string finalScoreStr = finalScore >= 0.0 ? fmt::format("{:.1f}%", finalScore) : "-%";
-  Console::out(defFormat, "TOTAL", flen, mSummary.totNumberOfDetectedMutation, klen, mSummary.totNumberOfMutation,
-               mlen, finalScoreStr, clen);
-  Console::out("{0:=^{1}}", "", maxlen);
+  std::size_t totalSurvived = mSummary.totNumberOfMutation - mSummary.totNumberOfDetectedMutation;
+  Console::out(rowFmt, "TOTAL", flen, mSummary.totNumberOfDetectedMutation, klen, totalSurvived, slen,
+               mSummary.totNumberOfMutation, mlen, finalScoreStr, clen);
 
-  if ((mSummary.totNumberOfBuildFailure + mSummary.totNumberOfRuntimeError + mSummary.totNumberOfTimeout) != 0) {
+  // Skipped
+  std::size_t totalSkipped =
+      mSummary.totNumberOfBuildFailure + mSummary.totNumberOfRuntimeError + mSummary.totNumberOfTimeout;
+  if (totalSkipped != 0) {
+    Console::out("{}", thin);
     std::string skipped;
     if (mSummary.totNumberOfBuildFailure > 0) {
-      skipped +=
-          fmt::format("{} build failure{}", mSummary.totNumberOfBuildFailure,
-                      mSummary.totNumberOfBuildFailure == 1 ? "" : "s");
+      skipped += fmt::format("{} build failure{}", mSummary.totNumberOfBuildFailure,
+                             mSummary.totNumberOfBuildFailure == 1 ? "" : "s");
     }
     if (mSummary.totNumberOfRuntimeError > 0) {
-      if (!skipped.empty()) skipped += "  \xc2\xb7  ";
-      skipped +=
-          fmt::format("{} runtime error{}", mSummary.totNumberOfRuntimeError,
-                      mSummary.totNumberOfRuntimeError == 1 ? "" : "s");
+      if (!skipped.empty()) skipped += ", ";
+      skipped += fmt::format("{} runtime error{}", mSummary.totNumberOfRuntimeError,
+                             mSummary.totNumberOfRuntimeError == 1 ? "" : "s");
     }
     if (mSummary.totNumberOfTimeout > 0) {
-      if (!skipped.empty()) skipped += "  \xc2\xb7  ";
-      skipped +=
-          fmt::format("{} timeout{}", mSummary.totNumberOfTimeout, mSummary.totNumberOfTimeout == 1 ? "" : "s");
+      if (!skipped.empty()) skipped += ", ";
+      skipped += fmt::format("{} timeout{}", mSummary.totNumberOfTimeout,
+                             mSummary.totNumberOfTimeout == 1 ? "" : "s");
     }
-    Console::out("Skipped: {}", skipped);
-    Console::out("{0:=^{1}}", "", maxlen);
+    Console::out("  Skipped: {}", skipped);
   }
+  Console::out("{}", thick);
 }
 
 }  // namespace sentinel

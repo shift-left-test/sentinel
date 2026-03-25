@@ -19,9 +19,8 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml, const std:
   mergeField(result.sourceDir, cli.sourceDir, yaml.sourceDir, fs::path("."));
   mergeField(result.workDir, cli.workDir, yaml.workDir, fs::path("./.sentinel"));
   mergeField(result.outputDir, cli.outputDir, yaml.outputDir, fs::path(""));
-  mergeField(result.verbose, cli.verbose, yaml.verbose, false);
   mergeField(result.silent, cli.silent, yaml.silent, false);
-  mergeField(result.debug, cli.debug, yaml.debug, false);
+  mergeField(result.verbose, cli.verbose, yaml.verbose, false);
   mergeField(result.force, cli.force, yaml.force, false);
 
   // 2. Merge build & test fields

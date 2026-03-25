@@ -45,8 +45,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   if (cliCfg.init) {
     const char* const kConfigFileName = "sentinel.yaml";
     if (fs::exists(kConfigFileName) && !(cliCfg.force && *cliCfg.force)) {
-      if (!sentinel::Console::confirm("'{}' already exists. Overwrite?", kConfigFileName)) {
-        sentinel::Console::out("Aborted.");
+      if (!sentinel::Console::confirm("'{}' already exists and will be overwritten.", kConfigFileName)) {
         return 0;
       }
     }
@@ -64,8 +63,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   bool alreadyComplete = false;
   bool resuming = false;
   if (!force && !dryRun && ws->hasPreviousRun()) {
-    if (!sentinel::Console::confirm("Previous run found in '{}'. Resume?", workDirPath)) {
-      sentinel::Console::out("Aborted.");
+    if (!sentinel::Console::confirm("A previous run was found in '{}' and will be resumed.", workDirPath)) {
       return 0;
     }
     alreadyComplete = ws->isComplete();
@@ -91,13 +89,11 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   sentinel::Config cfg = sentinel::ConfigResolver::resolve(cliCfg, yamlCfg, configPath);
 
   // 5. Configure logger
-  if (cfg.debug && *cfg.debug) {
-    sentinel::Logger::setLevel(sentinel::Logger::Level::DEBUG);
-  } else if (cfg.verbose && *cfg.verbose) {
+  if (cfg.verbose && *cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
   if (dryRun && ws->hasPreviousRun()) {
-    sentinel::Logger::debug("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
+    sentinel::Logger::verbose("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
   }
 
   // Validate config before starting the pipeline.
@@ -167,17 +163,18 @@ int main(int argc, char** argv) {
     }
     return 0;
   } catch (const args::Error& e) {
-    std::cerr << e.what() << std::endl << parser;
+    sentinel::Logger::error("{}", e.what());
+    std::cerr << parser;
     return 2;
   }
 
   try {
     return runApplication(&cliParser);
   } catch (const sentinel::ThresholdError& e) {
-    std::cerr << e.what() << std::endl;
+    sentinel::Logger::error("{}", e.what());
     return 3;
   } catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
+    sentinel::Logger::error("{}", e.what());
     return 1;
   }
 }

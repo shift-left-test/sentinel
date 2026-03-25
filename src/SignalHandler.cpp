@@ -30,7 +30,7 @@ void SignalHandler::add(const std::vector<int>& signals, std::function<void()> c
 }
 
 void SignalHandler::dispatch(int signum) {
-  Logger::debug("Signal received: {} ({})", signum, strsignal(signum));
+  Logger::verbose("Signal received: {} ({})", signum, strsignal(signum));
   for (auto& cb : sCallbacks) {
     cb();
   }

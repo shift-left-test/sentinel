@@ -20,10 +20,7 @@ Display the help menu.
 Print the program version and exit.
 .TP
 \fB\-\-verbose\fR
-Enable verbose output (INFO level and above).
-.TP
-\fB\-\-debug\fR
-Enable debug output (all log levels).
+Enable verbose logging to stderr.
 .TP
 \fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
 Directory for all run artifacts. Default: \fB./.sentinel\fR
@@ -55,11 +52,10 @@ Write a \fBsentinel.yaml\fR config template to the current directory and exit.
 Prompts for confirmation if the file already exists.
 .TP
 \fB\-\-dry\-run\fR
-Run only the build, test, and mutant-generation phases, then print a readiness
-summary and exit without evaluating any mutants.
+Run only the build, test, and mutant-generation phases, then exit without
+evaluating any mutants.
 The workspace is preserved so that the next \fBsentinel\fR invocation (without \fB\-\-dry\-run\fR)
 resumes directly at the evaluation phase, skipping build and generation.
-Pass \fB\-\-verbose\fR together with \fB\-\-dry\-run\fR to also list all generated mutants.
 .TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.

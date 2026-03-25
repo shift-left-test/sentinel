@@ -16,21 +16,21 @@ bool CTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
 
   tinyxml2::XMLElement* p = document->FirstChildElement("testsuite");
   if (p == nullptr) {
-    Logger::debug(message);
+    Logger::verbose(message);
     return false;
   }
 
   for (; p != nullptr; p = p->NextSiblingElement("testsuite")) {
     tinyxml2::XMLElement* q = p->FirstChildElement("testcase");
     if (q == nullptr) {
-      Logger::debug(message);
+      Logger::verbose(message);
       return false;
     }
 
     for (; q != nullptr; q = q->NextSiblingElement("testcase")) {
       const char* pStatus = q->Attribute("status");
       if (pStatus == nullptr) {
-        Logger::debug(message);
+        Logger::verbose(message);
         return false;
       }
 
@@ -38,7 +38,7 @@ bool CTestXmlParser::parse(std::shared_ptr<tinyxml2::XMLDocument> document) {
       if (status == "run" || status == "fail") {
         const char* pName = q->Attribute("name");
         if (pName == nullptr) {
-          Logger::debug(message);
+          Logger::verbose(message);
           return false;
         }
 

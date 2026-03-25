@@ -8,7 +8,6 @@
 
 #include <filesystem>  // NOLINT
 #include <memory>
-#include <string>
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
@@ -36,11 +35,10 @@ class MutationFactory {
    * @param sourceLines lines of the source
    * @param maxMutants maximum number of mutables generated
    * @param randomSeed random seed
-   * @param generatorStr name of the mutant selection strategy (e.g. "uniform", "random", "weighted")
    * @return list of mutables
    */
   Mutants generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                   unsigned randomSeed, const std::string& generatorStr = "");
+                   unsigned randomSeed);
 
  private:
   std::shared_ptr<MutantGenerator> mGenerator;

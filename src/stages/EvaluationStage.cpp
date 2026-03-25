@@ -37,9 +37,21 @@ StatusLine::Phase EvaluationStage::getPhase() const {
   return StatusLine::Phase::EVALUATION;
 }
 
+static const char* stateIcon(MutationState state) {
+  switch (state) {
+    case MutationState::KILLED:
+      return "\xe2\x9c\x97";       // ✗
+    case MutationState::SURVIVED:
+      return "\xe2\x9c\x93";       // ✓
+    default:
+      return "\xe2\x9a\xa0";       // ⚠
+  }
+}
+
 bool EvaluationStage::execute() {
   auto indexedMutants = mWorkspace->loadMutants();
-  mStatusLine->setTotalMutants(indexedMutants.size());
+  std::size_t totalMutants = indexedMutants.size();
+  mStatusLine->setTotalMutants(totalMutants);
 
   // Determine timeout
   std::size_t computedTimeLimit = 0;
@@ -52,8 +64,11 @@ bool EvaluationStage::execute() {
   const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
 
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
+  auto sourceRoot = std::filesystem::canonical(*mConfig.sourceDir);
+  std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
+    ++current;
     if (mWorkspace->isDone(id)) {
       auto doneResult = mWorkspace->getDoneResult(id);
       mStatusLine->recordResult(static_cast<int>(doneResult.getMutationState()));
@@ -64,6 +79,16 @@ bool EvaluationStage::execute() {
     mStatusLine->setMutantInfo(id, m.getOperator(), m.getPath().filename().string(), m.getFirst().line);
 
     MutationResult result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, evaluator);
+
+    auto state = result.getMutationState();
+    auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
+    std::string token = m.getToken().empty() ? "DELETE" : fmt::format("\xe2\x86\x92 {}", m.getToken());
+    Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({})", current, fmt::formatted_size("{}", totalMutants),
+                 totalMutants, stateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
+                 m.getFirst().line, token);
+    if (!result.getKillingTest().empty()) {
+      Console::out("        killed by: {}", result.getKillingTest());
+    }
 
     mWorkspace->clearLock(id);
     mWorkspace->setDone(id, result);

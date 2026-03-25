@@ -32,6 +32,7 @@ class ResultTest : public ::testing::Test {
     MAKE_RESULT_XML(ORI_DIR, TC2);
 
     mStdoutCapture = CaptureHelper::getStdoutCapture();
+    mStderrCapture = CaptureHelper::getStderrCapture();
   }
 
   void TearDown() override {
@@ -44,6 +45,14 @@ class ResultTest : public ::testing::Test {
 
   std::string capturedStdout() {
     return mStdoutCapture->release();
+  }
+
+  void captureStderr() {
+    mStderrCapture->capture();
+  }
+
+  std::string capturedStderr() {
+    return mStderrCapture->release();
   }
 
   void MAKE_RESULT_XML(const fs::path& dirPath, const std::string& fileContent) {
@@ -71,11 +80,11 @@ class ResultTest : public ::testing::Test {
     }
 
     MAKE_RESULT_XML(MUT_DIR, XMLContents);
-    Logger::setLevel(Logger::Level::DEBUG);
-    captureStdout();
+    Logger::setLevel(Logger::Level::VERBOSE);
+    captureStderr();
     auto mut = new Result(MUT_DIR);
-    std::string out = capturedStdout();
-    EXPECT_TRUE(string::contains(out, "This file doesn't follow googletest result format"));
+    std::string err = capturedStderr();
+    EXPECT_TRUE(string::contains(err, "This file doesn't follow googletest result format"));
 
     fs::remove_all(MUT_DIR);
     delete mut;
@@ -180,6 +189,7 @@ class ResultTest : public ::testing::Test {
 
  private:
   std::shared_ptr<CaptureHelper> mStdoutCapture;
+  std::shared_ptr<CaptureHelper> mStderrCapture;
 };
 
 TEST_F(ResultTest, testResultWithSurvivedMutation) {
@@ -340,12 +350,12 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   fs::create_directories(MUT_DIR);
   MAKE_RESULT_XML(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
 
-  Logger::setLevel(Logger::Level::DEBUG);
+  Logger::setLevel(Logger::Level::VERBOSE);
 
-  captureStdout();
+  captureStderr();
   auto mut = new Result(MUT_DIR);
-  std::string out = capturedStdout();
-  EXPECT_TRUE(string::contains(out, "XML_ERROR_PARSING:"));
+  std::string err = capturedStderr();
+  EXPECT_TRUE(string::contains(err, "XML_ERROR_PARSING:"));
   delete mut;
   Logger::setLevel(Logger::Level::OFF);
 }

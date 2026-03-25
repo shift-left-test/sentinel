@@ -224,9 +224,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--verbose` | Enable verbose output (INFO level and above) | |
 | `--silent` | Suppress build/test log output; status line still shows progress | |
-| `--debug` | Enable debug output (all log levels) | |
+| `--verbose` | Enable verbose logging to stderr | |
 | `-f, --force` | Skip all prompts and start fresh, overwriting any previous state | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
@@ -237,7 +236,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `--config=PATH` | YAML config file path. When the config is in a different directory, sentinel changes to that location before running; a pre-run warning is shown. | `sentinel.yaml` (auto-detected) |
 | `--init` | Write a `sentinel.yaml` config template and exit | |
-| `--dry-run` | Build, test, and generate mutants, then print a readiness summary and exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. Combine with `--verbose` to also list every generated mutant. | |
+| `--dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |
 | `--no-statusline` | Disable the live terminal status line | |
 | `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0–100). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 

@@ -25,12 +25,11 @@ class Logger {
    */
   enum class Level : int {
     ALL = 0,
-    DEBUG = 1,
-    VERBOSE = 2,
-    INFO = 3,
-    WARN = 4,
-    ERROR = 5,
-    OFF = 6,
+    VERBOSE = 1,
+    INFO = 2,
+    WARN = 3,
+    ERROR = 4,
+    OFF = 5,
   };
 
   Logger() = delete;
@@ -43,19 +42,6 @@ class Logger {
   static void setLevel(Logger::Level level);
 
   /**
-   * @brief Log a debug message
-   *
-   * @param pattern to log
-   * @param args arguments
-   */
-  template <typename... Args>
-  static void debug(const std::string& pattern, Args&&... args) {
-    if (isAllowed(Level::DEBUG)) {
-      Console::out("[debug] {}", fmt::format(pattern, std::forward<Args>(args)...));
-    }
-  }
-
-  /**
    * @brief Log a verbose message
    *
    * @param pattern to log
@@ -64,7 +50,7 @@ class Logger {
   template <typename... Args>
   static void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
-      Console::out("[verbose] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[VERBOSE] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -77,7 +63,7 @@ class Logger {
   template <typename... Args>
   static void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
-      Console::out("[info] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[INFO]  {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -90,7 +76,7 @@ class Logger {
   template <typename... Args>
   static void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
-      Console::err("[warn] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[WARN]  {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -103,7 +89,7 @@ class Logger {
   template <typename... Args>
   static void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
-      Console::err("[error] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("[ERROR] {}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
