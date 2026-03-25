@@ -7,6 +7,7 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/YamlConfigParser.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -14,7 +15,7 @@ namespace fs = std::filesystem;
 class YamlConfigParserTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mBase = fs::temp_directory_path() / "SENTINEL_YAMLPARSER_TEST";
+    mBase = testTempDir("SENTINEL_YAMLPARSER_TEST");
     fs::remove_all(mBase);
     fs::create_directories(mBase);
     mOrigCwd = fs::current_path();

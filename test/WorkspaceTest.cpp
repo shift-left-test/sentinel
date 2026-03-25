@@ -16,6 +16,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Workspace.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -24,7 +25,7 @@ namespace sentinel {
 class WorkspaceTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mBase = fs::temp_directory_path() / "SENTINEL_WORKSPACE_TEST";
+    mBase = testTempDir("SENTINEL_WORKSPACE_TEST");
     fs::remove_all(mBase);
     fs::create_directories(mBase);
     mRoot = mBase / "workspace";

@@ -3,6 +3,6 @@ set -e
 cmake . -DENABLE_TEST=ON
 make doc
 make -j
-ctest --output-on-failure
+ctest --output-on-failure -j$(nproc)
 make coverage
 make package

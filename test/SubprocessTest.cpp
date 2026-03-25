@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 #include "sentinel/Subprocess.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 
@@ -19,7 +20,7 @@ namespace fs = std::filesystem;
 class SubprocessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_SUBPROCESSTEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_SUBPROCESSTEST_TMP_DIR");
     fs::remove_all(BASE);
     fs::create_directories(BASE);
   }

@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include "sentinel/SourceLine.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -16,7 +17,7 @@ namespace sentinel {
 class SourceLineTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_SOURCELINETEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_SOURCELINETEST_TMP_DIR");
     fs::remove_all(BASE);
     fs::create_directories(BASE);
     FILE_A = BASE / "fileA.cpp";

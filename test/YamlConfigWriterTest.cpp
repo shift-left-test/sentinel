@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include "sentinel/YamlConfigWriter.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -15,7 +16,7 @@ namespace fs = std::filesystem;
 class YamlConfigWriterTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mBase = fs::temp_directory_path() / "SENTINEL_YAMLWRITER_TEST";
+    mBase = testTempDir("SENTINEL_YAMLWRITER_TEST");
     fs::remove_all(mBase);
     fs::create_directories(mBase);
     mOrigCwd = fs::current_path();

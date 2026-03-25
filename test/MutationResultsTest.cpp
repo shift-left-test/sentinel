@@ -23,7 +23,7 @@ class MutationResultsTest : public SampleFileGeneratorForTest {
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
 
-    BASE = fs::temp_directory_path() / "SENTINEL_MUTATIONRESULTSTEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_MUTATIONRESULTSTEST_TMP_DIR");
     fs::remove_all(BASE);
     OUT_DIR = BASE / "ORI_DIR";
     fs::create_directories(OUT_DIR);

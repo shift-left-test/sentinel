@@ -15,6 +15,7 @@
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -23,7 +24,7 @@ namespace sentinel {
 class XmlReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_XMLREPORTTEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_XMLREPORTTEST_TMP_DIR");
     fs::remove_all(BASE);
 
     OUT_DIR = BASE / "OUT_DIR";

@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <string>
+#include "helper/TestTempDir.hpp"
 #include "sentinel/Logger.hpp"
 
 namespace fs = std::filesystem;
@@ -30,7 +31,7 @@ class SentinelReportTestBase : public ::testing::Test {
    * @param tmpDirName  Name appended to fs::temp_directory_path() as the root.
    */
   void setUpDirectories(const std::string& tmpDirName) {
-    BASE = fs::temp_directory_path() / tmpDirName;
+    BASE = testTempDir(tmpDirName);
     fs::remove_all(BASE);
 
     SOURCE_DIR = BASE / "SOURCE_DIR";

@@ -25,7 +25,7 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE = fs::temp_directory_path() / "SENTINEL_EVALUATORTEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_EVALUATORTEST_TMP_DIR");
     fs::remove_all(BASE);
 
     OUT_DIR = BASE / "OUT_DIR";

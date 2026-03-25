@@ -14,6 +14,7 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/string.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -22,7 +23,7 @@ namespace sentinel {
 class ResultTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = fs::temp_directory_path() / "SENTINEL_RESULTTEST_TMP_DIR";
+    BASE = testTempDir("SENTINEL_RESULTTEST_TMP_DIR");
     fs::remove_all(BASE);
     fs::create_directories(BASE);
 

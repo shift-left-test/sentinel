@@ -12,6 +12,7 @@
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -19,7 +20,7 @@ namespace fs = std::filesystem;
 class ConfigValidatorTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mBase = fs::temp_directory_path() / "SENTINEL_CONFIGVALIDATOR_TEST";
+    mBase = testTempDir("SENTINEL_CONFIGVALIDATOR_TEST");
     fs::remove_all(mBase);
     fs::create_directories(mBase);
     // Valid baseline config

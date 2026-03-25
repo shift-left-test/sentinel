@@ -19,7 +19,7 @@ class GitSourceTreeTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE_DIR = fs::temp_directory_path() / "SENTINEL_GITSOURCETREETEST_TMP_DIR";
+    BASE_DIR = testTempDir("SENTINEL_GITSOURCETREETEST_TMP_DIR");
     fs::remove_all(BASE_DIR);
     fs::create_directories(BASE_DIR);
     TMP_FILE_PATH = BASE_DIR / "sample1.cpp";

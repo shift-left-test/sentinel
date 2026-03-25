@@ -11,6 +11,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 
@@ -18,7 +19,7 @@ class SampleFileGeneratorForTest : public ::testing::Test {
  protected:
   void SetUp() override {
     namespace fs = std::filesystem;
-    SAMPLE_BASE = fs::temp_directory_path() / "SENTINEL_SAMPLE_DIR";
+    SAMPLE_BASE = testTempDir("SENTINEL_SAMPLE_DIR");
     fs::remove_all(SAMPLE_BASE);
     SAMPLE1_DIR = SAMPLE_BASE / "sample1";
     fs::create_directories(SAMPLE1_DIR);

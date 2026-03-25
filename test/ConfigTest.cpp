@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "helper/TestTempDir.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigResolver.hpp"
 #include "sentinel/YamlConfigParser.hpp"
@@ -20,7 +21,7 @@ namespace sentinel {
 class ConfigTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mTmpDir = fs::temp_directory_path() / "SENTINEL_CONFIG_TEST";
+    mTmpDir = testTempDir("SENTINEL_CONFIG_TEST");
     fs::remove_all(mTmpDir);
     fs::create_directories(mTmpDir);
   }

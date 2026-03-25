@@ -9,6 +9,7 @@
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/io.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -17,7 +18,7 @@ namespace sentinel {
 class IoTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mTestDir = fs::temp_directory_path() / "SENTINEL_IOTEST_TMP_DIR";
+    mTestDir = testTempDir("SENTINEL_IOTEST_TMP_DIR");
     fs::remove_all(mTestDir);
   }
 

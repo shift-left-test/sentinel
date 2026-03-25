@@ -55,7 +55,7 @@ TEST_F(AORTest, testAORSkipsPointerArithmetic) {
 
 TEST_F(AORTest, testAORSkipsMacroExpansion) {
   // Create a source file where the arithmetic operator comes from macro expansion.
-  auto tmpDir = fs::temp_directory_path() / "SENTINEL_AOR_MACRO_TMP";
+  auto tmpDir = testTempDir("SENTINEL_AOR_MACRO_TMP");
   fs::remove_all(tmpDir);
   fs::create_directories(tmpDir);
 
