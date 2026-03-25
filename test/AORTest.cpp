@@ -3,35 +3,21 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <memory>
 #include <string>
-#include "helper/CaptureHelper.hpp"
-#include "helper/SampleFileGeneratorForTest.hpp"
-#include "sentinel/MutationFactory.hpp"
-#include "sentinel/SourceLine.hpp"
-#include "sentinel/SourceLines.hpp"
-#include "sentinel/UniformMutantGenerator.hpp"
+#include "helper/OperatorTestBase.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
-class AORTest : public SampleFileGeneratorForTest {
+class AORTest : public OperatorTestBase {
  protected:
   Mutants generate(int line, int limit = 100) {
-    auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
-    generator->setOperators({"AOR"});
-    MutationFactory factory(generator);
-    auto capture = CaptureHelper::getStdoutCapture();
-    capture->capture();
-    SourceLines lines;
-    lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    Mutants result = factory.generate(SAMPLE1_DIR, lines, limit, 1234);
-    capture->release();
-    return result;
+    return OperatorTestBase::generate("AOR", line, limit);
   }
 };
 
@@ -60,26 +46,21 @@ TEST_F(AORTest, testAORSkipsMacroExpansion) {
   fs::create_directories(tmpDir);
 
   auto macroSrc = tmpDir / "macro_test.cpp";
-  {
-    std::ofstream f(macroSrc);
-    f << "#define ADD(a, b) ((a) + (b))\nint main() { return ADD(1, 2); }\n";
-  }
-  {
-    std::ofstream f(tmpDir / "compile_commands.json");
-    f << "[{\"directory\": \"" << tmpDir.string() << "\","
-      << "\"command\": \"/usr/bin/c++ -o macro_test.o -c " << macroSrc.string() << "\","
-      << "\"file\": \"" << macroSrc.string() << "\"}]";
-  }
+  writeFile(macroSrc, "#define ADD(a, b) ((a) + (b))\nint main() { return ADD(1, 2); }\n");
+  writeFile(tmpDir / "compile_commands.json",
+      fmt::format("[{{\"directory\": \"{0}\","
+                  "\"command\": \"/usr/bin/c++ -o macro_test.o -c {1}\","
+                  "\"file\": \"{1}\"}}]",
+                  tmpDir.string(), macroSrc.string()));
 
   auto generator = std::make_shared<UniformMutantGenerator>(tmpDir);
   generator->setOperators({"AOR"});
   MutationFactory factory(generator);
-  auto capture = CaptureHelper::getStdoutCapture();
-  capture->capture();
+  testing::internal::CaptureStdout();
   SourceLines lines;
   lines.push_back(SourceLine(macroSrc, 2));  // int main() { return ADD(1, 2); }
   Mutants mutants = factory.generate(tmpDir, lines, 100, 1234);
-  capture->release();
+  testing::internal::GetCapturedStdout();
 
   // AOR must not generate mutants for operators expanded from macros.
   EXPECT_EQ(mutants.size(), 0u);

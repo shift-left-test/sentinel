@@ -6,15 +6,14 @@
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <regex>
-#include <sstream>
 #include <string>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
@@ -24,43 +23,43 @@ namespace sentinel {
 class XmlReportTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = testTempDir("SENTINEL_XMLREPORTTEST_TMP_DIR");
-    fs::remove_all(BASE);
+    mBase = testTempDir("SENTINEL_XMLREPORTTEST_TMP_DIR");
+    fs::remove_all(mBase);
 
-    OUT_DIR = BASE / "OUT_DIR";
-    fs::create_directories(OUT_DIR);
+    mOutDir = mBase / "OUT_DIR";
+    fs::create_directories(mOutDir);
 
-    MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR";
-    fs::create_directories(MUT_RESULT_DIR);
+    mMutResultDir = mBase / "MUT_RESULT_DIR";
+    fs::create_directories(mMutResultDir);
 
-    SOURCE_DIR = BASE / "SOURCE_DIR";
-    auto NESTED_SOURCE_DIR = SOURCE_DIR / "NESTED_DIR";
-    fs::create_directories(NESTED_SOURCE_DIR);
+    mSourceDir = mBase / "SOURCE_DIR";
+    auto nestedSourceDir = mSourceDir / "NESTED_DIR";
+    fs::create_directories(nestedSourceDir);
 
-    TARGET_FULL_PATH = SOURCE_DIR / "file1.cpp";
-    std::string TARGET_NAME = TARGET_FULL_PATH.filename();
-    std::ofstream(TARGET_FULL_PATH).close();
+    mTargetFullPath = mSourceDir / "file1.cpp";
+    std::string TARGET_NAME = mTargetFullPath.filename();
+    std::ofstream(mTargetFullPath).close();
 
-    TARGET_FULL_PATH2 = NESTED_SOURCE_DIR / "file2.cpp";
-    std::string TARGET_NAME2 = TARGET_FULL_PATH2.filename();
-    std::ofstream(TARGET_FULL_PATH2).close();
+    mTargetFullPath2 = nestedSourceDir / "file2.cpp";
+    std::string TARGET_NAME2 = mTargetFullPath2.filename();
+    std::ofstream(mTargetFullPath2).close();
 
-    EXPECT_MUT_XML_CONTENT =
-        fmt::format(EXPECT_MUT_XML_CONTENT, TARGET_NAME, TARGET_FULL_PATH.filename().string(), TARGET_NAME2,
-                    NESTED_SOURCE_DIR.filename().string() + "/" + TARGET_FULL_PATH2.filename().string());
+    mExpectMutXmlContent =
+        fmt::format(mExpectMutXmlContent, TARGET_NAME, mTargetFullPath.filename().string(), TARGET_NAME2,
+                    nestedSourceDir.filename().string() + "/" + mTargetFullPath2.filename().string());
   }
 
   void TearDown() override {
-    fs::remove_all(BASE);
+    fs::remove_all(mBase);
   }
 
-  fs::path BASE;
-  fs::path OUT_DIR;
-  fs::path MUT_RESULT_DIR;
-  fs::path SOURCE_DIR;
-  fs::path TARGET_FULL_PATH;
-  fs::path TARGET_FULL_PATH2;
-  std::string EXPECT_MUT_XML_CONTENT =
+  fs::path mBase;
+  fs::path mOutDir;
+  fs::path mMutResultDir;
+  fs::path mSourceDir;
+  fs::path mTargetFullPath;
+  fs::path mTargetFullPath2;
+  std::string mExpectMutXmlContent =
       R"a1b2(<?xml version="1.0" encoding="UTF-8"?>
 <mutations>
     <mutation detected="false">
@@ -132,46 +131,41 @@ class XmlReportTest : public ::testing::Test {
 
 TEST_F(XmlReportTest, testMakeXmlReport) {
   MutationResults MRs;
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  Mutant M1("AOR", mTargetFullPath, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M2("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M2, "testAddBit", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M3("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M3, "testAddBit", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M4("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M4("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M4, "testAddBit", "", MutationState::BUILD_FAILURE);
 
-  auto MRPath = MUT_RESULT_DIR / "MutationResult1";
+  auto MRPath = mMutResultDir / "MutationResult1";
   MRs.save(MRPath);
 
-  XmlReport xmlreport(MutationSummary(MRPath, SOURCE_DIR));
+  XmlReport xmlreport(MutationSummary(MRPath, mSourceDir));
 
-  xmlreport.save(OUT_DIR);
+  xmlreport.save(mOutDir);
 
-  auto outXMLPath = OUT_DIR / "mutations.xml";
+  auto outXMLPath = mOutDir / "mutations.xml";
   EXPECT_TRUE(fs::exists(outXMLPath));
 
-  std::ifstream t(outXMLPath);
-  std::stringstream buffer;
-  buffer << t.rdbuf();
-  std::string mutationXMLContent = buffer.str();
-  t.close();
-  EXPECT_EQ(mutationXMLContent, EXPECT_SKIP_MUT_XML_CONTENT);
+  EXPECT_EQ(testutil::readFile(outXMLPath), EXPECT_SKIP_MUT_XML_CONTENT);
 }
 
 TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  Mutant M1("AOR", mTargetFullPath, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  XmlReport xmlreport(MutationSummary(MRs, SOURCE_DIR));
+  XmlReport xmlreport(MutationSummary(MRs, mSourceDir));
 
-  EXPECT_THROW(xmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
+  EXPECT_THROW(xmlreport.save(mTargetFullPath), InvalidArgumentException);
   EXPECT_NO_THROW(xmlreport.save("unknown"));
   ASSERT_TRUE(fs::exists("unknown"));
   fs::remove_all("unknown");
@@ -179,19 +173,14 @@ TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
 
 TEST_F(XmlReportTest, testMakeXmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  XmlReport xmlreport(MutationSummary(MRs, SOURCE_DIR));
-  auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
-  xmlreport.save(OUT_DIR);
+  XmlReport xmlreport(MutationSummary(MRs, mSourceDir));
+  auto outDir = mBase / "OUT_DIR_EMPTYMUTATIONRESULT";
+  xmlreport.save(outDir);
 
-  auto outXMLPath = OUT_DIR / "mutations.xml";
+  auto outXMLPath = outDir / "mutations.xml";
   EXPECT_TRUE(fs::exists(outXMLPath));
 
-  std::ifstream t(outXMLPath);
-  std::stringstream buffer;
-  buffer << t.rdbuf();
-  std::string mutationXMLContent = buffer.str();
-  t.close();
-  EXPECT_EQ(EXPECT_EMPTY_MUT_XML_CONTENT, mutationXMLContent);
+  EXPECT_EQ(EXPECT_EMPTY_MUT_XML_CONTENT, testutil::readFile(outXMLPath));
 }
 
 }  // namespace sentinel

@@ -6,10 +6,9 @@
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <regex>
-#include <sstream>
 #include <string>
+#include "helper/FileTestHelper.hpp"
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/Logger.hpp"
@@ -38,19 +37,11 @@ class HtmlReportTest : public SentinelReportTestBase {
 
   void readFileAndCompareExpected(const std::string& path, const std::string& expectedContents) {
     EXPECT_TRUE(fs::exists(path));
-
-    std::ifstream t(path);
-    std::stringstream buffer;
-    buffer << t.rdbuf();
-    std::string actualContents = buffer.str();
-    t.close();
-    EXPECT_EQ(expectedContents, actualContents);
+    EXPECT_EQ(expectedContents, testutil::readFile(path));
   }
 
   void writeFile(const std::string& path, const std::string& contents) {
-    std::ofstream t(path);
-    t << contents;
-    t.close();
+    testutil::writeFile(path, contents);
   }
 
   std::string TARGET_CONTENT =
@@ -1003,12 +994,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReportWhenEmptyMutationResult) {
   auto outXMLPath = OUT_DIR / "index.html";
   EXPECT_TRUE(fs::exists(outXMLPath));
 
-  std::ifstream t(outXMLPath);
-  std::stringstream buffer;
-  buffer << t.rdbuf();
-  std::string mutationHTMLContent = buffer.str();
-  t.close();
-  EXPECT_EQ(EXPECT_EMPTY_MUT_HTML_CONTENT, mutationHTMLContent);
+  readFileAndCompareExpected(outXMLPath, EXPECT_EMPTY_MUT_HTML_CONTENT);
 }
 
 TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {

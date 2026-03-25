@@ -5,10 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigResolver.hpp"
@@ -27,20 +27,18 @@ class ConfigTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    std::filesystem::remove_all(mTmpDir);
+    fs::remove_all(mTmpDir);
   }
 
   void writeFile(const std::string& filename, const std::string& content) {
-    std::ofstream out((mTmpDir / filename).string());
-    out << content;
-    out.close();
+    testutil::writeFile(mTmpDir / filename, content);
   }
 
-  std::filesystem::path configPath(const std::string& filename) {
+  fs::path configPath(const std::string& filename) {
     return mTmpDir / filename;
   }
 
-  std::filesystem::path mTmpDir;
+  fs::path mTmpDir;
 };
 
 TEST_F(ConfigTest, testLoadCompleteConfig) {
@@ -120,7 +118,7 @@ partition: 2/4
   EXPECT_EQ(std::vector<std::string>({"xml"}), *cfg.testResultExts);
 
   ASSERT_TRUE(cfg.coverageFiles.has_value());
-  EXPECT_EQ(std::vector<std::filesystem::path>({(mTmpDir / "coverage.info").lexically_normal()}), *cfg.coverageFiles);
+  EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), *cfg.coverageFiles);
 
   ASSERT_TRUE(cfg.generator.has_value());
   EXPECT_EQ("random", *cfg.generator);
@@ -263,8 +261,8 @@ TEST_F(ConfigTest, testResolvePriority) {
 TEST_F(ConfigTest, testResolveDefaults) {
   auto cfg = ConfigResolver::resolve(Config(), Config());
 
-  EXPECT_EQ(std::filesystem::current_path().lexically_normal().string() + "/", *cfg.sourceDir);
-  EXPECT_EQ((std::filesystem::current_path() / ".sentinel").lexically_normal(), *cfg.workDir);
+  EXPECT_EQ(fs::current_path().lexically_normal().string() + "/", *cfg.sourceDir);
+  EXPECT_EQ((fs::current_path() / ".sentinel").lexically_normal(), *cfg.workDir);
   EXPECT_EQ("auto", *cfg.timeout);
   EXPECT_EQ(0u, *cfg.limit);
   EXPECT_EQ("uniform", *cfg.generator);

@@ -4,49 +4,35 @@
  */
 
 #include <gtest/gtest.h>
-#include <memory>
 #include <string>
-#include "helper/CaptureHelper.hpp"
 #include "sentinel/Console.hpp"
 
 namespace sentinel {
 
-class ConsoleTest : public ::testing::Test {
- protected:
-  void SetUp() override {
-    capturedOut = CaptureHelper::getStdoutCapture();
-    capturedErr = CaptureHelper::getStderrCapture();
-  }
-
-  void TearDown() override {
-  }
-
-  std::shared_ptr<CaptureHelper> capturedOut;
-  std::shared_ptr<CaptureHelper> capturedErr;
-};
+class ConsoleTest : public ::testing::Test {};
 
 TEST_F(ConsoleTest, testOut) {
-  capturedOut->capture();
+  testing::internal::CaptureStdout();
   Console::out("hello world");
-  EXPECT_EQ("hello world\n", capturedOut->release());
+  EXPECT_EQ("hello world\n", testing::internal::GetCapturedStdout());
 }
 
 TEST_F(ConsoleTest, testFormattedOut) {
-  capturedOut->capture();
+  testing::internal::CaptureStdout();
   Console::out("{} {}", "hello", "world");
-  EXPECT_EQ("hello world\n", capturedOut->release());
+  EXPECT_EQ("hello world\n", testing::internal::GetCapturedStdout());
 }
 
 TEST_F(ConsoleTest, testErr) {
-  capturedErr->capture();
+  testing::internal::CaptureStderr();
   Console::err("foo bar");
-  EXPECT_EQ("foo bar\n", capturedErr->release());
+  EXPECT_EQ("foo bar\n", testing::internal::GetCapturedStderr());
 }
 
 TEST_F(ConsoleTest, testFormattedErr) {
-  capturedErr->capture();
+  testing::internal::CaptureStderr();
   Console::err("{} {}", "foo", "bar");
-  EXPECT_EQ("foo bar\n", capturedErr->release());
+  EXPECT_EQ("foo bar\n", testing::internal::GetCapturedStderr());
 }
 
 }  // namespace sentinel

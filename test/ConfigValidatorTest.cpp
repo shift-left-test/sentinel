@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fcntl.h>
 #include <gtest/gtest.h>
-#include <unistd.h>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "helper/StdinGuard.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace sentinel {
@@ -150,15 +149,10 @@ TEST_F(ConfigValidatorTest, testWarningsAbortWhenNotForced) {
   // Trigger the limit warning by setting limit=0u when force=false
   mConfig.limit = 0u;
   mConfig.force = false;
-  int savedStdin = dup(STDIN_FILENO);
-  int devNull = open("/dev/null", O_RDONLY);
-  dup2(devNull, STDIN_FILENO);
-  close(devNull);
-
-  // validate() returns false when user declines (stdin=/dev/null → confirm returns false)
-  EXPECT_FALSE(ConfigValidator::validate(mConfig));
-
-  dup2(savedStdin, STDIN_FILENO);
-  close(savedStdin);
+  {
+    StdinGuard guard;
+    // validate() returns false when user declines (stdin=/dev/null → confirm returns false)
+    EXPECT_FALSE(ConfigValidator::validate(mConfig));
+  }
 }
 }  // namespace sentinel

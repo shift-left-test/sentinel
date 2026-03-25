@@ -5,11 +5,11 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <string>
+#include "helper/FileTestHelper.hpp"
+#include "helper/TestTempDir.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/io.hpp"
-#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -27,9 +27,7 @@ class IoTest : public ::testing::Test {
   }
 
   void writeFile(const fs::path& p, const std::string& content) {
-    fs::create_directories(p.parent_path());
-    std::ofstream f(p);
-    f << content;
+    testutil::writeFile(p, content);
   }
 
   fs::path mTestDir;

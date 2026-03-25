@@ -9,12 +9,11 @@
 #include <string>
 #include <vector>
 #include "harness/git-harness/GitHarness.hpp"
-#include "helper/CaptureHelper.hpp"
+#include "helper/TestTempDir.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
 
@@ -23,43 +22,20 @@ namespace sentinel {
 class GitRepositoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    repo_name = testTempDir("SENTINEL_GITREPOSITORYTEST_TMP_DIR");
-    fs::remove_all(repo_name);
-    repo = std::make_shared<GitHarness>(repo_name);
-    repo_name = fs::canonical(repo_name);
-
-    mStderrCapture = CaptureHelper::getStderrCapture();
-    mStdoutCapture = CaptureHelper::getStdoutCapture();
+    mRepoName = testTempDir("SENTINEL_GITREPOSITORYTEST_TMP_DIR");
+    fs::remove_all(mRepoName);
+    mRepo = std::make_shared<GitHarness>(mRepoName);
+    mRepoName = fs::canonical(mRepoName);
   }
 
   void TearDown() override {
     if (!HasFailure()) {
-      fs::remove_all(repo_name);
+      fs::remove_all(mRepoName);
     }
   }
 
-  void captureStderr() {
-    mStderrCapture->capture();
-  }
-
-  std::string capturedStderr() {
-    return mStderrCapture->release();
-  }
-
-  void captureStdout() {
-    mStdoutCapture->capture();
-  }
-
-  std::string capturedStdout() {
-    return mStdoutCapture->release();
-  }
-
-  fs::path repo_name;
-  std::shared_ptr<GitHarness> repo;
-
- private:
-  std::shared_ptr<CaptureHelper> mStderrCapture;
-  std::shared_ptr<CaptureHelper> mStdoutCapture;
+  fs::path mRepoName;
+  std::shared_ptr<GitHarness> mRepo;
 };
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
@@ -81,8 +57,8 @@ TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
 
 TEST_F(GitRepositoryTest, testSubdirectoryOfRepoWorks) {
   // A subdirectory of a git repo should be accepted — git_repository_open_ext
-  // searches parent directories, so the .git at repo_name is found.
-  fs::path subdir = repo_name / "subdir_for_test";
+  // searches parent directories, so the .git at mRepoName is found.
+  fs::path subdir = mRepoName / "subdir_for_test";
   fs::create_directories(subdir);
 
   EXPECT_NO_THROW({
@@ -92,31 +68,35 @@ TEST_F(GitRepositoryTest, testSubdirectoryOfRepoWorks) {
 }
 
 TEST_F(GitRepositoryTest, testPatterns) {
-  std::string tmpPath = repo_name / "test";
+  std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
   Logger::setLevel(Logger::Level::VERBOSE);
-  captureStderr();
-  captureStdout();
-  GitRepository gitRepo(repo_name, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"}, {});
-  EXPECT_TRUE(string::contains(capturedStderr(), "patterns: file.txt, file?.txt, /tmp/, */test/*"));
+  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
+  GitRepository gitRepo(mRepoName, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"}, {});
+  std::string captured = testing::internal::GetCapturedStderr();
+  testing::internal::GetCapturedStdout();
   Logger::setLevel(Logger::Level::OFF);
+  EXPECT_TRUE(string::contains(captured, "patterns: file.txt, file?.txt, /tmp/, */test/*"));
 }
 
 TEST_F(GitRepositoryTest, testExcludes) {
-  std::string tmpPath = repo_name / "test";
+  std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
   Logger::setLevel(Logger::Level::VERBOSE);
-  captureStderr();
-  captureStdout();
-  GitRepository gitRepo(repo_name, {}, {}, {"*.c", "file?.txt", "data/*.csv", "*/test/*", "*"});
-  EXPECT_TRUE(string::contains(capturedStderr(), "excludes: *.c, file?.txt, data/*.csv, */test/*, *"));
+  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
+  GitRepository gitRepo(mRepoName, {}, {}, {"*.c", "file?.txt", "data/*.csv", "*/test/*", "*"});
+  std::string captured = testing::internal::GetCapturedStderr();
+  testing::internal::GetCapturedStdout();
   Logger::setLevel(Logger::Level::OFF);
+  EXPECT_TRUE(string::contains(captured, "excludes: *.c, file?.txt, data/*.csv, */test/*, *"));
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
 
@@ -128,14 +108,14 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
   }
   // only workdir
   {
-    repo->addFile(stageFiles[0], content);
+    mRepo->addFile(stageFiles[0], content);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_TRUE(sourceLines.empty());
   }
   // only index
   {
-    repo->stageFile(stageFiles);
+    mRepo->stageFile(stageFiles);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
@@ -143,13 +123,13 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
 
-  repo->addFile(stageFiles[0], content);
-  repo->stageFile(stageFiles);
-  repo->commit("init");
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
   // nothing
   {
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
@@ -158,14 +138,14 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
   }
   // only workdir
   {
-    repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+    mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
   // only index
   {
-    repo->stageFile(stageFiles);
+    mRepo->stageFile(stageFiles);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 3);
@@ -173,17 +153,17 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLines) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
-  std::string stageFilename = repo_name / "temp.cpp";
+  std::string stageFilename = mRepoName / "temp.cpp";
 
-  repo->addFile(stageFiles[0], content);
-  repo->stageFile(stageFiles);
-  repo->commit("init");
-  repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-  repo->stageFile(stageFiles);
-  repo->commit("insert plus line");
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
+  mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("insert plus line");
 
   // nothing
   {
@@ -194,7 +174,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   }
   // only workdir
   {
-    repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
+    mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
@@ -202,7 +182,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   }
   // only index
   {
-    repo->stageFile(stageFiles);
+    mRepo->stageFile(stageFiles);
     SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
     EXPECT_EQ(sourceLines.size(), 2);
@@ -211,16 +191,16 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
 
-  repo->addFile(stageFiles[0], content);
-  repo->stageFile(stageFiles);
-  repo->commit("init");
-  repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-  repo->stageFile(stageFiles);
-  repo->commit("insert plus line");
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
+  mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("insert plus line");
 
   // nothing
   {
@@ -230,14 +210,14 @@ TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
   }
   // only workdir
   {
-    repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
+    mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
     SourceLines sourceLines = gitRepo.getSourceLines("all");
 
     EXPECT_EQ(sourceLines.size(), 4);
   }
   // only index
   {
-    repo->stageFile(stageFiles);
+    mRepo->stageFile(stageFiles);
     SourceLines sourceLines = gitRepo.getSourceLines("all");
 
     EXPECT_EQ(sourceLines.size(), 4);
@@ -245,52 +225,52 @@ TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithDevtoolTag) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
 
-  repo->addFile(stageFiles[0], content);
-  repo->stageFile(stageFiles);
-  repo->commit("init");
-  repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-  repo->stageFile(stageFiles);
-  repo->commit("insert plus line");
-  repo->addTagLightweight("devtool-base");
-  repo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
-  repo->stageFile(stageFiles);
-  repo->commit("insert second line");
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
+  mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("insert plus line");
+  mRepo->addTagLightweight("devtool-base");
+  mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("insert second line");
   SourceLines sourceLines = gitRepo.getSourceLines("commit");
 
   EXPECT_EQ(sourceLines.size(), 2);
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
-  GitRepository gitRepo(repo_name);
+  GitRepository gitRepo(mRepoName);
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp"};
 
-  repo->addFile(stageFiles[0], content);
-  repo->stageFile(stageFiles);
-  repo->commit("init");
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
 
   // branch work
   std::vector<std::string> targetBranches{"sub"};
   std::vector<std::string> subStageFiles{"test.cpp"};
-  repo->createBranch(targetBranches[0]);
-  repo->addFile(subStageFiles[0], "int add(int a, int b)\n{\n}\n");
-  repo->stageFile(subStageFiles);
-  repo->commit("add test.cpp");
-  repo->addCode(subStageFiles[0], "    return a + b;\n", 3, 1);
-  repo->stageFile(subStageFiles);
-  repo->commit("insert add function");
+  mRepo->createBranch(targetBranches[0]);
+  mRepo->addFile(subStageFiles[0], "int add(int a, int b)\n{\n}\n");
+  mRepo->stageFile(subStageFiles);
+  mRepo->commit("add test.cpp");
+  mRepo->addCode(subStageFiles[0], "    return a + b;\n", 3, 1);
+  mRepo->stageFile(subStageFiles);
+  mRepo->commit("insert add function");
 
   // master work
-  repo->checkoutBranch("master");
-  repo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-  repo->stageFile(stageFiles);
-  repo->commit("insert plus line");
+  mRepo->checkoutBranch("master");
+  mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("insert plus line");
 
-  repo->merge(targetBranches);
+  mRepo->merge(targetBranches);
 
   SourceLines sourceLines = gitRepo.getSourceLines("commit");
   EXPECT_EQ(sourceLines.size(), 4);
@@ -300,12 +280,12 @@ TEST_F(GitRepositoryTest, testIsTarget) {
   std::string content = "int main() {\n}\n";
   std::vector<std::string> stageFiles{"temp.cpp", "temp.c", "test/test.cpp"};
 
-  repo->addFolder("test");
+  mRepo->addFolder("test");
 
   for (auto& file : stageFiles) {
-    repo->addFile(file, content);
+    mRepo->addFile(file, content);
   }
-  GitRepository gitRepo(repo_name, {"cpp", "hpp"}, {}, {"*/test/*"});
+  GitRepository gitRepo(mRepoName, {"cpp", "hpp"}, {}, {"*/test/*"});
   EXPECT_TRUE(gitRepo.isTargetPath("temp.cpp"));
   EXPECT_FALSE(gitRepo.isTargetPath("temp.c"));
   EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));
@@ -399,15 +379,15 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedReposAllScope) {
 TEST_F(GitRepositoryTest, testSourceRootFilterExcludesSiblingDirs) {
   // sourceRoot is a subdirectory of the single git repo.
   // Files in sibling directories of sourceRoot must NOT appear in source lines.
-  fs::path subdir = repo_name / "target_subdir";
-  fs::path sibling = repo_name / "sibling_subdir";
+  fs::path subdir = mRepoName / "target_subdir";
+  fs::path sibling = mRepoName / "sibling_subdir";
   fs::create_directories(subdir);
   fs::create_directories(sibling);
 
-  repo->addFile("target_subdir/foo.cpp", "int a = 1;\n");
-  repo->addFile("sibling_subdir/bar.cpp", "int b = 2;\n");
-  repo->stageFile({"target_subdir/foo.cpp", "sibling_subdir/bar.cpp"});
-  repo->commit("add files");
+  mRepo->addFile("target_subdir/foo.cpp", "int a = 1;\n");
+  mRepo->addFile("sibling_subdir/bar.cpp", "int b = 2;\n");
+  mRepo->stageFile({"target_subdir/foo.cpp", "sibling_subdir/bar.cpp"});
+  mRepo->commit("add files");
 
   // Use target_subdir as sourceRoot — sibling_subdir/bar.cpp must be excluded.
   GitRepository gitRepo(subdir);
@@ -432,7 +412,7 @@ TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
   // Simulate a workspace directory that contains a nested git repo.
   // Without addSkipDir the nested repo is discovered and contributes source lines.
   // With addSkipDir the workspace is not traversed and those lines are absent.
-  fs::path workspaceDir = repo_name / "workspace";
+  fs::path workspaceDir = mRepoName / "workspace";
   fs::path nestedRepoDir = workspaceDir / "nested";
 
   // GitHarness creates the directory internally; do not pre-create nestedRepoDir.
@@ -443,7 +423,7 @@ TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
 
   // Without skipDir: nested repo's source lines are visible.
   {
-    GitRepository gitRepo(repo_name);
+    GitRepository gitRepo(mRepoName);
     SourceLines lines = gitRepo.getSourceLines("all");
     bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {
       return sl.getPath().string().find("workspace") != std::string::npos;
@@ -453,7 +433,7 @@ TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
 
   // With addSkipDir: workspace is not traversed, nested lines absent.
   {
-    GitRepository gitRepo(repo_name);
+    GitRepository gitRepo(mRepoName);
     gitRepo.addSkipDir(workspaceDir);
     SourceLines lines = gitRepo.getSourceLines("all");
     bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {

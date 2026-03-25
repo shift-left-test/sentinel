@@ -19,22 +19,22 @@ class GitSourceTreeTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    BASE_DIR = testTempDir("SENTINEL_GITSOURCETREETEST_TMP_DIR");
-    fs::remove_all(BASE_DIR);
-    fs::create_directories(BASE_DIR);
-    TMP_FILE_PATH = BASE_DIR / "sample1.cpp";
-    TMP_FILE_NAME = TMP_FILE_PATH.filename();
-    fs::copy(SAMPLE1_PATH, TMP_FILE_PATH);
+    mBaseDir = testTempDir("SENTINEL_GITSOURCETREETEST_TMP_DIR");
+    fs::remove_all(mBaseDir);
+    fs::create_directories(mBaseDir);
+    mTmpFilePath = mBaseDir / "sample1.cpp";
+    mTmpFileName = mTmpFilePath.filename();
+    fs::copy(SAMPLE1_PATH, mTmpFilePath);
   }
 
   void TearDown() override {
-    fs::remove_all(BASE_DIR);
+    fs::remove_all(mBaseDir);
     SampleFileGeneratorForTest::TearDown();
   }
 
-  fs::path BASE_DIR;
-  fs::path TMP_FILE_PATH;
-  std::string TMP_FILE_NAME;
+  fs::path mBaseDir;
+  fs::path mTmpFilePath;
+  std::string mTmpFileName;
 };
 
 TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
@@ -42,17 +42,17 @@ TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
 }
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
-  Mutant m{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
-  GitSourceTree tree(BASE_DIR);
-  fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
+  Mutant m{"LCR", mTmpFilePath, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
+  GitSourceTree tree(mBaseDir);
+  fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
   fs::create_directories(BACKUP_PATH);
   tree.modify(m, BACKUP_PATH);
 
   // backup exists
-  EXPECT_TRUE(fs::exists(BACKUP_PATH / TMP_FILE_NAME));
+  EXPECT_TRUE(fs::exists(BACKUP_PATH / mTmpFileName));
 
   // mutation is applied correctly
-  std::ifstream mutatedFile(TMP_FILE_PATH);
+  std::ifstream mutatedFile(mTmpFilePath);
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   std::size_t lineIdx = 0;
@@ -71,15 +71,15 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   // If position does not exist, no changes should be made.
-  Mutant nonexistLinePosition{"LCR", TMP_FILE_PATH, "sumOfEvenPositiveNumber", 10000, 200, 300, 400, "||"};
-  GitSourceTree tree(BASE_DIR);
+  Mutant nonexistLinePosition{"LCR", mTmpFilePath, "sumOfEvenPositiveNumber", 10000, 200, 300, 400, "||"};
+  GitSourceTree tree(mBaseDir);
 
-  fs::path BACKUP_PATH = BASE_DIR / "sentineltest_backup";
+  fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
   fs::create_directories(BACKUP_PATH);
   tree.modify(nonexistLinePosition, BACKUP_PATH);
 
-  EXPECT_TRUE(fs::exists(BACKUP_PATH / TMP_FILE_NAME));
-  std::ifstream mutatedFile(TMP_FILE_PATH);
+  EXPECT_TRUE(fs::exists(BACKUP_PATH / mTmpFileName));
+  std::ifstream mutatedFile(mTmpFilePath);
   std::ifstream origFile(SAMPLE1_PATH);
   std::string mutatedFileLine, origFileLine;
   while (std::getline(mutatedFile, mutatedFileLine) && std::getline(origFile, origFileLine)) {
@@ -90,21 +90,21 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   fs::remove_all(BACKUP_PATH);
 
   Mutant m{"LCR", SAMPLE1_PATH, "", 1, 2, 3, 4, "||"};
-  GitSourceTree tree2(BASE_DIR);
+  GitSourceTree tree2(mBaseDir);
   EXPECT_THROW(tree2.modify(m, BACKUP_PATH), IOException);
 }
 
 TEST_F(GitSourceTreeTest, testBackupWorks) {
   // create a temporary copy of target file
-  auto tempSubDirPath = BASE_DIR / "SUB_DIR";
+  auto tempSubDirPath = mBaseDir / "SUB_DIR";
   fs::create_directories(tempSubDirPath);
 
   auto tempFilename = tempSubDirPath / "TMP_FILE";
   fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
   Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
-  GitSourceTree tree(BASE_DIR);
-  auto backupPath = BASE_DIR / "BACKUP_DIR";
+  GitSourceTree tree(mBaseDir);
+  auto backupPath = mBaseDir / "BACKUP_DIR";
   fs::create_directories(backupPath);
 
   tree.modify(m, backupPath);

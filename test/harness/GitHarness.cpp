@@ -100,7 +100,7 @@ GitHarness& GitHarness::addCode(const std::string& filename, const std::string& 
     line_idx += 1;
 
     // For non-target line, just copy directly to temporary file
-    if (line_idx < line || line_idx > line) {
+    if (line_idx != line) {
       changed_file << line_str << std::endl;
       continue;
     }
@@ -407,8 +407,6 @@ void GitHarness::libgitErrorCheck(int error, const char* msg) {
   }
   std::cerr << error << std::endl;
   throw IOException(EINVAL, msg);
-  // std::cerr << msg << std::endl;
-  exit(1);
 }
 
 }  // namespace sentinel

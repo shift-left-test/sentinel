@@ -7,9 +7,7 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
-#include <memory>
 #include <string>
-#include "helper/CaptureHelper.hpp"
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -30,7 +28,6 @@ class ReportTest : public SentinelReportTestBase {
     makeFile(TARGET_FULL_PATH2);
     makeFile(TARGET_FULL_PATH3);
     makeFile(TARGET_FULL_PATH4);
-    mStdoutCapture = CaptureHelper::getStdoutCapture();
   }
 
   void TearDown() override {
@@ -40,17 +37,6 @@ class ReportTest : public SentinelReportTestBase {
   void makeFile(const std::string& path) {
     std::ofstream(path).close();
   }
-
-  void captureStdout() {
-    mStdoutCapture->capture();
-  }
-
-  std::string capturedStdout() {
-    return mStdoutCapture->release();
-  }
-
- private:
-  std::shared_ptr<CaptureHelper> mStdoutCapture;
 };
 
 class ReportForTest : public Report {
@@ -69,9 +55,9 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
 
   ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
-  captureStdout();
+  testing::internal::CaptureStdout();
   report.printSummary();
-  std::string out = capturedStdout();
+  std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out, "Killed"));
@@ -94,9 +80,9 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   MRs.save(MRPath);
 
   ReportForTest report2(MutationSummary(MRPath, SOURCE_DIR));
-  captureStdout();
+  testing::internal::CaptureStdout();
   report2.printSummary();
-  std::string out2 = capturedStdout();
+  std::string out2 = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out2, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out2, "TOTAL"));
   EXPECT_TRUE(string::contains(out2, "-%"));
@@ -129,9 +115,9 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
 
   ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
-  captureStdout();
+  testing::internal::CaptureStdout();
   report.printSummary();
-  std::string out = capturedStdout();
+  std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
   EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out, "target2.cpp"));
@@ -167,9 +153,9 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
 
   ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
-  captureStdout();
+  testing::internal::CaptureStdout();
   report.printSummary();
-  std::string out = capturedStdout();
+  std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out, "33.3%"));
   EXPECT_TRUE(string::contains(out, "Skipped: 1 runtime error, 1 timeout"));
@@ -201,9 +187,9 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
 
   ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
 
-  captureStdout();
+  testing::internal::CaptureStdout();
   report.printSummary();
-  std::string out = capturedStdout();
+  std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out, "50.0%"));
   EXPECT_TRUE(string::contains(out, "Skipped: 1 build failure, 1 runtime error, 1 timeout"));

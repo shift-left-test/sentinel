@@ -6,11 +6,11 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include "sentinel/Subprocess.hpp"
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace sentinel {
@@ -20,16 +20,16 @@ namespace fs = std::filesystem;
 class SubprocessTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    BASE = testTempDir("SENTINEL_SUBPROCESSTEST_TMP_DIR");
-    fs::remove_all(BASE);
-    fs::create_directories(BASE);
+    mBase = testTempDir("SENTINEL_SUBPROCESSTEST_TMP_DIR");
+    fs::remove_all(mBase);
+    fs::create_directories(mBase);
   }
 
   void TearDown() override {
-    fs::remove_all(BASE);
+    fs::remove_all(mBase);
   }
 
-  fs::path BASE;
+  fs::path mBase;
 };
 
 TEST_F(SubprocessTest, testExecuteSuccessfulCommand) {
@@ -60,13 +60,11 @@ TEST_F(SubprocessTest, testExecuteWithTimeout) {
 }
 
 TEST_F(SubprocessTest, testExecuteWritesToLogFile) {
-  auto logPath = BASE / "test.log";
+  auto logPath = mBase / "test.log";
   Subprocess sp("echo sentinel_marker", 0, 0, logPath, true);
   sp.execute();
   EXPECT_TRUE(fs::exists(logPath));
-  std::ifstream f(logPath);
-  std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-  EXPECT_NE(content.find("sentinel_marker"), std::string::npos);
+  EXPECT_NE(testutil::readFile(logPath).find("sentinel_marker"), std::string::npos);
 }
 
 TEST_F(SubprocessTest, testExecuteSilentDoesNotPrintToStdout) {
@@ -90,7 +88,7 @@ TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
   // silent=false with a logFile: covers both the stdout-print and logStream branches
   // in the main read loop and drain loop.
   // Use large output (> 64 KB pipe buffer) to ensure the drain loop body executes.
-  auto logPath = BASE / "nonsilent.log";
+  auto logPath = mBase / "nonsilent.log";
   Subprocess sp("seq 1 20000", 0, 0, logPath, false);
   sp.execute();
   EXPECT_TRUE(sp.isSuccessfulExit());

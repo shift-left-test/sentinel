@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -33,22 +32,22 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     ORI_DIR = BASE / "ORI_DIR";
     fs::create_directories(ORI_DIR);
 
-    MAKE_RESULT_XML(ORI_DIR, TC1);
-    MAKE_RESULT_XML(ORI_DIR, TC2);
+    makeResultXml(ORI_DIR, TC1);
+    makeResultXml(ORI_DIR, TC2);
 
     ORI_DIR_FAIL = BASE / "ORI_DIR_FAIL";
     fs::create_directories(ORI_DIR_FAIL);
-    MAKE_RESULT_XML(ORI_DIR_FAIL, TC2_FAIL);
+    makeResultXml(ORI_DIR_FAIL, TC2_FAIL);
 
     MUT_DIR = BASE / "MUT_DIR";
     fs::create_directories(MUT_DIR);
-    MAKE_RESULT_XML(MUT_DIR, TC1);
-    MAKE_RESULT_XML(MUT_DIR, TC2_FAIL);
+    makeResultXml(MUT_DIR, TC1);
+    makeResultXml(MUT_DIR, TC2_FAIL);
 
     MUT_DIR_SURVIVED = BASE / "MUT_DIR_SURVIVED";
     fs::create_directories(MUT_DIR_SURVIVED);
-    MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC1);
-    MAKE_RESULT_XML(MUT_DIR_SURVIVED, TC2);
+    makeResultXml(MUT_DIR_SURVIVED, TC1);
+    makeResultXml(MUT_DIR_SURVIVED, TC2);
 
     mutable1 = std::make_unique<Mutant>("AOR", SAMPLE1_PATH, "sumOfEvenPositiveNumber", 0, 0, 0, 0, "+");
     auto SAMPLE1_CLONE_PATH = SAMPLE1_DIR / "veryVeryVeryVeryVeryVeryVeryVeryVeryLongSampleFile.cpp";
@@ -61,12 +60,8 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
     SampleFileGeneratorForTest::TearDown();
   }
 
-  void MAKE_RESULT_XML(const fs::path& dirPath, const std::string& fileContent) {
-    auto tmp = dirPath / "pre.xml";
-    std::ofstream tmpfile;
-    tmpfile.open(tmp.c_str());
-    tmpfile << fileContent.c_str();
-    tmpfile.close();
+  void makeResultXml(const fs::path& dirPath, const std::string& fileContent) {
+    writeFile(dirPath / "pre.xml", fileContent);
   }
 
   std::unique_ptr<Mutant> mutable1;

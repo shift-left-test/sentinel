@@ -4,30 +4,15 @@
  */
 
 #include <gtest/gtest.h>
-#include <memory>
 #include <string>
-#include "helper/CaptureHelper.hpp"
-#include "helper/SampleFileGeneratorForTest.hpp"
-#include "sentinel/MutationFactory.hpp"
-#include "sentinel/SourceLine.hpp"
-#include "sentinel/SourceLines.hpp"
-#include "sentinel/UniformMutantGenerator.hpp"
+#include "helper/OperatorTestBase.hpp"
 
 namespace sentinel {
 
-class LCRTest : public SampleFileGeneratorForTest {
+class LCRTest : public OperatorTestBase {
  protected:
   Mutants generate(int line) {
-    auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
-    generator->setOperators({"LCR"});
-    MutationFactory factory(generator);
-    auto capture = CaptureHelper::getStdoutCapture();
-    capture->capture();
-    SourceLines lines;
-    lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    Mutants result = factory.generate(SAMPLE1_DIR, lines, 100, 1234);
-    capture->release();
-    return result;
+    return OperatorTestBase::generate("LCR", line);
   }
 };
 

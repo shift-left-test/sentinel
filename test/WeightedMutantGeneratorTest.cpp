@@ -17,106 +17,98 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
  protected:
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
-    TARGET_FILE1 = SAMPLE1_PATH;
-    TARGET_FILE2 = SAMPLE1B_PATH;
-    sourceLines = new SourceLines();
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 41));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 58));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 59));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 61));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 64));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 68));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 73));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 75));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 76));
-    sourceLines->push_back(SourceLine(TARGET_FILE1, 100));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 28));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 29));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 30));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 32));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 36));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 38));
-    sourceLines->push_back(SourceLine(TARGET_FILE2, 39));
+    mTargetFile1 = SAMPLE1_PATH;
+    mTargetFile2 = SAMPLE1B_PATH;
+    mSourceLines.push_back(SourceLine(mTargetFile1, 41));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 58));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 59));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 61));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 64));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 68));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 73));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 75));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 76));
+    mSourceLines.push_back(SourceLine(mTargetFile1, 100));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 28));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 29));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 30));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 32));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 36));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 38));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 39));
 
-    allMutants = new Mutants();
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 9, 41, 10, ">="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 9, 41, 10, "<"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 9, 41, 10, "<="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 9, 41, 10, "=="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 9, 41, 10, "!="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 7, 41, 17, "0"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "isWeekend", 41, 7, 41, 17, "1"));
-    allMutants->push_back(Mutant("LCR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"));
-    allMutants->push_back(Mutant("LCR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 9, 58, 37, "1"));
-    allMutants->push_back(Mutant("LCR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 9, 58, 37, "0"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "!="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "<"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "<="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, ">"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, ">="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 9, 58, 28, "1"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 9, 58, 28, "0"));
-    allMutants->push_back(Mutant("BOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 12, 58, 13, "^"));
-    allMutants->push_back(Mutant("BOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 12, 58, 13, "|"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(++(i))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(--(i))"));
-    allMutants->push_back(Mutant("SOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 23, 58, 25, ">>"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "!="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "=="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, ">="));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 32, 58, 37, "1"));
-    allMutants->push_back(Mutant("ROR", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 32, 58, 37, "0"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 32, 58, 33, "(++(i))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 58, 32, 58, 33, "(--(i))"));
-    allMutants->push_back(Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 7, 59, 21, "{}"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "%"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "*"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "-"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "/"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 13, 59, 16, "(++(ret))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 13, 59, 16, "(--(ret))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 19, 59, 20, "(++(i))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "sumOfEvenPositiveNumber", 59, 19, 59, 20, "(--(i))"));
-    allMutants->push_back(Mutant("SDL", TARGET_FILE1, "sumOfEvenPositiveNumber", 61, 5, 61, 9, "{}"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "getIntArraySize", 68, 24, 68, 25, "+"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "getIntArraySize", 68, 24, 68, 25, "-"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "getIntArraySize", 68, 24, 68, 25, "*"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "getIntArraySize", 68, 24, 68, 25, "%"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "foo", 75, 7, 75, 8, "(!(b))"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "foo", 76, 18, 76, 19, "-"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "foo", 76, 30, 76, 31, "*"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "foo", 76, 30, 76, 31, "-"));
-    allMutants->push_back(Mutant("AOR", TARGET_FILE1, "foo", 76, 30, 76, 31, "/"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "foo", 76, 32, 76, 33, "(++(f))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE1, "foo", 76, 32, 76, 33, "(--(f))"));
-    allMutants->push_back(Mutant("SDL", TARGET_FILE2, "sdlBlockedCases", 28, 12, 28, 18, "{}"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE2, "sdlBlockedCases", 39, 13, 39, 14, "(++(a))"));
-    allMutants->push_back(Mutant("UOI", TARGET_FILE2, "sdlBlockedCases", 39, 13, 39, 14, "(--(a))"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, ">="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, "<"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, "<="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, "=="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, "!="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 7, 41, 17, "0"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 7, 41, 17, "1"));
+    mAllMutants.push_back(Mutant("LCR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"));
+    mAllMutants.push_back(Mutant("LCR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 9, 58, 37, "1"));
+    mAllMutants.push_back(Mutant("LCR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 9, 58, 37, "0"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "!="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "<"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, "<="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, ">"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 17, 58, 19, ">="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 9, 58, 28, "1"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 9, 58, 28, "0"));
+    mAllMutants.push_back(Mutant("BOR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 12, 58, 13, "^"));
+    mAllMutants.push_back(Mutant("BOR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 12, 58, 13, "|"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(++(i))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(--(i))"));
+    mAllMutants.push_back(Mutant("SOR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 23, 58, 25, ">>"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "!="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "=="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, ">="));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 32, 58, 37, "1"));
+    mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 32, 58, 37, "0"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 32, 58, 33, "(++(i))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 32, 58, 33, "(--(i))"));
+    mAllMutants.push_back(Mutant("SDL", mTargetFile1, "sumOfEvenPositiveNumber", 59, 7, 59, 21, "{}"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "%"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "*"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "-"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "sumOfEvenPositiveNumber", 59, 17, 59, 18, "/"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 59, 13, 59, 16, "(++(ret))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 59, 13, 59, 16, "(--(ret))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 59, 19, 59, 20, "(++(i))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 59, 19, 59, 20, "(--(i))"));
+    mAllMutants.push_back(Mutant("SDL", mTargetFile1, "sumOfEvenPositiveNumber", 61, 5, 61, 9, "{}"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "getIntArraySize", 68, 24, 68, 25, "+"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "getIntArraySize", 68, 24, 68, 25, "-"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "getIntArraySize", 68, 24, 68, 25, "*"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "getIntArraySize", 68, 24, 68, 25, "%"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "foo", 75, 7, 75, 8, "(!(b))"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "foo", 76, 18, 76, 19, "-"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "foo", 76, 30, 76, 31, "*"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "foo", 76, 30, 76, 31, "-"));
+    mAllMutants.push_back(Mutant("AOR", mTargetFile1, "foo", 76, 30, 76, 31, "/"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "foo", 76, 32, 76, 33, "(++(f))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile1, "foo", 76, 32, 76, 33, "(--(f))"));
+    mAllMutants.push_back(Mutant("SDL", mTargetFile2, "sdlBlockedCases", 28, 12, 28, 18, "{}"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 39, 13, 39, 14, "(++(a))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 39, 13, 39, 14, "(--(a))"));
   }
 
-  void TearDown() override {
-    delete allMutants;
-    delete sourceLines;
-    SampleFileGeneratorForTest::TearDown();
-  }
-
-  Mutants* allMutants = nullptr;
-  SourceLines* sourceLines = nullptr;
-  std::string TARGET_FILE1;
-  std::string TARGET_FILE2;
-  unsigned SEED = 1234;
+  Mutants mAllMutants;
+  SourceLines mSourceLines;
+  std::string mTargetFile1;
+  std::string mTargetFile2;
+  static constexpr unsigned kSeed = 1234;
 };
 
 TEST_F(WeightedMutantGeneratorTest, testGenerateFailWhenInvalidDirGiven) {
   WeightedMutantGenerator generator{SAMPLE_BASE};
-  EXPECT_THROW(Mutants mutants = generator.generate(*sourceLines, 100, SEED), IOException);
+  EXPECT_THROW(Mutants mutants = generator.generate(mSourceLines, 100, kSeed), IOException);
 }
 
 TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.generate(*sourceLines, 100, SEED);
+  Mutants mutants = generator.generate(mSourceLines, 100, kSeed);
 
   std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
 
@@ -124,7 +116,7 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   EXPECT_EQ(mutants[0].getFirst().line, 59);
 
   for (const auto& e1 : mutants) {
-    EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(), [e1](const auto& e2) { return e2 == e1; }));
+    EXPECT_TRUE(std::any_of(mAllMutants.begin(), mAllMutants.end(), [e1](const auto& e2) { return e2 == e1; }));
 
     // Check each selected line is unique
     std::size_t lineNum = e1.getFirst().line;
@@ -136,7 +128,7 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
 
 TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
-  Mutants mutants = generator.generate(*sourceLines, 4, SEED);
+  Mutants mutants = generator.generate(mSourceLines, 4, kSeed);
 
   std::vector<std::size_t> lines = {32, 38, 39, 58, 59, 61, 76};
 
@@ -144,7 +136,7 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   EXPECT_EQ(mutants[0].getFirst().line, 59);
 
   for (const auto& e1 : mutants) {
-    EXPECT_TRUE(std::any_of(allMutants->begin(), allMutants->end(), [e1](const auto& e2) { return e2 == e1; }));
+    EXPECT_TRUE(std::any_of(mAllMutants.begin(), mAllMutants.end(), [e1](const auto& e2) { return e2 == e1; }));
 
     // Check each selected line is unique
     std::size_t lineNum = e1.getFirst().line;
@@ -156,10 +148,10 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
 
 TEST_F(WeightedMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
   WeightedMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(mSourceLines, 3, kSeed);
 
   WeightedMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED + 1);
+  Mutants mutants2 = generator2.generate(mSourceLines, 3, kSeed + 1);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
@@ -168,10 +160,10 @@ TEST_F(WeightedMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 
 TEST_F(WeightedMutantGeneratorTest, testRandomWithSameSeedWorks) {
   WeightedMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.generate(*sourceLines, 3, SEED);
+  Mutants mutants1 = generator1.generate(mSourceLines, 3, kSeed);
 
   WeightedMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.generate(*sourceLines, 3, SEED);
+  Mutants mutants2 = generator2.generate(mSourceLines, 3, kSeed);
 
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);

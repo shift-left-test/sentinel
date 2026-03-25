@@ -4,45 +4,19 @@
  */
 
 #include <gtest/gtest.h>
-#include <memory>
 #include <string>
-#include "helper/CaptureHelper.hpp"
-#include "helper/SampleFileGeneratorForTest.hpp"
-#include "sentinel/MutationFactory.hpp"
-#include "sentinel/SourceLine.hpp"
-#include "sentinel/SourceLines.hpp"
-#include "sentinel/UniformMutantGenerator.hpp"
+#include "helper/OperatorTestBase.hpp"
 
 namespace sentinel {
 
-class UOITest : public SampleFileGeneratorForTest {
+class UOITest : public OperatorTestBase {
  protected:
   Mutants generate(int line) {
-    auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
-    generator->setOperators({"UOI"});
-    MutationFactory factory(generator);
-    auto capture = CaptureHelper::getStdoutCapture();
-    capture->capture();
-    SourceLines lines;
-    lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    Mutants result = factory.generate(SAMPLE1_DIR, lines, 100, 1234);
-    capture->release();
-    return result;
+    return OperatorTestBase::generate("UOI", line);
   }
 
-  Mutants generateRange(int from, int to) {
-    auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
-    generator->setOperators({"UOI"});
-    MutationFactory factory(generator);
-    auto capture = CaptureHelper::getStdoutCapture();
-    capture->capture();
-    SourceLines lines;
-    for (int line = from; line <= to; ++line) {
-      lines.push_back(SourceLine(SAMPLE1_PATH, line));
-    }
-    Mutants result = factory.generate(SAMPLE1_DIR, lines, 100, 1234);
-    capture->release();
-    return result;
+  Mutants generateRange(int fromLine, int toLine) {
+    return OperatorTestBase::generateRange("UOI", fromLine, toLine);
   }
 };
 

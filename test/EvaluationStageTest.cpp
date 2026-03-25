@@ -5,10 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <string>
-#include "sentinel/Workspace.hpp"
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -24,9 +24,7 @@ class EvaluationStageTest : public ::testing::Test {
     fs::remove_all(mBase);
   }
   void writeFile(const fs::path& p, const std::string& content) {
-    fs::create_directories(p.parent_path());
-    std::ofstream f(p);
-    f << content;
+    testutil::writeFile(p, content);
   }
   fs::path mBase;
 };

@@ -11,6 +11,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace sentinel {
@@ -47,9 +48,7 @@ class SampleFileGeneratorForTest : public ::testing::Test {
   }
 
   void writeFile(const std::filesystem::path& p, const std::string& c) {
-    std::ofstream t(p.string());
-    t << c;
-    t.close();
+    testutil::writeFile(p, c);
   }
 
   std::filesystem::path SAMPLE_BASE;
