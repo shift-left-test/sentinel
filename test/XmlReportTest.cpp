@@ -60,7 +60,7 @@ class XmlReportTest : public ::testing::Test {
   fs::path mTargetFullPath;
   fs::path mTargetFullPath2;
   std::string mExpectMutXmlContent =
-      R"a1b2(<?xml version="1.0" encoding="UTF-8"?>
+      R"xml(<?xml version="1.0" encoding="UTF-8"?>
 <mutations>
     <mutation detected="false">
         <sourceFile>{0}</sourceFile>
@@ -81,9 +81,9 @@ class XmlReportTest : public ::testing::Test {
         <killingTest>testAddBit</killingTest>
     </mutation>
 </mutations>
-)a1b2";
+)xml";
   std::string EXPECT_SKIP_MUT_XML_CONTENT =
-      R"a1b2(<?xml version="1.0" encoding="UTF-8"?>
+      R"xml(<?xml version="1.0" encoding="UTF-8"?>
 <mutations>
     <mutation detected="false">
         <sourceFile>file1.cpp</sourceFile>
@@ -122,11 +122,11 @@ class XmlReportTest : public ::testing::Test {
         <killingTest></killingTest>
     </mutation>
 </mutations>
-)a1b2";
+)xml";
   std::string EXPECT_EMPTY_MUT_XML_CONTENT =
-      R"c3d4(<?xml version="1.0" encoding="UTF-8"?>
+      R"xml2(<?xml version="1.0" encoding="UTF-8"?>
 <mutations/>
-)c3d4";
+)xml2";
 };
 
 TEST_F(XmlReportTest, testMakeXmlReport) {

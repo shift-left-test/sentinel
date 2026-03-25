@@ -16,7 +16,7 @@ MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generat
 }
 
 Mutants MutationFactory::generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
-                                  std::size_t maxMutants, unsigned randomSeed) {
+                                  std::size_t maxMutants, unsigned int randomSeed) {
   return mGenerator->generate(sourceLines, maxMutants, randomSeed);
 }
 

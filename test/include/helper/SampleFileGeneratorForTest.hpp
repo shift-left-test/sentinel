@@ -56,7 +56,7 @@ class SampleFileGeneratorForTest : public ::testing::Test {
   std::filesystem::path SAMPLE1_PATH;
   std::string SAMPLE1_NAME;
   std::string SAMPLE1_CONTENTS =
-      R"a1s2d3f4(/*
+      R"cpp(/*
   MIT License
 
   Copyright (c) 2020 LG Electronics, Inc.
@@ -157,11 +157,11 @@ Book temporaryBook() {
 int blockUOIForMaterializedTemporaryExpr() {
   int ret = temporaryBook().num_pages;
   return ret;
-})a1s2d3f4";
+})cpp";
   std::filesystem::path SAMPLE1B_PATH;
   std::string SAMPLE1B_NAME;
   std::string SAMPLE1B_CONTENTS =
-      R"a1s2d3f4(/*
+      R"cpp(/*
   MIT License
 
   Copyright (c) 2020 LG Electronics, Inc.
@@ -208,11 +208,11 @@ int sdlBlockedCases() {
   } catch (const std::runtime_error& e) {
     return -1;
   }
-})a1s2d3f4";
+})cpp";
   std::filesystem::path SAMPLECOMCOMJSON_PATH;
   std::string SAMPLECOMCOMJSON_NAME;
   std::string SAMPLECOMCOMJSON_CONTENTS =
-      R"a1b3([
+      R"json([
 {{
   "directory": "{0}",
   "command": "/usr/bin/c++      -o CMakeFiles/sample1.dir/sample1.cpp.o -c {0}/sample1.cpp",
@@ -228,12 +228,12 @@ int sdlBlockedCases() {
   "command": "/usr/bin/c++      -o CMakeFiles/sample1b.dir/sample1b.cpp.o -c {0}/sample1b.cpp",
   "file": "{0}/sample1b.cpp"
 }}
-])a1b3";
+])json";
 
   std::filesystem::path SAMPLECOVERAGE_PATH;
   std::string SAMPLECOVERAGE_NAME;
   std::string SAMPLECOVERAGE_CONTENTS =
-      R"a1b3(TN:
+      R"lcov(TN:
 SF:{0}
 FN:33,_ZN18CDiag_Monitor_NodeD0Ev
 FN:33,_ZN18CDiag_Monitor_NodeD2Ev
@@ -247,7 +247,7 @@ DA:39,0
 DA:40,0
 LF:3
 LH:1
-end_of_record)a1b3";
+end_of_record)lcov";
 };
 
 }  // namespace sentinel

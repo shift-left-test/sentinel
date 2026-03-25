@@ -27,7 +27,7 @@ class EmptyIndexHtmlGenerator : public DocGenerator {
 
  private:
   std::string emptyIndexHtmlContent =
-      R"a1b2(<!DOCTYPE html>
+      R"html(<!DOCTYPE html>
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="style.css"/>
@@ -41,7 +41,7 @@ class EmptyIndexHtmlGenerator : public DocGenerator {
         </h5>
     </body>
 </html>
-)a1b2";
+)html";
 };
 
 }  // namespace sentinel

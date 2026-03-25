@@ -29,7 +29,7 @@ Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::
   }
 }
 
-MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path& ActualResultDir,
+MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path& actualResultDir,
                                   TestExecutionState testState) {
   std::string killingTC;
   std::string errorTC;
@@ -46,7 +46,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
       state = MutationState::SURVIVED;
       break;
     case TestExecutionState::SUCCESS: {
-      Result mActualResult(ActualResultDir.string());
+      Result mActualResult(actualResultDir.string());
       state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
       break;
     }
@@ -59,13 +59,13 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
   return {mut, killingTC, errorTC, state};
 }
 
-MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& ActualResultDir,
+MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& actualResultDir,
                                                        const std::filesystem::path& evalFilePath,
                                                        TestExecutionState testState) {
   auto outDir = evalFilePath.parent_path();
   io::ensureDirectoryExists(outDir);
 
-  MutationResult ret = compare(mut, ActualResultDir, testState);
+  MutationResult ret = compare(mut, actualResultDir, testState);
 
   std::ofstream outFile(evalFilePath.string(), std::ios::out | std::ios::app);
   outFile << ret << "\n";

@@ -115,7 +115,7 @@ class ResultTest : public ::testing::Test {
 </testsuites>
 )";
   std::string TC4_QT =
-      R"asdf(<?xml version="1.0" encoding="UTF-8" ?>
+      R"xml(<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="0" failures="0" tests="4" name="qmake5-project.MinusTest">
   <properties>
     <property value="5.14.2" name="QTestVersion"/>
@@ -128,9 +128,9 @@ class ResultTest : public ::testing::Test {
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err/>
 </testsuite>
-)asdf";
+)xml";
   std::string TC4_QT_FAIL =
-      R"asdf(<?xml version="1.0" encoding="UTF-8" ?>
+      R"xml(<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="0" failures="1" tests="4" name="qmake5-project.MinusTest">
   <properties>
     <property value="5.14.2" name="QTestVersion"/>
@@ -145,7 +145,7 @@ class ResultTest : public ::testing::Test {
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err/>
 </testsuite>
-)asdf";
+)xml";
 
   std::string TC5_CTEST =
       R"(<?xml version="1.0" encoding="UTF-8"?>

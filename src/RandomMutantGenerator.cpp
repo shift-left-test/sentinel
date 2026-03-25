@@ -30,7 +30,7 @@ namespace fs = std::filesystem;
 RandomMutantGenerator::RandomMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
-Mutants RandomMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) {
+Mutants RandomMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) {
   Mutants mutables;
 
   std::string errorMsg;

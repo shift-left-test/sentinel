@@ -39,24 +39,24 @@ class Evaluator {
    * @brief Compare an actual with the expected
    *
    * @param mut target mutant
-   * @param ActualResultDir Directory Path of Actual Result
+   * @param actualResultDir Directory Path of Actual Result
    * @param testState execution outcome of the mutant
    * @return MutationResult summary of compare
    */
-  MutationResult compare(const Mutant& mut, const std::filesystem::path& ActualResultDir, TestExecutionState testState);
+  MutationResult compare(const Mutant& mut, const std::filesystem::path& actualResultDir, TestExecutionState testState);
 
   /**
    * @brief Compare an actual with the expected and save&return summary
    *
    * @param mut target mutant
-   * @param ActualResultDir Directory Path of Actual Result
+   * @param actualResultDir Directory Path of Actual Result
    * @param evalFilePath File Path of MutationResult
    * @param testState execution outcome of the mutant
    * @return MutationResult summary of compare
    * @throw InvalidArgumentException
    *        when evalFile's parent's path isn't directory
    */
-  MutationResult compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& ActualResultDir,
+  MutationResult compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& actualResultDir,
                                               const std::filesystem::path& evalFilePath, TestExecutionState testState);
 
  private:

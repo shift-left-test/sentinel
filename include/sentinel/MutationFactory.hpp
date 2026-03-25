@@ -38,7 +38,7 @@ class MutationFactory {
    * @return list of mutables
    */
   Mutants generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                   unsigned randomSeed);
+                   unsigned int randomSeed);
 
  private:
   std::shared_ptr<MutantGenerator> mGenerator;

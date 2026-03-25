@@ -119,7 +119,7 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.killAfter = root["kill-after"].as<std::string>();
     }
     if (root["seed"]) {
-      cfg.seed = root["seed"].as<unsigned>();
+      cfg.seed = root["seed"].as<unsigned int>();
     }
     if (root["operator"]) {
       cfg.operators = toVector<std::string>(root["operator"], "operator");

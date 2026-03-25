@@ -33,7 +33,7 @@ class MutantGenerator {
    * @param randomSeed random seed
    * @return mutables
    */
-  virtual Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) = 0;
+  virtual Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) = 0;
 
   /**
    * @brief Set mutation operators to use. If empty, all operators are used.

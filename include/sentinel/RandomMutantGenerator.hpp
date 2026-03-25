@@ -42,7 +42,7 @@ class RandomMutantGenerator : public MutantGenerator {
    */
   explicit RandomMutantGenerator(const std::filesystem::path& path);
 
-  Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned randomSeed) override;
+  Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) override;
 
  private:
   std::filesystem::path mDbPath;

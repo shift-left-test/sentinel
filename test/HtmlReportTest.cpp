@@ -904,7 +904,7 @@ int minus(int a, int b){
 </html>
 )";
   std::string EXPECT_EMPTY_MUT_HTML_CONTENT =
-      R"a1b2(<!DOCTYPE html>
+      R"html(<!DOCTYPE html>
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="style.css"/>
@@ -918,7 +918,7 @@ int minus(int a, int b){
         </h5>
     </body>
 </html>
-)a1b2";
+)html";
 };
 
 TEST_F(HtmlReportTest, testMakeHtmlReport) {
