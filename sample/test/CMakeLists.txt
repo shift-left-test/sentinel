@@ -9,5 +9,12 @@ include(GoogleTest)
 
 add_executable(StackTest StackTest.cpp)
 target_link_libraries(StackTest stack GTest::gtest_main)
-
 gtest_add_tests(TARGET StackTest)
+
+add_executable(TokenizerTest TokenizerTest.cpp)
+target_link_libraries(TokenizerTest tokenizer GTest::gtest_main)
+gtest_add_tests(TARGET TokenizerTest)
+
+add_executable(CalculatorTest CalculatorTest.cpp)
+target_link_libraries(CalculatorTest calculator GTest::gtest_main)
+gtest_add_tests(TARGET CalculatorTest)

@@ -10,4 +10,14 @@ enable_testing()
 add_library(stack src/Stack.cpp)
 target_include_directories(stack PUBLIC src)
 
+add_library(tokenizer src/Tokenizer.cpp)
+target_include_directories(tokenizer PUBLIC src)
+
+add_library(calculator src/Calculator.cpp)
+target_include_directories(calculator PUBLIC src)
+target_link_libraries(calculator PUBLIC stack tokenizer)
+
+add_executable(calc src/main.cpp)
+target_link_libraries(calc calculator)
+
 add_subdirectory(test)

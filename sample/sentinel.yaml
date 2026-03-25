@@ -7,9 +7,12 @@ version: 1
 
 build-command: cmake -B build && cmake --build build
 compiledb-dir: ./build
-test-command: build/test/StackTest --gtest_output=xml:build/test-results/StackTest.xml
+test-command: >-
+  build/test/StackTest --gtest_output=xml:build/test-results/StackTest.xml &&
+  build/test/TokenizerTest --gtest_output=xml:build/test-results/TokenizerTest.xml &&
+  build/test/CalculatorTest --gtest_output=xml:build/test-results/CalculatorTest.xml
 test-result-dir: ./build/test-results
 source-dir: ./src
 
-limit: 30
+limit: 10
 output-dir: ./sentinel_output

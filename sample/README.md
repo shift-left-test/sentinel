@@ -1,8 +1,34 @@
 # Sentinel Sample Project
 
-A minimal C++ project demonstrating how to use [Sentinel](https://github.com/shift-left-test/sentinel) for mutation testing.
+A C++ calculator project demonstrating how to use [Sentinel](https://github.com/shift-left-test/sentinel) for mutation testing.
 
-The project implements a simple `Stack` (integer stack) with a GoogleTest suite, pre-configured so you can run mutation testing with a single command.
+The project implements a stack-based expression evaluator using the **Shunting-yard algorithm** (Dijkstra). It parses and evaluates mathematical expressions like `1 + 2 * (1 + 2)` with correct operator precedence and parentheses support.
+
+---
+
+## Components
+
+| Class | Description |
+|-------|-------------|
+| `Stack` | Integer stack (push, pop, peek) |
+| `Tokenizer` | Breaks expression strings into tokens (numbers, operators, parentheses) |
+| `Calculator` | Evaluates expressions using Shunting-yard with two stacks |
+
+### Supported Operations
+
+- Arithmetic: `+`, `-`, `*`, `/`
+- Parentheses: `(`, `)`
+- Negative numbers: `-5`, `3 * -2`
+
+### Example
+
+```bash
+./build/calc "1 + 2 * (1 + 2)"
+# Output: 7
+
+./build/calc "100 / (2 * 5) + 3 * (4 - 1)"
+# Output: 19
+```
 
 ---
 
@@ -10,7 +36,7 @@ The project implements a simple `Stack` (integer stack) with a GoogleTest suite,
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| CMake | 3.14+ | |
+| CMake | 3.13+ | |
 | C++ compiler | C++17 support | GCC or Clang |
 | sentinel | any | Must be on `PATH` |
 | Internet access | — | GoogleTest is downloaded via FetchContent on first build |
