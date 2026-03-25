@@ -6,11 +6,11 @@
 #ifndef INCLUDE_SENTINEL_CLICONFIGPARSER_HPP_
 #define INCLUDE_SENTINEL_CLICONFIGPARSER_HPP_
 
-#include <args/args.hxx>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include <vector>
+#include <args/args.hxx>
 #include "sentinel/Config.hpp"
 
 namespace sentinel {
@@ -24,7 +24,7 @@ class CliConfigParser {
    * @brief Constructor - registers all options to the parser.
    * @param parser The argument parser to register options with.
    */
-  explicit CliConfigParser(args::ArgumentParser& parser);
+  explicit CliConfigParser(args::ArgumentParser& parser);  // NOLINT
 
   /**
    * @brief Extracts parsed values into a Config object.

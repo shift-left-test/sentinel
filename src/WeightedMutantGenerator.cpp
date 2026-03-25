@@ -34,7 +34,8 @@ namespace fs = std::filesystem;
 WeightedMutantGenerator::WeightedMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
-Mutants WeightedMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) {
+Mutants WeightedMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants,
+                                          unsigned int randomSeed) {
   Mutants mutables;
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =

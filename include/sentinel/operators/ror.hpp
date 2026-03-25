@@ -11,7 +11,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "MutationOperator.hpp"
+#include "sentinel/operators/MutationOperator.hpp"
 
 namespace sentinel {
 

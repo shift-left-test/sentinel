@@ -39,14 +39,14 @@ class ConfigResolver {
    * @tparam T           Type of the target field.
    */
   template <typename T>
-  static void mergeField(std::optional<T>& target, const std::optional<T>& cli, const std::optional<T>& yaml,
+  static void mergeField(std::optional<T>* target, const std::optional<T>& cli, const std::optional<T>& yaml,
                          const T& defaultValue) {
     if (cli.has_value()) {
-      target = cli;
+      *target = cli;
     } else if (yaml.has_value()) {
-      target = yaml;
+      *target = yaml;
     } else {
-      target = defaultValue;
+      *target = defaultValue;
     }
   }
 
@@ -59,11 +59,11 @@ class ConfigResolver {
    * @tparam T           Type of the target field.
    */
   template <typename T>
-  static void mergeFieldOptional(std::optional<T>& target, const std::optional<T>& cli, const std::optional<T>& yaml) {
+  static void mergeFieldOptional(std::optional<T>* target, const std::optional<T>& cli, const std::optional<T>& yaml) {
     if (cli.has_value()) {
-      target = cli;
+      *target = cli;
     } else {
-      target = yaml;
+      *target = yaml;
     }
   }
 };

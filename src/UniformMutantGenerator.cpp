@@ -29,9 +29,9 @@ namespace fs = std::filesystem;
 UniformMutantGenerator::UniformMutantGenerator(const std::filesystem::path& path) : mDbPath(path) {
 }
 
-Mutants UniformMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) {
+Mutants UniformMutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants,
+                                         unsigned int randomSeed) {
   Mutants mutables;
-
   std::string errorMsg;
   std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
       clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);

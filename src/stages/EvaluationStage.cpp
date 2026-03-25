@@ -78,7 +78,7 @@ bool EvaluationStage::execute() {
     mWorkspace->setLock(id);
     mStatusLine->setMutantInfo(id, m.getOperator(), m.getPath().filename().string(), m.getFirst().line);
 
-    MutationResult result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, evaluator);
+    MutationResult result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator);
 
     auto state = result.getMutationState();
     auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
@@ -100,7 +100,7 @@ bool EvaluationStage::execute() {
 }
 
 MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
-                                               std::size_t killAfterSecs, Evaluator& evaluator) {
+                                               std::size_t killAfterSecs, Evaluator* evaluator) {
   const fs::path backupDir = mWorkspace->getBackupDir();
   const fs::path actualDir = mWorkspace->getActualDir();
 
@@ -125,7 +125,7 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
     testState = TestExecutionState::BUILD_FAILURE;
   }
 
-  MutationResult result = evaluator.compare(m, actualDir, testState);
+  MutationResult result = evaluator->compare(m, actualDir, testState);
   mWorkspace->restoreBackup(*mConfig.sourceDir);
   fs::remove_all(actualDir);
   return result;

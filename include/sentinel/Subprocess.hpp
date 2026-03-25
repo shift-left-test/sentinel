@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef INCLUDE_SENTINEL_UTIL_SUBPROCESS_HPP_
-#define INCLUDE_SENTINEL_UTIL_SUBPROCESS_HPP_
+#ifndef INCLUDE_SENTINEL_SUBPROCESS_HPP_
+#define INCLUDE_SENTINEL_SUBPROCESS_HPP_
 
 #include <unistd.h>
 #include <filesystem>  // NOLINT
@@ -76,4 +76,4 @@ class Subprocess {
 
 }  // namespace sentinel
 
-#endif  // INCLUDE_SENTINEL_UTIL_SUBPROCESS_HPP_
+#endif  // INCLUDE_SENTINEL_SUBPROCESS_HPP_

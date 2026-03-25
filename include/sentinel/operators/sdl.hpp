@@ -6,7 +6,7 @@
 #ifndef INCLUDE_SENTINEL_OPERATORS_SDL_HPP_
 #define INCLUDE_SENTINEL_OPERATORS_SDL_HPP_
 
-#include "MutationOperator.hpp"
+#include "sentinel/operators/MutationOperator.hpp"
 
 namespace sentinel {
 

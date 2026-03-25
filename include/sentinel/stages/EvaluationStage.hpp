@@ -48,7 +48,7 @@ class EvaluationStage : public Stage {
    * @return MutationResult for the evaluated mutant.
    */
   MutationResult evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
-                                Evaluator& evaluator);
+                                Evaluator* evaluator);
 };
 
 }  // namespace sentinel
