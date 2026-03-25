@@ -5,14 +5,91 @@
 
 version: 1
 
-build-command: cmake -B build && cmake --build build
+## Directory for output reports (default: none)
+output-dir: ./sentinel_output
+
+## Workspace directory for all sentinel run artifacts (default: ./.sentinel)
+# workspace: ./.sentinel
+
+# --- Run options ---
+
+## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
+# threshold: 80
+
+## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
+# partition: 1/1
+
+# --- Build & test options ---
+
+## Source root directory (default: .)
+source-dir: .
+
+## Shell command to build the source
+build-command: cmake -B build && cmake --build build -j
+
+## Path to directory containing compile_commands.json (default: .)
 compiledb-dir: ./build
+
+## Shell command to execute tests
 test-command: >-
   build/test/StackTest --gtest_output=xml:build/test-results/StackTest.xml &&
   build/test/TokenizerTest --gtest_output=xml:build/test-results/TokenizerTest.xml &&
   build/test/CalculatorTest --gtest_output=xml:build/test-results/CalculatorTest.xml
-test-result-dir: ./build/test-results
-source-dir: ./src
 
+## Path to the test report directory
+test-result-dir: ./build/test-results
+
+## File extension of the test report (default: xml)
+# test-result-ext:
+#   - xml
+
+## Test time limit in seconds (default: auto - 2x original test time; 0 = no limit)
+# timeout: auto
+
+## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
+# kill-after: 60
+
+# --- Mutation options ---
+
+## Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)
+# scope: all
+
+## Source file extensions to mutate (default: cxx cpp cc c c++ cu)
+# extension:
+#   - cpp
+#   - cxx
+#   - cc
+#   - c
+#   - c++
+#   - cu
+
+## Paths or glob patterns to constrain the diff (default: none - entire source)
+pattern: ["sample/src"]
+
+## Paths excluded from mutation; fnmatch-style patterns (default: none)
+exclude: ["*/test/*"]
+
+## Maximum number of mutants to generate (default: 0 = unlimited)
 limit: 10
-output-dir: ./sentinel_output
+
+## Mutant selection strategy (default: uniform)
+##   uniform  - one mutant per operator per source line
+##   random   - randomly sampled from all possible mutants
+##   weighted - samples more mutants from complex code
+# generator: uniform
+
+## Random seed for mutant selection (default: auto - picked randomly)
+# seed: auto
+
+## Mutation operators to use; omit to use all operators (default: all)
+# operator:
+#   - AOR  # Arithmetic Operator Replacement  (+, -, *, /)
+#   - BOR  # Bitwise Operator Replacement     (&, |, ^)
+#   - LCR  # Logical Connector Replacement    (&&, ||)
+#   - ROR  # Relational Operator Replacement  (<, >, ==, !=)
+#   - SDL  # Statement Deletion
+#   - SOR  # Shift Operator Replacement       (<<, >>)
+#   - UOI  # Unary Operator Insertion         (-x, !x)
+
+## lcov-format coverage result files; limits mutation to covered lines only (default: none)
+# coverage: []
