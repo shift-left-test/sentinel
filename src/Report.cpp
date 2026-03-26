@@ -10,6 +10,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -17,23 +18,13 @@ namespace fs = std::filesystem;
 
 static constexpr std::size_t kReportWidth = 76;
 
-static std::string repeatUtf8(const char* ch, std::size_t width) {
-  std::string unit(ch);
-  std::string result;
-  result.reserve(unit.size() * width);
-  for (std::size_t i = 0; i < width; ++i) {
-    result += unit;
-  }
-  return result;
-}
-
 Report::Report(const MutationSummary& summary) :
     mSummary(summary) {
 }
 
 void Report::printSummary() const {
-  const std::string thick = repeatUtf8("\xe2\x94\x81", kReportWidth);   // ━
-  const std::string thin = repeatUtf8("\xe2\x94\x80", kReportWidth);    // ─
+  const std::string thick = string::repeatUtf8("\xe2\x94\x81", kReportWidth);   // ━
+  const std::string thin = string::repeatUtf8("\xe2\x94\x80", kReportWidth);    // ─
 
   static constexpr std::size_t flen = 40;
   static constexpr std::size_t klen = 8;

@@ -64,6 +64,9 @@ class Stage {
    */
   virtual bool execute() = 0;
 
+  /** @brief Check whether verbose mode is enabled. */
+  bool isVerbose() const { return mConfig.verbose && *mConfig.verbose; }
+
   /** @brief Fully resolved configuration (read-only). */
   const Config& mConfig;
   /** @brief Shared status line for phase and progress updates. */

@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 #include "sentinel/Console.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/SignalHandler.hpp"
 #include "sentinel/util/signal.hpp"
 
@@ -30,7 +29,6 @@ void SignalHandler::add(const std::vector<int>& signals, std::function<void()> c
 }
 
 void SignalHandler::dispatch(int signum) {
-  Logger::verbose("Signal received: {} ({})", signum, strsignal(signum));
   for (auto& cb : sCallbacks) {
     cb();
   }

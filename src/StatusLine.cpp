@@ -6,10 +6,12 @@
 #include <fmt/core.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
 #include "sentinel/Console.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Timestamper.hpp"
@@ -57,6 +59,7 @@ void StatusLine::setPhase(Phase phase) {
 
 void StatusLine::setTotalMutants(size_t total) {
   mTotal = total;
+  mProgressInterval = std::max(static_cast<size_t>(10), total / 10);
   redraw();
 }
 
@@ -91,7 +94,11 @@ void StatusLine::recordResult(int state) {
       mTimeout++;
       break;
   }
-  redraw();
+  if (mEnabled) {
+    redraw();
+  } else {
+    logProgress();
+  }
 }
 
 void StatusLine::queryTermSize() {
@@ -153,6 +160,21 @@ std::string StatusLine::phaseLabel() const {
   return "UNKNOWN";
 }
 
+std::string StatusLine::buildSummaryString() const {
+  size_t denominator = mKilled + mSurvived + mTimeout + mRuntimeError;
+  std::string scoreStr = denominator > 0
+      ? fmt::format("{:.1f}%", 100.0 * static_cast<double>(mKilled) / static_cast<double>(denominator))
+      : "N/A";
+  return fmt::format("K:{} / S:{} / B:{} / T:{} / R:{} | Score: {} | Elapsed: {}",
+                     mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError,
+                     scoreStr, mTimestamper.toString(Timestamper::Format::Clock));
+}
+
+std::string StatusLine::buildProgressString(size_t current) const {
+  return fmt::format("[{}/{}] ({}%) | {}", current, mTotal, mTotal > 0 ? current * 100 / mTotal : 0,
+                     buildSummaryString());
+}
+
 std::string StatusLine::buildStatusString() const {
   std::string result;
 
@@ -160,29 +182,31 @@ std::string StatusLine::buildStatusString() const {
     result += " [DRY-RUN]";
   }
 
-  // Phase label, padded to 12 chars for alignment across all phase names
   result += fmt::format(" Phase: {:<12}", phaseLabel());
-
-  if (mTotal > 0) {
-    result += fmt::format(" [{}/{}]", mCurrent, mTotal);
-  }
 
   if (mPhase == Phase::EVALUATION && !mOp.empty()) {
     result += fmt::format(" | {} {}:{}", mOp, mFile.string(), mLine);
   }
 
-  result += fmt::format(" | K:{} / S:{} / B:{} / T:{} / R:{}", mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError);
-
-  size_t denominator = mKilled + mSurvived + mTimeout + mRuntimeError;
-  if (denominator > 0) {
-    double score = (100.0 * static_cast<double>(mKilled)) / static_cast<double>(denominator);
-    result += fmt::format(" | Score: {:.1f}%", score);
+  if (mTotal > 0) {
+    result += " " + buildProgressString(mCurrent);
   } else {
-    result += " | Score: N/A";
+    result += " | " + buildSummaryString();
   }
 
-  result += " | Elapsed: " + mTimestamper.toString(Timestamper::Format::Clock) + " ";
+  result += " ";
   return result;
+}
+
+void StatusLine::logProgress() {
+  size_t processed = mKilled + mSurvived + mBuildFail + mTimeout + mRuntimeError;
+  if (mTotal == 0 || mProgressInterval == 0) {
+    return;
+  }
+  if (processed % mProgressInterval != 0 && processed != mTotal) {
+    return;
+  }
+  Logger::info("Progress: {}", buildProgressString(processed));
 }
 
 }  // namespace sentinel

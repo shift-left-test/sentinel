@@ -292,6 +292,23 @@ inline bool stringToBool(const std::string& s) {
       fmt::format("Input must be a boolean value (true or false): \"{}\". temp = {}", s, temp));
 }
 
+/**
+ * @brief Fills a UTF-8 repeated-character line of the given display width.
+ *
+ * @param ch UTF-8 character to repeat
+ * @param width number of repetitions
+ * @return repeated string
+ */
+inline std::string repeatUtf8(const char* ch, std::size_t width) {
+  std::string unit(ch);
+  std::string result;
+  result.reserve(unit.size() * width);
+  for (std::size_t i = 0; i < width; ++i) {
+    result += unit;
+  }
+  return result;
+}
+
 }  // namespace sentinel::string
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

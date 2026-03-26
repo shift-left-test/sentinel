@@ -218,7 +218,6 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
   SafeGit2ObjPtr<git_reference, git_reference_free> ref;
 
   if (git_reference_lookup(ref.getPtr(), repo, "refs/tags/devtool-base") == 0) {
-    Logger::verbose("found devtool tag in {}", gitWorkdir);
     int error_code = git_reference_peel(obj.getPtr(), static_cast<git_reference*>(ref), GIT_OBJ_COMMIT);
     if (error_code != 0) {
       throw RepositoryException(fmt::format("Failed to peel tag: error code {}", error_code));
@@ -384,7 +383,6 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       continue;
     }
     fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
-    Logger::verbose("git workdir: {}", gitWorkdir);
     processedWorkdirs.insert(gitWorkdir);
 
     std::vector<char*> cstrs;
@@ -411,8 +409,6 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
       const char* rawWorkdir = git_repository_workdir(static_cast<git_repository*>(repo));
       if (rawWorkdir) {
         fs::path gitWorkdir = fs::canonical(fs::path(rawWorkdir));
-        Logger::verbose("git workdir (enclosing): {}", gitWorkdir);
-
         std::vector<char*> cstrs;
         git_diff_options opts = buildOpts(cstrs);
         DiffData d(this, gitWorkdir);

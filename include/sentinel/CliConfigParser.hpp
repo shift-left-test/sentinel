@@ -55,8 +55,6 @@ class CliConfigParser {
   args::ValueFlag<std::filesystem::path> mOutputDir;
   /** @brief Command line flag for working directory. */
   args::ValueFlag<std::filesystem::path> mWorkDir;
-  /** @brief Command line flag for silent mode. */
-  args::Flag mSilent;
   /** @brief Command line flag for verbose mode. */
   args::Flag mVerbose;
   /** @brief Command line flag to force operations. */

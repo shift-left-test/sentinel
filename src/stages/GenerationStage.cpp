@@ -4,11 +4,13 @@
  */
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <map>
 #include <memory>
 #include <random>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +22,7 @@
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/GenerationStage.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -27,24 +30,13 @@ namespace fs = std::filesystem;
 
 static constexpr std::size_t kSummaryWidth = 76;
 
-/**
- * @brief Fills a UTF-8 repeated-character line of the given display width.
- */
-static std::string repeatUtf8(const char* ch, std::size_t width) {
-  std::string unit(ch);
-  std::string result;
-  result.reserve(unit.size() * width);
-  for (std::size_t i = 0; i < width; ++i) {
-    result += unit;
-  }
-  return result;
-}
 
 static void printGenerationSummary(const Mutants& mutants, std::size_t candidateCount,
                                    const fs::path& sourceDir, const std::string& generatorStr,
-                                   unsigned seed, const std::string& partition) {
-  const std::string thick = repeatUtf8("\xe2\x94\x81", kSummaryWidth);   // ━
-  const std::string thin = repeatUtf8("\xe2\x94\x80", kSummaryWidth);    // ─
+                                   unsigned seed, const std::string& scope,
+                                   const std::string& partition) {
+  const std::string thick = string::repeatUtf8("\xe2\x94\x81", kSummaryWidth);   // ━
+  const std::string thin = string::repeatUtf8("\xe2\x94\x80", kSummaryWidth);    // ─
 
   std::size_t flen = kSummaryWidth - 12;
   std::size_t mlen = 10;
@@ -66,9 +58,9 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("{}", thick);
 
   // Summary
-  Console::out("  Selected:   {} of {} candidates from {} file{}",
+  Console::out("  Selected:   {} of {} candidates from {} file{} (scope: {})",
                mutants.size(), candidateCount, groupByPath.size(),
-               groupByPath.size() == 1 ? "" : "s");
+               groupByPath.size() == 1 ? "" : "s", scope);
   Console::out("  Generator:  {} (seed: {})", generatorStr, seed);
   if (!partition.empty()) {
     Console::out("  Partition:  {}", partition);
@@ -121,6 +113,22 @@ bool GenerationStage::execute() {
   repo->addSkipDir(mWorkspace->getRoot());
   SourceLines sourceLines = repo->getSourceLines(*mConfig.scope);
 
+  // Verbose: source scan results and config
+  if (isVerbose()) {
+    std::set<fs::path> uniqueFiles;
+    for (const auto& sl : sourceLines) {
+      uniqueFiles.insert(sl.getPath());
+    }
+    Logger::verbose("Source: {} lines from {} files", sourceLines.size(), uniqueFiles.size());
+    Logger::verbose("Extensions: {}", fmt::join(*mConfig.extensions, ", "));
+    if (!mConfig.patterns->empty()) {
+      Logger::verbose("Patterns: {}", fmt::join(*mConfig.patterns, ", "));
+    }
+    if (!mConfig.excludes->empty()) {
+      Logger::verbose("Excludes: {}", fmt::join(*mConfig.excludes, ", "));
+    }
+  }
+
   unsigned int seed = mConfig.seed ? *mConfig.seed : std::random_device {}();
   std::shuffle(sourceLines.begin(), sourceLines.end(), std::mt19937(seed));
 
@@ -139,7 +147,8 @@ bool GenerationStage::execute() {
 
   // Print summary before partition (shows full generation results)
   std::string partition = (mConfig.partition && !mConfig.partition->empty()) ? *mConfig.partition : "";
-  printGenerationSummary(mutants, candidateCount, *mConfig.sourceDir, *mConfig.generator, seed, partition);
+  printGenerationSummary(mutants, candidateCount, *mConfig.sourceDir, *mConfig.generator, seed,
+                         *mConfig.scope, partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;

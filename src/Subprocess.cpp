@@ -110,19 +110,19 @@ int Subprocess::execute() {
     signal::setMultipleSignalHandlers({SIGCHLD}, [](int signum) {});
 
     // SIGALRM handler
+    // NOTE: Console::err uses fmt::format which is not strictly async-signal-safe,
+    // but this is acceptable for the critical SIGKILL escalation message.
     signal::setMultipleSignalHandlers({SIGALRM}, [](int signum) {
       int termSignal = SIGTERM;
-      std::string tmpMsg;
       if (!Subprocess::timedOut) {
         Subprocess::timedOut = true;
-        tmpMsg = "Test timed out.";
         alarm(Subprocess::killAfter);
       } else {
         termSignal = SIGKILL;
-        tmpMsg = fmt::format("Failed to terminate child process within {}s.", Subprocess::killAfter);
+        Console::err("Failed to terminate child process within {}s. Sending {} to child process group.",
+                     Subprocess::killAfter, strsignal(termSignal));
       }
       kill(-Subprocess::childPid, termSignal);
-      Console::err("{} Sending {} to child process group.", tmpMsg, strsignal(termSignal));
     });
 
     // Alarm setting

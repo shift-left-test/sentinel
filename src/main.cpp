@@ -93,7 +93,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
   if (dryRun && ws->hasPreviousRun()) {
-    sentinel::Logger::verbose("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
+    sentinel::Logger::info("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
   }
 
   // Validate config before starting the pipeline.

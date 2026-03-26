@@ -12,6 +12,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
+#include "sentinel/Timestamper.hpp"
 #include "sentinel/stages/OriginalBuildStage.hpp"
 
 namespace sentinel {
@@ -34,11 +35,15 @@ StatusLine::Phase OriginalBuildStage::getPhase() const {
 bool OriginalBuildStage::execute() {
   Logger::info("Running original build...");
   fs::path buildLog = mWorkspace->getOriginalBuildLog();
-  Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), *mConfig.silent);
+  Logger::verbose("Build command: {}", *mConfig.buildCmd);
+  Logger::verbose("Build log: {}", buildLog);
+  Timestamper ts;
+  Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), !isVerbose());
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
     throw std::runtime_error(fmt::format("Original build failed. See: {}", buildLog.string()));
   }
+  Logger::info("Original build completed ({})", Timestamper::format(ts.toDouble()));
   if (!fs::exists(*mConfig.compileDbDir / "compile_commands.json")) {
     throw std::runtime_error(
         fmt::format("compile_commands.json not found in '{}'. "

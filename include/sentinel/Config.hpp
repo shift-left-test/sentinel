@@ -64,8 +64,6 @@ struct Config {
   std::optional<std::filesystem::path> workDir;
   /** @brief Path to the output directory for reports. */
   std::optional<std::filesystem::path> outputDir;
-  /** @brief Enable silent mode. */
-  std::optional<bool> silent;
   /** @brief Enable verbose output. */
   std::optional<bool> verbose;
   /** @brief Force overwrite of existing files. */

@@ -8,7 +8,6 @@
 #include <fstream>
 #include <string>
 #include "sentinel/Evaluator.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
@@ -22,7 +21,6 @@ Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::
     mSourcePath(sourcePath),
     mCanonicalSourcePath(fs::canonical(sourcePath)),
     mExpectedResult(expectedResultDir.string()) {
-  Logger::verbose("Load Expected Result: {}", expectedResultDir);
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {
     throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir.string()));

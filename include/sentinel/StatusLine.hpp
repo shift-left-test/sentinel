@@ -93,12 +93,22 @@ class StatusLine {
    */
   void setDryRun(bool dryRun);
 
+  /**
+   * @brief Check whether the status line is currently active.
+   *
+   * @return true if the status line is enabled and drawing to the terminal.
+   */
+  bool isEnabled() const { return mEnabled; }
+
  private:
   void queryTermSize();
   void setScrollRegion();
   void clearScrollRegion();
   void redraw();
+  void logProgress();
   std::string buildStatusString() const;
+  std::string buildSummaryString() const;
+  std::string buildProgressString(size_t current) const;
   std::string phaseLabel() const;
 
   bool mEnabled = false;
@@ -116,6 +126,7 @@ class StatusLine {
   size_t mBuildFail = 0;
   size_t mTimeout = 0;
   size_t mRuntimeError = 0;
+  size_t mProgressInterval = 0;
   Timestamper mTimestamper;
 };
 

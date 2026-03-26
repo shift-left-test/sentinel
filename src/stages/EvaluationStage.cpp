@@ -68,11 +68,6 @@ bool EvaluationStage::execute() {
     computedTimeLimit = std::stoul(*mConfig.timeout);
   }
   const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
-  if (isAutoTimeout) {
-    Logger::verbose("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
-  } else {
-    Logger::verbose("Timeout: {}s, kill-after: {}s", computedTimeLimit, killAfterSecs);
-  }
 
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
   auto sourceRoot = std::filesystem::canonical(*mConfig.sourceDir);
@@ -95,12 +90,9 @@ bool EvaluationStage::execute() {
     auto state = result.getMutationState();
     auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
     std::string token = m.getToken().empty() ? "DELETE" : fmt::format("\xe2\x86\x92 {}", m.getToken());
-    std::string timing;
-    if (mConfig.verbose && *mConfig.verbose) {
-      timing = fmt::format("  [build {}, test {}]",
-                           Timestamper::format(detail.buildSecs),
-                           Timestamper::format(detail.testSecs));
-    }
+    std::string timing = fmt::format("  [build {}, test {}]",
+                                      Timestamper::format(detail.buildSecs),
+                                      Timestamper::format(detail.testSecs));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),
                  totalMutants, stateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
                  m.getFirst().line, token, timing);
@@ -115,6 +107,11 @@ bool EvaluationStage::execute() {
         summary += fmt::format(" (+{} more)", tests.size() - kMaxDisplayedTests);
       }
       Console::out("          \xe2\x86\x90 {}", summary);
+    }
+    if (state == MutationState::BUILD_FAILURE) {
+      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantBuildLog(id).string());
+    } else if (state == MutationState::RUNTIME_ERROR || state == MutationState::TIMEOUT) {
+      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantTestLog(id).string());
     }
 
     mWorkspace->clearLock(id);
@@ -135,7 +132,8 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
   repo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
-  Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(), *mConfig.silent);
+  Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(),
+                    !isVerbose());
   mBuild.execute();
   const double buildSecs = buildTimer.toDouble();
 
@@ -144,7 +142,7 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
   if (mBuild.isSuccessfulExit()) {
     fs::remove_all(*mConfig.testResultDir);
     Subprocess mTest(*mConfig.testCmd, timeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
-                     *mConfig.silent);
+                     !isVerbose());
     Timestamper testTimer;
     mTest.execute();
     testSecs = testTimer.toDouble();

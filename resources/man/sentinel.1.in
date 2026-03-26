@@ -20,18 +20,14 @@ Display the help menu.
 Print the program version and exit.
 .TP
 \fB\-\-verbose\fR
-Enable verbose logging to stderr.
+Show build/test subprocess output on the terminal and enable verbose logging to stderr.
+By default, subprocess output is suppressed (still written to workspace log files).
 .TP
 \fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
 Directory for all run artifacts. Default: \fB./.sentinel\fR
 .TP
 \fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
 Directory to write HTML/XML reports.
-.TP
-\fB\-\-silent\fR
-Suppress build/test log output to the terminal.
-The status line still shows overall progress. Useful for keeping the terminal clean
-during long runs. Build and test output is still written to the workspace log files.
 .TP
 \fB\-f\fR, \fB\-\-force\fR
 Skip all confirmation prompts and start fresh, overwriting any previous state.

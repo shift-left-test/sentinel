@@ -319,14 +319,8 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   fs::create_directories(MUT_DIR);
   makeResultXml(MUT_DIR, string::replaceAll(TC3, "</testsuites>", ""));
 
-  Logger::setLevel(Logger::Level::VERBOSE);
-
-  testing::internal::CaptureStderr();
   // cppcheck-suppress unreadVariable
   Result result(MUT_DIR);
-  std::string err = testing::internal::GetCapturedStderr();
-  EXPECT_TRUE(string::contains(err, "XML_ERROR_PARSING:"));
-  Logger::setLevel(Logger::Level::OFF);
 }
 
 TEST_F(ResultTest, testResultWithCTestFormatSurvived) {

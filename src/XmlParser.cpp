@@ -3,13 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
-#include "sentinel/Logger.hpp"
 #include "sentinel/XmlParser.hpp"
 
 namespace sentinel {
@@ -45,11 +43,7 @@ void XmlParser::collect(std::vector<std::string>* passed, std::vector<std::strin
 
 void XmlParser::process(const std::string& path, std::vector<std::string>* passed, std::vector<std::string>* failed) {
   auto document = std::make_shared<tinyxml2::XMLDocument>();
-  auto errcode = document->LoadFile(path.c_str());
-  if (errcode != 0) {
-    Logger::verbose("{}: {}", tinyxml2::XMLDocument::ErrorIDToName(errcode), path);
-  }
-
+  document->LoadFile(path.c_str());
   reset();
   if (parse(document)) {
     collect(passed, failed);

@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <cmath>
@@ -87,21 +88,30 @@ StatusLine::Phase OriginalTestStage::getPhase() const {
 bool OriginalTestStage::execute() {
   Logger::info("Running original test...");
   fs::path testLog = mWorkspace->getOriginalTestLog();
+  Logger::verbose("Test command: {}", *mConfig.testCmd);
+  Logger::verbose("Test log: {}", testLog);
+  Logger::verbose("Test result dir: {} (ext: {})",
+                  mConfig.testResultDir->string(),
+                  fmt::join(*mConfig.testResultExts, ", "));
 
+  const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
   std::size_t computedTimeLimit = 0;
   if (*mConfig.timeout != "auto") {
     computedTimeLimit = std::stoul(*mConfig.timeout);
+    Logger::info("Timeout: {}s, kill-after: {}s", computedTimeLimit, killAfterSecs);
   }
 
-  Timestamper ts;
-  Subprocess testProc(*mConfig.testCmd, computedTimeLimit, std::stoul(*mConfig.killAfter), testLog.string(),
-                      *mConfig.silent);
-  ts.reset();
+  Timestamper testTimer;
+  Subprocess testProc(*mConfig.testCmd, computedTimeLimit, killAfterSecs, testLog.string(),
+                      !isVerbose());
+  testTimer.reset();
   testProc.execute();
+  const double testElapsed = testTimer.toDouble();
 
   if (*mConfig.timeout == "auto") {
-    computedTimeLimit = static_cast<std::size_t>(std::ceil(ts.toDouble() * 2.0));
+    computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * 2.0));
     if (computedTimeLimit < 1) computedTimeLimit = 1;
+    Logger::info("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;
     mWorkspace->saveStatus(status);
@@ -114,6 +124,7 @@ bool OriginalTestStage::execute() {
                                          mConfig.testResultDir->string(), testLog.string()));
   }
 
+  Logger::info("Original test completed ({})", Timestamper::format(testElapsed));
   mWorkspace->saveConfig(buildWorkspaceYaml(mConfig));
   return true;
 }

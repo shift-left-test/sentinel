@@ -224,8 +224,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--silent` | Suppress build/test log output; status line still shows progress | |
-| `--verbose` | Enable verbose logging to stderr | |
+| `--verbose` | Show build/test subprocess output and enable verbose logging to stderr | |
 | `-f, --force` | Skip all prompts and start fresh, overwriting any previous state | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |

@@ -5,7 +5,7 @@
 
 #include <memory>
 #include <utility>
-#include "sentinel/Console.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/stages/DryRunStage.hpp"
 
 namespace sentinel {
@@ -24,7 +24,7 @@ StatusLine::Phase DryRunStage::getPhase() const {
 
 bool DryRunStage::execute() {
   mStatusLine->setTotalMutants(mWorkspace->loadMutants().size());
-  Console::out("Evaluation skipped (dry run).");
+  Logger::info("Evaluation skipped (dry run).");
   return false;
 }
 
