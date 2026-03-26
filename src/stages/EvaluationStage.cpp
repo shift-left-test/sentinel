@@ -109,9 +109,9 @@ bool EvaluationStage::execute() {
       Console::out("          \xe2\x86\x90 {}", summary);
     }
     if (state == MutationState::BUILD_FAILURE) {
-      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantBuildLog(id).string());
+      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantBuildLog(id));
     } else if (state == MutationState::RUNTIME_ERROR || state == MutationState::TIMEOUT) {
-      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantTestLog(id).string());
+      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantTestLog(id));
     }
 
     mWorkspace->clearLock(id);

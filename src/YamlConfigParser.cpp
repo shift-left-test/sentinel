@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
@@ -11,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "sentinel/YamlConfigParser.hpp"
+#include "sentinel/util/formatter.hpp"
 
 namespace sentinel {
 
@@ -33,11 +33,11 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
   try {
     root = YAML::LoadFile(path.string());
   } catch (const YAML::Exception& e) {
-    throw std::runtime_error(fmt::format("Failed to parse config file '{}': {}", path.string(), e.what()));
+    throw std::runtime_error(fmt::format("Failed to parse config file '{}': {}", path, e.what()));
   }
 
   if (!root.IsMap()) {
-    throw std::runtime_error(fmt::format("Config file '{}': expected a YAML mapping at root", path.string()));
+    throw std::runtime_error(fmt::format("Config file '{}': expected a YAML mapping at root", path));
   }
 
   static constexpr int kSupportedVersion = 1;
@@ -45,7 +45,7 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
     throw std::runtime_error(
         fmt::format("Config file '{}': missing required field 'version'. "
                     "Add 'version: {}' to the top of your config file.",
-                    path.string(), kSupportedVersion));
+                    path, kSupportedVersion));
   }
   int version = 0;
   try {
@@ -54,11 +54,11 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
     throw std::runtime_error(
         fmt::format("Config file '{}': 'version' must be an integer. "
                     "Add 'version: {}' to the top of your config file.",
-                    path.string(), kSupportedVersion));
+                    path, kSupportedVersion));
   }
   if (version != kSupportedVersion) {
     throw std::runtime_error(fmt::format("Config file '{}': unsupported version {}. This sentinel supports version {}.",
-                                         path.string(), version, kSupportedVersion));
+                                         path, version, kSupportedVersion));
   }
 
   Config cfg;
@@ -131,7 +131,7 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
       cfg.partition = root["partition"].as<std::string>();
     }
   } catch (const YAML::Exception& e) {
-    throw std::runtime_error(fmt::format("Config file '{}': {}", path.string(), e.what()));
+    throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }
 
   return cfg;

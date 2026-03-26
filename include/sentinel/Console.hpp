@@ -7,22 +7,11 @@
 #define INCLUDE_SENTINEL_CONSOLE_HPP_
 
 #include <fmt/core.h>
-#include <fmt/format.h>
 #include <unistd.h>
-#include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
 #include <utility>
-
-/// @cond INTERNAL
-template <>
-struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
-  template <typename FormatContext>
-  auto format(const std::filesystem::path& p, FormatContext& ctx) {  // NOLINT
-    return fmt::formatter<std::string>::format(p.string(), ctx);
-  }
-};
-/// @endcond
+#include "sentinel/util/formatter.hpp"
 
 namespace sentinel::Console {
 

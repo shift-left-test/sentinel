@@ -111,7 +111,7 @@ static const char* const kYamlTemplate =
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);
   if (!out) {
-    throw std::runtime_error(fmt::format("Failed to create '{}'", path.string()));
+    throw std::runtime_error(fmt::format("Failed to create '{}'", path));
   }
   out << kYamlTemplate;
   Console::out("Created '{}'", path);

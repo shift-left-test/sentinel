@@ -6,12 +6,12 @@
 #ifndef INCLUDE_SENTINEL_UTIL_IO_HPP_
 #define INCLUDE_SENTINEL_UTIL_IO_HPP_
 
-#include <fmt/core.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/formatter.hpp"
 
 namespace sentinel::io {
 
@@ -24,7 +24,7 @@ namespace sentinel::io {
 inline void ensureDirectoryExists(const std::filesystem::path& dirPath) {
   if (std::filesystem::exists(dirPath)) {
     if (!std::filesystem::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath.string()));
+      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath));
     }
   } else {
     std::filesystem::create_directories(dirPath);

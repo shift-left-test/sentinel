@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <set>
 #include <string>
@@ -11,6 +10,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/util/formatter.hpp"
 
 namespace sentinel {
 
@@ -73,7 +73,7 @@ MutationSummary& MutationSummary::operator=(MutationSummary other) {
 
 void MutationSummary::aggregate() {
   if (!fs::is_directory(sourcePath)) {
-    throw InvalidArgumentException(fmt::format("source path does not exist: {}", sourcePath.string()));
+    throw InvalidArgumentException(fmt::format("source path does not exist: {}", sourcePath));
   }
 
   for (const MutationResult& mr : results) {

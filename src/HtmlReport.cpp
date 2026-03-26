@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <map>
@@ -20,6 +19,7 @@
 #include "sentinel/docGenerator/SrcHtmlGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
+#include "sentinel/util/formatter.hpp"
 #include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -115,7 +115,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
                                 const std::filesystem::path& outputDir) {
   auto absSrcPath = mSummary.sourcePath / srcPath;
   if (!fs::exists(absSrcPath)) {
-    throw InvalidArgumentException(fmt::format("Source doesn't exist: {0}", absSrcPath.string()));
+    throw InvalidArgumentException(fmt::format("Source doesn't exist: {0}", absSrcPath));
   }
 
   std::string srcName = absSrcPath.filename().string();
