@@ -19,6 +19,7 @@
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/util/io.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -87,7 +88,16 @@ bool EvaluationStage::execute() {
                  totalMutants, stateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
                  m.getFirst().line, token);
     if (!result.getKillingTest().empty()) {
-      Console::out("        killed by: {}", result.getKillingTest());
+      static constexpr std::size_t kMaxDisplayedTests = 2;
+      auto tests = string::split(result.getKillingTest(), ", ");
+      std::string summary = tests[0];
+      for (std::size_t i = 1; i < std::min(tests.size(), kMaxDisplayedTests); ++i) {
+        summary += ", " + tests[i];
+      }
+      if (tests.size() > kMaxDisplayedTests) {
+        summary += fmt::format(" (+{} more)", tests.size() - kMaxDisplayedTests);
+      }
+      Console::out("          \xe2\x86\x90 {}", summary);
     }
 
     mWorkspace->clearLock(id);
