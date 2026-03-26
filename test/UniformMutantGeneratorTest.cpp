@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <filesystem>  // NOLINT
+#include <numeric>
 #include <string>
 #include <vector>
 #include "helper/SampleFileGeneratorForTest.hpp"
@@ -179,6 +181,29 @@ TEST_F(UniformMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates
   // limit=0은 limit=큰수와 동일한 결과여야 함
   EXPECT_EQ(unlimited.size(), limited.size());
   EXPECT_GT(unlimited.size(), 0u);
+}
+
+TEST_F(UniformMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
+  namespace fs = std::filesystem;
+  UniformMutantGenerator generator{SAMPLE1_DIR};
+  generator.generate(mSourceLines, 100, kSeed);
+
+  const auto& linesByPath = generator.getLinesByPath();
+  EXPECT_FALSE(linesByPath.empty());
+
+  // Sum of per-file lines must equal total candidate count
+  std::size_t totalLines = 0;
+  for (const auto& [path, count] : linesByPath) {
+    EXPECT_GT(count, 0u);
+    totalLines += count;
+  }
+  EXPECT_EQ(totalLines, generator.getCandidateCount());
+
+  // Both sample files should be present
+  auto canon1 = fs::canonical(SAMPLE1_PATH);
+  auto canon1b = fs::canonical(SAMPLE1B_PATH);
+  EXPECT_NE(linesByPath.find(canon1), linesByPath.end());
+  EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
 }
 
 }  // namespace sentinel

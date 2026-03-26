@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_MUTANTGENERATOR_HPP_
 
 #include <filesystem>  // NOLINT
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -63,6 +64,15 @@ class MutantGenerator {
     return mCandidateCount;
   }
 
+  /**
+   * @brief Return the number of mutable lines per file from the last generate() call.
+   *
+   * @return map of canonical file path to mutable line count
+   */
+  const std::map<std::filesystem::path, std::size_t>& getLinesByPath() const {
+    return mLinesByPath;
+  }
+
  protected:
   /**
    * @brief list of operator names to use (empty means all operators)
@@ -73,6 +83,11 @@ class MutantGenerator {
    * @brief total candidates found before limit was applied; set by each generate() implementation
    */
   std::size_t mCandidateCount = 0;
+
+  /**
+   * @brief mutable line count per file; set by each generate() implementation
+   */
+  std::map<std::filesystem::path, std::size_t> mLinesByPath;
 };
 
 }  // namespace sentinel

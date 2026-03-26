@@ -16,7 +16,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static constexpr std::size_t kReportWidth = 76;
+static constexpr std::size_t kReportWidth = 80;
 
 Report::Report(const MutationSummary& summary) :
     mSummary(summary) {
@@ -26,11 +26,13 @@ void Report::printSummary() const {
   const std::string thick = string::repeatUtf8("\xe2\x94\x81", kReportWidth);   // ━
   const std::string thin = string::repeatUtf8("\xe2\x94\x80", kReportWidth);    // ─
 
-  static constexpr std::size_t flen = 40;
   static constexpr std::size_t klen = 8;
   static constexpr std::size_t slen = 10;
   static constexpr std::size_t mlen = 8;
   static constexpr std::size_t clen = 8;
+  static constexpr std::size_t flen = kReportWidth - klen - slen - mlen - clen - 2;
+  static constexpr std::size_t kMinGap = 6;
+  static constexpr std::size_t maxFileLen = kReportWidth - klen - slen - mlen - clen - kMinGap - 2;
   std::string rowFmt = "  {0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}{8:>{9}}";
 
   // Header
@@ -47,15 +49,12 @@ void Report::printSummary() const {
       curScore = (100.0 * static_cast<double>(stats.detected)) / static_cast<double>(stats.total);
     }
     std::string filePath = path.string();
-    int overflow = static_cast<int>(filePath.size()) - static_cast<int>(flen);
-    std::string skipStr;
-    if (overflow > 1) {
-      filePath = filePath.substr(overflow + 4);
-      skipStr = "... ";
+    if (filePath.size() > maxFileLen) {
+      filePath = "..." + filePath.substr(filePath.size() - maxFileLen + 3);
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
     std::size_t survived = stats.total - stats.detected;
-    Console::out(rowFmt, skipStr + filePath, flen, stats.detected, klen, survived, slen,
+    Console::out(rowFmt, filePath, flen, stats.detected, klen, survived, slen,
                  stats.total, mlen, scoreStr, clen);
   }
 

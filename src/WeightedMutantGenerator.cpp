@@ -148,6 +148,7 @@ Mutants WeightedMutantGenerator::generate(const SourceLines& sourceLines, std::s
     }
 
     candidateLineCount++;
+    mLinesByPath[canonPath]++;
 
     // Limit reached: keep counting candidates but skip selection.
     if (maxMutants > 0 && temp_storage.size() == maxMutants) {

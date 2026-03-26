@@ -123,6 +123,7 @@ Mutants UniformMutantGenerator::generate(const SourceLines& sourceLines, std::si
     }
 
     candidateLineCount++;
+    mLinesByPath[canonPath]++;
 
     // Limit reached: keep counting candidates but skip selection.
     if (maxMutants > 0 && temp_storage.size() == maxMutants) {

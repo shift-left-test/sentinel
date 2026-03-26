@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
@@ -142,6 +143,23 @@ TEST_F(RandomMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates)
 
   EXPECT_EQ(unlimited.size(), large.size());
   EXPECT_GT(unlimited.size(), 0u);
+}
+
+TEST_F(RandomMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
+  namespace fs = std::filesystem;
+  RandomMutantGenerator generator{SAMPLE1_DIR};
+  generator.generate(mSourceLines, 100, kSeed);
+
+  const auto& linesByPath = generator.getLinesByPath();
+  EXPECT_FALSE(linesByPath.empty());
+
+  for (const auto& [path, count] : linesByPath) {
+    EXPECT_GT(count, 0u);
+  }
+
+  // Only one file in this test fixture
+  auto canon1 = fs::canonical(SAMPLE1_PATH);
+  EXPECT_NE(linesByPath.find(canon1), linesByPath.end());
 }
 
 }  // namespace sentinel

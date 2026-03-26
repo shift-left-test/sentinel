@@ -113,6 +113,7 @@ Mutants RandomMutantGenerator::generate(const SourceLines& sourceLines, std::siz
     if (lineCandidates.empty()) {
       continue;
     }
+    mLinesByPath[canonPath]++;
     std::shuffle(lineCandidates.begin(), lineCandidates.end(), rng);
     for (const auto* candidate : lineCandidates) {
       if (selectedSet.insert(*candidate).second) {

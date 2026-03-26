@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "helper/SampleFileGeneratorForTest.hpp"
@@ -168,6 +169,29 @@ TEST_F(WeightedMutantGeneratorTest, testRandomWithSameSeedWorks) {
   ASSERT_EQ(mutants1.size(), 3);
   ASSERT_EQ(mutants2.size(), 3);
   EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
+}
+
+TEST_F(WeightedMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
+  namespace fs = std::filesystem;
+  WeightedMutantGenerator generator{SAMPLE1_DIR};
+  generator.generate(mSourceLines, 100, kSeed);
+
+  const auto& linesByPath = generator.getLinesByPath();
+  EXPECT_FALSE(linesByPath.empty());
+
+  // Sum of per-file lines must equal total candidate count
+  std::size_t totalLines = 0;
+  for (const auto& [path, count] : linesByPath) {
+    EXPECT_GT(count, 0u);
+    totalLines += count;
+  }
+  EXPECT_EQ(totalLines, generator.getCandidateCount());
+
+  // Both sample files should be present
+  auto canon1 = fs::canonical(SAMPLE1_PATH);
+  auto canon1b = fs::canonical(SAMPLE1B_PATH);
+  EXPECT_NE(linesByPath.find(canon1), linesByPath.end());
+  EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
 }
 
 }  // namespace sentinel

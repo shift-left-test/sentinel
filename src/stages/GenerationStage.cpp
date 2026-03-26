@@ -28,19 +28,34 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static constexpr std::size_t kSummaryWidth = 76;
+static constexpr std::size_t kSummaryWidth = 80;
+static constexpr std::size_t kMutantsCol = 13;
+static constexpr std::size_t kLinesCol = 9;
+static constexpr std::size_t kMinGap = 6;
+
+static const std::map<std::string, std::string> kOperatorNames = {
+    {"AOR", "Arithmetic Operator Replacement"},
+    {"BOR", "Bitwise Operator Replacement"},
+    {"LCR", "Logical Connector Replacement"},
+    {"ROR", "Relational Operator Replacement"},
+    {"SDL", "Statement Deletion"},
+    {"SOR", "Shift Operator Replacement"},
+    {"UOI", "Unary Operator Insertion"},
+};
 
 
 static void printGenerationSummary(const Mutants& mutants, std::size_t candidateCount,
+                                   const std::map<fs::path, std::size_t>& linesByPath,
                                    const fs::path& sourceDir, const std::string& generatorStr,
-                                   unsigned seed, const std::string& scope,
+                                   unsigned seed, std::size_t limit, const std::string& scope,
                                    const std::string& partition) {
   const std::string thick = string::repeatUtf8("\xe2\x94\x81", kSummaryWidth);   // ━
   const std::string thin = string::repeatUtf8("\xe2\x94\x80", kSummaryWidth);    // ─
 
-  std::size_t flen = kSummaryWidth - 12;
-  std::size_t mlen = 10;
-  std::string rowFmt = "  {0:<{1}}{2:>{3}}";
+  std::size_t flen = kSummaryWidth - kMutantsCol - kLinesCol - 2;
+  std::size_t maxFileLen = kSummaryWidth - kMutantsCol - kMinGap - 2;
+  std::string rowFmt2 = "  {0:<{1}}{2:>{3}}{4:>{5}}";
+  std::string rowFmt1 = "  {0:<{1}}{2:>{3}}";
 
   // Count mutants per file and per operator
   std::map<fs::path, std::size_t> groupByPath;
@@ -52,41 +67,57 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
     groupByOperator[m.getOperator()]++;
   }
 
+  // Build lines-by-relative-path map
+  std::map<fs::path, std::size_t> linesByRelPath;
+  for (const auto& [absPath, count] : linesByPath) {
+    linesByRelPath[absPath.lexically_relative(root)] = count;
+  }
+
   // Header
   Console::out("{}", thick);
   Console::out("{:^{}}", "Mutant Generation Summary", kSummaryWidth);
   Console::out("{}", thick);
 
   // Summary
-  Console::out("  Selected:   {} of {} candidates from {} file{} (scope: {})",
-               mutants.size(), candidateCount, groupByPath.size(),
-               groupByPath.size() == 1 ? "" : "s", scope);
+  Console::out("  Scope:      {} ({} file{}, {} lines)",
+               scope, groupByPath.size(),
+               groupByPath.size() == 1 ? "" : "s", candidateCount);
   Console::out("  Generator:  {} (seed: {})", generatorStr, seed);
-  if (!partition.empty()) {
-    Console::out("  Partition:  {}", partition);
+  std::string mutantsLine = fmt::format("{}", mutants.size());
+  if (limit > 0) {
+    mutantsLine += fmt::format(" of {} limit", limit);
   }
+  if (!partition.empty()) {
+    mutantsLine += fmt::format(" (partition: {})", partition);
+  }
+  Console::out("  Mutants:    {}", mutantsLine);
 
   // File table
   Console::out("{}", thin);
-  Console::out(rowFmt, "File", flen, "Mutants", mlen);
+  Console::out(rowFmt2, "File", flen, "Mutants", kMutantsCol, "Lines", kLinesCol);
   Console::out("{}", thin);
   for (const auto& [path, count] : groupByPath) {
     std::string filePath = path.string();
-    int overflow = static_cast<int>(filePath.size()) - static_cast<int>(flen);
-    std::string skipStr;
-    if (overflow > 1) {
-      filePath = filePath.substr(overflow + 4);
-      skipStr = "... ";
+    if (filePath.size() > maxFileLen) {
+      filePath = "..." + filePath.substr(filePath.size() - maxFileLen + 3);
     }
-    Console::out(rowFmt, skipStr + filePath, flen, count, mlen);
+    std::size_t lines = 0;
+    auto it = linesByRelPath.find(path);
+    if (it != linesByRelPath.end()) {
+      lines = it->second;
+    }
+    Console::out(rowFmt2, filePath, flen, count, kMutantsCol, lines, kLinesCol);
   }
 
   // Operator table
   Console::out("{}", thin);
-  Console::out(rowFmt, "Operator", flen, "Mutants", mlen);
+  Console::out("  Operator");
   Console::out("{}", thin);
   for (const auto& [op, count] : groupByOperator) {
-    Console::out(rowFmt, op, flen, count, mlen);
+    auto nameIt = kOperatorNames.find(op);
+    std::string label = nameIt != kOperatorNames.end()
+        ? fmt::format("{} ({})", op, nameIt->second) : op;
+    Console::out(rowFmt1, label, flen, count, kMutantsCol);
   }
 
   // Footer
@@ -147,8 +178,9 @@ bool GenerationStage::execute() {
 
   // Print summary before partition (shows full generation results)
   std::string partition = (mConfig.partition && !mConfig.partition->empty()) ? *mConfig.partition : "";
-  printGenerationSummary(mutants, candidateCount, *mConfig.sourceDir, *mConfig.generator, seed,
-                         *mConfig.scope, partition);
+  auto linesByPath = generator->getLinesByPath();
+  printGenerationSummary(mutants, candidateCount, linesByPath, *mConfig.sourceDir, *mConfig.generator, seed,
+                         *mConfig.limit, *mConfig.scope, partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;
