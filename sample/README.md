@@ -86,7 +86,79 @@ open sentinel_output/index.html        # macOS
 
 ## What to Expect
 
-- **Killed mutant** — the test suite caught the fault. Good.
-- **Survived mutant** — the test suite missed it. This is a gap in test coverage.
+Sentinel produces output at three stages. Here is what you will see when running it on this sample project.
 
-After the run, try adding a test case that kills a survived mutant, then re-run sentinel to confirm the score improves.
+### 1. Mutant Population Report
+
+After generation, Sentinel shows what was created:
+
+```
+==============================================================
+               Mutant Population Report
+==============================================================
+File                                            Mutants  Lines
+--------------------------------------------------------------
+src/Calculator.cpp                                   12     85
+src/Stack.cpp                                         8     52
+src/Tokenizer.cpp                                    10     63
+--------------------------------------------------------------
+TOTAL                                                30    200
+==============================================================
+Generator : uniform  |  Seed: 1234567890
+Analyzed  : 200 source lines across 3 files
+Selected  : 30 out of 200 candidates
+==============================================================
+```
+
+This tells you how many mutants were generated per file, which generator strategy was used, and the random seed (use `--seed` to reproduce the same mutant set).
+
+### 2. Per-Mutant Evaluation
+
+Each mutant is evaluated one by one, with results printed in real time:
+
+```
+Evaluating 30 mutants...
+  [  1/30] ✗ KILLED        AOR  src/Calculator.cpp:42 (+)  [build 0.5s, test 0.8s]
+           ← CalculatorTest.AddTwoNumbers
+  [  2/30] ✓ SURVIVED      ROR  src/Stack.cpp:18 (<)  [build 0.4s, test 0.7s]
+  [  3/30] ⚠ BUILD_FAILURE SDL  src/Tokenizer.cpp:31 (DELETE)  [build 0.2s]
+           ↪ .sentinel/mutants/3/build.log
+```
+
+- **✗ KILLED** — a test caught the mutation (the `←` line shows which test)
+- **✓ SURVIVED** — no test caught it; this is a test coverage gap
+- **⚠ BUILD_FAILURE / TIMEOUT / RUNTIME_ERROR** — skipped from the score (the `↪` line points to the log file)
+
+### 3. Mutation Coverage Report
+
+After all evaluations, the final summary:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         Mutation Coverage Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File                                              Killed  Survived  Total  Score
+──────────────────────────────────────────────────────────────────────────────────
+  src/Calculator.cpp                                     8         2     10  80.0%
+  src/Stack.cpp                                          5         1      6  83.3%
+  src/Tokenizer.cpp                                      9         3     12  75.0%
+──────────────────────────────────────────────────────────────────────────────────
+  TOTAL                                                 22         6     28  78.6%
+──────────────────────────────────────────────────────────────────────────────────
+  Skipped: 2 build failures
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+The **mutation score** (Killed / Total) tells you how effective your tests are at detecting faults. Only Killed and Survived mutants count; build failures, timeouts, and runtime errors are listed under "Skipped".
+
+| State | Icon | Meaning |
+|-------|------|---------|
+| **Killed** | ✗ | A test failed on the mutant — desired outcome |
+| **Survived** | ✓ | All tests passed despite the mutation — test gap |
+| **Build Failure** | ⚠ | Mutant did not compile — excluded from score |
+| **Timeout** | ⚠ | Tests exceeded the time limit — excluded from score |
+| **Runtime Error** | ⚠ | Tests crashed or exited abnormally — excluded from score |
+
+### Improving the Score
+
+Open the HTML report (`sentinel_output/index.html`) to see exactly which mutations survived. Each survived mutant shows the file, line, and the change that was made. Use this to write a targeted test case, then re-run Sentinel to confirm the score improves.

@@ -245,6 +245,59 @@ Generate a config file template:
 .nf
 sentinel --init
 .fi
+.SH UNDERSTANDING OUTPUT
+sentinel produces output at three stages: generation, evaluation, and the final report.
+.SS Mutant Population Report
+After mutant generation, a summary table is printed showing the number of mutants
+per file and per operator, the generator strategy, random seed, and how many
+candidates were analyzed and selected.
+The seed value can be reused with \fB\-\-seed\fR to reproduce the same mutant set.
+.SS Per-Mutant Evaluation Results
+During evaluation, each mutant result is printed as it completes.
+Each line shows: a progress counter, a result icon
+(\fB\[char"2717]\fR killed, \fB\[char"2713]\fR survived, \fB\[char"26A0]\fR skipped),
+the mutation state, operator name, file:line, the original token, and build/test timing.
+.PP
+For killed mutants, the names of the killing tests are shown on the next line
+(prefixed with \fB\[char"2190]\fR).
+For build failures, timeouts, and runtime errors, the path to the relevant log file
+is shown (prefixed with \fB\[char"21AA]\fR).
+.SS Mutation Coverage Report
+After all mutants are evaluated, sentinel prints a summary table to stdout showing
+per-file and total statistics: \fBKilled\fR, \fBSurvived\fR, \fBTotal\fR, and \fBScore\fR.
+Skipped mutants (build failures, timeouts, runtime errors) are listed separately.
+A final one-line summary is also written to stderr.
+.SS Mutation States
+Each mutant evaluation results in one of five states:
+.TP
+\fBKilled\fR
+A test failed on the mutant \(em the test suite detected the fault. This is the desired outcome.
+.TP
+\fBSurvived\fR
+All tests passed despite the mutation \(em the fault went undetected.
+This indicates a gap in test coverage.
+.TP
+\fBBuild Failure\fR
+The mutant caused a compilation error. Excluded from the score.
+.TP
+\fBTimeout\fR
+Tests exceeded the time limit. May indicate an infinite loop caused by the mutation.
+Excluded from the score.
+.TP
+\fBRuntime Error\fR
+Tests crashed or exited abnormally. Excluded from the score.
+.SS Mutation Score
+The mutation score is calculated as:
+.IP
+Score = Killed / (Killed + Survived) \(mu 100
+.PP
+Build failures, timeouts, and runtime errors are excluded and shown as "Skipped" in
+the report. When no evaluable mutants exist, the score is displayed as \fB\-%\fR.
+.SS Status Line
+When stdout is a TTY, a live status line is displayed during evaluation.
+The abbreviations are: \fBK\fR = Killed, \fBS\fR = Survived, \fBB\fR = Build Failure,
+\fBT\fR = Timeout, \fBR\fR = Runtime Error.
+Use \fB\-\-no\-statusline\fR to disable it.
 .SH EXIT CODES
 .TP
 .B 0

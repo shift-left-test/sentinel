@@ -173,18 +173,24 @@ sentinel \
 
 ### Sample Output
 
-After mutant generation, Sentinel prints a **Mutant Population Report** summarising what was generated:
+### Understanding the Output
+
+Sentinel produces output at three stages: generation, evaluation, and the final report.
+
+#### 1. Mutant Population Report (Generation)
+
+After mutant generation, Sentinel prints a summary of what was generated:
 
 ```
 ==============================================================
                Mutant Population Report
 ==============================================================
-File                                                  Mutants
+File                                            Mutants  Lines
 --------------------------------------------------------------
-src/foo.cpp                                                45
-src/bar.cpp                                                30
+src/foo.cpp                                          45     180
+src/bar.cpp                                          30     140
 --------------------------------------------------------------
-TOTAL                                                      75
+TOTAL                                                75     320
 ==============================================================
 
 Operator                                              Mutants
@@ -200,17 +206,119 @@ Selected  : 75 out of 320 candidates
 ==============================================================
 ```
 
-After all mutants are evaluated, a **Mutation Coverage Report** is printed to stdout.
+| Field | Description |
+|-------|-------------|
+| **File / Mutants / Lines** | Per-file breakdown of generated mutants and analyzed source lines |
+| **Operator / Mutants** | Per-operator breakdown (AOR, LCR, ROR, etc.) |
+| **Generator** | Mutant selection strategy used (`uniform`, `random`, or `weighted`) |
+| **Seed** | Random seed — use this value with `--seed` to reproduce the same mutant set |
+| **Analyzed** | Total source lines scanned across all target files |
+| **Selected** | How many mutants were selected out of all possible candidates |
 
-### Terminal Status Line
+#### 2. Per-Mutant Evaluation Results
+
+During evaluation, each mutant result is printed as it completes:
+
+```
+Evaluating 75 mutants...
+  [  1/75] ✗ KILLED        AOR  src/foo.cpp:42 (+)  [build 0.8s, test 1.2s]
+           ← CalculatorTest.AddOverflow, CalculatorTest.AddNegative
+  [  2/75] ✓ SURVIVED      ROR  src/foo.cpp:58 (<)  [build 0.7s, test 1.1s]
+  [  3/75] ⚠ BUILD_FAILURE SDL  src/bar.cpp:15 (DELETE)  [build 0.3s]
+           ↪ .sentinel/mutants/3/build.log
+  [  4/75] ⚠ TIMEOUT       AOR  src/bar.cpp:27 (-)  [build 0.8s, test 10.0s]
+           ↪ .sentinel/mutants/4/test.log
+```
+
+Each line contains:
+
+| Part | Description |
+|------|-------------|
+| `[1/75]` | Progress counter (current / total) |
+| `✗` / `✓` / `⚠` | Result icon — ✗ killed, ✓ survived, ⚠ skipped (build failure, timeout, or runtime error) |
+| `KILLED` | Mutation state (see table below) |
+| `AOR` | Mutation operator that was applied |
+| `src/foo.cpp:42` | File and line number of the mutation |
+| `(+)` | The original token that was replaced (or `DELETE` for statement deletion) |
+| `[build ..., test ...]` | Time spent building and testing |
+| `←` | Killing test names (shown only for killed mutants; up to 2, with "+N more" if more exist) |
+| `↪` | Log file path (shown for build failures, timeouts, and runtime errors) |
+
+#### 3. Mutation Coverage Report (Final)
+
+After all mutants are evaluated, Sentinel prints the final summary to stdout:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         Mutation Coverage Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File                                              Killed  Survived  Total  Score
+──────────────────────────────────────────────────────────────────────────────────
+  src/foo.cpp                                           12         3     15  80.0%
+  src/bar.cpp                                            8         2     10  80.0%
+──────────────────────────────────────────────────────────────────────────────────
+  TOTAL                                                 20         5     25  80.0%
+──────────────────────────────────────────────────────────────────────────────────
+  Skipped: 2 build failures, 1 timeout
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+| Column | Description |
+|--------|-------------|
+| **Killed** | Mutants detected by the test suite (a test failed) |
+| **Survived** | Mutants *not* detected (all tests still passed) — indicates a gap in test coverage |
+| **Total** | Killed + Survived (excludes skipped mutants) |
+| **Score** | Killed / Total as a percentage |
+
+When **Total** is 0 for a file (all mutants were skipped), the score is displayed as `-%`.
+
+The **Skipped** line lists counts of build failures, timeouts, and runtime errors. It is omitted when there are no skipped mutants.
+
+A final one-line summary is always written to stderr:
+
+```
+Mutation testing complete – 25 mutants, score: 80.0% (threshold: 70.0% ✓)
+```
+
+#### Mutation States
+
+Every mutant evaluation results in one of five states:
+
+| State | Icon | Meaning | What to do |
+|-------|------|---------|------------|
+| **Killed** | ✗ | A test failed on the mutant — the test suite detected the fault. | Nothing; this is the desired outcome. |
+| **Survived** | ✓ | All tests passed despite the mutation — the fault went undetected. | Write a test that covers the mutated code path. |
+| **Build Failure** | ⚠ | The mutant caused a compilation error. | Usually harmless; the compiler caught the fault. Skipped from the score. |
+| **Timeout** | ⚠ | Tests took longer than the time limit. | May indicate an infinite loop caused by the mutation. Skipped from the score. |
+| **Runtime Error** | ⚠ | Tests crashed or produced an abnormal exit. | May indicate a null dereference, assertion failure, or segfault caused by the mutation. Skipped from the score. |
+
+#### Mutation Score
+
+The mutation score measures how well the test suite detects faults:
+
+```
+Mutation Score = Killed / (Killed + Survived) × 100
+```
+
+Build failures, timeouts, and runtime errors are **excluded** from the score (shown as "Skipped" in the report). Only mutants that compiled and ran to completion count toward the score.
+
+#### Terminal Status Line
 
 When stdout is a TTY, Sentinel displays a live status line at the bottom of the terminal:
 
 ```
- Phase:MUTANT     [42/150] | AOR  sample.cpp:10 | K:30 S:8 B:2 T:1 R:0 | Score:73.2% | Elapsed:00:42:17
+ Phase:EVALUATION [42/75] | AOR  src/foo.cpp:10 | K:30 S:8 B:2 T:1 R:0 | Score:78.9% | Elapsed:00:42:17
 ```
 
-It is suppressed automatically when output is piped or redirected. Use `--no-statusline` to disable it explicitly.
+| Abbreviation | State |
+|--------------|-------|
+| **K** | Killed |
+| **S** | Survived |
+| **B** | Build Failure |
+| **T** | Timeout |
+| **R** | Runtime Error |
+
+The status line is suppressed when output is piped or redirected. Use `--no-statusline` to disable it explicitly.
 
 ### Resume
 
