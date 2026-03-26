@@ -11,7 +11,6 @@
 #include "harness/git-harness/GitHarness.hpp"
 #include "helper/TestTempDir.hpp"
 #include "sentinel/GitRepository.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
@@ -71,28 +70,16 @@ TEST_F(GitRepositoryTest, testPatterns) {
   std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
-  Logger::setLevel(Logger::Level::VERBOSE);
-  testing::internal::CaptureStdout();
-  testing::internal::CaptureStderr();
   GitRepository gitRepo(mRepoName, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"}, {});
-  std::string captured = testing::internal::GetCapturedStderr();
-  testing::internal::GetCapturedStdout();
-  Logger::setLevel(Logger::Level::OFF);
-  EXPECT_TRUE(string::contains(captured, "patterns: file.txt, file?.txt, /tmp/, */test/*"));
+  EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
 }
 
 TEST_F(GitRepositoryTest, testExcludes) {
   std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
-  Logger::setLevel(Logger::Level::VERBOSE);
-  testing::internal::CaptureStdout();
-  testing::internal::CaptureStderr();
   GitRepository gitRepo(mRepoName, {}, {}, {"*.c", "file?.txt", "data/*.csv", "*/test/*", "*"});
-  std::string captured = testing::internal::GetCapturedStderr();
-  testing::internal::GetCapturedStdout();
-  Logger::setLevel(Logger::Level::OFF);
-  EXPECT_TRUE(string::contains(captured, "excludes: *.c, file?.txt, data/*.csv, */test/*, *"));
+  EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {

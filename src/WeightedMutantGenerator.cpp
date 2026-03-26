@@ -21,7 +21,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
@@ -67,7 +66,6 @@ Mutants WeightedMutantGenerator::generate(const SourceLines& sourceLines, std::s
   while (fileIt != targetLines.end()) {
     std::vector<std::future<FileResult>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      Logger::verbose("Checking for mutants in {}", fileIt->first);
       DepthMap localDm;
       for (const auto& sl : fileIt->second) {
         localDm[sl] = -1;

@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 #include "sentinel/HtmlReport.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/docGenerator/CssGenerator.hpp"
@@ -32,8 +31,6 @@ HtmlReport::HtmlReport(const MutationSummary& summary) : Report(summary) {
 }
 
 void HtmlReport::save(const std::filesystem::path& dirPath) {
-  Logger::info("Make HTML Report");
-
   io::ensureDirectoryExists(dirPath);
 
   std::ofstream ofs(dirPath / "style.css", std::ofstream::out);
@@ -112,7 +109,6 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
   std::ofstream ofs(outputDir / fileName, std::ofstream::out);
   ofs << contents;
   ofs.close();
-  Logger::info("Save to {}", outputDir / fileName);
 }
 
 void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, const std::filesystem::path& srcPath,
@@ -254,8 +250,6 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
   std::ofstream ofs(fileName.string(), std::ofstream::out);
   ofs << contents;
   ofs.close();
-
-  Logger::info("Save to {}", fileName);
 }
 
 }  // namespace sentinel

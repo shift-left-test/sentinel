@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Timestamper.hpp"
@@ -84,6 +85,7 @@ StatusLine::Phase OriginalTestStage::getPhase() const {
 }
 
 bool OriginalTestStage::execute() {
+  Logger::info("Running original test...");
   fs::path testLog = mWorkspace->getOriginalTestLog();
 
   std::size_t computedTimeLimit = 0;

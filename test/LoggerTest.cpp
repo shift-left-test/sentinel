@@ -56,7 +56,7 @@ TEST_F(LoggerTest, testVerboseWithDebugLevel) {
   Logger::setLevel(Logger::Level::VERBOSE);
   testing::internal::CaptureStderr();
   Logger::verbose("hello world");
-  EXPECT_STREQ("[VERBOSE] hello world\n", testing::internal::GetCapturedStderr().c_str());
+  EXPECT_STREQ("hello world\n", testing::internal::GetCapturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testLogsWithAllLevel) {
@@ -68,7 +68,7 @@ TEST_F(LoggerTest, testLogsWithAllLevel) {
   Logger::warn("W");
   Logger::error("E");
   EXPECT_STREQ("", testing::internal::GetCapturedStdout().c_str());
-  EXPECT_STREQ("[VERBOSE] D\n[INFO]  I\n[WARN]  W\n[ERROR] E\n",
+  EXPECT_STREQ("D\n[INFO]  I\n[WARN]  W\n[ERROR] E\n",
                testing::internal::GetCapturedStderr().c_str());
 }
 
@@ -89,7 +89,7 @@ TEST_F(LoggerTest, testSetLevelAffectsAllLogs) {
   testing::internal::CaptureStderr();
   Logger::verbose("1");
   Logger::verbose("2");
-  EXPECT_STREQ("[VERBOSE] 1\n[VERBOSE] 2\n", testing::internal::GetCapturedStderr().c_str());
+  EXPECT_STREQ("1\n2\n", testing::internal::GetCapturedStderr().c_str());
 }
 
 }  // namespace sentinel

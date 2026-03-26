@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include "sentinel/Logger.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/stages/OriginalBuildStage.hpp"
@@ -31,6 +32,7 @@ StatusLine::Phase OriginalBuildStage::getPhase() const {
 }
 
 bool OriginalBuildStage::execute() {
+  Logger::info("Running original build...");
   fs::path buildLog = mWorkspace->getOriginalBuildLog();
   Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), *mConfig.silent);
   buildProc.execute();

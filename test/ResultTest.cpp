@@ -55,15 +55,11 @@ class ResultTest : public ::testing::Test {
     }
 
     makeResultXml(MUT_DIR, XMLContents);
-    Logger::setLevel(Logger::Level::VERBOSE);
-    testing::internal::CaptureStderr();
     // cppcheck-suppress unreadVariable
     Result result(MUT_DIR);
-    std::string err = testing::internal::GetCapturedStderr();
-    EXPECT_TRUE(string::contains(err, "This file doesn't follow googletest result format"));
+    EXPECT_TRUE(result.checkPassedTCEmpty());
 
     fs::remove_all(MUT_DIR);
-    Logger::setLevel(Logger::Level::OFF);
   }
 
   int mXmlCounter = 0;

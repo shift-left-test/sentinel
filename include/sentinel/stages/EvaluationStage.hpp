@@ -16,6 +16,15 @@
 namespace sentinel {
 
 /**
+ * @brief Result of a single mutant evaluation, including timing.
+ */
+struct EvaluationDetail {
+  MutationResult result;  ///< Mutation evaluation result
+  double buildSecs;       ///< Build duration in seconds
+  double testSecs;        ///< Test duration in seconds
+};
+
+/**
  * @brief Evaluates all mutants, recording kill/survive/timeout/build-error results.
  *        Skips if already complete.
  */
@@ -45,10 +54,10 @@ class EvaluationStage : public Stage {
    * @param timeLimit      Test timeout in seconds (0 = no limit).
    * @param killAfterSecs  Seconds to wait before force-killing a timed-out process.
    * @param evaluator      Evaluator used to compare expected vs actual results.
-   * @return MutationResult for the evaluated mutant.
+   * @return EvaluationDetail containing the result and build/test durations.
    */
-  MutationResult evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
-                                Evaluator* evaluator);
+  EvaluationDetail evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
+                                  Evaluator* evaluator);
 };
 
 }  // namespace sentinel

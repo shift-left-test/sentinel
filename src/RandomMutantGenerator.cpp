@@ -17,7 +17,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include "sentinel/Logger.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/SourceLines.hpp"
@@ -60,7 +59,6 @@ Mutants RandomMutantGenerator::generate(const SourceLines& sourceLines, std::siz
   while (fileIt != targetLines.end()) {
     std::vector<std::future<Mutants>> futures;
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      Logger::verbose("Checking for mutants in {}", fileIt->first);
       futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
         Mutants localMutables;
         clang::tooling::ClangTool tool(*db, filename.string());

@@ -26,8 +26,7 @@ double Timestamper::toDouble() const {
   return std::chrono::duration<double>(now - mStartTime).count();
 }
 
-std::string Timestamper::toString(Format style) const {
-  auto secs = toDouble();
+std::string Timestamper::format(double secs, Format style) {
   int h = static_cast<int>(secs / 3600);
   int m = static_cast<int>(std::fmod(secs, 3600.0) / 60.0);
   double s = std::fmod(secs, 60.0);
@@ -41,6 +40,10 @@ std::string Timestamper::toString(Format style) const {
     return fmt::format("{:.0f}s", s);
   }
   return "Unknown format";
+}
+
+std::string Timestamper::toString(Format style) const {
+  return format(toDouble(), style);
 }
 
 }  // namespace sentinel

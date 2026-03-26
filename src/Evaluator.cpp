@@ -52,10 +52,6 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
     }
   }
 
-  if (!killingTC.empty()) {
-    Logger::verbose("killed by: {}", killingTC);
-  }
-
   return {mut, killingTC, errorTC, state};
 }
 

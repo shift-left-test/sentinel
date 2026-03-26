@@ -45,6 +45,26 @@ TEST_F(TimestamperTest, testToStringHumanReadableFormatReturnsNonEmpty) {
   EXPECT_FALSE(s.empty());
 }
 
+TEST_F(TimestamperTest, testFormatZeroSeconds) {
+  EXPECT_EQ("0s", Timestamper::format(0.0));
+}
+
+TEST_F(TimestamperTest, testFormatSecondsOnly) {
+  EXPECT_EQ("45s", Timestamper::format(45.3));
+}
+
+TEST_F(TimestamperTest, testFormatMinutesAndSeconds) {
+  EXPECT_EQ("2m 30s", Timestamper::format(150.0));
+}
+
+TEST_F(TimestamperTest, testFormatHoursAndMinutes) {
+  EXPECT_EQ("1h 1m", Timestamper::format(3661.0));
+}
+
+TEST_F(TimestamperTest, testFormatClockStyle) {
+  EXPECT_EQ("01:02:03", Timestamper::format(3723.0, Timestamper::Format::Clock));
+}
+
 TEST_F(TimestamperTest, testToStringFormatsDiffer) {
   Timestamper ts;
   std::this_thread::sleep_for(std::chrono::milliseconds(500));

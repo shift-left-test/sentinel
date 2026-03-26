@@ -50,7 +50,7 @@ class Logger {
   template <typename... Args>
   static void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
-      Console::err("[VERBOSE] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      Console::err("{}", fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 

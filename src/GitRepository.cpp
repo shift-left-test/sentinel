@@ -256,8 +256,6 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
   } catch (const fs::filesystem_error& e) {
     throw InvalidArgumentException(fmt::format("source_root option error: {}", e.what()));
   }
-  Logger::verbose("source root: {}", mSourceRoot);
-
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),
                    [](auto extension) -> std::string {
@@ -265,10 +263,7 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
                    });
   }
 
-  Logger::verbose("patterns: {}", string::join(", ", patterns));
   mPatterns = patterns;
-
-  Logger::verbose("excludes: {}", string::join(", ", excludes));
   mExcludes = excludes;
 }
 
@@ -309,7 +304,6 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
   {
     auto mm = std::mismatch(mSourceRoot.begin(), mSourceRoot.end(), canonicalPath.begin(), canonicalPath.end());
     if (mm.first != mSourceRoot.end()) {
-      Logger::verbose("skipped (outside source-dir): {}", canonicalPath);
       return false;
     }
   }

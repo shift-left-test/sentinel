@@ -7,7 +7,9 @@
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <utility>
+#include "sentinel/Console.hpp"
 #include "sentinel/HtmlReport.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -33,6 +35,7 @@ StatusLine::Phase ReportStage::getPhase() const {
 }
 
 bool ReportStage::execute() {
+  Logger::info("Generating report...");
   MutationResults results;
   for (const auto& [id, m] : mWorkspace->loadMutants()) {
     results.push_back(mWorkspace->getDoneResult(id));
@@ -44,6 +47,7 @@ bool ReportStage::execute() {
   if (mConfig.outputDir && !mConfig.outputDir->empty()) {
     xmlReport.save(*mConfig.outputDir);
     HtmlReport(summary).save(*mConfig.outputDir);
+    Console::out("  Reports saved to {}", *mConfig.outputDir);
   }
 
   // Compute mutation score and check threshold.

@@ -46,6 +46,15 @@ class Timestamper {
   double toDouble() const;
 
   /**
+   * @brief Format an arbitrary duration in seconds.
+   *
+   * @param secs duration in seconds
+   * @param style to format
+   * @return formatted string
+   */
+  static std::string format(double secs, Format style = Format::HumanReadable);
+
+  /**
    * @brief Get formatted elapsed time.
    *
    * @param style to format

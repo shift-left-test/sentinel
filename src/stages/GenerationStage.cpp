@@ -14,6 +14,7 @@
 #include <vector>
 #include "sentinel/Console.hpp"
 #include "sentinel/GitRepository.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -114,6 +115,7 @@ StatusLine::Phase GenerationStage::getPhase() const {
 }
 
 bool GenerationStage::execute() {
+  Logger::info("Generating mutants...");
   auto repo =
       std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions, *mConfig.patterns, *mConfig.excludes);
   repo->addSkipDir(mWorkspace->getRoot());
