@@ -25,6 +25,7 @@ build_test_program(
        DocGeneratorTest.cpp StageTest.cpp ConfigValidatorTest.cpp
        EvaluationStageTest.cpp SignalHandlerTest.cpp YamlConfigWriterTest.cpp
        FormatterTest.cpp
+       Utf8CharTest.cpp
 
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/test/include ${CMAKE_SOURCE_DIR}/test/harness
   LIBS sentinel-core git-harness ${LLVM_CLANG_LIBS} ${CMAKE_DL_LIBS}

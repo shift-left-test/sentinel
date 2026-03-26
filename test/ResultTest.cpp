@@ -11,6 +11,7 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"
 #include "sentinel/util/string.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 #include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
@@ -370,6 +371,23 @@ TEST_F(ResultTest, testResultWithWrongResultFmt) {
   makeAndTestWrongResultXml(TC4_QT, "testcase");
   makeAndTestWrongResultXml(TC4_QT, "result");
   makeAndTestWrongResultXml(TC4_QT, "name");
+}
+
+TEST_F(ResultTest, MutationStateIconReturnsCorrectIcons) {
+  auto killed = MutationStateIcon(MutationState::KILLED);
+  EXPECT_STREQ(killed.c_str(), Utf8Char::CrossMark.c_str());
+
+  auto survived = MutationStateIcon(MutationState::SURVIVED);
+  EXPECT_STREQ(survived.c_str(), Utf8Char::CheckMark.c_str());
+
+  auto buildFailure = MutationStateIcon(MutationState::BUILD_FAILURE);
+  EXPECT_STREQ(buildFailure.c_str(), Utf8Char::Warning.c_str());
+
+  auto runtimeError = MutationStateIcon(MutationState::RUNTIME_ERROR);
+  EXPECT_STREQ(runtimeError.c_str(), Utf8Char::Warning.c_str());
+
+  auto timeout = MutationStateIcon(MutationState::TIMEOUT);
+  EXPECT_STREQ(timeout.c_str(), Utf8Char::Warning.c_str());
 }
 
 }  // namespace sentinel

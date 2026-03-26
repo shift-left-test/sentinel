@@ -10,7 +10,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
-#include "sentinel/util/string.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 
 namespace sentinel {
 
@@ -23,8 +23,8 @@ Report::Report(const MutationSummary& summary) :
 }
 
 void Report::printSummary() const {
-  const std::string thick = string::repeatUtf8("\xe2\x94\x81", kReportWidth);   // ━
-  const std::string thin = string::repeatUtf8("\xe2\x94\x80", kReportWidth);    // ─
+  const std::string thick = Utf8Char::ThickLine * kReportWidth;
+  const std::string thin = Utf8Char::ThinLine * kReportWidth;
 
   static constexpr std::size_t klen = 8;
   static constexpr std::size_t slen = 10;

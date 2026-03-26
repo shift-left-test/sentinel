@@ -21,6 +21,7 @@
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -39,17 +40,6 @@ bool EvaluationStage::shouldSkip() const {
 
 StatusLine::Phase EvaluationStage::getPhase() const {
   return StatusLine::Phase::EVALUATION;
-}
-
-static const char* stateIcon(MutationState state) {
-  switch (state) {
-    case MutationState::KILLED:
-      return "\xe2\x9c\x97";       // ✗
-    case MutationState::SURVIVED:
-      return "\xe2\x9c\x93";       // ✓
-    default:
-      return "\xe2\x9a\xa0";       // ⚠
-  }
 }
 
 bool EvaluationStage::execute() {
@@ -89,12 +79,12 @@ bool EvaluationStage::execute() {
 
     auto state = result.getMutationState();
     auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
-    std::string token = m.getToken().empty() ? "DELETE" : fmt::format("\xe2\x86\x92 {}", m.getToken());
+    std::string token = m.getToken().empty() ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
     std::string timing = fmt::format("  [build {}, test {}]",
                                       Timestamper::format(detail.buildSecs),
                                       Timestamper::format(detail.testSecs));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),
-                 totalMutants, stateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
+                 totalMutants, MutationStateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
                  m.getFirst().line, token, timing);
     if (!result.getKillingTest().empty()) {
       static constexpr std::size_t kMaxDisplayedTests = 2;
@@ -106,12 +96,12 @@ bool EvaluationStage::execute() {
       if (tests.size() > kMaxDisplayedTests) {
         summary += fmt::format(" (+{} more)", tests.size() - kMaxDisplayedTests);
       }
-      Console::out("          \xe2\x86\x90 {}", summary);
+      Console::out("          {} {}", Utf8Char::ArrowLeft, summary);
     }
     if (state == MutationState::BUILD_FAILURE) {
-      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantBuildLog(id));
+      Console::out("          {} {}", Utf8Char::ArrowHook, mWorkspace->getMutantBuildLog(id));
     } else if (state == MutationState::RUNTIME_ERROR || state == MutationState::TIMEOUT) {
-      Console::out("          \xe2\x86\xaa {}", mWorkspace->getMutantTestLog(id));
+      Console::out("          {} {}", Utf8Char::ArrowHook, mWorkspace->getMutantTestLog(id));
     }
 
     mWorkspace->clearLock(id);

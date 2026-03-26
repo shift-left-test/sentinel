@@ -22,7 +22,7 @@
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/GenerationStage.hpp"
-#include "sentinel/util/string.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 
 namespace sentinel {
 
@@ -49,8 +49,8 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
                                    const fs::path& sourceDir, const std::string& generatorStr,
                                    unsigned seed, std::size_t limit, const std::string& scope,
                                    const std::string& partition) {
-  const std::string thick = string::repeatUtf8("\xe2\x94\x81", kSummaryWidth);   // ━
-  const std::string thin = string::repeatUtf8("\xe2\x94\x80", kSummaryWidth);    // ─
+  const std::string thick = Utf8Char::ThickLine * kSummaryWidth;
+  const std::string thin = Utf8Char::ThinLine * kSummaryWidth;
 
   std::size_t flen = kSummaryWidth - kMutantsCol - kLinesCol - 2;
   std::size_t maxFileLen = kSummaryWidth - kMutantsCol - kMinGap - 2;

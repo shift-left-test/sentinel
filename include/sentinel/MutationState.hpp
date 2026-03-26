@@ -6,6 +6,8 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 #define INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 
+#include "sentinel/util/Utf8Char.hpp"
+
 namespace sentinel {
 /**
  * @brief Result State enumeration
@@ -33,6 +35,23 @@ inline const char* MutationStateToStr(MutationState m) {
       return "TIMEOUT";
     default:
       return "UNKNOWN";
+  }
+}
+
+/**
+ * @brief Return the UTF-8 icon for a MutationState
+ *
+ * @param m MutationState
+ * @return Utf8Char icon representing the state
+ */
+inline Utf8Char MutationStateIcon(MutationState m) {
+  switch (m) {
+    case MutationState::KILLED:
+      return Utf8Char::CrossMark;
+    case MutationState::SURVIVED:
+      return Utf8Char::CheckMark;
+    default:
+      return Utf8Char::Warning;
   }
 }
 

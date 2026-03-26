@@ -20,6 +20,7 @@
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/ReportStage.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 
 namespace sentinel {
 
@@ -63,13 +64,13 @@ bool ReportStage::execute() {
   }
 
   // Print final summary line.
-  std::string summaryLine = fmt::format("Mutation testing complete \xe2\x80\x94 {} mutant{}",
-                                        total, total == 1 ? "" : "s");
+  std::string summaryLine = fmt::format("Mutation testing complete {} {} mutant{}",
+                                        Utf8Char::EmDash, total, total == 1 ? "" : "s");
   if (score) {
     summaryLine += fmt::format(", score: {:.1f}%", *score);
   }
   if (mConfig.threshold) {
-    const char* icon = (score && *score >= *mConfig.threshold) ? "\xe2\x9c\x93" : "\xe2\x9c\x97";
+    auto icon = (score && *score >= *mConfig.threshold) ? Utf8Char::CheckMark : Utf8Char::CrossMark;
     summaryLine += fmt::format(" (threshold: {:.1f}% {})", *mConfig.threshold, icon);
   }
   Console::out("");
