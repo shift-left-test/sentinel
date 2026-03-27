@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <filesystem>  // NOLINT
 #include <string>
+#include "sentinel/Logger.hpp"
+#include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
 
 namespace sentinel {
@@ -44,7 +46,7 @@ TEST_F(StatusLineTest, testSetTotalMutantsDoesNotCrash) {
 
 TEST_F(StatusLineTest, testSetMutantInfoDoesNotCrash) {
   StatusLine sl;
-  EXPECT_NO_THROW(sl.setMutantInfo(1, "AOR", std::filesystem::path("foo.cpp"), 42));
+  EXPECT_NO_THROW(sl.setMutantInfo(1));
 }
 
 TEST_F(StatusLineTest, testRecordResultDoesNotCrash) {
@@ -73,6 +75,113 @@ TEST_F(StatusLineTest, testDestructorCallsDisable) {
     sl.enable();
     // sl destructor called at end of scope
   });
+}
+
+TEST_F(StatusLineTest, testSummaryUsesUtf8Icons) {
+  Logger::setLevel(Logger::Level::INFO);
+  StatusLine sl;
+  sl.setTotalMutants(10);
+  for (int i = 0; i < 6; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
+
+  testing::internal::CaptureStderr();
+  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  // Should contain UTF-8 icons, not K:/S:/B: text
+  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x97"));  // CrossMark
+  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x93"));  // CheckMark
+  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9a\xa0"));  // Warning
+  EXPECT_THAT(output, testing::Not(testing::HasSubstr("K:")));
+  Logger::setLevel(Logger::Level::OFF);
+}
+
+TEST_F(StatusLineTest, testScoreExcludesAbnormalFromDenominator) {
+  Logger::setLevel(Logger::Level::INFO);
+  StatusLine sl;
+  sl.setTotalMutants(10);
+  // Record: 6 killed, 2 survived, 1 build failure, 1 timeout
+  for (int i = 0; i < 6; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
+
+  testing::internal::CaptureStderr();
+  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));  // 10th = triggers logProgress
+  std::string output = testing::internal::GetCapturedStderr();
+
+  // Score should be 6/(6+2) = 75.0%, NOT 6/(6+2+1) = 66.7%
+  EXPECT_THAT(output, testing::HasSubstr("75.0%"));
+  Logger::setLevel(Logger::Level::OFF);
+}
+
+TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::EVALUATION);
+  sl.setTotalMutants(100);
+  sl.setMutantInfo(50);
+  for (int i = 0; i < 40; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 10; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, testing::HasSubstr("[50/100]"));
+  EXPECT_THAT(text, testing::HasSubstr("50%"));
+  EXPECT_THAT(text, testing::HasSubstr("\xe2\x9c\x97"));  // CrossMark
+}
+
+TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, testing::HasSubstr("BUILD-ORIG"));
+  EXPECT_THAT(text, testing::HasSubstr("[0/0]"));
+  EXPECT_THAT(text, testing::HasSubstr("0%"));
+}
+
+TEST_F(StatusLineTest, testAdaptiveCountWidth) {
+  Logger::setLevel(Logger::Level::INFO);
+
+  // Small total: 2-digit width
+  StatusLine sl1;
+  sl1.setTotalMutants(10);
+  for (int i = 0; i < 8; ++i) sl1.recordResult(static_cast<int>(MutationState::KILLED));
+  sl1.recordResult(static_cast<int>(MutationState::SURVIVED));
+
+  testing::internal::CaptureStderr();
+  sl1.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
+  std::string output1 = testing::internal::GetCapturedStderr();
+  // 2-digit width: " 8" not "  8"
+  EXPECT_THAT(output1, testing::HasSubstr("[10/10]"));
+
+  // Large total: 5-digit width
+  StatusLine sl2;
+  sl2.setTotalMutants(10000);
+  // Record exactly 10000 results to trigger logProgress at 100%
+  for (int i = 0; i < 8000; ++i) sl2.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 1999; ++i) sl2.recordResult(static_cast<int>(MutationState::SURVIVED));
+
+  testing::internal::CaptureStderr();
+  sl2.recordResult(static_cast<int>(MutationState::SURVIVED));
+  std::string output2 = testing::internal::GetCapturedStderr();
+  EXPECT_THAT(output2, testing::HasSubstr("[10000/10000]"));
+
+  Logger::setLevel(Logger::Level::OFF);
+}
+
+TEST_F(StatusLineTest, testDryRunPrefix) {
+  StatusLine sl;
+  sl.setDryRun(true);
+  sl.setPhase(StatusLine::Phase::EVALUATION);
+  sl.setTotalMutants(100);
+  sl.setMutantInfo(50);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, testing::HasSubstr("[DRY-RUN]"));
+  EXPECT_THAT(text, testing::HasSubstr("EVALUATION"));
 }
 
 }  // namespace sentinel

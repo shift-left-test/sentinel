@@ -6,7 +6,6 @@
 #ifndef INCLUDE_SENTINEL_STATUSLINE_HPP_
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
-#include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/Timestamper.hpp"
 
@@ -69,14 +68,11 @@ class StatusLine {
   void setTotalMutants(size_t total);
 
   /**
-   * @brief Update the currently-processed mutant information and redraw.
+   * @brief Update the currently-processed mutant index and redraw.
    *
    * @param current 1-based index of the mutant being processed.
-   * @param op      Mutation operator name (e.g. "AOR").
-   * @param file    Source filename (basename only).
-   * @param line    Source line number of the mutation.
    */
-  void setMutantInfo(size_t current, const std::string& op, const std::filesystem::path& file, size_t line);
+  void setMutantInfo(size_t current);
 
   /**
    * @brief Record the result of the last mutant and redraw.
@@ -100,6 +96,13 @@ class StatusLine {
    */
   bool isEnabled() const { return mEnabled; }
 
+  /**
+   * @brief Return the current status string (for testing).
+   *
+   * @return the formatted status line content.
+   */
+  std::string getStatusText() const;
+
  private:
   void queryTermSize();
   void setScrollRegion();
@@ -110,6 +113,7 @@ class StatusLine {
   std::string buildSummaryString() const;
   std::string buildProgressString(size_t current) const;
   std::string phaseLabel() const;
+  int countWidth() const;
 
   bool mEnabled = false;
   bool mDryRun = false;
@@ -118,14 +122,9 @@ class StatusLine {
   Phase mPhase = Phase::INIT;
   size_t mCurrent = 0;
   size_t mTotal = 0;
-  size_t mLine = 0;
-  std::string mOp;
-  std::filesystem::path mFile;
   size_t mKilled = 0;
   size_t mSurvived = 0;
-  size_t mBuildFail = 0;
-  size_t mTimeout = 0;
-  size_t mRuntimeError = 0;
+  size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
   size_t mProgressInterval = 0;
   Timestamper mTimestamper;
 };

@@ -294,9 +294,10 @@ Score = Killed / (Killed + Survived) \(mu 100
 Build failures, timeouts, and runtime errors are excluded and shown as "Skipped" in
 the report. When no evaluable mutants exist, the score is displayed as \fB\-%\fR.
 .SS Status Line
-When stdout is a TTY, a live status line is displayed during evaluation.
-The abbreviations are: \fBK\fR = Killed, \fBS\fR = Survived, \fBB\fR = Build Failure,
-\fBT\fR = Timeout, \fBR\fR = Runtime Error.
+When stdout is a TTY, a live status line is displayed at the bottom of the terminal
+throughout all phases. The symbols are:
+\fB\[u2717]\fR = Killed, \fB\[u2713]\fR = Survived,
+\fB\[u26A0]\fR = Abnormal (build failure, timeout, or runtime error).
 Use \fB\-\-no\-statusline\fR to disable it.
 .SH EXIT CODES
 .TP

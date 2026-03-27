@@ -307,16 +307,14 @@ Build failures, timeouts, and runtime errors are **excluded** from the score (sh
 When stdout is a TTY, Sentinel displays a live status line at the bottom of the terminal:
 
 ```
- Phase:EVALUATION [42/75] | AOR  src/foo.cpp:10 | K:30 S:8 B:2 T:1 R:0 | Score:78.9% | Elapsed:00:42:17
+ EVALUATION  │  [42/75] (56%)  │  ✗ 30 ✓  8 ⚠  4  │  78.9%  │  00:42:17
 ```
 
-| Abbreviation | State |
-|--------------|-------|
-| **K** | Killed |
-| **S** | Survived |
-| **B** | Build Failure |
-| **T** | Timeout |
-| **R** | Runtime Error |
+| Symbol | Meaning |
+|--------|---------|
+| **✗** | Killed |
+| **✓** | Survived |
+| **⚠** | Abnormal (Build Failure + Timeout + Runtime Error) |
 
 The status line is suppressed when output is piped or redirected. Use `--no-statusline` to disable it explicitly.
 

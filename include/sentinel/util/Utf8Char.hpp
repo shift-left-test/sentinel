@@ -57,6 +57,7 @@ class Utf8Char {
   static const Utf8Char ArrowLeft;    ///< ← (U+2190)
   static const Utf8Char ArrowHook;    ///< ↪ (U+21AA)
   static const Utf8Char EmDash;       ///< — (U+2014)
+  static const Utf8Char VerticalBar;  ///< │ (U+2502)
   static const Utf8Char ThickLine;    ///< ━ (U+2501)
   static const Utf8Char ThinLine;     ///< ─ (U+2500)
 };
@@ -68,6 +69,7 @@ inline constexpr Utf8Char Utf8Char::ArrowRight{"\xe2\x86\x92"};
 inline constexpr Utf8Char Utf8Char::ArrowLeft{"\xe2\x86\x90"};
 inline constexpr Utf8Char Utf8Char::ArrowHook{"\xe2\x86\xaa"};
 inline constexpr Utf8Char Utf8Char::EmDash{"\xe2\x80\x94"};
+inline constexpr Utf8Char Utf8Char::VerticalBar{"\xe2\x94\x82"};
 inline constexpr Utf8Char Utf8Char::ThickLine{"\xe2\x94\x81"};
 inline constexpr Utf8Char Utf8Char::ThinLine{"\xe2\x94\x80"};
 

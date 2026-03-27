@@ -72,7 +72,7 @@ bool EvaluationStage::execute() {
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
     mWorkspace->setLock(id);
-    mStatusLine->setMutantInfo(id, m.getOperator(), m.getPath().filename().string(), m.getFirst().line);
+    mStatusLine->setMutantInfo(id);
 
     auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator);
     const auto& result = detail.result;

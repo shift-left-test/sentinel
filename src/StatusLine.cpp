@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include "sentinel/Console.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -21,6 +22,10 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 StatusLine::StatusLine() = default;
+
+std::string StatusLine::getStatusText() const {
+  return buildStatusString();
+}
 
 StatusLine::~StatusLine() {
   if (mEnabled) {
@@ -63,11 +68,8 @@ void StatusLine::setTotalMutants(size_t total) {
   redraw();
 }
 
-void StatusLine::setMutantInfo(size_t current, const std::string& op, const std::filesystem::path& file, size_t line) {
+void StatusLine::setMutantInfo(size_t current) {
   mCurrent = current;
-  mOp = op;
-  mFile = file;
-  mLine = line;
   redraw();
 }
 
@@ -85,13 +87,9 @@ void StatusLine::recordResult(int state) {
       mSurvived++;
       break;
     case MutationState::RUNTIME_ERROR:
-      mRuntimeError++;
-      break;
     case MutationState::BUILD_FAILURE:
-      mBuildFail++;
-      break;
     case MutationState::TIMEOUT:
-      mTimeout++;
+      mAbnormal++;
       break;
   }
   if (mEnabled) {
@@ -161,18 +159,29 @@ std::string StatusLine::phaseLabel() const {
 }
 
 std::string StatusLine::buildSummaryString() const {
-  size_t denominator = mKilled + mSurvived + mTimeout + mRuntimeError;
-  std::string scoreStr = denominator > 0
-      ? fmt::format("{:.1f}%", 100.0 * static_cast<double>(mKilled) / static_cast<double>(denominator))
-      : "N/A";
-  return fmt::format("K:{} / S:{} / B:{} / T:{} / R:{} | Score: {} | Elapsed: {}",
-                     mKilled, mSurvived, mBuildFail, mTimeout, mRuntimeError,
-                     scoreStr, mTimestamper.toString(Timestamper::Format::Clock));
+  size_t denominator = mKilled + mSurvived;
+  double score = denominator > 0
+      ? 100.0 * static_cast<double>(mKilled) / static_cast<double>(denominator)
+      : 0.0;
+  std::string scoreStr = fmt::format("{:.1f}%", score);
+  int w = countWidth();
+  return fmt::format("{}{:>{}} {}{:>{}} {}{:>{}}  {}  {:>6}  {}  {}",
+                     Utf8Char::CrossMark, mKilled, w,
+                     Utf8Char::CheckMark, mSurvived, w,
+                     Utf8Char::Warning, mAbnormal, w,
+                     Utf8Char::VerticalBar, scoreStr,
+                     Utf8Char::VerticalBar,
+                     mTimestamper.toString(Timestamper::Format::Clock));
+}
+
+int StatusLine::countWidth() const {
+  return std::max(2, static_cast<int>(fmt::formatted_size("{}", mTotal)));
 }
 
 std::string StatusLine::buildProgressString(size_t current) const {
-  return fmt::format("[{}/{}] ({}%) | {}", current, mTotal, mTotal > 0 ? current * 100 / mTotal : 0,
-                     buildSummaryString());
+  size_t pct = mTotal > 0 ? current * 100 / mTotal : 0;
+  return fmt::format("[{}/{}] ({}%)  {}  {}", current, mTotal, pct,
+                     Utf8Char::VerticalBar, buildSummaryString());
 }
 
 std::string StatusLine::buildStatusString() const {
@@ -182,24 +191,15 @@ std::string StatusLine::buildStatusString() const {
     result += " [DRY-RUN]";
   }
 
-  result += fmt::format(" Phase: {:<12}", phaseLabel());
+  result += fmt::format(" {:<10}", phaseLabel());
 
-  if (mPhase == Phase::EVALUATION && !mOp.empty()) {
-    result += fmt::format(" | {} {}:{}", mOp, mFile.string(), mLine);
-  }
+  result += fmt::format("  {}  ", Utf8Char::VerticalBar) + buildProgressString(mCurrent);
 
-  if (mTotal > 0) {
-    result += " " + buildProgressString(mCurrent);
-  } else {
-    result += " | " + buildSummaryString();
-  }
-
-  result += " ";
   return result;
 }
 
 void StatusLine::logProgress() {
-  size_t processed = mKilled + mSurvived + mBuildFail + mTimeout + mRuntimeError;
+  size_t processed = mKilled + mSurvived + mAbnormal;
   if (mTotal == 0 || mProgressInterval == 0) {
     return;
   }
