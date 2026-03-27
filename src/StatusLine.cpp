@@ -111,11 +111,12 @@ void StatusLine::setScrollRegion() {
   if (!mEnabled) {
     return;
   }
-  // Clear screen
-  Console::print("\033[2J\033[H");
-  Console::flush();
-  // Reserve last row for status line by setting scroll region to rows 1 through R-1
-  Console::print("\033[1;{}r", mTermRows - 1);
+  // Reserve last row for status line by setting scroll region to rows 1 through R-1.
+  // \n ensures there is a blank row for the status line (and scrolls content up if the
+  // cursor is already at the bottom). \033[1A moves the cursor back up one row so it
+  // stays within the scroll region. Saving and restoring around DECSTBM then keeps
+  // subsequent output flowing naturally from where it was — matching --no-status-line UX.
+  Console::print("\n\033[1A\0337\033[1;{}r\0338", mTermRows - 1);
   Console::flush();
 }
 
