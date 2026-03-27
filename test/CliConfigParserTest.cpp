@@ -17,7 +17,9 @@ class CliConfigParserTest : public ::testing::Test {
     args::ArgumentParser parser("test", "");
     CliConfigParser cliParser(parser);
     parser.ParseArgs(args);
-    return cliParser.getConfig();
+    Config cfg = Config::withDefaults();
+    cliParser.applyTo(&cfg);
+    return cfg;
   }
 
   std::filesystem::path configFile(const std::vector<std::string>& args) {
@@ -28,31 +30,23 @@ class CliConfigParserTest : public ::testing::Test {
   }
 };
 
-TEST_F(CliConfigParserTest, testDefaultConfigIsAllNullopt) {
+TEST_F(CliConfigParserTest, testDefaultsPreservedWhenNoCli) {
   Config cfg = parse({});
-  EXPECT_FALSE(cfg.sourceDir.has_value());
-  EXPECT_FALSE(cfg.workDir.has_value());
-  EXPECT_FALSE(cfg.outputDir.has_value());
-  EXPECT_FALSE(cfg.buildCmd.has_value());
-  EXPECT_FALSE(cfg.testCmd.has_value());
-  EXPECT_FALSE(cfg.limit.has_value());
+  EXPECT_EQ("all", cfg.scope);
+  EXPECT_EQ("uniform", cfg.generator);
+  EXPECT_FALSE(cfg.timeout.has_value());
+  EXPECT_EQ(60u, cfg.killAfter);
+  EXPECT_EQ(0u, cfg.limit);
   EXPECT_FALSE(cfg.seed.has_value());
   EXPECT_FALSE(cfg.threshold.has_value());
-  EXPECT_FALSE(cfg.extensions.has_value());
-  EXPECT_FALSE(cfg.operators.has_value());
-  // Non-optional bool fields default to false
   EXPECT_FALSE(cfg.init);
   EXPECT_FALSE(cfg.dryRun);
-  EXPECT_FALSE(cfg.noStatusLine);
   EXPECT_FALSE(cfg.verbose);
-  EXPECT_FALSE(cfg.force);
-  EXPECT_FALSE(cfg.clean);
 }
 
-TEST_F(CliConfigParserTest, testOutputDirParsed) {
-  Config cfg = parse({"--output-dir", "/tmp/out"});
-  ASSERT_TRUE(cfg.outputDir.has_value());
-  EXPECT_EQ(cfg.outputDir->string(), "/tmp/out");
+TEST_F(CliConfigParserTest, testOutputDirResolvedToAbsolute) {
+  Config cfg = parse({"--output-dir", "out"});
+  EXPECT_TRUE(cfg.outputDir.is_absolute());
 }
 
 TEST_F(CliConfigParserTest, testThresholdParsed) {
@@ -63,18 +57,16 @@ TEST_F(CliConfigParserTest, testThresholdParsed) {
 
 TEST_F(CliConfigParserTest, testOperatorsListParsed) {
   Config cfg = parse({"--operator", "AOR", "--operator", "BOR"});
-  ASSERT_TRUE(cfg.operators.has_value());
-  EXPECT_EQ(cfg.operators->size(), 2u);
-  EXPECT_EQ((*cfg.operators)[0], "AOR");
-  EXPECT_EQ((*cfg.operators)[1], "BOR");
+  EXPECT_EQ(cfg.operators.size(), 2u);
+  EXPECT_EQ(cfg.operators[0], "AOR");
+  EXPECT_EQ(cfg.operators[1], "BOR");
 }
 
 TEST_F(CliConfigParserTest, testExtensionListParsed) {
   Config cfg = parse({"--extension", "cpp", "--extension", "cxx"});
-  ASSERT_TRUE(cfg.extensions.has_value());
-  EXPECT_EQ(cfg.extensions->size(), 2u);
-  EXPECT_EQ((*cfg.extensions)[0], "cpp");
-  EXPECT_EQ((*cfg.extensions)[1], "cxx");
+  EXPECT_EQ(cfg.extensions.size(), 2u);
+  EXPECT_EQ(cfg.extensions[0], "cpp");
+  EXPECT_EQ(cfg.extensions[1], "cxx");
 }
 
 TEST_F(CliConfigParserTest, testConfigFileParsed) {
@@ -88,16 +80,28 @@ TEST_F(CliConfigParserTest, testSeedNumericParsed) {
   EXPECT_EQ(*cfg.seed, 1234u);
 }
 
-TEST_F(CliConfigParserTest, testSeedAutoParsed) {
-  // "--seed auto" means "pick randomly" — seed stays nullopt
-  Config cfg = parse({"--seed", "auto"});
-  EXPECT_FALSE(cfg.seed.has_value());
+TEST_F(CliConfigParserTest, testSeedNonNumericThrows) {
+  EXPECT_THROW(parse({"--seed", "auto"}), std::invalid_argument);
 }
 
 TEST_F(CliConfigParserTest, testLimitParsed) {
   Config cfg = parse({"--limit", "50"});
-  ASSERT_TRUE(cfg.limit.has_value());
-  EXPECT_EQ(*cfg.limit, 50u);
+  EXPECT_EQ(cfg.limit, 50u);
+}
+
+TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {
+  Config cfg = parse({"--timeout", "30"});
+  ASSERT_TRUE(cfg.timeout.has_value());
+  EXPECT_EQ(*cfg.timeout, 30u);
+}
+
+TEST_F(CliConfigParserTest, testTimeoutNonNumericThrows) {
+  EXPECT_THROW(parse({"--timeout", "auto"}), std::invalid_argument);
+}
+
+TEST_F(CliConfigParserTest, testKillAfterParsed) {
+  Config cfg = parse({"--kill-after", "30"});
+  EXPECT_EQ(cfg.killAfter, 30u);
 }
 
 TEST_F(CliConfigParserTest, testVerboseParsed) {
@@ -113,6 +117,12 @@ TEST_F(CliConfigParserTest, testForceParsed) {
 TEST_F(CliConfigParserTest, testCleanParsed) {
   Config cfg = parse({"--clean"});
   EXPECT_TRUE(cfg.clean);
+}
+
+TEST_F(CliConfigParserTest, testCliOverwritesDefaults) {
+  Config cfg = parse({"--scope", "commit", "--generator", "random"});
+  EXPECT_EQ("commit", cfg.scope);
+  EXPECT_EQ("random", cfg.generator);
 }
 
 }  // namespace sentinel

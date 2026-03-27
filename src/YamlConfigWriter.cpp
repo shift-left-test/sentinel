@@ -49,8 +49,8 @@ static const char* const kYamlTemplate =
     "# test-result-ext:\n"
     "#   - xml\n"
     "\n"
-    "## Test time limit in seconds (default: auto - 2x original test time; 0 = no limit)\n"
-    "# timeout: auto\n"
+    "## Test time limit in seconds (default: 2x original test time; 0 = no limit)\n"
+    "# timeout: 60\n"
     "\n"
     "## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)\n"
     "# kill-after: 60\n"
@@ -75,17 +75,11 @@ static const char* const kYamlTemplate =
     "## Paths excluded from mutation; fnmatch-style patterns (default: none)\n"
     "# exclude: []\n"
     "\n"
-    "## Maximum number of mutants to generate (default: 0 = unlimited)\n"
-    "# limit: 0\n"
-    "\n"
     "## Mutant selection strategy (default: uniform)\n"
     "##   uniform  - one mutant per operator per source line\n"
     "##   random   - randomly sampled from all possible mutants\n"
     "##   weighted - samples more mutants from complex code\n"
     "# generator: uniform\n"
-    "\n"
-    "## Random seed for mutant selection (default: auto - picked randomly)\n"
-    "# seed: auto\n"
     "\n"
     "## Mutation operators to use; omit to use all operators (default: all)\n"
     "# operator:\n"
@@ -100,13 +94,7 @@ static const char* const kYamlTemplate =
     "# --- Advanced options ---\n"
     "\n"
     "## lcov-format coverage result files; limits mutation to covered lines only (default: none)\n"
-    "# coverage: []\n"
-    "\n"
-    "## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed\n"
-    "# partition: 1/1\n"
-    "\n"
-    "## Fail with exit code 3 if mutation score is below this percentage (0.0-100.0, default: disabled)\n"
-    "# threshold: 80.0\n";
+    "# coverage: []\n";
 
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);

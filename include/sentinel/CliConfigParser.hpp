@@ -27,17 +27,28 @@ class CliConfigParser {
   explicit CliConfigParser(args::ArgumentParser& parser);  // NOLINT
 
   /**
-   * @brief Extracts parsed values into a Config object.
-   * @return Config object containing only values explicitly set via CLI.
+   * @brief Apply CLI-parsed values onto an existing Config.
+   *
+   * Only flags explicitly set on the command line overwrite the config.
+   * Path fields are resolved relative to the current working directory.
+   *
+   * @param cfg Config to modify in place.
    */
-  Config getConfig();
+  void applyTo(Config* cfg);
 
-  /**
-   * @brief Returns the path to the config file if specified via --config.
-   */
-  std::filesystem::path getConfigFile() {
-    return mConfigFile ? mConfigFile.Get() : "";
-  }
+  /** @brief Returns the config file path if --config was specified (empty if not). */
+  std::filesystem::path getConfigFile() { return mConfigFile ? mConfigFile.Get() : ""; }
+
+  /** @brief Returns true if --init was specified. */
+  bool isInit() const { return mInit; }
+  /** @brief Returns true if --dry-run was specified. */
+  bool isDryRun() const { return mDryRun; }
+  /** @brief Returns true if --clean was specified. */
+  bool isClean() const { return mClean; }
+  /** @brief Returns true if --force was specified. */
+  bool isForce() const { return mForce; }
+  /** @brief Returns the workspace path if --workspace was specified (empty if not). */
+  std::filesystem::path getWorkDir() { return mWorkDir ? std::filesystem::absolute(mWorkDir.Get()) : ""; }
 
  private:
   // Groups

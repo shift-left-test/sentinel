@@ -81,8 +81,8 @@ Directory where the test command writes its result files. \fBRequired.\fR
 File extension of test result files (repeatable). Default: \fBxml\fR
 .TP
 \fB\-\-timeout\fR=\fISEC\fR
-Test time limit in seconds. \fB0\fR = no limit,
-\fBauto\fR = 2\(mu the measured baseline run time. Default: \fBauto\fR
+Test time limit in seconds. \fB0\fR = no limit.
+Default: 2\(mu the measured baseline run time.
 .TP
 \fB\-\-kill\-after\fR=\fISEC\fR
 Seconds to wait after \fB\-\-timeout\fR before sending SIGKILL to the test process.
@@ -220,15 +220,8 @@ List of source file extensions to mutate.
 \fBpattern\fR / \fBexclude\fR
 Lists of paths/patterns to include or exclude.
 .TP
-\fBlimit\fR / \fBgenerator\fR / \fBseed\fR / \fBoperator\fR
-Mutant count limit, selection strategy, random seed, and operator list.
-.TP
-\fBthreshold\fR
-Fail with exit code 3 if the mutation score is below this percentage (0.0\(en100.0).
-.TP
-\fBpartition\fR
-Evaluate only the N-th slice of the mutant list out of TOTAL partitions (e.g. \fB2/4\fR).
-Requires \fBseed\fR to be set explicitly.
+\fBgenerator\fR / \fBoperator\fR
+Selection strategy and operator list.
 .TP
 \fBcoverage\fR
 List of lcov coverage info files.

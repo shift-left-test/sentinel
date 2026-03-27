@@ -140,9 +140,9 @@ StatusLine::Phase GenerationStage::getPhase() const {
 bool GenerationStage::execute() {
   Logger::info("Generating mutants...");
   auto repo =
-      std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions, *mConfig.patterns, *mConfig.excludes);
+      std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions, mConfig.patterns, mConfig.excludes);
   repo->addSkipDir(mWorkspace->getRoot());
-  SourceLines sourceLines = repo->getSourceLines(*mConfig.scope);
+  SourceLines sourceLines = repo->getSourceLines(mConfig.scope);
 
   // Verbose: source scan results and config
   if (isVerbose()) {
@@ -151,22 +151,22 @@ bool GenerationStage::execute() {
       uniqueFiles.insert(sl.getPath());
     }
     Logger::verbose("Source: {} lines from {} files", sourceLines.size(), uniqueFiles.size());
-    Logger::verbose("Extensions: {}", fmt::join(*mConfig.extensions, ", "));
-    if (!mConfig.patterns->empty()) {
-      Logger::verbose("Patterns: {}", fmt::join(*mConfig.patterns, ", "));
+    Logger::verbose("Extensions: {}", fmt::join(mConfig.extensions, ", "));
+    if (!mConfig.patterns.empty()) {
+      Logger::verbose("Patterns: {}", fmt::join(mConfig.patterns, ", "));
     }
-    if (!mConfig.excludes->empty()) {
-      Logger::verbose("Excludes: {}", fmt::join(*mConfig.excludes, ", "));
+    if (!mConfig.excludes.empty()) {
+      Logger::verbose("Excludes: {}", fmt::join(mConfig.excludes, ", "));
     }
   }
 
   unsigned int seed = mConfig.seed ? *mConfig.seed : std::random_device {}();
   std::shuffle(sourceLines.begin(), sourceLines.end(), std::mt19937(seed));
 
-  auto generator = MutantGenerator::getInstance(*mConfig.generator, *mConfig.compileDbDir);
-  generator->setOperators(*mConfig.operators);
+  auto generator = MutantGenerator::getInstance(mConfig.generator, mConfig.compileDbDir);
+  generator->setOperators(mConfig.operators);
   MutationFactory factory(generator);
-  auto mutants = factory.generate(*mConfig.sourceDir, sourceLines, *mConfig.limit, seed);
+  auto mutants = factory.generate(mConfig.sourceDir, sourceLines, mConfig.limit, seed);
   std::size_t candidateCount = generator->getCandidateCount();
 
   if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
@@ -177,10 +177,10 @@ bool GenerationStage::execute() {
   }
 
   // Print summary before partition (shows full generation results)
-  std::string partition = (mConfig.partition && !mConfig.partition->empty()) ? *mConfig.partition : "";
+  std::string partition = mConfig.partition.value_or("");
   auto linesByPath = generator->getLinesByPath();
-  printGenerationSummary(mutants, candidateCount, linesByPath, *mConfig.sourceDir, *mConfig.generator, seed,
-                         *mConfig.limit, *mConfig.scope, partition);
+  printGenerationSummary(mutants, candidateCount, linesByPath, mConfig.sourceDir, mConfig.generator, seed,
+                         mConfig.limit, mConfig.scope, partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;

@@ -43,13 +43,13 @@ bool ReportStage::execute() {
     results.push_back(mWorkspace->getDoneResult(id));
   }
 
-  MutationSummary summary(results, *mConfig.sourceDir);
+  MutationSummary summary(results, mConfig.sourceDir);
   XmlReport xmlReport(summary);
   xmlReport.printSummary();
-  if (mConfig.outputDir && !mConfig.outputDir->empty()) {
-    xmlReport.save(*mConfig.outputDir);
-    HtmlReport(summary).save(*mConfig.outputDir);
-    Logger::info("Reports saved to {}", *mConfig.outputDir);
+  if (!mConfig.outputDir.empty()) {
+    xmlReport.save(mConfig.outputDir);
+    HtmlReport(summary).save(mConfig.outputDir);
+    Logger::info("Reports saved to {}", mConfig.outputDir);
   }
 
   std::optional<double> score;

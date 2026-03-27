@@ -35,20 +35,20 @@ StatusLine::Phase OriginalBuildStage::getPhase() const {
 bool OriginalBuildStage::execute() {
   Logger::info("Running original build...");
   fs::path buildLog = mWorkspace->getOriginalBuildLog();
-  Logger::verbose("Build command: {}", *mConfig.buildCmd);
+  Logger::verbose("Build command: {}", mConfig.buildCmd);
   Logger::verbose("Build log: {}", buildLog);
   Timestamper ts;
-  Subprocess buildProc(*mConfig.buildCmd, 0, 0, buildLog.string(), !isVerbose());
+  Subprocess buildProc(mConfig.buildCmd, 0, 0, buildLog.string(), !isVerbose());
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
     throw std::runtime_error(fmt::format("Original build failed. See: {}", buildLog.string()));
   }
   Logger::info("Original build completed ({})", Timestamper::format(ts.toDouble()));
-  if (!fs::exists(*mConfig.compileDbDir / "compile_commands.json")) {
+  if (!fs::exists(mConfig.compileDbDir / "compile_commands.json")) {
     throw std::runtime_error(
         fmt::format("compile_commands.json not found in '{}'. "
                     "Make sure build-command generates it (e.g., add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON to cmake).",
-                    mConfig.compileDbDir->string()));
+                    mConfig.compileDbDir.string()));
   }
   return true;
 }

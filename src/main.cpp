@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include "sentinel/CliConfigParser.hpp"
-#include "sentinel/ConfigResolver.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/SignalHandler.hpp"
@@ -37,13 +36,10 @@ namespace fs = std::filesystem;
  * @return Exit code (0 on success).
  */
 static int runApplication(sentinel::CliConfigParser* cliParser) {
-  // 1. Get CLI config
-  sentinel::Config cliCfg = cliParser->getConfig();
-
-  // Handle --init: write config template and exit (before workspace creation)
-  if (cliCfg.init) {
+  // 1. Handle --init
+  if (cliParser->isInit()) {
     const char* const kConfigFileName = "sentinel.yaml";
-    if (fs::exists(kConfigFileName) && !cliCfg.force) {
+    if (fs::exists(kConfigFileName) && !cliParser->isForce()) {
       throw std::runtime_error(
           fmt::format("'{}' already exists. Use --init --force to overwrite.", kConfigFileName));
     }
@@ -52,14 +48,14 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   }
 
   // 2. Determine workspace path early for mode detection
-  fs::path workDirPath = cliCfg.workDir ? fs::absolute(*cliCfg.workDir) : fs::absolute("./.sentinel");
+  fs::path workDirPath = cliParser->getWorkDir().empty()
+      ? fs::absolute(".sentinel") : cliParser->getWorkDir();
   auto ws = std::make_shared<sentinel::Workspace>(workDirPath);
 
   // 3. Detect run mode
-  bool dryRun = cliCfg.dryRun;
   bool alreadyComplete = false;
   bool resuming = false;
-  if (!cliCfg.clean && !dryRun && ws->hasPreviousRun()) {
+  if (!cliParser->isClean() && !cliParser->isDryRun() && ws->hasPreviousRun()) {
     alreadyComplete = ws->isComplete();
     resuming = !alreadyComplete;
     if (resuming) {
@@ -69,42 +65,39 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     }
   }
 
-  // 4. Load and resolve config
-  sentinel::Config yamlCfg;
-  fs::path configPath = cliParser->getConfigFile();
+  // 4. Build config: defaults -> YAML -> CLI
+  sentinel::Config cfg = sentinel::Config::withDefaults();
 
   if (alreadyComplete || resuming) {
-    configPath = workDirPath / "config.yaml";
-    yamlCfg = sentinel::YamlConfigParser::loadFromFile(configPath);
+    sentinel::YamlConfigParser::applyTo(&cfg, workDirPath / "config.yaml");
   } else {
+    fs::path configPath = cliParser->getConfigFile();
     if (configPath.empty() && fs::exists("sentinel.yaml")) {
       configPath = "sentinel.yaml";
     }
     if (!configPath.empty()) {
-      yamlCfg = sentinel::YamlConfigParser::loadFromFile(configPath);
+      sentinel::YamlConfigParser::applyTo(&cfg, configPath);
     }
   }
 
-  sentinel::Config cfg = sentinel::ConfigResolver::resolve(cliCfg, yamlCfg, configPath);
+  cliParser->applyTo(&cfg);
 
   // 5. Configure logger
   if (cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
-  if ((dryRun || cliCfg.clean) && ws->hasPreviousRun()) {
+  if ((cfg.dryRun || cfg.clean) && ws->hasPreviousRun()) {
     sentinel::Logger::info("Workspace '{}' exists and will be cleared.", workDirPath);
   }
 
-  // Validate config before starting the pipeline.
-  // Skipped for resumed/already-complete runs: the config was already validated at the start
-  // of the original run and is reloaded from workspace (config.yaml).
+  // Validate config (skipped for resumed/already-complete runs)
   if (!alreadyComplete && !resuming) {
     sentinel::ConfigValidator::validate(cfg);
   }
 
   // 6. Create StatusLine
   auto statusLine = std::make_shared<sentinel::StatusLine>();
-  statusLine->setDryRun(dryRun);
+  statusLine->setDryRun(cfg.dryRun);
   if (!cfg.noStatusLine) {
     statusLine->enable();
   }
@@ -124,9 +117,9 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   originalBuild->setNext(originalTest)->setNext(generation)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
-  // 9. Install signal handlers before pipeline starts
+  // 9. Install signal handlers
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
-  sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(*cfg.sourceDir); });
+  sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(cfg.sourceDir); });
   sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
   // 10. Run pipeline
@@ -149,7 +142,7 @@ int main(int argc, char** argv) {
 
   try {
     parser.helpParams.showTerminator = false;
-    parser.helpParams.addDefault = true;
+    parser.helpParams.addDefault = false;
     parser.helpParams.width = 120;
     parser.ParseCLI(argc, argv);
   } catch (const args::Help& e) {

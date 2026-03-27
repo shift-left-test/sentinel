@@ -35,7 +35,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory", {"test-result-dir"}),
     mTestResultExts(mGroupBuildTest, "EXT", "File extension of the test report", {"test-result-ext"}),
-    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit, auto = 2x original test time",
+    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 2x original test time)",
              {"timeout"}),
     mKillAfter(mGroupBuildTest, "SEC", "Seconds to wait after timeout before sending SIGKILL (0 = disabled)",
                {"kill-after"}),
@@ -46,7 +46,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mExcludes(mGroupMutation, "EXPR", "Exclude files/directories matching fnmatch-style patterns", {'e', "exclude"}),
     mLimit(mGroupMutation, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
     mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: uniform, random, weighted", {"generator"}),
-    mSeed(mGroupMutation, "N", "Random seed for mutant selection ('auto' = pick randomly)", {"seed"}),
+    mSeed(mGroupMutation, "N", "Random seed for mutant selection (default: random)", {"seed"}),
     mOperators(mGroupMutation, "OP",
                "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI", {"operator"}),
     mCoverageFiles(mGroupAdvanced, "FILE", "lcov coverage info file; limits mutation to covered lines only",
@@ -57,45 +57,45 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                {"threshold"}) {
 }
 
-Config CliConfigParser::getConfig() {
-  Config cfg;
+void CliConfigParser::applyTo(Config* cfg) {
+  namespace fs = std::filesystem;
 
-  if (mSourceDir) cfg.sourceDir = mSourceDir.Get();
-  if (mWorkDir) cfg.workDir = mWorkDir.Get();
-  if (mOutputDir) cfg.outputDir = mOutputDir.Get();
-  if (mBuildCmd) cfg.buildCmd = mBuildCmd.Get();
-  if (mCompileDbDir) cfg.compileDbDir = mCompileDbDir.Get();
-  if (mTestCmd) cfg.testCmd = mTestCmd.Get();
-  if (mTestResultDir) cfg.testResultDir = mTestResultDir.Get();
-  if (mTestResultExts) cfg.testResultExts = mTestResultExts.Get();
-  if (mTimeout) cfg.timeout = mTimeout.Get();
-  if (mKillAfter) cfg.killAfter = mKillAfter.Get();
+  if (mSourceDir) cfg->sourceDir = fs::absolute(mSourceDir.Get()).lexically_normal();
+  if (mWorkDir) cfg->workDir = fs::absolute(mWorkDir.Get()).lexically_normal();
+  if (mOutputDir) cfg->outputDir = fs::absolute(mOutputDir.Get()).lexically_normal();
+  if (mCompileDbDir) cfg->compileDbDir = fs::absolute(mCompileDbDir.Get()).lexically_normal();
+  if (mTestResultDir) cfg->testResultDir = fs::absolute(mTestResultDir.Get()).lexically_normal();
 
-  if (mScope) cfg.scope = mScope.Get();
-  if (mExtensions) cfg.extensions = mExtensions.Get();
-  if (mPatterns) cfg.patterns = mPatterns.Get();
-  if (mExcludes) cfg.excludes = mExcludes.Get();
-  if (mLimit) cfg.limit = mLimit.Get();
-  if (mGenerator) cfg.generator = mGenerator.Get();
-  if (mSeed) {
-    std::string s = mSeed.Get();
-    if (s != "auto") {
-      cfg.seed = static_cast<unsigned int>(std::stoul(s));
+  if (mBuildCmd) cfg->buildCmd = mBuildCmd.Get();
+  if (mTestCmd) cfg->testCmd = mTestCmd.Get();
+  if (mTestResultExts) cfg->testResultExts = mTestResultExts.Get();
+  if (mTimeout) cfg->timeout = std::stoul(mTimeout.Get());
+  if (mKillAfter) cfg->killAfter = std::stoul(mKillAfter.Get());
+
+  if (mScope) cfg->scope = mScope.Get();
+  if (mExtensions) cfg->extensions = mExtensions.Get();
+  if (mPatterns) cfg->patterns = mPatterns.Get();
+  if (mExcludes) cfg->excludes = mExcludes.Get();
+  if (mGenerator) cfg->generator = mGenerator.Get();
+  if (mOperators) cfg->operators = mOperators.Get();
+  if (mCoverageFiles) {
+    cfg->coverageFiles.clear();
+    for (const auto& f : mCoverageFiles.Get()) {
+      cfg->coverageFiles.push_back(fs::absolute(f).lexically_normal());
     }
   }
-  if (mOperators) cfg.operators = mOperators.Get();
-  if (mCoverageFiles) cfg.coverageFiles = mCoverageFiles.Get();
-  if (mThreshold) cfg.threshold = mThreshold.Get();
-  if (mPartition) cfg.partition = mPartition.Get();
 
-  cfg.init = mInit;
-  cfg.dryRun = mDryRun;
-  cfg.noStatusLine = mNoStatusLine;
-  cfg.verbose = mVerbose;
-  cfg.force = mForce;
-  cfg.clean = mClean;
+  if (mLimit) cfg->limit = mLimit.Get();
+  if (mSeed) cfg->seed = static_cast<unsigned int>(std::stoul(mSeed.Get()));
+  if (mThreshold) cfg->threshold = mThreshold.Get();
+  if (mPartition) cfg->partition = mPartition.Get();
 
-  return cfg;
+  cfg->init = mInit;
+  cfg->dryRun = mDryRun;
+  cfg->noStatusLine = mNoStatusLine;
+  cfg->verbose = mVerbose;
+  cfg->force = mForce;
+  cfg->clean = mClean;
 }
 
 }  // namespace sentinel

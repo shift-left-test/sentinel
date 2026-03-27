@@ -26,9 +26,8 @@ class ConfigValidatorTest : public ::testing::Test {
     mConfig.testCmd = "make test";
     mConfig.testResultDir = mBase / "results";
     mConfig.limit = 10u;
-    mConfig.timeout = std::string("auto");
-    mConfig.excludes = std::vector<std::string>{};
-    mConfig.patterns = std::vector<std::string>{};
+    mConfig.excludes = {};
+    mConfig.patterns = {};
     mConfig.sourceDir = mBase;
   }
   void TearDown() override {
@@ -119,27 +118,27 @@ TEST_F(ConfigValidatorTest, testThrowsWhenPartitionIndexExceedsCount) {
 }
 
 TEST_F(ConfigValidatorTest, testWarningForTimeoutZero) {
-  mConfig.timeout = std::string("0");
+  mConfig.timeout = static_cast<size_t>(0);
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForExcludeEndingWithSlash) {
-  mConfig.excludes = std::vector<std::string>{"somedir/"};
+  mConfig.excludes = {"somedir/"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForRelativeExcludeWithoutWildcard) {
-  mConfig.excludes = std::vector<std::string>{"relative/pattern.cpp"};
+  mConfig.excludes = {"relative/pattern.cpp"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternOutsideSourceDir) {
-  mConfig.patterns = std::vector<std::string>{"/tmp/outside/path.cpp"};
+  mConfig.patterns = {"/tmp/outside/path.cpp"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternInsideSourceDir) {
-  mConfig.patterns = std::vector<std::string>{(mBase / "file.cpp").string()};
+  mConfig.patterns = {(mBase / "file.cpp").string()};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 

@@ -355,7 +355,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--test-command=CMD` | Shell command to run tests | **required** |
 | `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
 | `--test-result-ext=EXT` | File extension of test result files (repeatable) | `xml` |
-| `--timeout=SEC` | Test time limit; `0` = no limit (triggers pre-run warning), `auto` = 2× baseline run time | `auto` |
+| `--timeout=SEC` | Test time limit in seconds; `0` = no limit (triggers pre-run warning) | 2× baseline |
 | `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
 #### Mutation options
@@ -405,7 +405,6 @@ build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
 scope: commit
-limit: 50
 exclude:
   - "*/third_party/*"
   - "*/test/*"
@@ -451,8 +450,8 @@ version: 1
 # test-result-ext:
 #   - xml
 
-## Test time limit in seconds (default: auto - 2x original test time; 0 = no limit)
-# timeout: auto
+## Test time limit in seconds (default: 2x original test time; 0 = no limit)
+# timeout: 60
 
 ## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
 # kill-after: 60
@@ -477,17 +476,11 @@ version: 1
 ## Paths excluded from mutation; fnmatch-style patterns (default: none)
 # exclude: []
 
-## Maximum number of mutants to generate (default: 0 = unlimited)
-# limit: 0
-
 ## Mutant selection strategy (default: uniform)
 ##   uniform  - one mutant per operator per source line
 ##   random   - randomly sampled from all possible mutants
 ##   weighted - samples more mutants from complex code
 # generator: uniform
-
-## Random seed for mutant selection (default: auto - picked randomly)
-# seed: auto
 
 ## Mutation operators to use; omit to use all operators (default: all)
 # operator:
@@ -503,12 +496,6 @@ version: 1
 
 ## lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
-
-## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
-# partition: 1/1
-
-## Fail with exit code 3 if mutation score is below this percentage (0.0-100.0, default: disabled)
-# threshold: 80.0
 ```
 
 ---

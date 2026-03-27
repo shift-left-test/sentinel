@@ -138,7 +138,8 @@ C++ syntax and style rules:
 - Member variables prefixed with `m` (e.g., `mConfig`)
 - `#include <filesystem>` must always be accompanied by `// NOLINT` (lint suppression for include order)
 - `std::filesystem`: use the full form (`std::filesystem`) in headers; use the short alias (e.g., `namespace fs = std::filesystem; fs::...`) in implementation files, except for function parameter types which always use the full form
-- C++17 throughout; `std::optional` used extensively in `Config`
+- Output parameters must use pointers (`Config* cfg`), not non-const references (`Config& cfg`), per Google C++ Style Guide
+- C++17 throughout; `std::optional` used only where nullopt carries distinct meaning (e.g., `timeout`, `seed`, `threshold`, `partition`)
 - Use modern C++ idioms — prefer range-based `for`, structured bindings, `auto`, smart pointers (`std::unique_ptr`, `std::shared_ptr`), `std::variant`/`std::optional` over raw pointers or C-style patterns
 - Const correctness — apply `const` to variables, parameters, and member functions that do not modify state
 - No magic numbers or strings — use named constants (e.g., `static constexpr`)

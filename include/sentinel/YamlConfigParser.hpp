@@ -7,23 +7,25 @@
 #define INCLUDE_SENTINEL_YAMLCONFIGPARSER_HPP_
 
 #include <filesystem>  // NOLINT
-#include <string>
 #include "sentinel/Config.hpp"
 
 namespace sentinel {
 
 /**
- * @brief Parses sentinel.yaml and populates a Config object.
+ * @brief Parses a YAML config file and applies values to a Config object.
  */
 class YamlConfigParser {
  public:
   /**
-   * @brief Load configuration from a YAML file.
+   * @brief Apply values from a YAML file onto an existing Config.
    *
-   * @param path Path to the YAML configuration file.
-   * @return Parsed Config object.
+   * Only fields present in the YAML file are overwritten.
+   * Path fields are resolved relative to the YAML file's directory.
+   *
+   * @param cfg    Config to modify in place.
+   * @param path   Path to the YAML config file.
    */
-  static Config loadFromFile(const std::filesystem::path& path);
+  static void applyTo(Config* cfg, const std::filesystem::path& path);
 };
 
 }  // namespace sentinel

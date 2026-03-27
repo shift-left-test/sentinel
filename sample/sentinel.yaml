@@ -35,8 +35,8 @@ test-result-dir: ./build/test-results
 # test-result-ext:
 #   - xml
 
-## Test time limit in seconds (default: auto - 2x original test time; 0 = no limit)
-# timeout: auto
+## Test time limit in seconds (default: 2x original test time; 0 = no limit)
+# timeout: 60
 
 ## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
 # kill-after: 60
@@ -61,17 +61,11 @@ pattern: ["sample/src"]
 ## Paths excluded from mutation; fnmatch-style patterns (default: none)
 exclude: ["*/test/*"]
 
-## Maximum number of mutants to generate (default: 0 = unlimited)
-limit: 10
-
 ## Mutant selection strategy (default: uniform)
 ##   uniform  - one mutant per operator per source line
 ##   random   - randomly sampled from all possible mutants
 ##   weighted - samples more mutants from complex code
 # generator: uniform
-
-## Random seed for mutant selection (default: auto - picked randomly)
-# seed: auto
 
 ## Mutation operators to use; omit to use all operators (default: all)
 # operator:
@@ -87,9 +81,3 @@ limit: 10
 
 ## lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
-
-## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
-# partition: 1/1
-
-## Fail with exit code 3 if mutation score is below this percentage (0.0-100.0, default: disabled)
-# threshold: 80.0

@@ -53,59 +53,61 @@ struct Partition {
 /**
  * @brief Unified configuration for sentinel.
  *
- * Each field is optional to track whether it was set via CLI or YAML.
- * Missing values are filled with defaults by the ConfigResolver.
+ * Fields start with sensible defaults. Parsers overwrite fields they find.
+ * Path fields are stored as absolute paths after parsing.
  */
 struct Config {
   // Common options
-  /** @brief Path to the source directory. */
-  std::optional<std::filesystem::path> sourceDir;
-  /** @brief Path to the working directory. */
-  std::optional<std::filesystem::path> workDir;
-  /** @brief Path to the output directory for reports. */
-  std::optional<std::filesystem::path> outputDir;
+  /** @brief Absolute path to the source directory. */
+  std::filesystem::path sourceDir;
+  /** @brief Absolute path to the working directory. */
+  std::filesystem::path workDir;
+  /** @brief Absolute path to the output directory for reports (empty = disabled). */
+  std::filesystem::path outputDir;
 
   // Build & Test options
-  /** @brief Command used to build the project. */
-  std::optional<std::string> buildCmd;
-  /** @brief Path to the compilation database directory. */
-  std::optional<std::filesystem::path> compileDbDir;
-  /** @brief Command used to run tests. */
-  std::optional<std::string> testCmd;
-  /** @brief Directory where test results are stored. */
-  std::optional<std::filesystem::path> testResultDir;
+  /** @brief Command used to build the project (empty = not set). */
+  std::string buildCmd;
+  /** @brief Absolute path to the compilation database directory. */
+  std::filesystem::path compileDbDir;
+  /** @brief Command used to run tests (empty = not set). */
+  std::string testCmd;
+  /** @brief Absolute path to directory where test results are stored (empty = not set). */
+  std::filesystem::path testResultDir;
   /** @brief File extensions for test result files. */
-  std::optional<std::vector<std::string>> testResultExts;
-  /** @brief Time limit for test execution. */
-  std::optional<std::string> timeout;  // "auto", "0", or seconds
-  /** @brief Time to wait before killing a hung process. */
-  std::optional<std::string> killAfter;
+  std::vector<std::string> testResultExts = {"xml", "XML"};
+  /** @brief Time limit for test execution; nullopt = auto (2x baseline), 0 = no limit. */
+  std::optional<size_t> timeout;
+  /** @brief Seconds to wait before sending SIGKILL after timeout; 0 = disabled. */
+  size_t killAfter = 60;
 
   // Mutation options
-  /** @brief Scope of mutation (e.g., "commit" or "all"). */
-  std::optional<std::string> scope;  // "commit" or "all"
+  /** @brief Scope of mutation: "commit" or "all". */
+  std::string scope = "all";
   /** @brief File extensions to consider for mutation. */
-  std::optional<std::vector<std::string>> extensions;
+  std::vector<std::string> extensions = {"cxx", "cpp", "cc", "c", "c++", "cu"};
   /** @brief Glob patterns for files to include. */
-  std::optional<std::vector<std::string>> patterns;
+  std::vector<std::string> patterns;
   /** @brief Glob patterns for files to exclude. */
-  std::optional<std::vector<std::string>> excludes;
-  /** @brief Maximum number of mutants to generate. */
-  std::optional<size_t> limit;
-  /** @brief Mutant generation strategy. */
-  std::optional<std::string> generator;  // "uniform", "random", "weighted"
-  /** @brief Random seed for mutant generation. */
-  std::optional<unsigned int> seed;
-  /** @brief List of mutation operators to apply. */
-  std::optional<std::vector<std::string>> operators;
-  /** @brief Paths to code coverage information files. */
-  std::optional<std::vector<std::filesystem::path>> coverageFiles;
-  /** @brief Mutation score threshold for success. */
-  std::optional<double> threshold;
-  /** @brief Partition for parallel execution (e.g., "N/TOTAL"). */
-  std::optional<std::string> partition;  // "N/TOTAL"
+  std::vector<std::string> excludes;
+  /** @brief Mutant generation strategy: "uniform", "random", or "weighted". */
+  std::string generator = "uniform";
+  /** @brief List of mutation operators to apply (empty = all). */
+  std::vector<std::string> operators;
+  /** @brief Absolute paths to code coverage information files. */
+  std::vector<std::filesystem::path> coverageFiles;
 
-  // Special control flags (not usually in YAML)
+  // CLI-only run parameters (not read from sentinel.yaml)
+  /** @brief Maximum number of mutants to generate; 0 = unlimited (CLI-only). */
+  size_t limit = 0;
+  /** @brief Random seed for mutant generation (CLI-only). */
+  std::optional<unsigned int> seed;
+  /** @brief Mutation score threshold for success (CLI-only). */
+  std::optional<double> threshold;
+  /** @brief Partition for parallel execution, e.g., "N/TOTAL" (CLI-only). */
+  std::optional<std::string> partition;
+
+  // Special control flags
   /** @brief Initialize sentinel in the current directory. */
   bool init = false;
   /** @brief Run without performing actual mutations. */
@@ -120,16 +122,10 @@ struct Config {
   bool clean = false;
 
   /**
-   * @brief Resolve all path fields to absolute paths.
-   *
-   * CLI-sourced paths are resolved relative to the current working directory.
-   * YAML-sourced paths are resolved relative to the directory containing @p yamlPath.
-   * If @p yamlPath is empty, YAML-sourced paths are also resolved relative to the current working directory.
-   *
-   * @param yamlPath  Path to the YAML config file (used to derive the base directory).
-   * @param cliConfig Original CLI config used to identify CLI-sourced fields.
+   * @brief Create a Config with CWD-based default paths filled in.
+   * @return Config with sourceDir, workDir, compileDbDir set to absolute CWD-based paths.
    */
-  void toAbsolutePaths(const std::filesystem::path& yamlPath, const Config& cliConfig);
+  static Config withDefaults();
 };
 
 }  // namespace sentinel

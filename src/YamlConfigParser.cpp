@@ -28,7 +28,15 @@ static std::vector<T> toVector(const YAML::Node& node, const std::string& key) {
   return result;
 }
 
-Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
+static fs::path resolvePath(const fs::path& base, const std::string& value) {
+  fs::path p(value);
+  if (p.is_relative()) {
+    return (base / p).lexically_normal();
+  }
+  return p.lexically_normal();
+}
+
+void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
   YAML::Node root;
   try {
     root = YAML::LoadFile(path.string());
@@ -57,84 +65,44 @@ Config YamlConfigParser::loadFromFile(const std::filesystem::path& path) {
                     path, kSupportedVersion));
   }
   if (version != kSupportedVersion) {
-    throw std::runtime_error(fmt::format("Config file '{}': unsupported version {}. This sentinel supports version {}.",
-                                         path, version, kSupportedVersion));
+    throw std::runtime_error(fmt::format(
+        "Config file '{}': unsupported version {}. This sentinel supports version {}.",
+        path, version, kSupportedVersion));
   }
 
-  Config cfg;
+  const fs::path base = fs::absolute(path).parent_path();
 
   try {
-    // Shared with Command base class
-    if (root["source-dir"]) {
-      cfg.sourceDir = root["source-dir"].as<std::string>();
-    }
-    if (root["workspace"]) {
-      cfg.workDir = root["workspace"].as<std::string>();
-    }
-    if (root["output-dir"]) {
-      cfg.outputDir = root["output-dir"].as<std::string>();
-    }
+    if (root["source-dir"]) cfg->sourceDir = resolvePath(base, root["source-dir"].as<std::string>());
+    if (root["workspace"]) cfg->workDir = resolvePath(base, root["workspace"].as<std::string>());
+    if (root["output-dir"]) cfg->outputDir = resolvePath(base, root["output-dir"].as<std::string>());
+    if (root["compiledb-dir"]) cfg->compileDbDir = resolvePath(base, root["compiledb-dir"].as<std::string>());
+    if (root["test-result-dir"]) cfg->testResultDir = resolvePath(base, root["test-result-dir"].as<std::string>());
 
-    // CommandRun-specific options
-    if (root["compiledb-dir"]) {
-      cfg.compileDbDir = root["compiledb-dir"].as<std::string>();
-    }
-    if (root["scope"]) {
-      cfg.scope = root["scope"].as<std::string>();
-    }
-    if (root["extension"]) {
-      cfg.extensions = toVector<std::string>(root["extension"], "extension");
-    }
-    if (root["pattern"]) {
-      cfg.patterns = toVector<std::string>(root["pattern"], "pattern");
-    }
-    if (root["exclude"]) {
-      cfg.excludes = toVector<std::string>(root["exclude"], "exclude");
-    }
-    if (root["limit"]) {
-      cfg.limit = root["limit"].as<size_t>();
-    }
-    if (root["build-command"]) {
-      cfg.buildCmd = root["build-command"].as<std::string>();
-    }
-    if (root["test-command"]) {
-      cfg.testCmd = root["test-command"].as<std::string>();
-    }
-    if (root["test-result-dir"]) {
-      cfg.testResultDir = root["test-result-dir"].as<std::string>();
-    }
+    if (root["build-command"]) cfg->buildCmd = root["build-command"].as<std::string>();
+    if (root["test-command"]) cfg->testCmd = root["test-command"].as<std::string>();
     if (root["test-result-ext"]) {
-      cfg.testResultExts = toVector<std::string>(root["test-result-ext"], "test-result-ext");
+      cfg->testResultExts = toVector<std::string>(root["test-result-ext"], "test-result-ext");
     }
+    if (root["timeout"]) cfg->timeout = root["timeout"].as<size_t>();
+    if (root["kill-after"]) cfg->killAfter = root["kill-after"].as<size_t>();
+
+    if (root["scope"]) cfg->scope = root["scope"].as<std::string>();
+    if (root["extension"]) cfg->extensions = toVector<std::string>(root["extension"], "extension");
+    if (root["pattern"]) cfg->patterns = toVector<std::string>(root["pattern"], "pattern");
+    if (root["exclude"]) cfg->excludes = toVector<std::string>(root["exclude"], "exclude");
+    if (root["generator"]) cfg->generator = root["generator"].as<std::string>();
+    if (root["operator"]) cfg->operators = toVector<std::string>(root["operator"], "operator");
     if (root["coverage"]) {
-      cfg.coverageFiles = toVector<fs::path>(root["coverage"], "coverage");
-    }
-    if (root["generator"]) {
-      cfg.generator = root["generator"].as<std::string>();
-    }
-    if (root["timeout"]) {
-      cfg.timeout = root["timeout"].as<std::string>();
-    }
-    if (root["kill-after"]) {
-      cfg.killAfter = root["kill-after"].as<std::string>();
-    }
-    if (root["seed"]) {
-      cfg.seed = root["seed"].as<unsigned int>();
-    }
-    if (root["operator"]) {
-      cfg.operators = toVector<std::string>(root["operator"], "operator");
-    }
-    if (root["threshold"]) {
-      cfg.threshold = root["threshold"].as<double>();
-    }
-    if (root["partition"]) {
-      cfg.partition = root["partition"].as<std::string>();
+      auto files = toVector<fs::path>(root["coverage"], "coverage");
+      cfg->coverageFiles.clear();
+      for (const auto& f : files) {
+        cfg->coverageFiles.push_back(resolvePath(base, f.string()));
+      }
     }
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }
-
-  return cfg;
 }
 
 }  // namespace sentinel

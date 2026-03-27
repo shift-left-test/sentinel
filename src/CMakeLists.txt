@@ -16,7 +16,7 @@ build_static_library(
        operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
        operators/MutationOperator.cpp Subprocess.cpp
        docGenerator/IndexHtmlGenerator.cpp docGenerator/SrcHtmlGenerator.cpp
-       CliConfigParser.cpp YamlConfigParser.cpp YamlConfigWriter.cpp Config.cpp ConfigResolver.cpp ConfigValidator.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp SignalHandler.cpp
+       CliConfigParser.cpp YamlConfigParser.cpp YamlConfigWriter.cpp Config.cpp ConfigValidator.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp SignalHandler.cpp
        stages/OriginalBuildStage.cpp stages/OriginalTestStage.cpp
        stages/GenerationStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
   PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include

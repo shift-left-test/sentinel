@@ -49,18 +49,18 @@ bool EvaluationStage::execute() {
   mStatusLine->setTotalMutants(totalMutants);
 
   // Determine timeout
-  const bool isAutoTimeout = (*mConfig.timeout == "auto");
+  const bool isAutoTimeout = !mConfig.timeout.has_value();
   std::size_t computedTimeLimit = 0;
   if (isAutoTimeout) {
     auto status = mWorkspace->loadStatus();
     computedTimeLimit = status.originalTime.value_or(0);
   } else {
-    computedTimeLimit = std::stoul(*mConfig.timeout);
+    computedTimeLimit = *mConfig.timeout;
   }
-  const std::size_t killAfterSecs = std::stoul(*mConfig.killAfter);
+  const std::size_t killAfterSecs = mConfig.killAfter;
 
-  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), *mConfig.sourceDir);
-  auto sourceRoot = std::filesystem::canonical(*mConfig.sourceDir);
+  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), mConfig.sourceDir);
+  auto sourceRoot = std::filesystem::canonical(mConfig.sourceDir);
   std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
@@ -118,11 +118,11 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
   const fs::path backupDir = mWorkspace->getBackupDir();
   const fs::path actualDir = mWorkspace->getActualDir();
 
-  auto repo = std::make_unique<GitRepository>(*mConfig.sourceDir, *mConfig.extensions);
+  auto repo = std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions);
   repo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
-  Subprocess mBuild(*mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(),
+  Subprocess mBuild(mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(),
                     !isVerbose());
   mBuild.execute();
   const double buildSecs = buildTimer.toDouble();
@@ -130,8 +130,8 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
   double testSecs = 0.0;
   TestExecutionState testState = TestExecutionState::SUCCESS;
   if (mBuild.isSuccessfulExit()) {
-    fs::remove_all(*mConfig.testResultDir);
-    Subprocess mTest(*mConfig.testCmd, timeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
+    fs::remove_all(mConfig.testResultDir);
+    Subprocess mTest(mConfig.testCmd, timeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
                      !isVerbose());
     Timestamper testTimer;
     mTest.execute();
@@ -139,14 +139,14 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
     if (mTest.isTimedOut()) {
       testState = TestExecutionState::TIMEOUT;
     } else {
-      io::syncFiles(*mConfig.testResultDir, actualDir, *mConfig.testResultExts);
+      io::syncFiles(mConfig.testResultDir, actualDir, mConfig.testResultExts);
     }
   } else {
     testState = TestExecutionState::BUILD_FAILURE;
   }
 
   MutationResult result = evaluator->compare(m, actualDir, testState);
-  mWorkspace->restoreBackup(*mConfig.sourceDir);
+  mWorkspace->restoreBackup(mConfig.sourceDir);
   fs::remove_all(actualDir);
   return {result, buildSecs, testSecs};
 }
