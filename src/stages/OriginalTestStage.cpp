@@ -27,7 +27,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static constexpr std::size_t kAutoTimeoutPaddingSecs = 10;
+static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
 
 // Serializes resolved config to YAML for workspace/config.yaml.
 // Writes mConfig.timeout verbatim ("auto" or numeric string) — NOT a computed integer.
