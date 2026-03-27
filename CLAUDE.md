@@ -143,3 +143,4 @@ C++ syntax and style rules:
 - Const correctness — apply `const` to variables, parameters, and member functions that do not modify state
 - No magic numbers or strings — use named constants (e.g., `static constexpr`)
 - Error handling — use `std::runtime_error` with `fmt::format` for error messages; throw on unrecoverable errors, propagate exceptions up the call stack
+- For classes with virtual functions, `= default` definitions of special member functions (destructor, copy, move) must be placed out-of-line in the `.cpp` file — inline `= default` in headers causes gcov instrumentation conflicts across translation units, breaking `make coverage`.

@@ -12,22 +12,13 @@
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
 #include <filesystem>  // NOLINT
-#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "sentinel/MutantGenerator.hpp"
-#include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
-#include "sentinel/operators/MutationOperator.hpp"
-#include "sentinel/operators/aor.hpp"
-#include "sentinel/operators/bor.hpp"
-#include "sentinel/operators/lcr.hpp"
-#include "sentinel/operators/ror.hpp"
-#include "sentinel/operators/sdl.hpp"
-#include "sentinel/operators/sor.hpp"
-#include "sentinel/operators/uoi.hpp"
 
 namespace sentinel {
 
@@ -37,7 +28,10 @@ namespace sentinel {
 using DepthMap = std::map<SourceLine, int>;
 
 /**
- * @brief WeightedMutantGenerator class
+ * @brief Weighted mutant generator — prioritizes deeper AST nodes.
+ *
+ * Overrides collectAllMutants() to use its own AST visitor that tracks
+ * DepthMap alongside mutant collection.
  */
 class WeightedMutantGenerator : public MutantGenerator {
  public:
@@ -48,33 +42,34 @@ class WeightedMutantGenerator : public MutantGenerator {
    */
   explicit WeightedMutantGenerator(const std::filesystem::path& path);
 
-  Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed) override;
+ protected:
+  Mutants collectAllMutants(const SourceLines& sourceLines) override;
+
+  Mutants selectMutants(const SourceLines& sourceLines, std::size_t maxMutants,
+                        unsigned int randomSeed, const CandidateIndex& index) override;
 
  private:
-  std::filesystem::path mDbPath;
+  DepthMap mDepthMap;
 
   /**
-   * @brief SentinelASTVistor class
-   *        defines what to do at each type of AST node.
+   * @brief Extended AST visitor that also computes AST depth for each target line.
    */
-  class SentinelASTVisitor : public clang::RecursiveASTVisitor<SentinelASTVisitor> {
+  class DepthAwareASTVisitor : public clang::RecursiveASTVisitor<DepthAwareASTVisitor> {
    public:
     /**
-     * @brief Default constructor
+     * @brief Construct a depth-aware visitor for collecting mutants and AST depth.
      *
      * @param context Clang AST context
      * @param mutables list of generated mutables
-     * @param targetLines list of target line numbers
+     * @param targetLines list of target source lines
      * @param depthMap map from source line to AST depth
      * @param selectedOps list of operator names to use (empty means all)
      */
-    SentinelASTVisitor(clang::ASTContext* context, Mutants* mutables, const SourceLines& targetLines,
-                       DepthMap* depthMap, const std::vector<std::string>& selectedOps);
+    DepthAwareASTVisitor(clang::ASTContext* context, Mutants* mutables,
+                         const SourceLines& targetLines, DepthMap* depthMap,
+                         const std::vector<std::string>& selectedOps);
 
-    /**
-     * @brief Default destructor
-     */
-    virtual ~SentinelASTVisitor();
+    ~DepthAwareASTVisitor();
 
     /**
      * @brief Callback function each time the visitor meets a Stmt node.
@@ -104,32 +99,26 @@ class WeightedMutantGenerator : public MutantGenerator {
   };
 
   /**
-   * @brief SentinelASTConsumer class
+   * @brief Depth-aware AST consumer.
    */
-  class SentinelASTConsumer : public clang::ASTConsumer {
+  class DepthAwareASTConsumer : public clang::ASTConsumer {
    public:
     /**
-     * @brief Default constructor
+     * @brief Construct a depth-aware AST consumer.
      *
      * @param ci Clang compiler instance
      * @param mutables list of generated mutables
-     * @param targetLines list of target line numbers
+     * @param targetLines list of target source lines
      * @param depthMap map from source line to AST depth
      * @param selectedOps list of operator names to use (empty means all)
      */
-    SentinelASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables, const SourceLines& targetLines,
-                        DepthMap* depthMap, const std::vector<std::string>& selectedOps);
+    DepthAwareASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables,
+                          const SourceLines& targetLines, DepthMap* depthMap,
+                          const std::vector<std::string>& selectedOps);
 
-    /**
-     * @brief A callback function triggered when ASTs for translation unit
-     *        has been parsed and ready for traversal.
-     *
-     * @param context Clang object holding long-lived AST nodes.
-     */
     void HandleTranslationUnit(clang::ASTContext& context) override;
 
    private:
-    // SentinelASTVisitor mVisitor;
     Mutants* mMutants;
     SourceLines mTargetLines;
     DepthMap* mDepthMap;
@@ -137,29 +126,23 @@ class WeightedMutantGenerator : public MutantGenerator {
   };
 
   /**
-   * @brief GenerateMutantAction class
+   * @brief Depth-aware Clang frontend action.
    */
-  class GenerateMutantAction : public clang::ASTFrontendAction {
+  class DepthAwareAction : public clang::ASTFrontendAction {
    public:
     /**
-     * @brief Default constructor
+     * @brief Construct a depth-aware frontend action.
      *
      * @param mutables list of generated mutables (output)
-     * @param targetLines list of target line numbers
+     * @param targetLines list of target source lines
      * @param depthMap map from source line to AST depth
      * @param selectedOps list of operator names to use (empty means all)
      */
-    GenerateMutantAction(Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap,
-                         const std::vector<std::string>& selectedOps);
+    DepthAwareAction(Mutants* mutables, const SourceLines& targetLines,
+                     DepthMap* depthMap, const std::vector<std::string>& selectedOps);
 
-    /**
-     * @brief Create an ASTConsumer object to identify mutation locations
-     *        in the AST of target file.
-     *
-     * @param ci Clang compiler management object
-     * @param inFile target file
-     */
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& ci, llvm::StringRef inFile) override;
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
+        clang::CompilerInstance& ci, llvm::StringRef inFile) override;
 
    protected:
     void ExecuteAction() override;
@@ -172,14 +155,14 @@ class WeightedMutantGenerator : public MutantGenerator {
   };
 
   /**
-   * @brief Returns a new FrontendActionFactory for GenerateMutantAction
+   * @brief Returns a new FrontendActionFactory for DepthAwareAction
    *
    * @param mutables list of generated mutables
-   * @param targetLines list of target line numbers
+   * @param targetLines list of target source lines
    * @param depthMap map from source line to AST depth
    * @param selectedOps list of operator names to use (empty means all)
    */
-  std::unique_ptr<clang::tooling::FrontendActionFactory> myNewFrontendActionFactory(
+  std::unique_ptr<clang::tooling::FrontendActionFactory> createDepthAwareActionFactory(
       Mutants* mutables, const SourceLines& targetLines, DepthMap* depthMap,
       const std::vector<std::string>& selectedOps);
 };

@@ -1,23 +1,39 @@
 /*
- * Copyright (c) 2026 LG Electronics Inc.
+ * Copyright (c) 2020 LG Electronics Inc.
  * SPDX-License-Identifier: MIT
  */
 
+#include <clang/Lex/Lexer.h>
+#include <clang/Tooling/CompilationDatabase.h>
+#include <clang/Tooling/Tooling.h>
 #include <fmt/core.h>
+#include <algorithm>
 #include <exception>
 #include <filesystem>  // NOLINT
+#include <future>
+#include <iterator>
+#include <map>
 #include <memory>
 #include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 #include "sentinel/MutantGenerator.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
+MutantGenerator::~MutantGenerator() = default;
+
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
 std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string& generator,
                                                               const std::filesystem::path& directory) {
   if (generator == "uniform") {
@@ -30,6 +46,233 @@ std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string&
     return std::make_shared<WeightedMutantGenerator>(directory);
   }
   throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", generator));
+}
+
+// ---------------------------------------------------------------------------
+// Template Method: generate()
+// ---------------------------------------------------------------------------
+Mutants MutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants,
+                                  unsigned int randomSeed) {
+  mCandidateCount = 0;
+  mLinesByPath.clear();
+
+  Mutants allMutants = collectAllMutants(sourceLines);
+  CandidateIndex index = buildCandidateIndex(std::move(allMutants));
+  return selectMutants(sourceLines, maxMutants, randomSeed, index);
+}
+
+// ---------------------------------------------------------------------------
+// collectAllMutants — default implementation using shared AST visitor
+// ---------------------------------------------------------------------------
+Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
+  Mutants mutables;
+  std::string errorMsg;
+  std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
+      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
+
+  if (compileDb == nullptr) {
+    throw IOException(EINVAL, errorMsg);
+  }
+
+  std::map<fs::path, std::vector<std::size_t>> targetLines;
+  for (const auto& sourceLine : sourceLines) {
+    fs::path filename = sourceLine.getPath();
+    targetLines[filename].push_back(sourceLine.getLineNumber());
+  }
+
+  unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
+  auto savedCwd = fs::current_path();
+  auto* db = compileDb.get();
+
+  auto fileIt = targetLines.begin();
+  while (fileIt != targetLines.end()) {
+    std::vector<std::future<Mutants>> futures;
+    for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
+      futures.push_back(
+          std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
+            Mutants localMutables;
+            clang::tooling::ClangTool tool(*db, filename.string());
+            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
+            tool.run(createActionFactory(&localMutables, lines, mSelectedOperators).get());
+            return localMutables;
+          }));
+    }
+    for (auto& fut : futures) {
+      auto localMutables = fut.get();
+      mutables.insert(mutables.end(), std::make_move_iterator(localMutables.begin()),
+                      std::make_move_iterator(localMutables.end()));
+    }
+  }
+  fs::current_path(savedCwd);
+
+  return mutables;
+}
+
+// ---------------------------------------------------------------------------
+// buildCandidateIndex
+// ---------------------------------------------------------------------------
+CandidateIndex MutantGenerator::buildCandidateIndex(Mutants mutants) {
+  CandidateIndex index;
+  index.allMutants = std::move(mutants);
+
+  for (const auto& m : index.allMutants) {
+    index.mutantsByFile[m.getPath()].push_back(&m);
+  }
+  for (auto& entry : index.mutantsByFile) {
+    std::sort(entry.second.begin(), entry.second.end(),
+              [](const Mutant* a, const Mutant* b) { return a->getFirst().line < b->getFirst().line; });
+  }
+
+  return index;
+}
+
+// ---------------------------------------------------------------------------
+// findCandidatesForLine — shared binary-search + filter helper
+// ---------------------------------------------------------------------------
+void MutantGenerator::findCandidatesForLine(const CandidateIndex& index, const std::filesystem::path& canonPath,
+                                            std::size_t targetLine, std::vector<const Mutant*>* out) {
+  out->clear();
+  auto mutantsByFileIt = index.mutantsByFile.find(canonPath);
+  if (mutantsByFileIt == index.mutantsByFile.end()) {
+    return;
+  }
+
+  const auto& fileVec = mutantsByFileIt->second;
+  auto endIt = std::upper_bound(fileVec.begin(), fileVec.end(), targetLine,
+                                [](std::size_t t, const Mutant* m) { return t < m->getFirst().line; });
+
+  std::copy_if(fileVec.begin(), endIt, std::back_inserter(*out),
+               [targetLine](const Mutant* m) { return m->getLast().line >= targetLine; });
+}
+
+// ---------------------------------------------------------------------------
+// SentinelASTVisitor
+// ---------------------------------------------------------------------------
+MutantGenerator::SentinelASTVisitor::SentinelASTVisitor(clang::ASTContext* context, Mutants* mutables,
+                                                        const std::vector<std::size_t>& targetLines,
+                                                        const std::vector<std::string>& selectedOps) :
+    mContext(context), mSrcMgr(context->getSourceManager()), mMutants(mutables), mTargetLines(targetLines) {
+  std::sort(mTargetLines.begin(), mTargetLines.end());
+  initOperators(context, selectedOps);
+}
+
+MutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() = default;
+
+void MutantGenerator::SentinelASTVisitor::initOperators(clang::ASTContext* context,
+                                                        const std::vector<std::string>& selectedOps) {
+  auto include = [&selectedOps](const std::string& name) {
+    return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
+  };
+  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(context));
+  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(context));
+  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(context));
+  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(context));
+  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(context));
+  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(context));
+  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(context));
+}
+
+bool MutantGenerator::SentinelASTVisitor::isOnTargetLine(std::size_t startLineNum, std::size_t endLineNum) const {
+  auto lo = std::lower_bound(mTargetLines.begin(), mTargetLines.end(), startLineNum);
+  return lo != mTargetLines.end() && *lo <= endLineNum;
+}
+
+void MutantGenerator::SentinelASTVisitor::populateMutants(clang::Stmt* s) {
+  for (const auto& m : mMutationOperators) {
+    if (m->canMutate(s)) {
+      m->populate(s, mMutants);
+    }
+  }
+}
+
+bool MutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
+  clang::SourceLocation startLoc = s->getBeginLoc();
+  clang::SourceLocation endLoc = s->getEndLoc();
+
+  if (startLoc.isMacroID()) {
+    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(startLoc);
+    startLoc = range.getBegin();
+  }
+
+  if (endLoc.isMacroID()) {
+    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(endLoc);
+    endLoc = clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mSrcMgr, mContext->getLangOpts());
+  }
+
+  std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
+  std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
+
+  if (isOnTargetLine(startLineNum, endLineNum)) {
+    populateMutants(s);
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// SentinelASTConsumer
+// ---------------------------------------------------------------------------
+MutantGenerator::SentinelASTConsumer::SentinelASTConsumer(const clang::CompilerInstance& ci, Mutants* mutables,
+                                                          const std::vector<std::size_t>& targetLines,
+                                                          const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
+}
+
+void MutantGenerator::SentinelASTConsumer::HandleTranslationUnit(clang::ASTContext& context) {
+  SentinelASTVisitor visitor(&context, mMutants, mTargetLines, mSelectedOps);
+  visitor.TraverseDecl(context.getTranslationUnitDecl());
+}
+
+// ---------------------------------------------------------------------------
+// GenerateMutantAction
+// ---------------------------------------------------------------------------
+MutantGenerator::GenerateMutantAction::GenerateMutantAction(Mutants* mutables,
+                                                            const std::vector<std::size_t>& targetLines,
+                                                            const std::vector<std::string>& selectedOps) :
+    mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
+}
+
+std::unique_ptr<clang::ASTConsumer> MutantGenerator::GenerateMutantAction::CreateASTConsumer(
+    clang::CompilerInstance& ci, llvm::StringRef inFile) {
+  ci.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
+  return std::make_unique<SentinelASTConsumer>(ci, mMutants, mTargetLines, mSelectedOps);
+}
+
+void MutantGenerator::GenerateMutantAction::ExecuteAction() {
+  clang::ASTFrontendAction::ExecuteAction();
+}
+
+// ---------------------------------------------------------------------------
+// createActionFactory
+// ---------------------------------------------------------------------------
+std::unique_ptr<clang::tooling::FrontendActionFactory> MutantGenerator::createActionFactory(
+    Mutants* mutables, const std::vector<std::size_t>& targetLines,
+    const std::vector<std::string>& selectedOps) {
+  class SimpleFrontendActionFactory : public clang::tooling::FrontendActionFactory {
+   public:
+    SimpleFrontendActionFactory(Mutants* mutables, const std::vector<std::size_t>& targetLines,
+                                const std::vector<std::string>& selectedOps) :
+        mMutants(mutables), mTargetLines(targetLines), mSelectedOps(selectedOps) {
+    }
+
+#if LLVM_VERSION_MAJOR >= 10
+    std::unique_ptr<clang::FrontendAction> create() override {
+      return std::make_unique<GenerateMutantAction>(mMutants, mTargetLines, mSelectedOps);
+    }
+#else
+    clang::FrontendAction* create() override {
+      return new GenerateMutantAction(mMutants, mTargetLines, mSelectedOps);
+    }
+#endif
+
+   private:
+    Mutants* mMutants;
+    const std::vector<std::size_t>& mTargetLines;
+    const std::vector<std::string>& mSelectedOps;
+  };
+
+  return std::unique_ptr<clang::tooling::FrontendActionFactory>(
+      new SimpleFrontendActionFactory(mutables, targetLines, selectedOps));
 }
 
 }  // namespace sentinel
