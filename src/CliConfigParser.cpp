@@ -11,22 +11,23 @@ namespace sentinel {
 
 CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mGroupRunCtrl(parser, "Run options:"),
+    mGroupSetup(parser, "Setup options:"),
     mGroupBuildTest(parser, "Build & test options:"),
     mGroupMutation(parser, "Mutation options:"),
+    mGroupAdvanced(parser, "Advanced options:"),
     mConfigFile(mGroupRunCtrl, "PATH", "Path to a YAML config file (default: sentinel.yaml in current directory)",
                 {"config"}),
-    mInit(mGroupRunCtrl, "init", "Write a sentinel.yaml config template to the current directory and exit", {"init"}),
-    mForce(mGroupRunCtrl, "force", "Overwrite existing files (used with --init).", {"force"}),
     mWorkDir(mGroupRunCtrl, "PATH", "Workspace directory for all sentinel run artifacts.", {"workspace"}),
     mClean(mGroupRunCtrl, "clean", "Clear workspace and start a fresh run.", {"clean"}),
     mOutputDir(mGroupRunCtrl, "PATH", "Directory for output reports.", {'o', "output-dir"}),
     mDryRun(mGroupRunCtrl, "dry-run",
             "Build, test, and generate mutants then exit; prints a readiness summary without evaluating mutants",
             {"dry-run"}),
-    mThreshold(mGroupRunCtrl, "PCT", "Fail with exit code 3 if mutation score is below this percentage (0–100)",
-               {"threshold"}),
     mVerbose(mGroupRunCtrl, "verbose", "Show build/test subprocess output and enable verbose logging.", {"verbose"}),
-    mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode", {"no-statusline"}),
+    mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
+                  {"no-statusline"}),
+    mInit(mGroupSetup, "init", "Write a sentinel.yaml config template to the current directory and exit", {"init"}),
+    mForce(mGroupSetup, "force", "Overwrite existing files (used with --init).", {"force"}),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}),
     mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project", {"build-command"}),
     mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",
@@ -46,12 +47,14 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mLimit(mGroupMutation, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
     mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: uniform, random, weighted", {"generator"}),
     mSeed(mGroupMutation, "N", "Random seed for mutant selection ('auto' = pick randomly)", {"seed"}),
-    mOperators(mGroupMutation, "OP", "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI",
-               {"operator"}),
-    mCoverageFiles(mGroupMutation, "FILE", "lcov coverage info file; limits mutation to covered lines only",
+    mOperators(mGroupMutation, "OP",
+               "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI", {"operator"}),
+    mCoverageFiles(mGroupAdvanced, "FILE", "lcov coverage info file; limits mutation to covered lines only",
                    {"coverage"}),
-    mPartition(mGroupMutation, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
-               {"partition"}) {
+    mPartition(mGroupAdvanced, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
+               {"partition"}),
+    mThreshold(mGroupAdvanced, "PCT", "Fail with exit code 3 if mutation score is below this percentage (0-100)",
+               {"threshold"}) {
 }
 
 Config CliConfigParser::getConfig() {

@@ -11,14 +11,6 @@ output-dir: ./sentinel_output
 ## Workspace directory for all sentinel run artifacts (default: ./.sentinel)
 # workspace: ./.sentinel
 
-# --- Run options ---
-
-## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
-# threshold: 80
-
-## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
-# partition: 1/1
-
 # --- Build & test options ---
 
 ## Source root directory (default: .)
@@ -91,5 +83,13 @@ limit: 10
 #   - SOR  # Shift Operator Replacement       (<<, >>)
 #   - UOI  # Unary Operator Insertion         (-x, !x)
 
+# --- Advanced options ---
+
 ## lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
+
+## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
+# partition: 1/1
+
+## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
+# threshold: 80

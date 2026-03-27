@@ -331,15 +331,19 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--config=PATH` | YAML config file path. When the config is in a different directory, sentinel changes to that location before running; a pre-run warning is shown. | `sentinel.yaml` (auto-detected) |
-| `--init` | Write a `sentinel.yaml` config template and exit | |
-| `--force` | Overwrite existing files (used with `--init`) | |
 | `-w, --workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
 | `--clean` | Clear workspace and start a fresh run instead of resuming | |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
 | `--dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |
-| `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0–100). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 | `--verbose` | Show build/test subprocess output and enable verbose logging to stderr | |
 | `--no-statusline` | Disable the live terminal status line | |
+
+#### Setup options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--init` | Write a `sentinel.yaml` config template and exit | |
+| `--force` | Overwrite existing files (used with `--init`) | |
 
 #### Build & test options
 
@@ -363,11 +367,17 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `-p, --pattern=PATTERN` | Git pathspec patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Absolute paths trigger a pre-run warning. | |
 | `-e, --exclude=PATTERN` | fnmatch patterns matched against canonical absolute file paths (repeatable). Patterns without a leading `*` or ending in `/` trigger a pre-run warning. | |
 | `-l, --limit=N` | Maximum number of mutants to generate; `0` = evaluate all candidates (triggers pre-run warning) | `0` |
-| `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). Requires `--seed` to be explicitly set so every partition instance generates an identical mutant list. The union of all partition results equals a single non-partitioned run. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--seed=N` | Random seed for mutant selection | random |
 | `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |
+
+#### Advanced options
+
+| Option | Description | Default |
+|--------|-------------|---------|
 | `--coverage=FILE` | lcov coverage info file; limits mutation to covered lines (repeatable) | |
+| `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). Requires `--seed` to be explicitly set so every partition instance generates an identical mutant list. The union of all partition results equals a single non-partitioned run. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
+| `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0–100). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 
 ---
 
@@ -419,14 +429,6 @@ version: 1
 
 ## Workspace directory for all sentinel run artifacts (default: ./.sentinel)
 # workspace: ./.sentinel
-
-# --- Run options ---
-
-## Fail with exit code 3 if mutation score is below this percentage 0–100 (default: disabled)
-# threshold: 80
-
-## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
-# partition: 1/1
 
 # --- Build & test options ---
 
@@ -497,8 +499,16 @@ version: 1
 #   - SOR  # Shift Operator Replacement       (<<, >>)
 #   - UOI  # Unary Operator Insertion         (-x, !x)
 
+# --- Advanced options ---
+
 ## lcov-format coverage result files; limits mutation to covered lines only (default: none)
 # coverage: []
+
+## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
+# partition: 1/1
+
+## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
+# threshold: 80
 ```
 
 ---

@@ -28,14 +28,6 @@ static const char* const kYamlTemplate =
     "## Workspace directory for all sentinel run artifacts (default: ./.sentinel)\n"
     "# workspace: ./.sentinel\n"
     "\n"
-    "# --- Run options ---\n"
-    "\n"
-    "## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)\n"
-    "# threshold: 80\n"
-    "\n"
-    "## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed\n"
-    "# partition: 1/1\n"
-    "\n"
     "# --- Build & test options ---\n"
     "\n"
     "## Source root directory (default: .)\n"
@@ -105,8 +97,16 @@ static const char* const kYamlTemplate =
     "#   - SOR  # Shift Operator Replacement       (<<, >>)\n"
     "#   - UOI  # Unary Operator Insertion         (-x, !x)\n"
     "\n"
+    "# --- Advanced options ---\n"
+    "\n"
     "## lcov-format coverage result files; limits mutation to covered lines only (default: none)\n"
-    "# coverage: []\n";
+    "# coverage: []\n"
+    "\n"
+    "## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed\n"
+    "# partition: 1/1\n"
+    "\n"
+    "## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)\n"
+    "# threshold: 80\n";
 
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);

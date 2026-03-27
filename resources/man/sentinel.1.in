@@ -27,14 +27,6 @@ config and build/test commands are resolved from that location.
 When omitted, \fBsentinel.yaml\fR in the current directory is used
 automatically if it exists.
 .TP
-\fB\-\-init\fR
-Write a \fBsentinel.yaml\fR config template to the current directory and exit.
-Errors if the file already exists; use \fB\-\-force\fR to overwrite.
-.TP
-\fB\-\-force\fR
-Overwrite existing files. Currently only affects \fB\-\-init\fR: allows overwriting
-an existing \fBsentinel.yaml\fR without error.
-.TP
 \fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
 Directory for all run artifacts. Default: \fB./.sentinel\fR
 .TP
@@ -52,17 +44,21 @@ evaluating any mutants.
 The workspace is preserved so that the next \fBsentinel\fR invocation (without \fB\-\-dry\-run\fR)
 resumes directly at the evaluation phase, skipping build and generation.
 .TP
-\fB\-\-threshold\fR=\fIPCT\fR
-Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
-A one-line score summary is always written to stderr at the end of the run.
-If no evaluable mutants exist, the threshold is not applied.
-.TP
 \fB\-\-verbose\fR
 Show build/test subprocess output on the terminal and enable verbose logging to stderr.
 By default, subprocess output is suppressed (still written to workspace log files).
 .TP
 \fB\-\-no\-statusline\fR
 Disable the live status line shown at the bottom of the terminal in TTY mode.
+.SS Setup options
+.TP
+\fB\-\-init\fR
+Write a \fBsentinel.yaml\fR config template to the current directory and exit.
+Errors if the file already exists; use \fB\-\-force\fR to overwrite.
+.TP
+\fB\-\-force\fR
+Overwrite existing files. Currently only affects \fB\-\-init\fR: allows overwriting
+an existing \fBsentinel.yaml\fR without error.
 .SS Build & test options
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR
@@ -110,15 +106,6 @@ Exclude files/directories matching an fnmatch-style pattern (repeatable).
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
 Maximum number of mutants to generate. \fB0\fR = evaluate all candidates. Default: \fB0\fR
 .TP
-\fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
-Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL
-partitions (1-based, e.g., \fB\-\-partition=2/5\fR).
-Requires \fB\-\-seed\fR to be explicitly set so that every partition instance generates an
-identical mutant list.
-The union of all partition results is equivalent to a single non-partitioned run.
-\fBNote:\fR source isolation and workspace separation between partition instances are the
-responsibility of the calling environment.
-.TP
 \fB\-\-generator\fR=\fITYPE\fR
 Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR
 .TP
@@ -129,10 +116,25 @@ Random seed for mutant selection. Default: random.
 Mutation operator to apply (repeatable). Valid values:
 \fBAOR\fR, \fBBOR\fR, \fBLCR\fR, \fBROR\fR, \fBSDL\fR, \fBSOR\fR, \fBUOI\fR.
 Defaults to all operators when omitted.
+.SS Advanced options
 .TP
 \fB\-\-coverage\fR=\fIFILE\fR
 lcov coverage info file (repeatable). When given, only source lines covered by
 tests are considered for mutation.
+.TP
+\fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
+Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL
+partitions (1-based, e.g., \fB\-\-partition=2/5\fR).
+Requires \fB\-\-seed\fR to be explicitly set so that every partition instance generates an
+identical mutant list.
+The union of all partition results is equivalent to a single non-partitioned run.
+\fBNote:\fR source isolation and workspace separation between partition instances are the
+responsibility of the calling environment.
+.TP
+\fB\-\-threshold\fR=\fIPCT\fR
+Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
+A one-line score summary is always written to stderr at the end of the run.
+If no evaluable mutants exist, the threshold is not applied.
 .SH COVERAGE-GUIDED MUTATION
 The \fB\-\-coverage\fR option accepts an lcov coverage info file and restricts mutation
 to source lines that are actually executed by the test suite.

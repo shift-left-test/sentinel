@@ -43,18 +43,18 @@ class CliConfigParser {
   // Groups
   /** @brief Argument group for runtime control options. */
   args::Group mGroupRunCtrl;
+  /** @brief Argument group for setup options. */
+  args::Group mGroupSetup;
   /** @brief Argument group for build and test options. */
   args::Group mGroupBuildTest;
   /** @brief Argument group for mutation strategy options. */
   args::Group mGroupMutation;
+  /** @brief Argument group for advanced options. */
+  args::Group mGroupAdvanced;
 
-  // Options (from Command and CommandRun)
+  // Run options
   /** @brief Path to the configuration file. */
   args::ValueFlag<std::filesystem::path> mConfigFile;
-  /** @brief Command line flag to initialize the project. */
-  args::Flag mInit;
-  /** @brief Command line flag to force operations. */
-  args::Flag mForce;
   /** @brief Command line flag for working directory. */
   args::ValueFlag<std::filesystem::path> mWorkDir;
   /** @brief Command line flag to clear workspace and start fresh. */
@@ -63,13 +63,18 @@ class CliConfigParser {
   args::ValueFlag<std::filesystem::path> mOutputDir;
   /** @brief Command line flag for dry run. */
   args::Flag mDryRun;
-  /** @brief Command line flag for mutation threshold. */
-  args::ValueFlag<double> mThreshold;
   /** @brief Command line flag for verbose mode. */
   args::Flag mVerbose;
   /** @brief Command line flag to hide the status line. */
   args::Flag mNoStatusLine;
 
+  // Setup options
+  /** @brief Command line flag to initialize the project. */
+  args::Flag mInit;
+  /** @brief Command line flag to force operations. */
+  args::Flag mForce;
+
+  // Build & test options
   /** @brief Command line flag for source directory. */
   args::ValueFlag<std::filesystem::path> mSourceDir;
   /** @brief Command line flag for build command. */
@@ -87,6 +92,7 @@ class CliConfigParser {
   /** @brief Command line flag for kill after timeout. */
   args::ValueFlag<std::string> mKillAfter;
 
+  // Mutation options
   /** @brief Command line flag for mutation scope. */
   args::ValueFlag<std::string> mScope;
   /** @brief Command line flag for source file extensions. */
@@ -103,10 +109,14 @@ class CliConfigParser {
   args::ValueFlag<std::string> mSeed;
   /** @brief Command line flag for mutation operators. */
   args::ValueFlagList<std::string> mOperators;
+
+  // Advanced options
   /** @brief Command line flag for coverage files. */
   args::ValueFlagList<std::filesystem::path> mCoverageFiles;
   /** @brief Command line flag for execution partition. */
   args::ValueFlag<std::string> mPartition;
+  /** @brief Command line flag for mutation threshold. */
+  args::ValueFlag<double> mThreshold;
 };
 
 }  // namespace sentinel
