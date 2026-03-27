@@ -27,6 +27,8 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
+static constexpr std::size_t kAutoTimeoutPaddingSecs = 10;
+
 // Serializes resolved config to YAML for workspace/config.yaml.
 // Writes mConfig.timeout verbatim ("auto" or numeric string) — NOT a computed integer.
 static std::string buildWorkspaceYaml(const Config& cfg) {
@@ -109,8 +111,7 @@ bool OriginalTestStage::execute() {
   const double testElapsed = testTimer.toDouble();
 
   if (*mConfig.timeout == "auto") {
-    computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * 2.0));
-    if (computedTimeLimit < 1) computedTimeLimit = 1;
+    computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * 2.0)) + kAutoTimeoutPaddingSecs;
     Logger::info("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;
