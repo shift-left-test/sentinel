@@ -4,13 +4,11 @@
  */
 
 #include <fmt/core.h>
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
-#include "sentinel/Console.hpp"
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
@@ -54,30 +52,26 @@ bool ReportStage::execute() {
     Logger::info("Reports saved to {}", *mConfig.outputDir);
   }
 
-  // Compute mutation score for summary and threshold check.
-  const std::size_t total = results.size();
   std::optional<double> score;
-  if (total > 0) {
-    const std::size_t killed = static_cast<std::size_t>(
-        std::count_if(results.begin(), results.end(), [](const MutationResult& r) { return r.getDetected(); }));
-    score = 100.0 * static_cast<double>(killed) / static_cast<double>(total);
+  if (summary.totNumberOfMutation > 0) {
+    score = 100.0 * static_cast<double>(summary.totNumberOfDetectedMutation) /
+            static_cast<double>(summary.totNumberOfMutation);
   }
 
-  // Print final summary line.
-  std::string summaryLine = fmt::format("Mutation testing complete {} {} mutant{}",
-                                        Utf8Char::EmDash, total, total == 1 ? "" : "s");
-  if (score) {
-    summaryLine += fmt::format(", score: {:.1f}%", *score);
-  }
+  std::string scoreStr = score ? fmt::format("{:.1f}%", *score) : "-";
   if (mConfig.threshold) {
-    auto icon = (score && *score >= *mConfig.threshold) ? Utf8Char::CheckMark : Utf8Char::CrossMark;
-    summaryLine += fmt::format(" (threshold: {:.1f}% {})", *mConfig.threshold, icon);
-  }
-  Console::out("");
-  Console::out("{}", summaryLine);
-
-  if (mConfig.threshold && score && *score < *mConfig.threshold) {
-    throw ThresholdError(*score, *mConfig.threshold);
+    bool passed = !score || *score >= *mConfig.threshold;
+    auto icon = passed ? Utf8Char::CheckMark : Utf8Char::CrossMark;
+    std::string msg = fmt::format("Mutation testing complete {} {} {} (threshold: {:.1f}%)",
+                                  Utf8Char::EmDash, scoreStr, icon, *mConfig.threshold);
+    if (passed) {
+      Logger::info("{}", msg);
+    } else {
+      Logger::error("{}", msg);
+      throw ThresholdError(*score, *mConfig.threshold);
+    }
+  } else {
+    Logger::info("Mutation testing complete {} {}", Utf8Char::EmDash, scoreStr);
   }
   return false;
 }

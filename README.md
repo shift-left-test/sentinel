@@ -377,7 +377,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `--coverage=FILE` | lcov coverage info file; limits mutation to covered lines (repeatable) | |
 | `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). Requires `--seed` to be explicitly set so every partition instance generates an identical mutant list. The union of all partition results equals a single non-partitioned run. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
-| `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0–100). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
+| `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0.0–100.0). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 
 ---
 
@@ -507,8 +507,8 @@ version: 1
 ## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
 # partition: 1/1
 
-## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
-# threshold: 80
+## Fail with exit code 3 if mutation score is below this percentage (0.0-100.0, default: disabled)
+# threshold: 80.0
 ```
 
 ---

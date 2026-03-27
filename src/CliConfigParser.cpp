@@ -53,7 +53,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                    {"coverage"}),
     mPartition(mGroupAdvanced, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
                {"partition"}),
-    mThreshold(mGroupAdvanced, "PCT", "Fail with exit code 3 if mutation score is below this percentage (0-100)",
+    mThreshold(mGroupAdvanced, "PCT", "Fail with exit code 3 if mutation score is below this percentage (0.0-100.0)",
                {"threshold"}) {
 }
 

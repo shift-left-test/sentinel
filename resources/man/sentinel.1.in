@@ -132,7 +132,7 @@ The union of all partition results is equivalent to a single non-partitioned run
 responsibility of the calling environment.
 .TP
 \fB\-\-threshold\fR=\fIPCT\fR
-Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
+Fail with exit code 3 if the mutation score is strictly below this percentage (0.0\(en100.0).
 A one-line score summary is always written to stderr at the end of the run.
 If no evaluable mutants exist, the threshold is not applied.
 .SH COVERAGE-GUIDED MUTATION
@@ -224,7 +224,7 @@ Lists of paths/patterns to include or exclude.
 Mutant count limit, selection strategy, random seed, and operator list.
 .TP
 \fBthreshold\fR
-Fail with exit code 3 if the mutation score is below this percentage (0\(en100).
+Fail with exit code 3 if the mutation score is below this percentage (0.0\(en100.0).
 .TP
 \fBpartition\fR
 Evaluate only the N-th slice of the mutant list out of TOTAL partitions (e.g. \fB2/4\fR).

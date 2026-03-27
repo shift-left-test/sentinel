@@ -167,8 +167,7 @@ int main(int argc, char** argv) {
 
   try {
     return runApplication(&cliParser);
-  } catch (const sentinel::ThresholdError& e) {
-    sentinel::Logger::error("{}", e.what());
+  } catch (const sentinel::ThresholdError&) {
     return 3;
   } catch (const std::exception& e) {
     sentinel::Logger::error("{}", e.what());

@@ -91,5 +91,5 @@ limit: 10
 ## Evaluate only the N-th slice of all mutants out of TOTAL partitions (e.g. 2/4); requires --seed
 # partition: 1/1
 
-## Fail with exit code 3 if mutation score is below this percentage 0-100 (default: disabled)
-# threshold: 80
+## Fail with exit code 3 if mutation score is below this percentage (0.0-100.0, default: disabled)
+# threshold: 80.0
