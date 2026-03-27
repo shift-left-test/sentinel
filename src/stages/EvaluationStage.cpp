@@ -80,7 +80,7 @@ bool EvaluationStage::execute() {
     auto state = result.getMutationState();
     auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
     std::string token = m.getToken().empty() ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
-    std::string timing = fmt::format("  [build {}, test {}]",
+    std::string timing = fmt::format("  [{}/{}]",
                                       Timestamper::format(detail.buildSecs),
                                       Timestamper::format(detail.testSecs));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),

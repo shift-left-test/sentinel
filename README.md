@@ -221,12 +221,12 @@ During evaluation, each mutant result is printed as it completes:
 
 ```
 Evaluating 75 mutants...
-  [  1/75] ✗ KILLED        AOR  src/foo.cpp:42 (+)  [build 0.8s, test 1.2s]
+  [  1/75] ✗ KILLED        AOR  src/foo.cpp:42 (+)  [1s/1s]
            ← CalculatorTest.AddOverflow, CalculatorTest.AddNegative
-  [  2/75] ✓ SURVIVED      ROR  src/foo.cpp:58 (<)  [build 0.7s, test 1.1s]
-  [  3/75] ⚠ BUILD_FAILURE SDL  src/bar.cpp:15 (DELETE)  [build 0.3s]
+  [  2/75] ✓ SURVIVED      ROR  src/foo.cpp:58 (<)  [1s/1s]
+  [  3/75] ⚠ BUILD_FAILURE SDL  src/bar.cpp:15 (DELETE)  [0s/0s]
            ↪ .sentinel/mutants/3/build.log
-  [  4/75] ⚠ TIMEOUT       AOR  src/bar.cpp:27 (-)  [build 0.8s, test 10.0s]
+  [  4/75] ⚠ TIMEOUT       AOR  src/bar.cpp:27 (-)  [1s/10s]
            ↪ .sentinel/mutants/4/test.log
 ```
 
@@ -240,7 +240,7 @@ Each line contains:
 | `AOR` | Mutation operator that was applied |
 | `src/foo.cpp:42` | File and line number of the mutation |
 | `(+)` | The original token that was replaced (or `DELETE` for statement deletion) |
-| `[build ..., test ...]` | Time spent building and testing |
+| `[build/test]` | Time spent building and testing |
 | `←` | Killing test names (shown only for killed mutants; up to 2, with "+N more" if more exist) |
 | `↪` | Log file path (shown for build failures, timeouts, and runtime errors) |
 

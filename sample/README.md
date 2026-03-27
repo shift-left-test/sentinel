@@ -118,10 +118,10 @@ Each mutant is evaluated one by one, with results printed in real time:
 
 ```
 Evaluating 30 mutants...
-  [  1/30] ✗ KILLED        AOR  src/Calculator.cpp:42 (+)  [build 0.5s, test 0.8s]
+  [  1/30] ✗ KILLED        AOR  src/Calculator.cpp:42 (+)  [1s/1s]
            ← CalculatorTest.AddTwoNumbers
-  [  2/30] ✓ SURVIVED      ROR  src/Stack.cpp:18 (<)  [build 0.4s, test 0.7s]
-  [  3/30] ⚠ BUILD_FAILURE SDL  src/Tokenizer.cpp:31 (DELETE)  [build 0.2s]
+  [  2/30] ✓ SURVIVED      ROR  src/Stack.cpp:18 (<)  [0s/1s]
+  [  3/30] ⚠ BUILD_FAILURE SDL  src/Tokenizer.cpp:31 (DELETE)  [0s/0s]
            ↪ .sentinel/mutants/3/build.log
 ```
 

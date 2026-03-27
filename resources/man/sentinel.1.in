@@ -261,7 +261,8 @@ The seed value can be reused with \fB\-\-seed\fR to reproduce the same mutant se
 During evaluation, each mutant result is printed as it completes.
 Each line shows: a progress counter, a result icon
 (\fB\[char"2717]\fR killed, \fB\[char"2713]\fR survived, \fB\[char"26A0]\fR skipped),
-the mutation state, operator name, file:line, the original token, and build/test timing.
+the mutation state, operator name, file:line, the original token, and build/test timing
+in compact \fB[build/test]\fR format.
 .PP
 For killed mutants, the names of the killing tests are shown on the next line
 (prefixed with \fB\[char"2190]\fR).
