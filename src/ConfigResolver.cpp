@@ -19,9 +19,6 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml, const std:
   mergeField(&result.sourceDir, cli.sourceDir, yaml.sourceDir, fs::path("."));
   mergeField(&result.workDir, cli.workDir, yaml.workDir, fs::path("./.sentinel"));
   mergeField(&result.outputDir, cli.outputDir, yaml.outputDir, fs::path(""));
-  mergeField(&result.verbose, cli.verbose, yaml.verbose, false);
-  mergeField(&result.force, cli.force, yaml.force, false);
-
   // 2. Merge build & test fields
   mergeField(&result.buildCmd, cli.buildCmd, yaml.buildCmd, std::string(""));
   mergeField(&result.compileDbDir, cli.compileDbDir, yaml.compileDbDir, fs::path("."));
@@ -49,6 +46,9 @@ Config ConfigResolver::resolve(const Config& cli, const Config& yaml, const std:
   result.init = cli.init;
   result.dryRun = cli.dryRun;
   result.noStatusLine = cli.noStatusLine;
+  result.verbose = cli.verbose;
+  result.force = cli.force;
+  result.clean = cli.clean;
 
   // 4. Path Resolution
   result.toAbsolutePaths(yamlPath, cli);

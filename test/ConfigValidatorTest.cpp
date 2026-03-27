@@ -10,7 +10,6 @@
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "helper/StdinGuard.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace sentinel {
@@ -26,7 +25,6 @@ class ConfigValidatorTest : public ::testing::Test {
     mConfig.buildCmd = "make";
     mConfig.testCmd = "make test";
     mConfig.testResultDir = mBase / "results";
-    mConfig.force = true;  // skip interactive prompts
     mConfig.limit = 10u;
     mConfig.timeout = std::string("auto");
     mConfig.excludes = std::vector<std::string>{};
@@ -42,7 +40,7 @@ class ConfigValidatorTest : public ::testing::Test {
 };
 
 TEST_F(ConfigValidatorTest, testPassesWithValidConfig) {
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testThrowsWhenBuildCmdEmpty) {
@@ -72,9 +70,9 @@ TEST_F(ConfigValidatorTest, testThresholdBelowZeroThrows) {
 
 TEST_F(ConfigValidatorTest, testThresholdAtBoundaryIsValid) {
   mConfig.threshold = 0.0;
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
   mConfig.threshold = 100.0;
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testThrowsOnInvalidPartitionFormat) {
@@ -120,39 +118,35 @@ TEST_F(ConfigValidatorTest, testThrowsWhenPartitionIndexExceedsCount) {
   EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
 }
 
-TEST_F(ConfigValidatorTest, testWarningForTimeoutZeroWithForce) {
+TEST_F(ConfigValidatorTest, testWarningForTimeoutZero) {
   mConfig.timeout = std::string("0");
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForExcludeEndingWithSlash) {
   mConfig.excludes = std::vector<std::string>{"somedir/"};
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForRelativeExcludeWithoutWildcard) {
   mConfig.excludes = std::vector<std::string>{"relative/pattern.cpp"};
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternOutsideSourceDir) {
   mConfig.patterns = std::vector<std::string>{"/tmp/outside/path.cpp"};
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternInsideSourceDir) {
   mConfig.patterns = std::vector<std::string>{(mBase / "file.cpp").string()};
-  EXPECT_TRUE(ConfigValidator::validate(mConfig));
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
-TEST_F(ConfigValidatorTest, testWarningsAbortWhenNotForced) {
-  // Trigger the limit warning by setting limit=0u when force=false
+TEST_F(ConfigValidatorTest, testLimitZeroIsAWarningNotAnError) {
+  // limit=0 triggers a warning but does not throw
   mConfig.limit = 0u;
-  mConfig.force = false;
-  {
-    StdinGuard guard;
-    // validate() returns false when user declines (stdin=/dev/null → confirm returns false)
-    EXPECT_FALSE(ConfigValidator::validate(mConfig));
-  }
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
+
 }  // namespace sentinel

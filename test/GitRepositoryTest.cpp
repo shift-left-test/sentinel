@@ -40,7 +40,7 @@ class GitRepositoryTest : public ::testing::Test {
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   // Use a directory that is NOT inside any git repository so that
   // git_repository_open_ext (which now searches parent directories) still fails.
-  fs::path nonGitPath = fs::temp_directory_path() / "SENTINEL_NON_GIT_DIR_XYZXYZ";
+  fs::path nonGitPath = testTempDir("SENTINEL_NON_GIT_DIR");
   fs::remove_all(nonGitPath);
   fs::create_directories(nonGitPath);
 
@@ -285,7 +285,7 @@ TEST_F(GitRepositoryTest, testIsTarget) {
 TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedRepos) {
   // Create a workspace directory that is NOT itself a git repo.
   // Two nested git repos live inside it (simulates an Android repo workspace).
-  fs::path multiRoot = fs::temp_directory_path() / "SENTINEL_MULTIREPO_TEST_DIR";
+  fs::path multiRoot = testTempDir("SENTINEL_MULTIREPO");
   fs::remove_all(multiRoot);
   fs::create_directories(multiRoot);
 
@@ -327,7 +327,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedRepos) {
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedReposAllScope) {
   // Same workspace layout, scope "all" — every line of every tracked file is returned.
-  fs::path multiRoot = fs::temp_directory_path() / "SENTINEL_MULTIREPO_ALL_TEST_DIR";
+  fs::path multiRoot = testTempDir("SENTINEL_MULTIREPO_ALL");
   fs::remove_all(multiRoot);
   fs::create_directories(multiRoot);
 

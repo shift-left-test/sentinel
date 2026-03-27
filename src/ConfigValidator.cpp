@@ -9,7 +9,6 @@
 #include <vector>
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
-#include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
@@ -17,7 +16,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-bool ConfigValidator::validate(const Config& config) {
+void ConfigValidator::validate(const Config& config) {
   // Precondition: buildCmd, testCmd, testResultDir are always set by ConfigResolver.
   if (config.buildCmd->empty()) {
     throw InvalidArgumentException("Option --build-command is required.");
@@ -45,10 +44,10 @@ bool ConfigValidator::validate(const Config& config) {
     }
   }
 
-  return checkWarnings(config);
+  checkWarnings(config);
 }
 
-bool ConfigValidator::checkWarnings(const Config& config) {
+void ConfigValidator::checkWarnings(const Config& config) {
   std::vector<std::string> warnings;
 
   if (config.limit && *config.limit == 0) {
@@ -90,16 +89,12 @@ bool ConfigValidator::checkWarnings(const Config& config) {
     }
   }
 
-  if (!warnings.empty() && !(config.force && *config.force)) {
+  if (!warnings.empty()) {
     Logger::warn("Configuration warnings:");
     for (const auto& w : warnings) {
       Logger::warn("  {}", w);
     }
-    if (!Console::confirm("")) {
-      return false;
-    }
   }
-  return true;
 }
 
 }  // namespace sentinel

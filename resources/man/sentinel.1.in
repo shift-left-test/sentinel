@@ -18,22 +18,6 @@ Display the help menu.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 Print the program version and exit.
-.TP
-\fB\-\-verbose\fR
-Show build/test subprocess output on the terminal and enable verbose logging to stderr.
-By default, subprocess output is suppressed (still written to workspace log files).
-.TP
-\fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
-Directory for all run artifacts. Default: \fB./.sentinel\fR
-.TP
-\fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
-Directory to write HTML/XML reports.
-.TP
-\fB\-f\fR, \fB\-\-force\fR
-Skip all confirmation prompts and start fresh, overwriting any previous state.
-Useful for non-interactive or scripted runs.
-Affected prompts: overwrite \fBsentinel.yaml\fR on \fB\-\-init\fR, skip resume and start fresh,
-and delete a non-empty test report directory.
 .SS Run options
 .TP
 \fB\-\-config\fR=\fIPATH\fR
@@ -45,7 +29,22 @@ automatically if it exists.
 .TP
 \fB\-\-init\fR
 Write a \fBsentinel.yaml\fR config template to the current directory and exit.
-Prompts for confirmation if the file already exists.
+Errors if the file already exists; use \fB\-\-force\fR to overwrite.
+.TP
+\fB\-\-force\fR
+Overwrite existing files. Currently only affects \fB\-\-init\fR: allows overwriting
+an existing \fBsentinel.yaml\fR without error.
+.TP
+\fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
+Directory for all run artifacts. Default: \fB./.sentinel\fR
+.TP
+\fB\-\-clean\fR
+Clear the workspace and start a fresh run.
+By default, sentinel automatically resumes an interrupted previous run.
+Use \fB\-\-clean\fR to discard the previous state and start over.
+.TP
+\fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
+Directory to write HTML/XML reports.
 .TP
 \fB\-\-dry\-run\fR
 Run only the build, test, and mutant-generation phases, then exit without
@@ -53,13 +52,17 @@ evaluating any mutants.
 The workspace is preserved so that the next \fBsentinel\fR invocation (without \fB\-\-dry\-run\fR)
 resumes directly at the evaluation phase, skipping build and generation.
 .TP
-\fB\-\-no\-statusline\fR
-Disable the live status line shown at the bottom of the terminal in TTY mode.
-.TP
 \fB\-\-threshold\fR=\fIPCT\fR
 Fail with exit code 3 if the mutation score is strictly below this percentage (0\(en100).
 A one-line score summary is always written to stderr at the end of the run.
 If no evaluable mutants exist, the threshold is not applied.
+.TP
+\fB\-\-verbose\fR
+Show build/test subprocess output on the terminal and enable verbose logging to stderr.
+By default, subprocess output is suppressed (still written to workspace log files).
+.TP
+\fB\-\-no\-statusline\fR
+Disable the live status line shown at the bottom of the terminal in TTY mode.
 .SS Build & test options
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR

@@ -64,10 +64,6 @@ struct Config {
   std::optional<std::filesystem::path> workDir;
   /** @brief Path to the output directory for reports. */
   std::optional<std::filesystem::path> outputDir;
-  /** @brief Enable verbose output. */
-  std::optional<bool> verbose;
-  /** @brief Force overwrite of existing files. */
-  std::optional<bool> force;
 
   // Build & Test options
   /** @brief Command used to build the project. */
@@ -116,6 +112,12 @@ struct Config {
   bool dryRun = false;
   /** @brief Disable the status line in the console. */
   bool noStatusLine = false;
+  /** @brief Enable verbose output. */
+  bool verbose = false;
+  /** @brief Force overwrite (used with --init). */
+  bool force = false;
+  /** @brief Clear workspace and start a fresh run. */
+  bool clean = false;
 
   /**
    * @brief Resolve all path fields to absolute paths.

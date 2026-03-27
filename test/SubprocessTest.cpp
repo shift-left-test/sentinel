@@ -79,7 +79,7 @@ TEST_F(SubprocessTest, testConstructorThrowsWhenAnotherRunning) {
   Subprocess sp1("sleep 2");
   std::thread t([&] { sp1.execute(); });
   // Allow time for fork() to complete and childPid to be set
-  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   EXPECT_THROW({ Subprocess sp2("echo hello"); }, std::runtime_error);
   t.join();
 }

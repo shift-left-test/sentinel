@@ -19,16 +19,14 @@ class ConfigValidator {
    * @brief Validate required options and warn about risky settings.
    *
    * Throws InvalidArgumentException on hard errors.
-   * Prints warnings and calls Console::confirm() for soft issues
-   * unless config.force is true.
+   * Logs warnings for soft issues but does not block execution.
    *
    * @param config Fully resolved configuration.
-   * @return true to continue, false if the user declined a warning prompt.
    */
-  static bool validate(const Config& config);
+  static void validate(const Config& config);
 
  private:
-  static bool checkWarnings(const Config& config);
+  static void checkWarnings(const Config& config);
 };
 
 }  // namespace sentinel

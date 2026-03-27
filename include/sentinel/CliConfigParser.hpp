@@ -51,21 +51,22 @@ class CliConfigParser {
   // Options (from Command and CommandRun)
   /** @brief Path to the configuration file. */
   args::ValueFlag<std::filesystem::path> mConfigFile;
-  /** @brief Command line flag for output directory. */
-  args::ValueFlag<std::filesystem::path> mOutputDir;
-  /** @brief Command line flag for working directory. */
-  args::ValueFlag<std::filesystem::path> mWorkDir;
-  /** @brief Command line flag for verbose mode. */
-  args::Flag mVerbose;
-  /** @brief Command line flag to force operations. */
-  args::Flag mForce;
-
   /** @brief Command line flag to initialize the project. */
   args::Flag mInit;
+  /** @brief Command line flag to force operations. */
+  args::Flag mForce;
+  /** @brief Command line flag for working directory. */
+  args::ValueFlag<std::filesystem::path> mWorkDir;
+  /** @brief Command line flag to clear workspace and start fresh. */
+  args::Flag mClean;
+  /** @brief Command line flag for output directory. */
+  args::ValueFlag<std::filesystem::path> mOutputDir;
   /** @brief Command line flag for dry run. */
   args::Flag mDryRun;
   /** @brief Command line flag for mutation threshold. */
   args::ValueFlag<double> mThreshold;
+  /** @brief Command line flag for verbose mode. */
+  args::Flag mVerbose;
   /** @brief Command line flag to hide the status line. */
   args::Flag mNoStatusLine;
 

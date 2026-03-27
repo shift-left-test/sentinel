@@ -33,8 +33,6 @@ TEST_F(CliConfigParserTest, testDefaultConfigIsAllNullopt) {
   EXPECT_FALSE(cfg.sourceDir.has_value());
   EXPECT_FALSE(cfg.workDir.has_value());
   EXPECT_FALSE(cfg.outputDir.has_value());
-  EXPECT_FALSE(cfg.verbose.has_value());
-  EXPECT_FALSE(cfg.force.has_value());
   EXPECT_FALSE(cfg.buildCmd.has_value());
   EXPECT_FALSE(cfg.testCmd.has_value());
   EXPECT_FALSE(cfg.limit.has_value());
@@ -46,6 +44,9 @@ TEST_F(CliConfigParserTest, testDefaultConfigIsAllNullopt) {
   EXPECT_FALSE(cfg.init);
   EXPECT_FALSE(cfg.dryRun);
   EXPECT_FALSE(cfg.noStatusLine);
+  EXPECT_FALSE(cfg.verbose);
+  EXPECT_FALSE(cfg.force);
+  EXPECT_FALSE(cfg.clean);
 }
 
 TEST_F(CliConfigParserTest, testOutputDirParsed) {
@@ -97,6 +98,21 @@ TEST_F(CliConfigParserTest, testLimitParsed) {
   Config cfg = parse({"--limit", "50"});
   ASSERT_TRUE(cfg.limit.has_value());
   EXPECT_EQ(*cfg.limit, 50u);
+}
+
+TEST_F(CliConfigParserTest, testVerboseParsed) {
+  Config cfg = parse({"--verbose"});
+  EXPECT_TRUE(cfg.verbose);
+}
+
+TEST_F(CliConfigParserTest, testForceParsed) {
+  Config cfg = parse({"--force"});
+  EXPECT_TRUE(cfg.force);
+}
+
+TEST_F(CliConfigParserTest, testCleanParsed) {
+  Config cfg = parse({"--clean"});
+  EXPECT_TRUE(cfg.clean);
 }
 
 }  // namespace sentinel

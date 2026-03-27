@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
+#include "helper/TestTempDir.hpp"
 #include "sentinel/Mutants.hpp"
 
 namespace fs = std::filesystem;
@@ -21,16 +22,18 @@ class MutantsTest : public SampleFileGeneratorForTest {
   void SetUp() override {
     SampleFileGeneratorForTest::SetUp();
     NORMAL_FILENAME = SAMPLE1_PATH;
+
+    mTempBase = testTempDir("SENTINEL_MUTANTSTEST");
+    fs::remove_all(mTempBase);
+    fs::create_directories(mTempBase);
+    OUTPUT_PATH = (mTempBase / "mutables.db").string();
+    NONEXISTENT_DIR = (mTempBase / "nonexist").string();
+    NONEXISTENT_PATH = (mTempBase / "nonexist" / "mutables.db").string();
+    NONEXISTENT_FILENAME = (mTempBase / "nonexist" / "nonexist.cpp").string();
   }
 
   void TearDown() override {
-    if (fs::exists(OUTPUT_PATH)) {
-      fs::remove(OUTPUT_PATH);
-    }
-
-    if (fs::exists(NONEXISTENT_DIR)) {
-      fs::remove_all(NONEXISTENT_DIR);
-    }
+    fs::remove_all(mTempBase);
     SampleFileGeneratorForTest::TearDown();
   }
 
@@ -41,11 +44,12 @@ class MutantsTest : public SampleFileGeneratorForTest {
            m1.getLast().column == m2.getLast().column && m1.getToken() == m2.getToken();
   }
 
-  std::string NONEXISTENT_DIR = "nonexist";
-  std::string OUTPUT_PATH = "./mutables.db";
-  std::string NONEXISTENT_PATH = "nonexist/mutables.db";
+  fs::path mTempBase;
+  std::string NONEXISTENT_DIR;
+  std::string OUTPUT_PATH;
+  std::string NONEXISTENT_PATH;
   std::string NORMAL_FILENAME;
-  std::string NONEXISTENT_FILENAME = "nonexist/nonexist.cpp";
+  std::string NONEXISTENT_FILENAME;
   std::string ABNORMAL_FILENAME = "some,weird\"~ name";
   std::string ONELINE_TOKEN = "+";
   std::string MULTILINE_TOKEN = "a + \\\n\tb";

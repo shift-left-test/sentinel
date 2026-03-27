@@ -13,7 +13,6 @@
 #include "sentinel/CliConfigParser.hpp"
 #include "sentinel/ConfigResolver.hpp"
 #include "sentinel/ConfigValidator.hpp"
-#include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/SignalHandler.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -44,10 +43,9 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   // Handle --init: write config template and exit (before workspace creation)
   if (cliCfg.init) {
     const char* const kConfigFileName = "sentinel.yaml";
-    if (fs::exists(kConfigFileName) && !(cliCfg.force && *cliCfg.force)) {
-      if (!sentinel::Console::confirm("'{}' already exists and will be overwritten.", kConfigFileName)) {
-        return 0;
-      }
+    if (fs::exists(kConfigFileName) && !cliCfg.force) {
+      throw std::runtime_error(
+          fmt::format("'{}' already exists. Use --init --force to overwrite.", kConfigFileName));
     }
     sentinel::YamlConfigWriter::writeTemplate(kConfigFileName);
     return 0;
@@ -59,15 +57,16 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   // 3. Detect run mode
   bool dryRun = cliCfg.dryRun;
-  bool force = cliCfg.force && *cliCfg.force;
   bool alreadyComplete = false;
   bool resuming = false;
-  if (!force && !dryRun && ws->hasPreviousRun()) {
-    if (!sentinel::Console::confirm("A previous run was found in '{}' and will be resumed.", workDirPath)) {
-      return 0;
-    }
+  if (!cliCfg.clean && !dryRun && ws->hasPreviousRun()) {
     alreadyComplete = ws->isComplete();
     resuming = !alreadyComplete;
+    if (resuming) {
+      sentinel::Logger::info("Resuming previous run from '{}'.", workDirPath);
+    } else {
+      sentinel::Logger::info("Previous run is complete. Regenerating report from '{}'.", workDirPath);
+    }
   }
 
   // 4. Load and resolve config
@@ -89,20 +88,18 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   sentinel::Config cfg = sentinel::ConfigResolver::resolve(cliCfg, yamlCfg, configPath);
 
   // 5. Configure logger
-  if (cfg.verbose && *cfg.verbose) {
+  if (cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
-  if (dryRun && ws->hasPreviousRun()) {
-    sentinel::Logger::info("Workspace '{}' exists and will be cleared for dry-run.", workDirPath);
+  if ((dryRun || cliCfg.clean) && ws->hasPreviousRun()) {
+    sentinel::Logger::info("Workspace '{}' exists and will be cleared.", workDirPath);
   }
 
   // Validate config before starting the pipeline.
   // Skipped for resumed/already-complete runs: the config was already validated at the start
   // of the original run and is reloaded from workspace (config.yaml).
   if (!alreadyComplete && !resuming) {
-    if (!sentinel::ConfigValidator::validate(cfg)) {
-      return 0;  // user declined warning prompt
-    }
+    sentinel::ConfigValidator::validate(cfg);
   }
 
   // 6. Create StatusLine
