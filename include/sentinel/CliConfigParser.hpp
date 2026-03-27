@@ -110,8 +110,6 @@ class CliConfigParser {
   args::ValueFlagList<std::string> mExtensions;
   /** @brief Command line flag for inclusion patterns. */
   args::ValueFlagList<std::string> mPatterns;
-  /** @brief Command line flag for exclusion patterns. */
-  args::ValueFlagList<std::string> mExcludes;
   /** @brief Command line flag for mutant limit. */
   args::ValueFlag<size_t> mLimit;
   /** @brief Command line flag for mutant generator. */

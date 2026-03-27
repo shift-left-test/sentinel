@@ -98,10 +98,9 @@ Source file extension to mutate (repeatable).
 Default: \fBcxx cpp cc c c++ cu\fR
 .TP
 \fB\-p\fR \fIPATTERN\fR, \fB\-\-pattern\fR=\fIPATTERN\fR
-Path or glob pattern to constrain the mutation scope (repeatable).
-.TP
-\fB\-e\fR \fIPATTERN\fR, \fB\-\-exclude\fR=\fIPATTERN\fR
-Exclude files/directories matching an fnmatch-style pattern (repeatable).
+Glob pattern to constrain the mutation scope (repeatable). Matched against
+repository-relative paths. Prefix with \fB!\fR to exclude matching files
+(e.g., \fB\-\-pattern="!*/test/*"\fR).
 .TP
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
 Maximum number of mutants to generate. \fB0\fR = evaluate all candidates. Default: \fB0\fR
@@ -217,8 +216,8 @@ Mutation scope: \fBcommit\fR or \fBall\fR.
 \fBextension\fR
 List of source file extensions to mutate.
 .TP
-\fBpattern\fR / \fBexclude\fR
-Lists of paths/patterns to include or exclude.
+\fBpattern\fR
+List of paths/patterns to include or exclude (prefix with ! to exclude).
 .TP
 \fBgenerator\fR / \fBoperator\fR
 Selection strategy and operator list.

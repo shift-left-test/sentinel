@@ -42,8 +42,9 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mScope(mGroupMutation, "SCOPE", "Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)",
            {'s', "scope"}),
     mExtensions(mGroupMutation, "EXT", "Source file extensions to mutate", {'t', "extension"}),
-    mPatterns(mGroupMutation, "EXPR", "Paths or glob patterns to constrain the mutation scope", {'p', "pattern"}),
-    mExcludes(mGroupMutation, "EXPR", "Exclude files/directories matching fnmatch-style patterns", {'e', "exclude"}),
+    mPatterns(mGroupMutation, "EXPR",
+              "Glob patterns to constrain mutation scope; prefix with ! to exclude (repeatable)",
+              {'p', "pattern"}),
     mLimit(mGroupMutation, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
     mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: uniform, random, weighted", {"generator"}),
     mSeed(mGroupMutation, "N", "Random seed for mutant selection (default: random)", {"seed"}),
@@ -75,7 +76,6 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mScope) cfg->scope = mScope.Get();
   if (mExtensions) cfg->extensions = mExtensions.Get();
   if (mPatterns) cfg->patterns = mPatterns.Get();
-  if (mExcludes) cfg->excludes = mExcludes.Get();
   if (mGenerator) cfg->generator = mGenerator.Get();
   if (mOperators) cfg->operators = mOperators.Get();
   if (mCoverageFiles) {

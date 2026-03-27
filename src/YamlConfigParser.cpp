@@ -90,7 +90,6 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
     if (root["scope"]) cfg->scope = root["scope"].as<std::string>();
     if (root["extension"]) cfg->extensions = toVector<std::string>(root["extension"], "extension");
     if (root["pattern"]) cfg->patterns = toVector<std::string>(root["pattern"], "pattern");
-    if (root["exclude"]) cfg->excludes = toVector<std::string>(root["exclude"], "exclude");
     if (root["generator"]) cfg->generator = root["generator"].as<std::string>();
     if (root["operator"]) cfg->operators = toVector<std::string>(root["operator"], "operator");
     if (root["coverage"]) {

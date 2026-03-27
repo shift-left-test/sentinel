@@ -88,8 +88,6 @@ struct Config {
   std::vector<std::string> extensions = {"cxx", "cpp", "cc", "c", "c++", "cu"};
   /** @brief Glob patterns for files to include. */
   std::vector<std::string> patterns;
-  /** @brief Glob patterns for files to exclude. */
-  std::vector<std::string> excludes;
   /** @brief Mutant generation strategy: "uniform", "random", or "weighted". */
   std::string generator = "uniform";
   /** @brief List of mutation operators to apply (empty = all). */

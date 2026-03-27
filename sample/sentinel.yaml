@@ -55,11 +55,9 @@ test-result-dir: ./build/test-results
 #   - c++
 #   - cu
 
-## Paths or glob patterns to constrain the diff (default: none - entire source)
-pattern: ["sample/src"]
-
-## Paths excluded from mutation; fnmatch-style patterns (default: none)
-exclude: ["*/test/*"]
+## Paths or glob patterns to constrain mutation scope (default: none - entire source)
+## Prefix a pattern with ! to exclude matching files (e.g. "!*/test/*")
+pattern: ["sample/src", "!*/test/*"]
 
 ## Mutant selection strategy (default: uniform)
 ##   uniform  - one mutant per operator per source line

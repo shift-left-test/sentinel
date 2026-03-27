@@ -144,9 +144,9 @@ test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
 scope: commit
 limit: 50
-exclude:
-  - "*/third_party/*"
-  - "*/test/*"
+pattern:
+  - "!*/third_party/*"
+  - "!*/test/*"
 ```
 
 ```bash
@@ -167,8 +167,8 @@ sentinel \
   --test-result-dir=./build/test-results \
   --scope=commit \
   --limit=50 \
-  --exclude="*/third_party/*" \
-  --exclude="*/test/*"
+  --pattern="!*/third_party/*" \
+  --pattern="!*/test/*"
 ```
 
 ### Sample Output
@@ -364,8 +364,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `-s, --scope=SCOPE` | `commit` (changed lines only) or `all` (entire codebase) | `all` |
 | `-t, --extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
-| `-p, --pattern=PATTERN` | Git pathspec patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Absolute paths trigger a pre-run warning. | |
-| `-e, --exclude=PATTERN` | fnmatch patterns matched against canonical absolute file paths (repeatable). Patterns without a leading `*` or ending in `/` trigger a pre-run warning. | |
+| `-p, --pattern=PATTERN` | Glob patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Prefix with `!` to exclude matching files. Absolute paths trigger a pre-run warning. | |
 | `-l, --limit=N` | Maximum number of mutants to generate; `0` = evaluate all candidates (triggers pre-run warning) | `0` |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--seed=N` | Random seed for mutant selection | random |
@@ -405,9 +404,9 @@ build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
 scope: commit
-exclude:
-  - "*/third_party/*"
-  - "*/test/*"
+pattern:
+  - "!*/third_party/*"
+  - "!*/test/*"
 ```
 
 ### Full Template
@@ -470,11 +469,9 @@ version: 1
 #   - c++
 #   - cu
 
-## Paths or glob patterns to constrain the diff (default: none - entire source)
+## Paths or glob patterns to constrain mutation scope (default: none - entire source)
+## Prefix a pattern with ! to exclude matching files (e.g. "!*/test/*")
 # pattern: []
-
-## Paths excluded from mutation; fnmatch-style patterns (default: none)
-# exclude: []
 
 ## Mutant selection strategy (default: uniform)
 ##   uniform  - one mutant per operator per source line

@@ -28,13 +28,11 @@ class GitRepository : public Repository {
    *
    * @param path to the directory repository
    * @param extensions list of allowed extensions for target files
-   * @param patterns list of patterns to constrain diff
-   * @param excludes excluded directory list
+   * @param patterns list of patterns to constrain diff; prefix with ! to exclude
    */
   explicit GitRepository(const std::filesystem::path& path,
                          const std::vector<std::string>& extensions = std::vector<std::string>(),
-                         const std::vector<std::string>& patterns = std::vector<std::string>(),
-                         const std::vector<std::string>& excludes = std::vector<std::string>());
+                         const std::vector<std::string>& patterns = std::vector<std::string>());
   GitRepository(const GitRepository&) = delete;
   GitRepository& operator=(const GitRepository&) = delete;
 

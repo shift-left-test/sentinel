@@ -46,9 +46,6 @@ static std::string buildWorkspaceYaml(const Config& cfg) {
   out << YAML::Key << "pattern" << YAML::Value << YAML::BeginSeq;
   for (const auto& p : cfg.patterns) out << p;
   out << YAML::EndSeq;
-  out << YAML::Key << "exclude" << YAML::Value << YAML::BeginSeq;
-  for (const auto& e : cfg.excludes) out << e;
-  out << YAML::EndSeq;
   out << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd;
   out << YAML::Key << "test-command" << YAML::Value << cfg.testCmd;
   out << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir.string();

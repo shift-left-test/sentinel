@@ -73,8 +73,7 @@ extension:
   - cxx
 pattern:
   - src/**
-exclude:
-  - test/**
+  - "!test/**"
 build-command: make
 test-command: ctest
 test-result-dir: ./results
@@ -99,8 +98,7 @@ operator:
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
   EXPECT_EQ("commit", cfg.scope);
   EXPECT_EQ(std::vector<std::string>({"cpp", "cxx"}), cfg.extensions);
-  EXPECT_EQ(std::vector<std::string>({"src/**"}), cfg.patterns);
-  EXPECT_EQ(std::vector<std::string>({"test/**"}), cfg.excludes);
+  EXPECT_EQ(std::vector<std::string>({"src/**", "!test/**"}), cfg.patterns);
   EXPECT_EQ("make", cfg.buildCmd);
   EXPECT_EQ("ctest", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), cfg.testResultDir);

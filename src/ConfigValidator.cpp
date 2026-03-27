@@ -58,20 +58,23 @@ void ConfigValidator::checkWarnings(const Config& config) {
     warnings.push_back("timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
   }
 
-  for (const auto& excl : config.excludes) {
-    if (!excl.empty() && excl.back() == '/') {
-      warnings.push_back(
-          fmt::format("exclude: '{}' ends with '/'. "
-                      "Patterns are matched against file paths, not directories.",
-                      excl));
-    } else if (!excl.empty() && excl.front() != '*' && !fs::path(excl).is_absolute()) {
-      warnings.push_back(fmt::format("exclude: '{}' is a relative pattern without a leading '*'.", excl));
-    }
-  }
-
   fs::path srcRoot = config.sourceDir;
   for (const auto& pat : config.patterns) {
-    fs::path patPath(pat);
+    if (pat.empty()) {
+      continue;
+    }
+
+    const bool isNegation = pat.front() == '!';
+    const std::string checkPat = isNegation ? pat.substr(1) : pat;
+
+    if (isNegation && !checkPat.empty() && checkPat.back() == '/') {
+      warnings.push_back(
+          fmt::format("pattern: '{}' ends with '/'. "
+                      "Patterns are matched against file paths, not directories.",
+                      pat));
+    }
+
+    fs::path patPath(checkPat);
     if (patPath.is_absolute()) {
       auto rel = patPath.lexically_relative(srcRoot);
       if (rel.empty() || rel.native().find("..") != std::string::npos) {
@@ -79,7 +82,7 @@ void ConfigValidator::checkWarnings(const Config& config) {
       } else {
         warnings.push_back(
             fmt::format("pattern: '{}' is an absolute path. "
-                        "Git pathspec uses paths relative to repository root.",
+                        "Patterns use paths relative to repository root.",
                         pat));
       }
     }

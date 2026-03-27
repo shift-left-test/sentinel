@@ -70,15 +70,15 @@ TEST_F(GitRepositoryTest, testPatterns) {
   std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
-  GitRepository gitRepo(mRepoName, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"}, {});
+  GitRepository gitRepo(mRepoName, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"});
   EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
 }
 
-TEST_F(GitRepositoryTest, testExcludes) {
+TEST_F(GitRepositoryTest, testNegationPatterns) {
   std::string tmpPath = mRepoName / "test";
   fs::create_directories(tmpPath);
 
-  GitRepository gitRepo(mRepoName, {}, {}, {"*.c", "file?.txt", "data/*.csv", "*/test/*", "*"});
+  GitRepository gitRepo(mRepoName, {}, {"!*.c", "!file?.txt", "!data/*.csv", "!*/test/*"});
   EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
 }
 
@@ -272,10 +272,37 @@ TEST_F(GitRepositoryTest, testIsTarget) {
   for (auto& file : stageFiles) {
     mRepo->addFile(file, content);
   }
-  GitRepository gitRepo(mRepoName, {"cpp", "hpp"}, {}, {"*/test/*"});
+  GitRepository gitRepo(mRepoName, {"cpp", "hpp"}, {"!test/*"});
   EXPECT_TRUE(gitRepo.isTargetPath("temp.cpp"));
   EXPECT_FALSE(gitRepo.isTargetPath("temp.c"));
   EXPECT_FALSE(gitRepo.isTargetPath("test/test.cpp"));
+}
+
+TEST_F(GitRepositoryTest, testMixedIncludeAndExcludePatterns) {
+  mRepo->addFolder("src");
+  mRepo->addFolder("src/util");
+  mRepo->addFolder("src/test");
+  mRepo->addFile("src/main.cpp", "int main() {}\n");
+  mRepo->addFile("src/util/helper.cpp", "void help() {}\n");
+  mRepo->addFile("src/test/mock.cpp", "void mock() {}\n");
+  mRepo->stageFile({"src/main.cpp", "src/util/helper.cpp", "src/test/mock.cpp"});
+  mRepo->commit("add files");
+
+  GitRepository gitRepo(mRepoName, {"cpp"}, {"src/**", "!src/test/*"});
+  SourceLines lines = gitRepo.getSourceLines("all");
+
+  bool hasMain = false;
+  bool hasHelper = false;
+  bool hasMock = false;
+  for (const auto& sl : lines) {
+    std::string p = sl.getPath().string();
+    if (p.find("main.cpp") != std::string::npos) hasMain = true;
+    if (p.find("helper.cpp") != std::string::npos) hasHelper = true;
+    if (p.find("mock.cpp") != std::string::npos) hasMock = true;
+  }
+  EXPECT_TRUE(hasMain);
+  EXPECT_TRUE(hasHelper);
+  EXPECT_FALSE(hasMock);
 }
 
 // ---------------------------------------------------------------------------

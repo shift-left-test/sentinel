@@ -8,10 +8,8 @@
 #include <git2.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
-#include <iostream>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -185,9 +183,10 @@ static std::vector<std::filesystem::path> collectGitRepos(const std::filesystem:
         continue;
       }
       // Skip sentinel-managed directories (workspace, output, etc.)
-      bool skip = false;
-      skip = std::any_of(skipDirs.begin(), skipDirs.end(), [&](const auto& sd) { return entry.path() == sd; });
-      if (skip) {
+      if (std::any_of(skipDirs.begin(), skipDirs.end(),
+                       [&](const auto& sd) {
+                         return entry.path() == sd;
+                       })) {
         continue;
       }
       auto sub = collectGitRepos(entry.path(), skipDirs);
@@ -247,7 +246,7 @@ static void applyDiffScope(git_repository* repo, const std::string& scope, git_d
 }
 
 GitRepository::GitRepository(const std::filesystem::path& path, const std::vector<std::string>& extensions,
-                             const std::vector<std::string>& patterns, const std::vector<std::string>& excludes) {
+                             const std::vector<std::string>& patterns) {
   git_libgit2_init();
 
   try {
@@ -262,8 +261,13 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
                    });
   }
 
-  mPatterns = patterns;
-  mExcludes = excludes;
+  for (const auto& pat : patterns) {
+    if (!pat.empty() && pat.front() == '!') {
+      mExcludes.push_back(pat.substr(1));
+    } else {
+      mPatterns.push_back(pat);
+    }
+  }
 }
 
 GitRepository::~GitRepository() {
@@ -307,7 +311,8 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
     }
   }
 
-  auto matcher = [&](const auto& exclude) { return fnmatch(exclude.c_str(), canonicalPath.string().c_str(), 0) == 0; };
+  auto relPath = canonicalPath.lexically_relative(mSourceRoot).string();
+  auto matcher = [&](const auto& exclude) { return fnmatch(exclude.c_str(), relPath.c_str(), 0) == 0; };
   if (std::any_of(mExcludes.begin(), mExcludes.end(), matcher)) {
     return false;
   }
@@ -315,8 +320,8 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
   if (checkExtension) {
     std::string extension = path.extension();
 
-    if (!this->mExtensions.empty() &&
-        std::find(this->mExtensions.begin(), this->mExtensions.end(), extension) == this->mExtensions.end()) {
+    if (!mExtensions.empty() &&
+        std::find(mExtensions.begin(), mExtensions.end(), extension) == mExtensions.end()) {
       return false;
     }
   }

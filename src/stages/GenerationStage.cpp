@@ -43,7 +43,6 @@ static const std::map<std::string, std::string> kOperatorNames = {
     {"UOI", "Unary Operator Insertion"},
 };
 
-
 static void printGenerationSummary(const Mutants& mutants, std::size_t candidateCount,
                                    const std::map<fs::path, std::size_t>& linesByPath,
                                    const fs::path& sourceDir, const std::string& generatorStr,
@@ -140,7 +139,7 @@ StatusLine::Phase GenerationStage::getPhase() const {
 bool GenerationStage::execute() {
   Logger::info("Generating mutants...");
   auto repo =
-      std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions, mConfig.patterns, mConfig.excludes);
+      std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions, mConfig.patterns);
   repo->addSkipDir(mWorkspace->getRoot());
   SourceLines sourceLines = repo->getSourceLines(mConfig.scope);
 
@@ -154,9 +153,6 @@ bool GenerationStage::execute() {
     Logger::verbose("Extensions: {}", fmt::join(mConfig.extensions, ", "));
     if (!mConfig.patterns.empty()) {
       Logger::verbose("Patterns: {}", fmt::join(mConfig.patterns, ", "));
-    }
-    if (!mConfig.excludes.empty()) {
-      Logger::verbose("Excludes: {}", fmt::join(mConfig.excludes, ", "));
     }
   }
 

@@ -26,7 +26,7 @@ class ConfigValidatorTest : public ::testing::Test {
     mConfig.testCmd = "make test";
     mConfig.testResultDir = mBase / "results";
     mConfig.limit = 10u;
-    mConfig.excludes = {};
+
     mConfig.patterns = {};
     mConfig.sourceDir = mBase;
   }
@@ -122,13 +122,13 @@ TEST_F(ConfigValidatorTest, testWarningForTimeoutZero) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
-TEST_F(ConfigValidatorTest, testWarningForExcludeEndingWithSlash) {
-  mConfig.excludes = {"somedir/"};
+TEST_F(ConfigValidatorTest, testWarningForNegationPatternEndingWithSlash) {
+  mConfig.patterns = {"!somedir/"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
-TEST_F(ConfigValidatorTest, testWarningForRelativeExcludeWithoutWildcard) {
-  mConfig.excludes = {"relative/pattern.cpp"};
+TEST_F(ConfigValidatorTest, testWarningForNegationPatternWithoutWildcard) {
+  mConfig.patterns = {"!relative/pattern.cpp"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
