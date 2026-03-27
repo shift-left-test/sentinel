@@ -27,9 +27,9 @@ class Report {
   explicit Report(const MutationSummary& summary);
 
   /**
-   * @brief Default Destructor
+   * @brief Destructor
    */
-  virtual ~Report() = default;
+  virtual ~Report();
 
   /**
    * @brief Save the report to the given path.

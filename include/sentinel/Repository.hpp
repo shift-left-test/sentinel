@@ -21,7 +21,7 @@ class Repository {
   /**
    * @brief destructor
    */
-  virtual ~Repository() = default;
+  virtual ~Repository();
 
   /**
    * @brief Return the diff source lines from repository.

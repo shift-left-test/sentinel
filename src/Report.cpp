@@ -18,6 +18,8 @@ namespace fs = std::filesystem;
 
 static constexpr std::size_t kReportWidth = 80;
 
+Report::~Report() = default;
+
 Report::Report(const MutationSummary& summary) :
     mSummary(summary) {
 }

@@ -7,7 +7,7 @@ link_directories(${LLVM_LIBRARY_DIRS})
 
 build_static_library(
   NAME sentinel-core
-  SRCS SourceLine.cpp SourceTree.cpp Mutant.cpp
+  SRCS SourceLine.cpp SourceTree.cpp Mutant.cpp Repository.cpp
        MutantGenerator.cpp UniformMutantGenerator.cpp RandomMutantGenerator.cpp WeightedMutantGenerator.cpp
        MutationFactory.cpp GitRepository.cpp Result.cpp XmlParser.cpp GoogleTestXmlParser.cpp CTestXmlParser.cpp QTestXmlParser.cpp Evaluator.cpp
        MutationResult.cpp GitSourceTree.cpp Timestamper.cpp

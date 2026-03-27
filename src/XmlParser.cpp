@@ -12,6 +12,8 @@
 
 namespace sentinel {
 
+XmlParser::~XmlParser() = default;
+
 XmlParser::XmlParser() : mNext(nullptr) {
   reset();
 }

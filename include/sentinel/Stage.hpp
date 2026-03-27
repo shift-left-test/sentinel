@@ -30,7 +30,7 @@ class Stage {
 
   Stage(const Stage&) = delete;
   Stage& operator=(const Stage&) = delete;
-  virtual ~Stage() = default;
+  virtual ~Stage();
 
   /**
    * @brief Link the next stage in the chain.

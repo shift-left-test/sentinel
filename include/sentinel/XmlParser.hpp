@@ -24,9 +24,9 @@ class XmlParser {
   XmlParser();
 
   /**
-   * @brief Default destructor
+   * @brief Destructor
    */
-  virtual ~XmlParser() = default;
+  virtual ~XmlParser();
 
   XmlParser(const XmlParser&) = delete;
   XmlParser& operator=(const XmlParser&) = delete;

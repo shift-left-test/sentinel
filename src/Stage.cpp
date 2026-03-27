@@ -9,6 +9,8 @@
 
 namespace sentinel {
 
+Stage::~Stage() = default;
+
 Stage::Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine) :
     mConfig(cfg), mStatusLine(std::move(statusLine)) {
 }
