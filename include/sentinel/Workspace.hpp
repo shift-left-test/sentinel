@@ -7,10 +7,13 @@
 #define INCLUDE_SENTINEL_WORKSPACE_HPP_
 
 #include <filesystem>  // NOLINT
+#include <istream>
 #include <optional>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
+#include "sentinel/Config.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 
@@ -25,6 +28,16 @@ struct WorkspaceStatus {
   std::optional<std::size_t> partIndex;  ///< Partition index N (0 = no partition)
   std::optional<std::size_t> partCount;  ///< Partition total (0 = no partition)
 };
+
+/**
+ * @brief Serialize WorkspaceStatus to an output stream in YAML format.
+ */
+std::ostream& operator<<(std::ostream& out, const WorkspaceStatus& status);
+
+/**
+ * @brief Deserialize WorkspaceStatus from an input stream in YAML format.
+ */
+std::istream& operator>>(std::istream& in, WorkspaceStatus& status);
 
 /**
  * @brief Manages the sentinel workspace directory.
@@ -61,11 +74,11 @@ class Workspace {
   void initialize();
 
   /**
-   * @brief Write YAML-formatted run options to &lt;root&gt;/config.yaml.
+   * @brief Serialize and write resolved run options to &lt;root&gt;/config.yaml.
    *
-   * @param yamlContent  Resolved run options in YAML format.
+   * @param cfg  Resolved configuration to persist.
    */
-  void saveConfig(const std::string& yamlContent);
+  void saveConfig(const Config& cfg);
 
   /**
    * @brief Write runtime status fields to workspace/status.yaml (read-modify-write).

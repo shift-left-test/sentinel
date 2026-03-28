@@ -4,10 +4,11 @@
  */
 
 #include <fmt/core.h>
+#include <yaml-cpp/yaml.h>
 #include <filesystem>  // NOLINT
+#include <iterator>
 #include <string>
 #include "sentinel/Mutant.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -19,12 +20,12 @@ Mutant::Mutant() : mFirst{0, 0}, mLast{0, 0} {
 Mutant::Mutant(const std::string& mutationOperator, const std::filesystem::path& path,
                const std::string& qualifiedFuncName, std::size_t firstLine, std::size_t firstColumn,
                std::size_t lastLine, std::size_t lastColumn, const std::string& token) :
-    mPath(path),
-    mToken(token),
     mOperator(mutationOperator),
+    mPath(path),
     mQualifiedFunction(qualifiedFuncName),
     mFirst{firstLine, firstColumn},
-    mLast{lastLine, lastColumn} {
+    mLast{lastLine, lastColumn},
+    mToken(token) {
   std::size_t pos = qualifiedFuncName.find_last_of(':');
   if (pos == std::string::npos) {
     mClass = "";
@@ -42,7 +43,13 @@ bool Mutant::operator==(const Mutant& other) const {
 }
 
 bool Mutant::operator<(const Mutant& other) const {
-  return str() < other.str();
+  if (mOperator != other.mOperator) return mOperator < other.mOperator;
+  if (mPath != other.mPath) return mPath < other.mPath;
+  if (mFirst.line != other.mFirst.line) return mFirst.line < other.mFirst.line;
+  if (mFirst.column != other.mFirst.column) return mFirst.column < other.mFirst.column;
+  if (mLast.line != other.mLast.line) return mLast.line < other.mLast.line;
+  if (mLast.column != other.mLast.column) return mLast.column < other.mLast.column;
+  return mToken < other.mToken;
 }
 
 bool Mutant::operator!=(const Mutant& other) const {
@@ -87,19 +94,49 @@ std::string Mutant::str() const {
 }
 
 std::ostream& operator<<(std::ostream& out, const Mutant& m) {
-  out << m.str();
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  emitter << YAML::Key << "operator" << YAML::Value << m.getOperator();
+  emitter << YAML::Key << "path" << YAML::Value << m.getPath().string();
+  emitter << YAML::Key << "function" << YAML::Value << m.getQualifiedFunction();
+  emitter << YAML::Key << "first" << YAML::Value << YAML::Flow
+          << YAML::BeginMap
+          << YAML::Key << "line" << YAML::Value << m.getFirst().line
+          << YAML::Key << "column" << YAML::Value << m.getFirst().column
+          << YAML::EndMap;
+  emitter << YAML::Key << "last" << YAML::Value << YAML::Flow
+          << YAML::BeginMap
+          << YAML::Key << "line" << YAML::Value << m.getLast().line
+          << YAML::Key << "column" << YAML::Value << m.getLast().column
+          << YAML::EndMap;
+  emitter << YAML::Key << "token" << YAML::Value << m.getToken();
+  emitter << YAML::EndMap;
+  out << emitter.c_str();
   return out;
 }
 
 std::istream& operator>>(std::istream& in, Mutant& m) {
-  std::string line;
-  if (getline(in, line)) {
-    auto str = string::split(line, ",");
-    if (str.size() >= 8) {
-      m = Mutant(str[0], fs::path(str[1]), str[2], string::stringToInt<std::size_t>(str[3]),
-                 string::stringToInt<std::size_t>(str[4]), string::stringToInt<std::size_t>(str[5]),
-                 string::stringToInt<std::size_t>(str[6]), str[7]);
+  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  if (content.empty()) {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  try {
+    YAML::Node node = YAML::Load(content);
+    if (!node.IsMap()) {
+      in.setstate(std::ios::failbit);
+      return in;
     }
+    m = Mutant(node["operator"].as<std::string>(),
+               std::filesystem::path(node["path"].as<std::string>()),
+               node["function"].as<std::string>(),
+               node["first"]["line"].as<std::size_t>(),
+               node["first"]["column"].as<std::size_t>(),
+               node["last"]["line"].as<std::size_t>(),
+               node["last"]["column"].as<std::size_t>(),
+               node["token"].as<std::string>());
+  } catch (const YAML::Exception&) {
+    in.setstate(std::ios::failbit);
   }
   return in;
 }

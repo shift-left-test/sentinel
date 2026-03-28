@@ -6,8 +6,7 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 #define INCLUDE_SENTINEL_MUTATIONRESULT_HPP_
 
-#include <fstream>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationState.hpp"
@@ -56,9 +55,9 @@ class MutationResult {
   MutationState getMutationState() const;
 
   /**
-   * @brief Return bool value to check if mutant is dead
+   * @brief Return the associated Mutant object
    *
-   * @return bool value to check if mutant is dead
+   * @return the associated Mutant object
    */
   const Mutant& getMutant() const;
 

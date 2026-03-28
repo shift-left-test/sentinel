@@ -7,7 +7,7 @@
 #define INCLUDE_SENTINEL_MUTANT_HPP_
 
 #include <filesystem>  // NOLINT
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 namespace sentinel {

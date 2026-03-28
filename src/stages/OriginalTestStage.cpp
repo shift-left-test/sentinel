@@ -5,11 +5,9 @@
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>
-#include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <cmath>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -28,44 +26,6 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
-
-// Serializes resolved config to YAML for workspace/config.yaml.
-static std::string buildWorkspaceYaml(const Config& cfg) {
-  YAML::Emitter out;
-  out << YAML::BeginMap;
-  out << YAML::Key << "version" << YAML::Value << 1;
-  out << YAML::Key << "source-dir" << YAML::Value << cfg.sourceDir.string();
-  if (!cfg.outputDir.empty()) {
-    out << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir.string();
-  }
-  out << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir.string();
-  out << YAML::Key << "scope" << YAML::Value << cfg.scope;
-  out << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
-  for (const auto& e : cfg.extensions) out << e;
-  out << YAML::EndSeq;
-  out << YAML::Key << "pattern" << YAML::Value << YAML::BeginSeq;
-  for (const auto& p : cfg.patterns) out << p;
-  out << YAML::EndSeq;
-  out << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd;
-  out << YAML::Key << "test-command" << YAML::Value << cfg.testCmd;
-  out << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir.string();
-  out << YAML::Key << "test-result-ext" << YAML::Value << YAML::BeginSeq;
-  for (const auto& e : cfg.testResultExts) out << e;
-  out << YAML::EndSeq;
-  out << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
-  for (const auto& c : cfg.coverageFiles) out << c.string();
-  out << YAML::EndSeq;
-  out << YAML::Key << "generator" << YAML::Value << cfg.generator;
-  if (cfg.timeout) {
-    out << YAML::Key << "timeout" << YAML::Value << *cfg.timeout;
-  }
-  out << YAML::Key << "kill-after" << YAML::Value << cfg.killAfter;
-  out << YAML::Key << "operator" << YAML::Value << YAML::BeginSeq;
-  for (const auto& op : cfg.operators) out << op;
-  out << YAML::EndSeq;
-  out << YAML::EndMap;
-  return out.c_str();
-}
 
 OriginalTestStage::OriginalTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
                                      std::shared_ptr<Workspace> workspace) :
@@ -118,7 +78,7 @@ bool OriginalTestStage::execute() {
   }
 
   Logger::info("Original test completed ({})", Timestamper::format(testElapsed));
-  mWorkspace->saveConfig(buildWorkspaceYaml(mConfig));
+  mWorkspace->saveConfig(mConfig);
   return true;
 }
 

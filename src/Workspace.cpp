@@ -9,6 +9,7 @@
 #include <cctype>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -44,12 +45,50 @@ void Workspace::initialize() {
   fs::create_directories(getBackupDir());
 }
 
-void Workspace::saveConfig(const std::string& yamlContent) {
+void Workspace::saveConfig(const Config& cfg) {
   std::ofstream out(mRoot / "config.yaml");
   if (!out) {
     throw std::runtime_error(fmt::format("Failed to write workspace config: {}", (mRoot / "config.yaml").string()));
   }
-  out << yamlContent;
+  out << cfg;
+}
+
+std::ostream& operator<<(std::ostream& out, const WorkspaceStatus& status) {
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  if (status.originalTime.has_value()) {
+    emitter << YAML::Key << "original-time" << YAML::Value << *status.originalTime;
+  }
+  if (status.candidateCount.has_value()) {
+    emitter << YAML::Key << "candidate-count" << YAML::Value << *status.candidateCount;
+  }
+  if (status.partIndex.has_value()) {
+    emitter << YAML::Key << "part-index" << YAML::Value << *status.partIndex;
+  }
+  if (status.partCount.has_value()) {
+    emitter << YAML::Key << "part-count" << YAML::Value << *status.partCount;
+  }
+  emitter << YAML::EndMap;
+  out << emitter.c_str();
+  return out;
+}
+
+std::istream& operator>>(std::istream& in, WorkspaceStatus& status) {
+  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  if (content.empty()) {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  try {
+    YAML::Node node = YAML::Load(content);
+    if (node["original-time"]) status.originalTime = node["original-time"].as<std::size_t>();
+    if (node["candidate-count"]) status.candidateCount = node["candidate-count"].as<std::size_t>();
+    if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
+    if (node["part-count"]) status.partCount = node["part-count"].as<std::size_t>();
+  } catch (const YAML::Exception&) {
+    in.setstate(std::ios::failbit);
+  }
+  return in;
 }
 
 void Workspace::saveStatus(const WorkspaceStatus& status) {
@@ -63,41 +102,20 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (status.partIndex.has_value()) current.partIndex = status.partIndex;
   if (status.partCount.has_value()) current.partCount = status.partCount;
 
-  YAML::Emitter out;
-  out << YAML::BeginMap;
-  if (current.originalTime.has_value()) {
-    out << YAML::Key << "original-time" << YAML::Value << *current.originalTime;
-  }
-  if (current.candidateCount.has_value()) {
-    out << YAML::Key << "candidate-count" << YAML::Value << *current.candidateCount;
-  }
-  if (current.partIndex.has_value()) {
-    out << YAML::Key << "part-index" << YAML::Value << *current.partIndex;
-  }
-  if (current.partCount.has_value()) {
-    out << YAML::Key << "part-count" << YAML::Value << *current.partCount;
-  }
-  out << YAML::EndMap;
-
   std::ofstream f(p);
   if (!f) {
     throw std::runtime_error(fmt::format("Failed to write status.yaml: {}", p.string()));
   }
-  f << out.c_str();
+  f << current;
 }
 
 WorkspaceStatus Workspace::loadStatus() const {
   WorkspaceStatus status;
   fs::path p = mRoot / "status.yaml";
   if (!fs::exists(p)) return status;
-  try {
-    YAML::Node node = YAML::LoadFile(p.string());
-    if (node["original-time"]) status.originalTime = node["original-time"].as<std::size_t>();
-    if (node["candidate-count"]) status.candidateCount = node["candidate-count"].as<std::size_t>();
-    if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
-    if (node["part-count"]) status.partCount = node["part-count"].as<std::size_t>();
-  } catch (const YAML::Exception& e) {
-    throw std::runtime_error(fmt::format("Failed to read status.yaml: {}", e.what()));
+  std::ifstream f(p);
+  if (!(f >> status)) {
+    throw std::runtime_error(fmt::format("Failed to read status.yaml: {}", p.string()));
   }
   return status;
 }

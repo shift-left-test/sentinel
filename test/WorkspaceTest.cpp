@@ -7,11 +7,12 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <iterator>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <utility>
 #include <vector>
-#include "helper/SampleFileGeneratorForTest.hpp"
+#include "sentinel/Config.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationState.hpp"
@@ -62,22 +63,22 @@ TEST_F(WorkspaceTest, testInitializeCreatesExpectedDirectories) {
 TEST_F(WorkspaceTest, testSaveConfigCreatesFile) {
   Workspace ws(mRoot);
   ws.initialize();
-
   EXPECT_FALSE(ws.hasPreviousRun());
-  ws.saveConfig("build-command: make\n");
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make";
+  ws.saveConfig(cfg);
   EXPECT_TRUE(ws.hasPreviousRun());
-
   std::ifstream in(mRoot / "config.yaml");
   std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-  EXPECT_EQ("build-command: make\n", content);
+  EXPECT_NE(std::string::npos, content.find("build-command: make"));
 }
 
 TEST_F(WorkspaceTest, testInitializeDeletesPreviousContents) {
   Workspace ws(mRoot);
   ws.initialize();
-  ws.saveConfig("old-config: true\n");
+  Config cfg = Config::withDefaults();
+  ws.saveConfig(cfg);
   EXPECT_TRUE(ws.hasPreviousRun());
-
   ws.initialize();
   EXPECT_FALSE(ws.hasPreviousRun());
   EXPECT_TRUE(fs::is_directory(mRoot / "backup"));
@@ -326,7 +327,8 @@ TEST_F(WorkspaceTest, testSaveConfigFailsWhenPathIsDirectory) {
   ws.initialize();
   // Make config.yaml a directory so ofstream cannot open it
   fs::create_directories(mRoot / "config.yaml");
-  EXPECT_THROW(ws.saveConfig("version: 1\n"), std::runtime_error);
+  Config cfg = Config::withDefaults();
+  EXPECT_THROW(ws.saveConfig(cfg), std::runtime_error);
 }
 
 TEST_F(WorkspaceTest, testSaveStatusFailsWhenRootMissing) {
@@ -447,6 +449,46 @@ TEST_F(WorkspaceTest, testSaveStatusAllFields) {
   EXPECT_EQ(*loaded.candidateCount, 100u);
   EXPECT_EQ(*loaded.partIndex, 2u);
   EXPECT_EQ(*loaded.partCount, 4u);
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorRoundTrip) {
+  WorkspaceStatus original;
+  original.originalTime = 42;
+  original.candidateCount = 1000;
+  original.partIndex = 2;
+  original.partCount = 4;
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.originalTime.has_value());
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  ASSERT_TRUE(loaded.partIndex.has_value());
+  ASSERT_TRUE(loaded.partCount.has_value());
+  EXPECT_EQ(*loaded.originalTime, 42u);
+  EXPECT_EQ(*loaded.candidateCount, 1000u);
+  EXPECT_EQ(*loaded.partIndex, 2u);
+  EXPECT_EQ(*loaded.partCount, 4u);
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorPartialFields) {
+  WorkspaceStatus original;
+  original.originalTime = 10;
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.originalTime.has_value());
+  EXPECT_EQ(*loaded.originalTime, 10u);
+  EXPECT_FALSE(loaded.candidateCount.has_value());
+  EXPECT_FALSE(loaded.partIndex.has_value());
+  EXPECT_FALSE(loaded.partCount.has_value());
 }
 
 }  // namespace sentinel

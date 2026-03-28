@@ -6,6 +6,8 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 #define INCLUDE_SENTINEL_MUTATIONSTATE_HPP_
 
+#include <stdexcept>
+#include <string>
 #include "sentinel/util/Utf8Char.hpp"
 
 namespace sentinel {
@@ -36,6 +38,22 @@ inline const char* MutationStateToStr(MutationState m) {
     default:
       return "UNKNOWN";
   }
+}
+
+/**
+ * @brief Parse a MutationState from its string representation.
+ *
+ * @param s string (e.g. "KILLED", "SURVIVED", ...)
+ * @return corresponding MutationState
+ * @throws std::invalid_argument if the string is unrecognized
+ */
+inline MutationState StrToMutationState(const std::string& s) {
+  if (s == "KILLED") return MutationState::KILLED;
+  if (s == "SURVIVED") return MutationState::SURVIVED;
+  if (s == "RUNTIME_ERROR") return MutationState::RUNTIME_ERROR;
+  if (s == "BUILD_FAILURE") return MutationState::BUILD_FAILURE;
+  if (s == "TIMEOUT") return MutationState::TIMEOUT;
+  throw std::invalid_argument("Unknown MutationState: " + s);
 }
 
 /**

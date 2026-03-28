@@ -9,6 +9,7 @@
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <optional>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -125,6 +126,11 @@ struct Config {
    */
   static Config withDefaults();
 };
+
+/**
+ * @brief Serialize Config to an output stream in YAML format.
+ */
+std::ostream& operator<<(std::ostream& out, const Config& cfg);
 
 }  // namespace sentinel
 

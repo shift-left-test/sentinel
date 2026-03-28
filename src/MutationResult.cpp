@@ -3,18 +3,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
-#include <sys/stat.h>
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
-#include <iostream>
+#include <yaml-cpp/yaml.h>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -49,21 +43,50 @@ bool MutationResult::compare(const MutationResult& other) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
-  out << fmt::format("{}\t{}\t{}\t\t\t", mr.getKillingTest(), mr.getErrorTest(),
-                     static_cast<int>(mr.getMutationState()));
-  out << mr.getMutant();
+  std::ostringstream mutantYaml;
+  mutantYaml << mr.getMutant();
+
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  emitter << YAML::Key << "state" << YAML::Value << MutationStateToStr(mr.getMutationState());
+  emitter << YAML::Key << "killing-test" << YAML::Value << mr.getKillingTest();
+  emitter << YAML::Key << "error-test" << YAML::Value << mr.getErrorTest();
+  emitter << YAML::Key << "mutant" << YAML::Value << YAML::Load(mutantYaml.str());
+  emitter << YAML::EndMap;
+  out << emitter.c_str();
   return out;
 }
 
 std::istream& operator>>(std::istream& in, MutationResult& mr) {
-  std::string line;
-  if (getline(in, line)) {
-    auto sep = string::split(line, "\t\t\t");
-    auto str = string::split(sep[0], "\t");
+  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  if (content.empty()) {
+    in.setstate(std::ios::failbit);
+    return in;
+  }
+  try {
+    YAML::Node node = YAML::Load(content);
+    if (!node.IsMap()) {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+
+    std::ostringstream mutantYaml;
+    mutantYaml << node["mutant"];
+    std::istringstream mutantStream(mutantYaml.str());
     Mutant m;
-    std::istringstream iss(sep[1]);
-    iss >> m;
-    mr = MutationResult(m, str[0], str[1], static_cast<MutationState>(string::stringToInt<int>(str[2])));
+    if (!(mutantStream >> m)) {
+      in.setstate(std::ios::failbit);
+      return in;
+    }
+
+    mr = MutationResult(m,
+                        node["killing-test"].as<std::string>(),
+                        node["error-test"].as<std::string>(),
+                        StrToMutationState(node["state"].as<std::string>()));
+  } catch (const YAML::Exception&) {
+    in.setstate(std::ios::failbit);
+  } catch (const std::invalid_argument&) {
+    in.setstate(std::ios::failbit);
   }
   return in;
 }

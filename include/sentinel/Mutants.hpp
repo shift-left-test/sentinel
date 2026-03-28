@@ -6,8 +6,11 @@
 #ifndef INCLUDE_SENTINEL_MUTANTS_HPP_
 #define INCLUDE_SENTINEL_MUTANTS_HPP_
 
+#include <yaml-cpp/yaml.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <iterator>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "sentinel/Mutant.hpp"
@@ -34,7 +37,7 @@ class Mutants : public std::vector<Mutant> {
     }
     std::ofstream ofs(path);
     for (const auto& data : *this) {
-      ofs << data << "\n";
+      ofs << "---\n" << data << "\n";
     }
   }
 
@@ -44,10 +47,19 @@ class Mutants : public std::vector<Mutant> {
    * @param path to file
    */
   void load(const std::string& path) {
-    Mutant object;
     std::ifstream ifs(path);
-    while (ifs >> object) {
-      push_back(object);
+    if (!ifs) return;
+    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    if (content.empty()) return;
+    std::vector<YAML::Node> docs = YAML::LoadAll(content);
+    for (const auto& doc : docs) {
+      std::ostringstream oss;
+      oss << doc;
+      std::istringstream iss(oss.str());
+      Mutant m;
+      if (iss >> m) {
+        push_back(m);
+      }
     }
   }
 };

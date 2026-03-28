@@ -7,6 +7,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
@@ -105,6 +106,40 @@ TEST_F(MutationResultsTest, testGetKillingTestAndErrorTest) {
   MutationResult mr(M, "killerTest", "errorTest", MutationState::RUNTIME_ERROR);
   EXPECT_EQ("killerTest", mr.getKillingTest());
   EXPECT_EQ("errorTest", mr.getErrorTest());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorYamlRoundTrip) {
+  Mutant m("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  MutationResult original(m, "testAdd", "testMinus", MutationState::RUNTIME_ERROR);
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  MutationResult loaded;
+  in >> loaded;
+  EXPECT_TRUE(loaded.compare(original));
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorYamlRoundTripEmptyFields) {
+  Mutant m("SDL", TARGET_FILE, "func", 1, 0, 1, 5, "");
+  MutationResult original(m, "", "", MutationState::SURVIVED);
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  MutationResult loaded;
+  in >> loaded;
+  EXPECT_TRUE(loaded.compare(original));
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorYamlFormat) {
+  Mutant m("ROR", TARGET_FILE, "foo", 1, 2, 3, 4, "!=");
+  MutationResult mr(m, "testKill", "testError", MutationState::KILLED);
+  std::ostringstream out;
+  out << mr;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("state: KILLED"));
+  EXPECT_NE(std::string::npos, yaml.find("killing-test: testKill"));
+  EXPECT_NE(std::string::npos, yaml.find("error-test: testError"));
+  EXPECT_NE(std::string::npos, yaml.find("mutant:"));
 }
 
 }  // namespace sentinel

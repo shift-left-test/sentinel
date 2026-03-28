@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -258,6 +260,59 @@ TEST_F(ConfigTest, testPartitionParseThrowsWhenCountIsZero) {
 
 TEST_F(ConfigTest, testPartitionParseThrowsWhenIndexExceedsCount) {
   EXPECT_THROW(Partition::parse("5/4"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make -j8";
+  cfg.testCmd = "ctest";
+  cfg.scope = "all";
+  cfg.generator = "uniform";
+  cfg.killAfter = 60;
+  cfg.extensions = {"cpp", "cc"};
+  cfg.operators = {"AOR", "ROR"};
+  cfg.testResultExts = {"xml"};
+
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("version: 1"));
+  EXPECT_NE(std::string::npos, yaml.find("build-command: make -j8"));
+  EXPECT_NE(std::string::npos, yaml.find("scope: all"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
+  Config original = Config::withDefaults();
+  original.sourceDir = fs::absolute("src");
+  original.compileDbDir = fs::absolute("build");
+  original.buildCmd = "make";
+  original.testCmd = "ctest";
+  original.testResultDir = fs::absolute("results");
+  original.scope = "commit";
+  original.generator = "random";
+  original.killAfter = 30;
+  original.timeout = 120;
+  original.extensions = {"cpp"};
+  original.operators = {"AOR"};
+  original.testResultExts = {"xml"};
+
+  auto tmpFile = mTmpDir / "config_roundtrip.yaml";
+  {
+    std::ofstream out(tmpFile);
+    out << original;
+  }
+
+  Config loaded = Config::withDefaults();
+  YamlConfigParser::applyTo(&loaded, tmpFile);
+
+  EXPECT_EQ(original.sourceDir, loaded.sourceDir);
+  EXPECT_EQ(original.buildCmd, loaded.buildCmd);
+  EXPECT_EQ(original.testCmd, loaded.testCmd);
+  EXPECT_EQ(original.scope, loaded.scope);
+  EXPECT_EQ(original.generator, loaded.generator);
+  EXPECT_EQ(original.killAfter, loaded.killAfter);
+  ASSERT_TRUE(loaded.timeout.has_value());
+  EXPECT_EQ(*original.timeout, *loaded.timeout);
 }
 
 }  // namespace sentinel

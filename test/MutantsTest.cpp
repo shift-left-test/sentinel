@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
@@ -84,15 +85,11 @@ TEST_F(MutantsTest, testSaveWorksWhenExistedDirGiven) {
   m.save(OUTPUT_PATH);
   EXPECT_TRUE(fs::exists(OUTPUT_PATH));
 
-  std::ifstream inFile(OUTPUT_PATH);
-  Mutant loaded_mutable1;
-  EXPECT_NO_THROW(inFile >> loaded_mutable1);
-  EXPECT_TRUE(equal(mutable1, loaded_mutable1));
-
-  Mutant loaded_mutable2;
-  EXPECT_NO_THROW(inFile >> loaded_mutable2);
-  EXPECT_TRUE(equal(mutable2, loaded_mutable2));
-  inFile.close();
+  Mutants loaded;
+  loaded.load(OUTPUT_PATH);
+  ASSERT_EQ(2u, loaded.size());
+  EXPECT_TRUE(equal(mutable1, loaded.at(0)));
+  EXPECT_TRUE(equal(mutable2, loaded.at(1)));
 }
 
 TEST_F(MutantsTest, testSaveWorksWhenNonexistentDirGiven) {
@@ -104,15 +101,11 @@ TEST_F(MutantsTest, testSaveWorksWhenNonexistentDirGiven) {
   m.save(NONEXISTENT_PATH);
   EXPECT_TRUE(fs::exists(NONEXISTENT_PATH));
 
-  std::ifstream inFile(NONEXISTENT_PATH);
-  Mutant loaded_mutable1;
-  EXPECT_NO_THROW(inFile >> loaded_mutable1);
-  EXPECT_TRUE(equal(mutable1, loaded_mutable1));
-
-  Mutant loaded_mutable2;
-  EXPECT_NO_THROW(inFile >> loaded_mutable2);
-  EXPECT_TRUE(equal(mutable2, loaded_mutable2));
-  inFile.close();
+  Mutants loaded;
+  loaded.load(NONEXISTENT_PATH);
+  ASSERT_EQ(2u, loaded.size());
+  EXPECT_TRUE(equal(mutable1, loaded.at(0)));
+  EXPECT_TRUE(equal(mutable2, loaded.at(1)));
 }
 
 TEST_F(MutantsTest, testLoad) {
@@ -218,11 +211,15 @@ TEST_F(MutantsTest, testEqualityWithRelativePath) {
 }
 
 TEST_F(MutantsTest, testLessThanOperator) {
-  // operator< compares str() which includes qualifiedFunction field
   Mutant m1("AOR", NORMAL_FILENAME, "aaa", 1, 2, 3, 4, "+");
   Mutant m2("AOR", NORMAL_FILENAME, "zzz", 1, 2, 3, 4, "+");
-  EXPECT_TRUE(m1 < m2);
+  // qualifiedFunction is not part of operator<, so these are equal
+  EXPECT_FALSE(m1 < m2);
   EXPECT_FALSE(m2 < m1);
+
+  Mutant m3("BOR", NORMAL_FILENAME, "aaa", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 < m3);
+  EXPECT_FALSE(m3 < m1);
 }
 
 TEST_F(MutantsTest, testStrContainsExpectedFields) {
@@ -230,6 +227,26 @@ TEST_F(MutantsTest, testStrContainsExpectedFields) {
   std::string s = m.str();
   EXPECT_NE(std::string::npos, s.find("AOR,"));
   EXPECT_NE(std::string::npos, s.find(",foo,1,2,3,4,+"));
+}
+
+TEST_F(MutantsTest, testStreamOperatorYamlRoundTrip) {
+  Mutant original("ROR", NORMAL_FILENAME, "A::B::foo", 10, 1, 10, 5, "+");
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  Mutant loaded;
+  in >> loaded;
+  EXPECT_TRUE(equal(original, loaded));
+}
+
+TEST_F(MutantsTest, testStreamOperatorYamlRoundTripEmptyToken) {
+  Mutant original("SDL", NORMAL_FILENAME, "func", 1, 1, 1, 10, "");
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  Mutant loaded;
+  in >> loaded;
+  EXPECT_TRUE(equal(original, loaded));
 }
 
 }  // namespace sentinel
