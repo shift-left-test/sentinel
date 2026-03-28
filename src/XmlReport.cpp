@@ -3,13 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/util/io.hpp"
 
@@ -32,12 +30,10 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
   tinyxml2::XMLElement* pMutations = doc->NewElement("mutations");
 
   for (const auto& r : mSummary.results) {
-    auto currentState = r.getMutationState();
-    bool skip = false;
-    if (currentState == MutationState::BUILD_FAILURE || currentState == MutationState::RUNTIME_ERROR ||
-        currentState == MutationState::TIMEOUT) {
-      skip = true;
-    }
+    auto state = r.getMutationState();
+    bool skip = state == MutationState::BUILD_FAILURE ||
+                state == MutationState::RUNTIME_ERROR ||
+                state == MutationState::TIMEOUT;
 
     tinyxml2::XMLElement* pMutation = doc->NewElement("mutation");
     if (skip) {
@@ -47,17 +43,12 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
     }
 
     addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename().string());
-    addChildToParent(doc.get(), pMutation, "sourceFilePath",
-                     MutationSummary::getRelativePath(r.getMutant().getPath(), mSummary.sourcePath).string());
+    addChildToParent(doc.get(), pMutation, "sourceFilePath", r.getMutant().getPath().string());
     addChildToParent(doc.get(), pMutation, "mutatedClass", r.getMutant().getClass());
     addChildToParent(doc.get(), pMutation, "mutatedMethod", r.getMutant().getFunction());
     addChildToParent(doc.get(), pMutation, "lineNumber", std::to_string(r.getMutant().getFirst().line));
     addChildToParent(doc.get(), pMutation, "mutator", r.getMutant().getOperator());
-    if (skip) {
-      addChildToParent(doc.get(), pMutation, "killingTest", "");
-    } else {
-      addChildToParent(doc.get(), pMutation, "killingTest", r.getKillingTest());
-    }
+    addChildToParent(doc.get(), pMutation, "killingTest", skip ? "" : r.getKillingTest());
 
     pMutations->InsertEndChild(pMutation);
   }

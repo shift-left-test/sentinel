@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
@@ -56,8 +55,9 @@ class MutantsTest : public SampleFileGeneratorForTest {
   std::string EMPTY_TOKEN = "";
 };
 
-TEST_F(MutantsTest, testConstructorFailWhenInvalidDirGiven) {
-  EXPECT_THROW(Mutant("AOR", NONEXISTENT_FILENAME, "", 0, 0, 0, 0, ONELINE_TOKEN), fs::filesystem_error);
+TEST_F(MutantsTest, testConstructorAcceptsNonexistentPath) {
+  Mutant m("AOR", NONEXISTENT_FILENAME, "", 0, 0, 0, 0, ONELINE_TOKEN);
+  EXPECT_EQ(NONEXISTENT_FILENAME, m.getPath().string());
 }
 
 TEST_F(MutantsTest, testAdd) {
@@ -136,6 +136,25 @@ TEST_F(MutantsTest, testLoad) {
   }
 }
 
+TEST_F(MutantsTest, testRelativePathSaveAndLoad) {
+  Mutants m;
+  fs::path relPath1 = fs::path("src") / "foo.cpp";
+  fs::path relPath2 = fs::path("lib") / "bar.cpp";
+  Mutant mutable1("AOR", relPath1, "foo", 1, 2, 3, 4, "+");
+  Mutant mutable2("BOR", relPath2, "A::bar", 5, 6, 7, 8, "|");
+  m.push_back(mutable1);
+  m.push_back(mutable2);
+  m.save(OUTPUT_PATH);
+
+  Mutants m2;
+  m2.load(OUTPUT_PATH);
+  ASSERT_EQ(2u, m2.size());
+  EXPECT_EQ(relPath1, m2.at(0).getPath());
+  EXPECT_EQ(relPath2, m2.at(1).getPath());
+  EXPECT_TRUE(m2.at(0).getPath().is_relative());
+  EXPECT_TRUE(m2.at(1).getPath().is_relative());
+}
+
 TEST_F(MutantsTest, testDefaultConstructorCreatesEmptyMutant) {
   Mutant m;
   EXPECT_EQ("", m.getOperator());
@@ -190,6 +209,12 @@ TEST_F(MutantsTest, testInequalityOperatorDifferentLocation) {
   Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
   Mutant m2("AOR", NORMAL_FILENAME, "foo", 5, 6, 7, 8, "+");
   EXPECT_TRUE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testEqualityWithRelativePath) {
+  Mutant m1("AOR", "src/foo.cpp", "func", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", "src/foo.cpp", "func", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 == m2);
 }
 
 TEST_F(MutantsTest, testLessThanOperator) {

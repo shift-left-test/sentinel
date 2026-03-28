@@ -50,7 +50,7 @@ TEST_F(MutationResultsTest, testAdd) {
 
   EXPECT_TRUE(MRs[0].compare(MR1));
   EXPECT_EQ(MRs[0].getMutant().getOperator(), "AOR");
-  EXPECT_TRUE(fs::equivalent(MR1.getMutant().getPath(), TARGET_FILE));
+  EXPECT_EQ(MR1.getMutant().getPath(), fs::path(TARGET_FILE));
   EXPECT_EQ(MR1.getMutant().getFirst().line, 0);
   EXPECT_FALSE(MR1.getDetected());
   EXPECT_EQ("testAdd", MR1.getKillingTest());

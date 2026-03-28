@@ -42,7 +42,7 @@ TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
 }
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
-  Mutant m{"LCR", mTmpFilePath, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
+  Mutant m{"LCR", fs::path(mTmpFileName), "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
   GitSourceTree tree(mBaseDir);
   fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
   fs::create_directories(BACKUP_PATH);
@@ -71,7 +71,7 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
 
 TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   // If position does not exist, no changes should be made.
-  Mutant nonexistLinePosition{"LCR", mTmpFilePath, "sumOfEvenPositiveNumber", 10000, 200, 300, 400, "||"};
+  Mutant nonexistLinePosition{"LCR", fs::path(mTmpFileName), "sumOfEvenPositiveNumber", 10000, 200, 300, 400, "||"};
   GitSourceTree tree(mBaseDir);
 
   fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
@@ -102,7 +102,7 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
   auto tempFilename = tempSubDirPath / "TMP_FILE";
   fs::copy(SAMPLE1_PATH, tempFilename, fs::copy_options::overwrite_existing);
 
-  Mutant m{"LCR", tempFilename, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
+  Mutant m{"LCR", fs::path("SUB_DIR") / "TMP_FILE", "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
   GitSourceTree tree(mBaseDir);
   auto backupPath = mBaseDir / "BACKUP_DIR";
   fs::create_directories(backupPath);

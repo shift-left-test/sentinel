@@ -152,6 +152,28 @@ TEST_F(WorkspaceTest, testDoneLifecycle) {
   EXPECT_EQ("TestSuite.TestCase", loaded.getKillingTest());
 }
 
+TEST_F(WorkspaceTest, testRelativePathRoundTrip) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  fs::path relPath = fs::path("src") / "foo.cpp";
+  Mutant m("AOR", relPath, "func", 10, 1, 10, 5, "+");
+  ws.createMutant(1, m);
+
+  // Verify mt.cfg round-trip preserves relative path
+  auto mutants = ws.loadMutants();
+  ASSERT_EQ(1u, mutants.size());
+  EXPECT_EQ(relPath, mutants[0].second.getPath());
+  EXPECT_TRUE(mutants[0].second.getPath().is_relative());
+
+  // Verify mt.done round-trip preserves relative path
+  MutationResult result(m, "TestCase", "", MutationState::KILLED);
+  ws.setDone(1, result);
+  MutationResult loaded = ws.getDoneResult(1);
+  EXPECT_EQ(relPath, loaded.getMutant().getPath());
+  EXPECT_TRUE(loaded.getMutant().getPath().is_relative());
+}
+
 TEST_F(WorkspaceTest, testDonePreservesAllMutationStates) {
   Workspace ws(mRoot);
   ws.initialize();

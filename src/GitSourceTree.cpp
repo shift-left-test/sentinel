@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include "sentinel/GitSourceTree.hpp"
@@ -23,7 +21,7 @@ GitSourceTree::GitSourceTree(const std::filesystem::path& baseDirectory) : Sourc
 
 void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& backupPath) {
   // Backup target file to be mutated
-  fs::path targetFilename = fs::canonical(info.getPath());
+  fs::path targetFilename = fs::canonical(getBaseDirectory() / info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
   if (!string::startsWith(targetFilename.parent_path().string(), gitRootAbsolutePath.string())) {
     throw IOException(EINVAL, "Git root does not contain " + targetFilename.string());

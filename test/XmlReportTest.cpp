@@ -6,13 +6,11 @@
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <regex>
 #include <string>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/string.hpp"
 #include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
@@ -37,16 +35,17 @@ class XmlReportTest : public ::testing::Test {
     fs::create_directories(nestedSourceDir);
 
     mTargetFullPath = mSourceDir / "file1.cpp";
-    std::string TARGET_NAME = mTargetFullPath.filename();
     std::ofstream(mTargetFullPath).close();
 
     mTargetFullPath2 = nestedSourceDir / "file2.cpp";
-    std::string TARGET_NAME2 = mTargetFullPath2.filename();
     std::ofstream(mTargetFullPath2).close();
 
+    mRelPath1 = fs::path("file1.cpp");
+    mRelPath2 = fs::path("NESTED_DIR") / "file2.cpp";
+
     mExpectMutXmlContent =
-        fmt::format(mExpectMutXmlContent, TARGET_NAME, mTargetFullPath.filename().string(), TARGET_NAME2,
-                    nestedSourceDir.filename().string() + "/" + mTargetFullPath2.filename().string());
+        fmt::format(mExpectMutXmlContent, mRelPath1.filename().string(), mRelPath1.string(),
+                    mRelPath2.filename().string(), mRelPath2.string());
   }
 
   void TearDown() override {
@@ -59,6 +58,8 @@ class XmlReportTest : public ::testing::Test {
   fs::path mSourceDir;
   fs::path mTargetFullPath;
   fs::path mTargetFullPath2;
+  fs::path mRelPath1;
+  fs::path mRelPath2;
   std::string mExpectMutXmlContent =
       R"xml(<?xml version="1.0" encoding="UTF-8"?>
 <mutations>
@@ -131,16 +132,16 @@ class XmlReportTest : public ::testing::Test {
 
 TEST_F(XmlReportTest, testMakeXmlReport) {
   MutationResults MRs;
-  Mutant M1("AOR", mTargetFullPath, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  Mutant M1("AOR", mRelPath1, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M2("BOR", mRelPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M2, "testAddBit", "", MutationState::KILLED);
 
-  Mutant M3("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M3("BOR", mRelPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M3, "testAddBit", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M4("BOR", mTargetFullPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
+  Mutant M4("BOR", mRelPath2, "sumOfEvenPositiveNumber", 1, 2, 3, 4, "|");
   MRs.emplace_back(M4, "testAddBit", "", MutationState::BUILD_FAILURE);
 
   auto MRPath = mMutResultDir / "MutationResult1";
@@ -157,7 +158,7 @@ TEST_F(XmlReportTest, testMakeXmlReport) {
 }
 
 TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
-  Mutant M1("AOR", mTargetFullPath, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  Mutant M1("AOR", mRelPath1, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;

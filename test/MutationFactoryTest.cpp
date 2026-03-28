@@ -27,6 +27,9 @@ TEST_F(MutationFactoryTest, testGenerateWorks) {
   EXPECT_EQ(selected.size(), 2);
   EXPECT_EQ(selected.at(0).getFirst().line, 58);
   EXPECT_EQ(selected.at(1).getFirst().line, 59);
+  for (const auto& m : selected) {
+    EXPECT_TRUE(m.getPath().is_relative());
+  }
 }
 
 }  // namespace sentinel

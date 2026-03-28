@@ -3,19 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
-#include <regex>
 #include <string>
 #include "helper/FileTestHelper.hpp"
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/HtmlReport.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace fs = std::filesystem;
 
@@ -67,6 +63,10 @@ int minus(int a, int b){
       R"(int multiply(int a, int b) {
   return a * b;
 })";
+  fs::path REL_PATH1 = fs::path("NESTED_DIR1/NESTED_DIR") / "target1_veryVeryVeryVeryVerylongFilePath.cpp";
+  fs::path REL_PATH2 = fs::path("NESTED_DIR2") / "target2.cpp";
+  fs::path REL_PATH3 = fs::path("NESTED_DIR2") / "target3.cpp";
+  fs::path REL_PATH4 = fs::path("target4.cpp");
   std::string ORI_ROOT_INDEX_HTML_CONTENTS =
       R"(<!DOCTYPE html>
 <html>
@@ -933,28 +933,28 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
 
   MutationResults MRs;
 
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "-");
+  Mutant M1("AOR", REL_PATH1, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "-");
   MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
 
-  Mutant M2("BOR", TARGET_FULL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "&");
+  Mutant M2("BOR", REL_PATH2, "sumOfEvenPositiveNumber", 2, 12, 2, 13, "&");
   MRs.emplace_back(M2, "testBitwiseOR", "", MutationState::KILLED);
 
-  Mutant M3("BOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "|");
+  Mutant M3("BOR", REL_PATH3, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "|");
   MRs.emplace_back(M3, "testBitwiseAND, testBitwiseOP", "", MutationState::KILLED);
 
-  Mutant M4("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "+");
+  Mutant M4("AOR", REL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "+");
   MRs.emplace_back(M4, "", "", MutationState::SURVIVED);
 
-  Mutant M5("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
+  Mutant M5("AOR", REL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M5, "", "", MutationState::BUILD_FAILURE);
 
-  Mutant M6("AOR", TARGET_FULL_PATH4, "multiply", 2, 12, 2, 13, "/");
+  Mutant M6("AOR", REL_PATH4, "multiply", 2, 12, 2, 13, "/");
   MRs.emplace_back(M6, "testMultiply", "", MutationState::KILLED);
 
-  Mutant M7("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
+  Mutant M7("AOR", REL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M7, "", "", MutationState::RUNTIME_ERROR);
 
-  Mutant M8("AOR", TARGET_FULL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
+  Mutant M8("AOR", REL_PATH3, "sumOfEvenPositiveNumber", 8, 12, 8, 13, "-");
   MRs.emplace_back(M8, "", "", MutationState::TIMEOUT);
 
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
@@ -998,7 +998,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReportWhenEmptyMutationResult) {
 }
 
 TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "+");
+  Mutant M1("AOR", REL_PATH1, "sumOfEvenPositiveNumber", 3, 12, 3, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1041,7 +1041,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidSourcePath) {
 TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   auto OUT_DIR = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER";
   fs::create_directories(OUT_DIR);
-  Mutant M1("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 0, 12, 2, 13, "+");
+  Mutant M1("AOR", REL_PATH1, "sumOfEvenPositiveNumber", 0, 12, 2, 13, "+");
   MutationResult MR1(M1, "", "", MutationState::SURVIVED);
 
   MutationResults MRs;
@@ -1052,7 +1052,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
 
   auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
   fs::create_directories(OUT_DIR2);
-  Mutant M2("AOR", TARGET_FULL_PATH, "sumOfEvenPositiveNumber", 1000, 12, 1000, 13, "+");
+  Mutant M2("AOR", REL_PATH1, "sumOfEvenPositiveNumber", 1000, 12, 1000, 13, "+");
   MutationResult MR2(M2, "", "", MutationState::SURVIVED);
 
   MutationResults MRs2;

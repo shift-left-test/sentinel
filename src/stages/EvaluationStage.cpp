@@ -4,14 +4,11 @@
  */
 
 #include <fmt/core.h>
-#include <sys/wait.h>
-#include <unistd.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 #include "sentinel/Console.hpp"
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/GitRepository.hpp"
@@ -60,7 +57,6 @@ bool EvaluationStage::execute() {
   const std::size_t killAfterSecs = mConfig.killAfter;
 
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), mConfig.sourceDir);
-  auto sourceRoot = std::filesystem::canonical(mConfig.sourceDir);
   std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
@@ -78,7 +74,7 @@ bool EvaluationStage::execute() {
     const auto& result = detail.result;
 
     auto state = result.getMutationState();
-    auto relPath = std::filesystem::canonical(m.getPath()).lexically_relative(sourceRoot);
+    auto relPath = m.getPath();
     std::string token = m.getToken().empty() ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
     std::string timing = fmt::format("  [{}/{}]",
                                       Timestamper::format(detail.buildSecs),

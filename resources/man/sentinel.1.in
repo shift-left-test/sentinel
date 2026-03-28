@@ -128,6 +128,9 @@ It is recommended to set \fB\-\-seed\fR explicitly so that every partition insta
 generates an identical mutant list; if omitted, a random seed is used and each
 run may evaluate a different subset.
 The union of all partition results is equivalent to a single non-partitioned run.
+Mutant paths are stored relative to \fB\-\-source\-dir\fR, so workspace directories
+can be collected from multiple machines and resumed on any machine with the same
+source tree.
 \fBNote:\fR source isolation and workspace separation between partition instances are the
 responsibility of the calling environment.
 .TP

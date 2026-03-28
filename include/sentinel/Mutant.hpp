@@ -9,9 +9,6 @@
 #include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
-#include <utility>
-#include "sentinel/SourceTree.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -38,8 +35,6 @@ struct Location {
    */
   std::size_t column;
 };
-
-class SourceTree;
 
 /**
  * @brief Mutant class

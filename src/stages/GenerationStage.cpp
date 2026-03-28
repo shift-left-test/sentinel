@@ -13,7 +13,6 @@
 #include <set>
 #include <string>
 #include <utility>
-#include <vector>
 #include "sentinel/Console.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
@@ -59,14 +58,13 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   // Count mutants per file and per operator
   std::map<fs::path, std::size_t> groupByPath;
   std::map<std::string, std::size_t> groupByOperator;
-  auto root = fs::canonical(sourceDir);
   for (const auto& m : mutants) {
-    auto file = fs::canonical(m.getPath());
-    groupByPath[file.lexically_relative(root)]++;
+    groupByPath[m.getPath()]++;
     groupByOperator[m.getOperator()]++;
   }
 
   // Build lines-by-relative-path map
+  const auto root = fs::canonical(sourceDir);
   std::map<fs::path, std::size_t> linesByRelPath;
   for (const auto& [absPath, count] : linesByPath) {
     linesByRelPath[absPath.lexically_relative(root)] = count;

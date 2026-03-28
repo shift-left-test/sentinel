@@ -84,12 +84,6 @@ struct MutationSummary {
   /** @brief Move assignment */
   MutationSummary& operator=(MutationSummary&&) = default;
 
-  /**
-   * @brief Return the relative path from @p start to @p path.
-   */
-  static std::filesystem::path getRelativePath(const std::filesystem::path& path,
-                                               const std::filesystem::path& start);
-
  private:
   void aggregate();
 };

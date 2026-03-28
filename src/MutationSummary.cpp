@@ -92,7 +92,7 @@ void MutationSummary::aggregate() {
     }
     totNumberOfMutation++;
 
-    fs::path mrPath = getRelativePath(mr.getMutant().getPath(), sourcePath);
+    fs::path mrPath = mr.getMutant().getPath();
     fs::path curDirpath = mrPath.parent_path();
 
     groupByDirPath[curDirpath].results.push_back(&mr);
@@ -115,11 +115,6 @@ void MutationSummary::aggregate() {
     }
     p.second.fileCount = tmpSet.size();
   }
-}
-
-std::filesystem::path MutationSummary::getRelativePath(const std::filesystem::path& path,
-                                                       const std::filesystem::path& start) {
-  return fs::canonical(path).lexically_relative(fs::canonical(start));
 }
 
 }  // namespace sentinel
