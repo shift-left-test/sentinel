@@ -64,9 +64,16 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
                     "Add 'version: {}' to the top of your config file.",
                     path, kSupportedVersion));
   }
-  if (version != kSupportedVersion) {
+  if (version > kSupportedVersion) {
     throw std::runtime_error(fmt::format(
-        "Config file '{}': unsupported version {}. This sentinel supports version {}.",
+        "Config file '{}': version {} is newer than supported version {}. "
+        "Please upgrade sentinel.",
+        path, version, kSupportedVersion));
+  }
+  if (version < kSupportedVersion) {
+    throw std::runtime_error(fmt::format(
+        "Config file '{}': version {} is outdated. "
+        "Run `sentinel --init` to regenerate the config file.",
         path, version, kSupportedVersion));
   }
 
