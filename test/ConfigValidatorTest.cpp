@@ -79,9 +79,9 @@ TEST_F(ConfigValidatorTest, testThrowsOnInvalidPartitionFormat) {
   EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
 }
 
-TEST_F(ConfigValidatorTest, testThrowsWhenPartitionWithoutSeed) {
+TEST_F(ConfigValidatorTest, testWarningWhenPartitionWithoutSeed) {
   mConfig.partition = std::string("1/4");
-  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
 TEST_F(ConfigValidatorTest, testThrowsWhenPartitionSlashAtStart) {

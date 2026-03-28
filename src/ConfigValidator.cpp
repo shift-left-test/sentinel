@@ -39,9 +39,6 @@ void ConfigValidator::validate(const Config& config) {
     } catch (const std::invalid_argument& e) {
       throw InvalidArgumentException(e.what());
     }
-    if (!config.seed) {
-      throw InvalidArgumentException("--partition requires an explicit --seed value.");
-    }
   }
 
   checkWarnings(config);
@@ -49,6 +46,11 @@ void ConfigValidator::validate(const Config& config) {
 
 void ConfigValidator::checkWarnings(const Config& config) {
   std::vector<std::string> warnings;
+
+  if (config.partition && !config.seed) {
+    warnings.push_back("partition: --seed is not set. A random seed will be used, "
+                        "so each run may evaluate a different subset of mutants.");
+  }
 
   if (config.limit == 0) {
     warnings.push_back("limit: 0 - all candidate mutants will be evaluated. This may take a very long time.");
