@@ -61,7 +61,6 @@ class Evaluator {
 
  private:
   std::filesystem::path mSourcePath;
-  std::filesystem::path mCanonicalSourcePath;  ///< Cached canonical source path
   Result mExpectedResult;
 };
 

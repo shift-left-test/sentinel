@@ -29,7 +29,7 @@ class Result {
    *
    * @return true if number of passed Testcase is 0
    */
-  bool checkPassedTCEmpty();
+  bool checkPassedTCEmpty() const;
 
   /**
    * @brief Check mutation's Result State

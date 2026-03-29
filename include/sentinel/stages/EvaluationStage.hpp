@@ -8,6 +8,7 @@
 
 #include <memory>
 #include "sentinel/Evaluator.hpp"
+#include "sentinel/GitRepository.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Stage.hpp"
@@ -54,10 +55,11 @@ class EvaluationStage : public Stage {
    * @param timeLimit      Test timeout in seconds (0 = no limit).
    * @param killAfterSecs  Seconds to wait before force-killing a timed-out process.
    * @param evaluator      Evaluator used to compare expected vs actual results.
+   * @param repo           GitRepository used to apply/revert source patches.
    * @return EvaluationDetail containing the result and build/test durations.
    */
   EvaluationDetail evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
-                                  Evaluator* evaluator);
+                                  Evaluator* evaluator, GitRepository* repo);
 };
 
 }  // namespace sentinel

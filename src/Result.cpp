@@ -36,7 +36,7 @@ Result::Result(const std::string& path) {
   }
 }
 
-bool Result::checkPassedTCEmpty() {
+bool Result::checkPassedTCEmpty() const {
   return mPassedTC.empty();
 }
 

@@ -91,14 +91,14 @@ class Mutant {
    *
    * @return mutation operator
    */
-  std::string getOperator() const;
+  const std::string& getOperator() const;
 
   /**
    * @brief Return the path of mutated file.
    *
    * @return path to the file
    */
-  std::filesystem::path getPath() const;
+  const std::filesystem::path& getPath() const;
 
   /**
    * @brief Return the namespace, class containing mutation location.
@@ -106,7 +106,7 @@ class Mutant {
    *
    * @return namespace, class containing mutation location
    */
-  std::string getClass() const;
+  const std::string& getClass() const;
 
   /**
    * @brief Return the name of function containing mutation location.
@@ -114,7 +114,7 @@ class Mutant {
    *
    * @return function containing mutation location
    */
-  std::string getFunction() const;
+  const std::string& getFunction() const;
 
   /**
    * @brief Return the namespace, class, function containing mutation location.
@@ -122,7 +122,7 @@ class Mutant {
    *
    * @return namespace, class, function containing mutation location
    */
-  std::string getQualifiedFunction() const;
+  const std::string& getQualifiedFunction() const;
 
   /**
    * @brief Return the first location to apply mutation.
@@ -143,7 +143,7 @@ class Mutant {
    *
    * @return the token
    */
-  std::string getToken() const;
+  const std::string& getToken() const;
 
   /**
    * @brief Return information of Mutant

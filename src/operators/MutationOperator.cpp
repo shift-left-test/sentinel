@@ -11,10 +11,24 @@
 #include <clang/AST/Stmt.h>
 #include <clang/AST/Type.h>
 #include <clang/Lex/Lexer.h>
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <set>
 #include <string>
+#include <vector>
 #include "sentinel/operators/MutationOperator.hpp"
+#include "sentinel/operators/aor.hpp"
+#include "sentinel/operators/bor.hpp"
+#include "sentinel/operators/lcr.hpp"
+#include "sentinel/operators/ror.hpp"
+#include "sentinel/operators/sdl.hpp"
+#include "sentinel/operators/sor.hpp"
+#include "sentinel/operators/uoi.hpp"
 
 namespace sentinel {
+
+MutationOperator::~MutationOperator() = default;
 
 std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
   clang::SourceLocation walkLoc = s->getBeginLoc();
@@ -117,6 +131,77 @@ bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc,
   }
 
   return true;
+}
+
+void MutationOperator::populateBinaryReplacements(
+    clang::BinaryOperator* bo, clang::Stmt* s,
+    const std::set<std::string>& operators, Mutants* mutables,
+    const std::function<bool(const std::string&)>& filter) {
+  std::string token{bo->getOpcodeStr()};
+  clang::SourceLocation opStartLoc = bo->getOperatorLoc();
+  clang::SourceLocation opEndLoc =
+      mSrcMgr.translateLineCol(mSrcMgr.getMainFileID(), mSrcMgr.getExpansionLineNumber(opStartLoc),
+                               mSrcMgr.getExpansionColumnNumber(opStartLoc) + token.length());
+
+  if (!isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
+    return;
+  }
+
+  std::string path{mSrcMgr.getFilename(opStartLoc)};
+  std::string func = getContainingFunctionQualifiedName(s);
+
+  for (const auto& mutatedToken : operators) {
+    if (mutatedToken == token) {
+      continue;
+    }
+    if (filter && !filter(mutatedToken)) {
+      continue;
+    }
+    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(opStartLoc),
+                           mSrcMgr.getExpansionColumnNumber(opStartLoc), mSrcMgr.getExpansionLineNumber(opEndLoc),
+                           mSrcMgr.getExpansionColumnNumber(opEndLoc), mutatedToken);
+  }
+}
+
+void resolveExpansionLineRange(clang::Stmt* s, clang::SourceManager* srcMgr,
+                               const clang::LangOptions& langOpts,
+                               std::size_t* startLineNum,
+                               std::size_t* endLineNum) {
+  clang::SourceLocation startLoc = s->getBeginLoc();
+  clang::SourceLocation endLoc = s->getEndLoc();
+
+  if (startLoc.isMacroID()) {
+    clang::CharSourceRange range =
+        srcMgr->getImmediateExpansionRange(startLoc);
+    startLoc = range.getBegin();
+  }
+
+  if (endLoc.isMacroID()) {
+    clang::CharSourceRange range =
+        srcMgr->getImmediateExpansionRange(endLoc);
+    endLoc = clang::Lexer::getLocForEndOfToken(
+        range.getEnd(), 0, *srcMgr, langOpts);
+  }
+
+  *startLineNum = srcMgr->getExpansionLineNumber(startLoc);
+  *endLineNum = srcMgr->getExpansionLineNumber(endLoc);
+}
+
+std::vector<std::unique_ptr<MutationOperator>> createOperators(
+    clang::ASTContext* context, const std::vector<std::string>& selectedOps) {
+  auto include = [&selectedOps](const std::string& name) {
+    return selectedOps.empty() ||
+           std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
+  };
+  std::vector<std::unique_ptr<MutationOperator>> ops;
+  if (include("AOR")) ops.push_back(std::make_unique<AOR>(context));
+  if (include("BOR")) ops.push_back(std::make_unique<BOR>(context));
+  if (include("ROR")) ops.push_back(std::make_unique<ROR>(context));
+  if (include("SOR")) ops.push_back(std::make_unique<SOR>(context));
+  if (include("LCR")) ops.push_back(std::make_unique<LCR>(context));
+  if (include("SDL")) ops.push_back(std::make_unique<SDL>(context));
+  if (include("UOI")) ops.push_back(std::make_unique<UOI>(context));
+  return ops;
 }
 
 }  // namespace sentinel

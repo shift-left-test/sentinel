@@ -56,23 +56,23 @@ bool Mutant::operator!=(const Mutant& other) const {
   return !(*this == other);
 }
 
-std::string Mutant::getOperator() const {
+const std::string& Mutant::getOperator() const {
   return mOperator;
 }
 
-std::filesystem::path Mutant::getPath() const {
+const std::filesystem::path& Mutant::getPath() const {
   return mPath;
 }
 
-std::string Mutant::getClass() const {
+const std::string& Mutant::getClass() const {
   return mClass;
 }
 
-std::string Mutant::getFunction() const {
+const std::string& Mutant::getFunction() const {
   return mFunction;
 }
 
-std::string Mutant::getQualifiedFunction() const {
+const std::string& Mutant::getQualifiedFunction() const {
   return mQualifiedFunction;
 }
 
@@ -84,7 +84,7 @@ Location Mutant::getLast() const {
   return mLast;
 }
 
-std::string Mutant::getToken() const {
+const std::string& Mutant::getToken() const {
   return mToken;
 }
 
@@ -128,7 +128,7 @@ std::istream& operator>>(std::istream& in, Mutant& m) {
       return in;
     }
     m = Mutant(node["operator"].as<std::string>(),
-               std::filesystem::path(node["path"].as<std::string>()),
+               fs::path(node["path"].as<std::string>()),
                node["function"].as<std::string>(),
                node["first"]["line"].as<std::size_t>(),
                node["first"]["column"].as<std::size_t>(),

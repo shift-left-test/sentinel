@@ -7,9 +7,13 @@
 #define INCLUDE_SENTINEL_OPERATORS_MUTATIONOPERATOR_HPP_
 
 #include <clang/AST/ASTContext.h>
+#include <clang/AST/Expr.h>
 #include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
+#include <functional>
+#include <set>
+#include <vector>
 #include <string>
 #include "sentinel/Mutants.hpp"
 
@@ -33,8 +37,7 @@ class MutationOperator {
   /**
    * @brief Default destructor
    */
-  virtual ~MutationOperator() {
-  }
+  virtual ~MutationOperator();
 
   /**
    * @brief Return the name of the mutation operator
@@ -127,6 +130,25 @@ class MutationOperator {
 
  protected:
   /**
+   * @brief Emit mutants for each replacement token in @p operators that
+   *        differs from the current operator token of @p bo.
+   *
+   * Computes the operator source range from @p bo, validates it, and for
+   * every candidate token in @p operators that passes @p filter, appends a
+   * new Mutant to @p mutables.
+   *
+   * @param bo        binary operator AST node (must not be null)
+   * @param s         AST statement used to look up the enclosing function name
+   * @param operators set of replacement operator tokens
+   * @param mutables  output list to append new mutants to
+   * @param filter    optional per-token predicate; return false to skip a token
+   */
+  void populateBinaryReplacements(
+      clang::BinaryOperator* bo, clang::Stmt* s,
+      const std::set<std::string>& operators, Mutants* mutables,
+      const std::function<bool(const std::string&)>& filter = {});
+
+  /**
    * @brief name of mutation operator
    */
   std::string mName;
@@ -141,6 +163,36 @@ class MutationOperator {
    */
   clang::SourceManager& mSrcMgr;
 };
+
+/**
+ * @brief Create mutation operator instances filtered by selectedOps.
+ *        If selectedOps is empty, all operators are created.
+ *
+ * @param context Clang AST context
+ * @param selectedOps list of operator names (e.g. "AOR", "BOR")
+ * @return vector of mutation operator instances
+ */
+std::vector<std::unique_ptr<MutationOperator>> createOperators(
+    clang::ASTContext* context, const std::vector<std::string>& selectedOps);
+
+/**
+ * @brief Resolve macro expansion and compute the expansion line range
+ *        for a given Clang statement.
+ *
+ * If the statement's begin/end locations are inside a macro, they are
+ * resolved to the immediate expansion location.  The resulting source
+ * locations are then mapped to expansion line numbers.
+ *
+ * @param s        target AST statement
+ * @param srcMgr   Clang SourceManager
+ * @param langOpts Clang LangOptions
+ * @param startLineNum receives the expansion start line number
+ * @param endLineNum   receives the expansion end line number
+ */
+void resolveExpansionLineRange(clang::Stmt* s, clang::SourceManager* srcMgr,
+                               const clang::LangOptions& langOpts,
+                               std::size_t* startLineNum,
+                               std::size_t* endLineNum);
 
 }  // namespace sentinel
 

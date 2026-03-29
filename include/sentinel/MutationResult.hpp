@@ -38,14 +38,14 @@ class MutationResult {
    *
    * @return killingTest that killed mutant
    */
-  std::string getKillingTest() const;
+  const std::string& getKillingTest() const;
 
   /**
    * @brief Return errorTest that occur runtime error when testing
    *
    * @return errorTest that killed mutant
    */
-  std::string getErrorTest() const;
+  const std::string& getErrorTest() const;
 
   /**
    * @brief Return MutationState

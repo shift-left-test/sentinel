@@ -19,13 +19,6 @@
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/operators/MutationOperator.hpp"
-#include "sentinel/operators/aor.hpp"
-#include "sentinel/operators/bor.hpp"
-#include "sentinel/operators/lcr.hpp"
-#include "sentinel/operators/ror.hpp"
-#include "sentinel/operators/sdl.hpp"
-#include "sentinel/operators/sor.hpp"
-#include "sentinel/operators/uoi.hpp"
 
 namespace sentinel {
 

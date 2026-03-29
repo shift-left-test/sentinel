@@ -19,7 +19,6 @@ namespace fs = std::filesystem;
 
 Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath),
-    mCanonicalSourcePath(fs::canonical(sourcePath)),
     mExpectedResult(expectedResultDir.string()) {
   auto checkZero = mExpectedResult.checkPassedTCEmpty();
   if (checkZero) {

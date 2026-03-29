@@ -134,7 +134,7 @@ int Subprocess::execute() {
       logStream.open(mLogFile.string(), std::ios::out | std::ios::trunc);
     }
 
-    const int MAXBUFSZ = 100;
+    const int MAXBUFSZ = 4096;
     char buffer[MAXBUFSZ];
 
     while (waitpid(pid, &status, WNOHANG) == 0) {
@@ -198,11 +198,11 @@ int Subprocess::execute() {
   }
 }
 
-bool Subprocess::isTimedOut() {
+bool Subprocess::isTimedOut() const {
   return mTimedOut;
 }
 
-bool Subprocess::isSuccessfulExit() {
+bool Subprocess::isSuccessfulExit() const {
   return WIFEXITED(mStatus) && (WEXITSTATUS(mStatus) == 0);
 }
 

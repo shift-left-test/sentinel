@@ -11,6 +11,7 @@
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
 #include "sentinel/util/Utf8Char.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -49,10 +50,7 @@ void Report::printSummary() const {
     if (stats.total != 0) {
       curScore = (100.0 * static_cast<double>(stats.detected)) / static_cast<double>(stats.total);
     }
-    std::string filePath = path.string();
-    if (filePath.size() > flen) {
-      filePath = "..." + filePath.substr(filePath.size() - flen + 3);
-    }
+    std::string filePath = string::truncate(path.string(), flen);
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
     std::size_t survived = stats.total - stats.detected;
     Console::out(rowFmt, filePath, flen, stats.detected, klen, survived, slen,

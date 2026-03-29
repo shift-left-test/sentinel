@@ -51,14 +51,14 @@ class Subprocess {
    *
    * @return 1 if timeout occurs
    */
-  bool isTimedOut();
+  bool isTimedOut() const;
 
   /**
    * @brief check if exit and return 0
    *
    * @return 1 if exit and return 0
    */
-  bool isSuccessfulExit();
+  bool isSuccessfulExit() const;
 
  private:
   std::string mCmd;

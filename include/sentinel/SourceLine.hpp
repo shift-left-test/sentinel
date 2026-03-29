@@ -31,7 +31,7 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator==(const SourceLine& other) const {
-    return std::filesystem::equivalent(mPath, other.mPath) && mLineNumber == other.mLineNumber;
+    return mPath.string() == other.mPath.string() && mLineNumber == other.mLineNumber;
   }
 
   /**
@@ -52,7 +52,7 @@ class SourceLine {
   /**
    * @brief Return path to file
    */
-  std::filesystem::path getPath() const {
+  const std::filesystem::path& getPath() const {
     return mPath;
   }
 

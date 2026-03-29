@@ -4,8 +4,6 @@
  */
 
 #include <fstream>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"

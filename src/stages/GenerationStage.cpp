@@ -22,6 +22,7 @@
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/GenerationStage.hpp"
 #include "sentinel/util/Utf8Char.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -94,10 +95,7 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out(rowFmt2, "File", flen, "Mutants", kMutantsCol, "Lines", kLinesCol);
   Console::out("{}", thin);
   for (const auto& [path, count] : groupByPath) {
-    std::string filePath = path.string();
-    if (filePath.size() > flen) {
-      filePath = "..." + filePath.substr(filePath.size() - flen + 3);
-    }
+    std::string filePath = string::truncate(path.string(), flen);
     std::size_t lines = 0;
     auto it = linesByRelPath.find(path);
     if (it != linesByRelPath.end()) {

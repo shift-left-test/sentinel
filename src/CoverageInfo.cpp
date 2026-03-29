@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
 #include "sentinel/CoverageInfo.hpp"
@@ -47,14 +46,12 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
   }
 }
 
-bool CoverageInfo::cover(const std::string& filename, size_t line) {
-  fs::path p = fs::absolute(fs::path(filename));
-
-  if (mData.find(p.string()) == mData.end()) {
+bool CoverageInfo::cover(const std::string& filename, size_t line) const {
+  auto it = mData.find(fs::absolute(fs::path(filename)).string());
+  if (it == mData.end()) {
     return false;
   }
-
-  return std::find(mData[p.string()].begin(), mData[p.string()].end(), line) != mData[p.string()].end();
+  return std::find(it->second.begin(), it->second.end(), line) != it->second.end();
 }
 
 }  // namespace sentinel

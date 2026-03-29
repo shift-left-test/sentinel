@@ -21,7 +21,7 @@ class CssGenerator : public DocGenerator {
   /**
    * @brief make css string
    */
-  inline std::string str() override {
+  inline std::string str() const override {
     return styleCssContent;
   }
 

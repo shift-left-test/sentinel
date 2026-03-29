@@ -292,6 +292,19 @@ inline bool stringToBool(const std::string& s) {
       fmt::format("Input must be a boolean value (true or false): \"{}\". temp = {}", s, temp));
 }
 
+/**
+ * @brief Truncate a string to maxLen, prepending "..." if shortened.
+ *
+ * @param s input string
+ * @param maxLen maximum length
+ * @return truncated string
+ */
+inline std::string truncate(const std::string& s, std::size_t maxLen) {
+  if (s.size() <= maxLen) return s;
+  if (maxLen <= 3) return s.substr(s.size() - maxLen);
+  return "..." + s.substr(s.size() - maxLen + 3);
+}
+
 }  // namespace sentinel::string
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

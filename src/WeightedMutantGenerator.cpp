@@ -7,7 +7,6 @@
 #if LLVM_VERSION_MAJOR >= 11
 #include <clang/AST/ParentMapContext.h>
 #endif
-#include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
@@ -26,6 +25,7 @@
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/operators/MutationOperator.hpp"
 
 namespace sentinel {
 
@@ -155,40 +155,19 @@ WeightedMutantGenerator::DepthAwareASTVisitor::DepthAwareASTVisitor(
     DepthMap* depthMap, const std::vector<std::string>& selectedOps) :
     mContext(context),
     mSrcMgr(context->getSourceManager()),
+    mMutationOperators(createOperators(context, selectedOps)),
     mMutants(mutables),
     mTargetLines(targetLines),
     mDepthMap(depthMap) {
-  auto include = [&selectedOps](const std::string& name) {
-    return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
-  };
-  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(context));
-  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(context));
-  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(context));
-  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(context));
-  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(context));
-  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(context));
-  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(context));
 }
 
 WeightedMutantGenerator::DepthAwareASTVisitor::~DepthAwareASTVisitor() = default;
 
 bool WeightedMutantGenerator::DepthAwareASTVisitor::VisitStmt(clang::Stmt* s) {
-  clang::SourceLocation startLoc = s->getBeginLoc();
-  clang::SourceLocation endLoc = s->getEndLoc();
-
-  if (startLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext->getSourceManager().getImmediateExpansionRange(startLoc);
-    startLoc = range.getBegin();
-  }
-
-  if (endLoc.isMacroID()) {
-    clang::CharSourceRange range = mContext->getSourceManager().getImmediateExpansionRange(endLoc);
-    endLoc =
-        clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mContext->getSourceManager(), mContext->getLangOpts());
-  }
-
-  std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
-  std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
+  std::size_t startLineNum = 0;
+  std::size_t endLineNum = 0;
+  resolveExpansionLineRange(s, &mSrcMgr, mContext->getLangOpts(),
+                            &startLineNum, &endLineNum);
   bool containTargetLine =
       std::any_of(mTargetLines.begin(), mTargetLines.end(), [startLineNum, endLineNum, s, this](SourceLine line) {
         std::size_t lineNum = line.getLineNumber();

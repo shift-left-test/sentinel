@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <fmt/core.h>
@@ -19,6 +18,7 @@
 #include <utility>
 #include <vector>
 #include "sentinel/MutantGenerator.hpp"
+#include "sentinel/operators/MutationOperator.hpp"
 #include "sentinel/RandomMutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
 #include "sentinel/WeightedMutantGenerator.hpp"
@@ -160,16 +160,7 @@ MutantGenerator::SentinelASTVisitor::~SentinelASTVisitor() = default;
 
 void MutantGenerator::SentinelASTVisitor::initOperators(clang::ASTContext* context,
                                                         const std::vector<std::string>& selectedOps) {
-  auto include = [&selectedOps](const std::string& name) {
-    return selectedOps.empty() || std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
-  };
-  if (include("AOR")) mMutationOperators.push_back(std::make_unique<AOR>(context));
-  if (include("BOR")) mMutationOperators.push_back(std::make_unique<BOR>(context));
-  if (include("ROR")) mMutationOperators.push_back(std::make_unique<ROR>(context));
-  if (include("SOR")) mMutationOperators.push_back(std::make_unique<SOR>(context));
-  if (include("LCR")) mMutationOperators.push_back(std::make_unique<LCR>(context));
-  if (include("SDL")) mMutationOperators.push_back(std::make_unique<SDL>(context));
-  if (include("UOI")) mMutationOperators.push_back(std::make_unique<UOI>(context));
+  mMutationOperators = createOperators(context, selectedOps);
 }
 
 bool MutantGenerator::SentinelASTVisitor::isOnTargetLine(std::size_t startLineNum, std::size_t endLineNum) const {
@@ -186,21 +177,10 @@ void MutantGenerator::SentinelASTVisitor::populateMutants(clang::Stmt* s) {
 }
 
 bool MutantGenerator::SentinelASTVisitor::VisitStmt(clang::Stmt* s) {
-  clang::SourceLocation startLoc = s->getBeginLoc();
-  clang::SourceLocation endLoc = s->getEndLoc();
-
-  if (startLoc.isMacroID()) {
-    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(startLoc);
-    startLoc = range.getBegin();
-  }
-
-  if (endLoc.isMacroID()) {
-    clang::CharSourceRange range = mSrcMgr.getImmediateExpansionRange(endLoc);
-    endLoc = clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, mSrcMgr, mContext->getLangOpts());
-  }
-
-  std::size_t startLineNum = mSrcMgr.getExpansionLineNumber(startLoc);
-  std::size_t endLineNum = mSrcMgr.getExpansionLineNumber(endLoc);
+  std::size_t startLineNum = 0;
+  std::size_t endLineNum = 0;
+  resolveExpansionLineRange(s, &mSrcMgr, mContext->getLangOpts(),
+                            &startLineNum, &endLineNum);
 
   if (isOnTargetLine(startLineNum, endLineNum)) {
     populateMutants(s);

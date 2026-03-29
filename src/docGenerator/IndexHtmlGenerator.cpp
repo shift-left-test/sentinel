@@ -38,7 +38,7 @@ void IndexHtmlGenerator::pushItemToTable(const std::string& subName, int subCove
                             fmt::arg("sub_denominator", subDenominator));
 }
 
-std::string IndexHtmlGenerator::str() {
+std::string IndexHtmlGenerator::str() const {
   std::string indexTitle = mRoot ? indexRootTitle : indexSubTitle;
   if (!mRoot) {
     indexTitle = fmt::format(indexTitle, fmt::arg("dir_name", mDirName.empty() ? "." : mDirName.string()));

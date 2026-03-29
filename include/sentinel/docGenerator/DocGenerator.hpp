@@ -16,11 +16,16 @@ namespace sentinel {
 class DocGenerator {
  public:
   /**
+   * @brief Default destructor
+   */
+  virtual ~DocGenerator();
+
+  /**
    * @brief make DOC content
    *
    * @return content string
    */
-  virtual std::string str() = 0;
+  virtual std::string str() const = 0;
 };
 
 }  // namespace sentinel

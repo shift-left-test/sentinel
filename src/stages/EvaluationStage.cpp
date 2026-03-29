@@ -57,6 +57,7 @@ bool EvaluationStage::execute() {
   const std::size_t killAfterSecs = mConfig.killAfter;
 
   Evaluator evaluator(mWorkspace->getOriginalResultsDir(), mConfig.sourceDir);
+  GitRepository repo(mConfig.sourceDir, mConfig.extensions);
   std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
@@ -70,7 +71,7 @@ bool EvaluationStage::execute() {
     mWorkspace->setLock(id);
     mStatusLine->setMutantInfo(id);
 
-    auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator);
+    auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, &repo);
     const auto& result = detail.result;
 
     auto state = result.getMutationState();
@@ -110,11 +111,11 @@ bool EvaluationStage::execute() {
 }
 
 EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
-                                                 std::size_t killAfterSecs, Evaluator* evaluator) {
+                                                 std::size_t killAfterSecs, Evaluator* evaluator,
+                                                 GitRepository* repo) {
   const fs::path backupDir = mWorkspace->getBackupDir();
   const fs::path actualDir = mWorkspace->getActualDir();
 
-  auto repo = std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions);
   repo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;

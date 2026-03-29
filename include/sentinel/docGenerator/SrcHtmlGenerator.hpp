@@ -69,7 +69,7 @@ class SrcHtmlGenerator : public DocGenerator {
   /**
    * @brief make html string
    */
-  std::string str() override;
+  std::string str() const override;
 
  private:
   /**
@@ -77,7 +77,7 @@ class SrcHtmlGenerator : public DocGenerator {
    *
    * @param original string
    */
-  std::string escape(const std::string& original);
+  std::string escape(const std::string& original) const;
 
   bool mSrcRoot;
   std::string mSrcName;

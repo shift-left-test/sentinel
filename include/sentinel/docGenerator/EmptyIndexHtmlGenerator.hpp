@@ -21,7 +21,7 @@ class EmptyIndexHtmlGenerator : public DocGenerator {
   /**
    * @brief make empty index html string
    */
-  inline std::string str() override {
+  inline std::string str() const override {
     return emptyIndexHtmlContent;
   }
 

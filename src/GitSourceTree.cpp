@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <sstream>
@@ -24,7 +25,7 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   fs::path targetFilename = fs::canonical(getBaseDirectory() / info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
   if (!string::startsWith(targetFilename.parent_path().string(), gitRootAbsolutePath.string())) {
-    throw IOException(EINVAL, "Git root does not contain " + targetFilename.string());
+    throw IOException(EINVAL, fmt::format("Git root does not contain {}", targetFilename.string()));
   }
   fs::path targetRelativePath = targetFilename.parent_path().lexically_relative(gitRootAbsolutePath);
   fs::path newBackupPath = backupPath / targetRelativePath;
@@ -40,7 +41,7 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
     buffer << originalFile.rdbuf();
     originalFile.close();
   } else {
-    throw IOException(EINVAL, "Failed to open " + targetFilename.string());
+    throw IOException(EINVAL, fmt::format("Failed to open {}", targetFilename.string()));
   }
   std::ofstream mutatedFile(targetFilename.string(), std::ios::trunc);
 

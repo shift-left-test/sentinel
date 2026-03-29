@@ -156,8 +156,8 @@ static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_optio
  * continues into subdirectories so that arbitrarily-nested multi-repo
  * layouts (e.g. Android repo) are discovered fully.
  */
-static std::vector<std::filesystem::path> collectGitRepos(const std::filesystem::path& dir,
-                                                          const std::vector<std::filesystem::path>& skipDirs) {
+static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
+                                             const std::vector<std::filesystem::path>& skipDirs) {
   std::vector<fs::path> result;
   if (!fs::is_directory(dir)) {
     return result;
@@ -353,7 +353,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
   }
 
   if (repoPaths.empty() && enclosingWorkdir.empty()) {
-    throw RepositoryException("Fail to open repository");
+    throw RepositoryException("Failed to open repository");
   }
 
   // Track which git workdirs have already been processed to avoid double-counting

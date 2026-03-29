@@ -47,7 +47,7 @@ class IndexHtmlGenerator : public DocGenerator {
   /**
    * @brief make html string
    */
-  std::string str() override;
+  std::string str() const override;
 
  private:
   bool mRoot;

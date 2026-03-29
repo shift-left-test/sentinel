@@ -6,7 +6,6 @@
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/Lex/Lexer.h>
-#include <iostream>
 #include <string>
 #include "sentinel/operators/uoi.hpp"
 

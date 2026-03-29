@@ -40,7 +40,7 @@ class CoverageInfo {
    * @param line number
    * @return True if line is covered by test cases
    */
-  bool cover(const std::string& filename, size_t line);
+  bool cover(const std::string& filename, size_t line) const;
 
  private:
   /**

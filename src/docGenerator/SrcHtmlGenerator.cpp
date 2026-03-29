@@ -47,7 +47,7 @@ void SrcHtmlGenerator::pushKillingTest(const std::string& killingTest) {
   mTestList += fmt::format(testListContent, fmt::arg("test_function", killingTest));
 }
 
-std::string SrcHtmlGenerator::str() {
+std::string SrcHtmlGenerator::str() const {
   std::string testListGuard;
   if (!mTestList.empty()) {
     testListGuard = fmt::format(testListGuardContent, fmt::arg("test_list", mTestList));
@@ -60,7 +60,7 @@ std::string SrcHtmlGenerator::str() {
                      fmt::arg("test_list_guard", testListGuard), fmt::arg("https", "https://"));
 }
 
-std::string SrcHtmlGenerator::escape(const std::string& original) {
+std::string SrcHtmlGenerator::escape(const std::string& original) const {
   std::string rCode = string::replaceAll(original, "&", "&amp;");
   rCode = string::replaceAll(rCode, "<", "&lt;");
   rCode = string::replaceAll(rCode, ">", "&gt;");

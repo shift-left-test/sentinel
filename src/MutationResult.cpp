@@ -17,11 +17,11 @@ MutationResult::MutationResult(const Mutant& m, const std::string& killingTest, 
     mKillingTest(killingTest), mErrorTest(errorTest), mState(state), mMutant(m) {
 }
 
-std::string MutationResult::getKillingTest() const {
+const std::string& MutationResult::getKillingTest() const {
   return mKillingTest;
 }
 
-std::string MutationResult::getErrorTest() const {
+const std::string& MutationResult::getErrorTest() const {
   return mErrorTest;
 }
 
