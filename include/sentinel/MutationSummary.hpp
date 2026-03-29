@@ -66,7 +66,8 @@ struct MutationSummary {
    *
    * @param resultsPath Path to the serialized MutationResults file.
    * @param sourcePath  Absolute path to the source root directory.
-   * @throw InvalidArgumentException if @p sourcePath does not exist.
+   * @throw InvalidArgumentException if @p resultsPath exists but is not a
+   *        regular file, or @p sourcePath does not exist.
    */
   MutationSummary(const std::filesystem::path& resultsPath, const std::filesystem::path& sourcePath);
 

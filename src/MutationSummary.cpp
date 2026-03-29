@@ -18,11 +18,20 @@ namespace fs = std::filesystem;
 
 MutationSummary::MutationSummary(const MutationResults& r, const std::filesystem::path& src) :
     results(r), sourcePath(src) {
+  if (!fs::is_directory(sourcePath)) {
+    throw InvalidArgumentException(fmt::format("source path does not exist: {}", sourcePath));
+  }
   aggregate();
 }
 
 MutationSummary::MutationSummary(const std::filesystem::path& resultsPath, const std::filesystem::path& src) :
     sourcePath(src) {
+  if (fs::exists(resultsPath) && !fs::is_regular_file(resultsPath)) {
+    throw InvalidArgumentException(fmt::format("results path is not a regular file: {}", resultsPath));
+  }
+  if (!fs::is_directory(sourcePath)) {
+    throw InvalidArgumentException(fmt::format("source path does not exist: {}", sourcePath));
+  }
   results.load(resultsPath.string());
   aggregate();
 }
@@ -72,10 +81,6 @@ MutationSummary& MutationSummary::operator=(MutationSummary other) {
 }
 
 void MutationSummary::aggregate() {
-  if (!fs::is_directory(sourcePath)) {
-    throw InvalidArgumentException(fmt::format("source path does not exist: {}", sourcePath));
-  }
-
   for (const MutationResult& mr : results) {
     auto currentState = mr.getMutationState();
     if (currentState == MutationState::BUILD_FAILURE) {
