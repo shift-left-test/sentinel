@@ -48,16 +48,12 @@ void ConfigValidator::checkWarnings(const Config& config) {
   std::vector<std::string> warnings;
 
   if (config.partition && !config.seed) {
-    warnings.push_back("partition: --seed is not set. A random seed will be used, "
+    warnings.push_back("--partition: --seed is not set. A random seed will be used, "
                         "so each run may evaluate a different subset of mutants.");
   }
 
-  if (config.limit == 0) {
-    warnings.push_back("limit: 0 - all candidate mutants will be evaluated. This may take a very long time.");
-  }
-
   if (config.timeout && *config.timeout == 0) {
-    warnings.push_back("timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
+    warnings.push_back("--timeout: 0 - no per-mutant test time limit. A hanging test will block the run indefinitely.");
   }
 
   fs::path srcRoot = config.sourceDir;
@@ -71,7 +67,7 @@ void ConfigValidator::checkWarnings(const Config& config) {
 
     if (isNegation && !checkPat.empty() && checkPat.back() == '/') {
       warnings.push_back(
-          fmt::format("pattern: '{}' ends with '/'. "
+          fmt::format("--pattern: '{}' ends with '/'. "
                       "Patterns are matched against file paths, not directories.",
                       pat));
     }
@@ -80,21 +76,18 @@ void ConfigValidator::checkWarnings(const Config& config) {
     if (patPath.is_absolute()) {
       auto rel = patPath.lexically_relative(srcRoot);
       if (rel.empty() || rel.native().find("..") != std::string::npos) {
-        warnings.push_back(fmt::format("pattern: '{}' is an absolute path outside source-dir.", pat));
+        warnings.push_back(fmt::format("--pattern: '{}' is an absolute path outside source-dir.", pat));
       } else {
         warnings.push_back(
-            fmt::format("pattern: '{}' is an absolute path. "
+            fmt::format("--pattern: '{}' is an absolute path. "
                         "Patterns use paths relative to repository root.",
                         pat));
       }
     }
   }
 
-  if (!warnings.empty()) {
-    Logger::warn("Configuration warnings:");
-    for (const auto& w : warnings) {
-      Logger::warn("  {}", w);
-    }
+  for (const auto& w : warnings) {
+    Logger::warn("{}", w);
   }
 }
 

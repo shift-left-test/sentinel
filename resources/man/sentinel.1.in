@@ -102,9 +102,6 @@ Glob pattern to constrain the mutation scope (repeatable). Matched against
 repository-relative paths. Prefix with \fB!\fR to exclude matching files
 (e.g., \fB\-\-pattern="!*/test/*"\fR).
 .TP
-\fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
-Maximum number of mutants to generate. \fB0\fR = evaluate all candidates. Default: \fB0\fR
-.TP
 \fB\-\-generator\fR=\fITYPE\fR
 Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR
 .TP
@@ -116,6 +113,9 @@ Mutation operator to apply (repeatable). Valid values:
 \fBAOR\fR, \fBBOR\fR, \fBLCR\fR, \fBROR\fR, \fBSDL\fR, \fBSOR\fR, \fBUOI\fR.
 Defaults to all operators when omitted.
 .SS Advanced options
+.TP
+\fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
+Maximum number of mutants to generate. \fB0\fR = unlimited. Default: \fB0\fR
 .TP
 \fB\-\-coverage\fR=\fIFILE\fR
 lcov coverage info file (repeatable). When given, only source lines covered by

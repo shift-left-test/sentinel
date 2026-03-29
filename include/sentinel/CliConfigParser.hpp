@@ -110,8 +110,6 @@ class CliConfigParser {
   args::ValueFlagList<std::string> mExtensions;
   /** @brief Command line flag for inclusion patterns. */
   args::ValueFlagList<std::string> mPatterns;
-  /** @brief Command line flag for mutant limit. */
-  args::ValueFlag<size_t> mLimit;
   /** @brief Command line flag for mutant generator. */
   args::ValueFlag<std::string> mGenerator;
   /** @brief Command line flag for random seed. */
@@ -120,6 +118,8 @@ class CliConfigParser {
   args::ValueFlagList<std::string> mOperators;
 
   // Advanced options
+  /** @brief Command line flag for mutant limit. */
+  args::ValueFlag<size_t> mLimit;
   /** @brief Command line flag for coverage files. */
   args::ValueFlagList<std::filesystem::path> mCoverageFiles;
   /** @brief Command line flag for execution partition. */

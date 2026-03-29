@@ -142,10 +142,4 @@ TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternInsideSourceDir) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
-TEST_F(ConfigValidatorTest, testLimitZeroIsAWarningNotAnError) {
-  // limit=0 triggers a warning but does not throw
-  mConfig.limit = 0u;
-  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
-}
-
 }  // namespace sentinel
