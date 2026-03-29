@@ -30,7 +30,7 @@ namespace fs = std::filesystem;
 static constexpr std::size_t kSummaryWidth = 80;
 static constexpr std::size_t kMutantsCol = 13;
 static constexpr std::size_t kLinesCol = 9;
-static constexpr std::size_t kMinGap = 6;
+
 
 static const std::map<std::string, std::string> kOperatorNames = {
     {"AOR", "Arithmetic Operator Replacement"},
@@ -51,7 +51,7 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   const std::string thin = Utf8Char::ThinLine * kSummaryWidth;
 
   std::size_t flen = kSummaryWidth - kMutantsCol - kLinesCol - 2;
-  std::size_t maxFileLen = kSummaryWidth - kMutantsCol - kMinGap - 2;
+
   std::string rowFmt2 = "  {0:<{1}}{2:>{3}}{4:>{5}}";
   std::string rowFmt1 = "  {0:<{1}}{2:>{3}}";
 
@@ -95,8 +95,8 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("{}", thin);
   for (const auto& [path, count] : groupByPath) {
     std::string filePath = path.string();
-    if (filePath.size() > maxFileLen) {
-      filePath = "..." + filePath.substr(filePath.size() - maxFileLen + 3);
+    if (filePath.size() > flen) {
+      filePath = "..." + filePath.substr(filePath.size() - flen + 3);
     }
     std::size_t lines = 0;
     auto it = linesByRelPath.find(path);

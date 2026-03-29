@@ -33,8 +33,7 @@ void Report::printSummary() const {
   static constexpr std::size_t mlen = 8;
   static constexpr std::size_t clen = 8;
   static constexpr std::size_t flen = kReportWidth - klen - slen - mlen - clen - 2;
-  static constexpr std::size_t kMinGap = 6;
-  static constexpr std::size_t maxFileLen = kReportWidth - klen - slen - mlen - clen - kMinGap - 2;
+
   std::string rowFmt = "  {0:<{1}}{2:>{3}}{4:>{5}}{6:>{7}}{8:>{9}}";
 
   // Header
@@ -51,8 +50,8 @@ void Report::printSummary() const {
       curScore = (100.0 * static_cast<double>(stats.detected)) / static_cast<double>(stats.total);
     }
     std::string filePath = path.string();
-    if (filePath.size() > maxFileLen) {
-      filePath = "..." + filePath.substr(filePath.size() - maxFileLen + 3);
+    if (filePath.size() > flen) {
+      filePath = "..." + filePath.substr(filePath.size() - flen + 3);
     }
     std::string scoreStr = curScore >= 0.0 ? fmt::format("{:.1f}%", curScore) : "-%";
     std::size_t survived = stats.total - stats.detected;
