@@ -5,6 +5,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <csignal>
 #include <string>
 #include <vector>
 #include "sentinel/Logger.hpp"
@@ -294,6 +295,44 @@ TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   EXPECT_THAT(text, testing::HasSubstr("[25/50]"));
   // pct = 25 * 100 / 50 = 50 → "50%"
   EXPECT_THAT(text, testing::HasSubstr("50%"));
+}
+
+TEST_F(StatusLineTest, testSuspendHandlersNotInstalledWhenNotTTY) {
+  StatusLine sl;
+  sl.enable();  // no-op in non-TTY
+
+  struct sigaction current {};
+  sigaction(SIGTSTP, nullptr, &current);
+  // In non-TTY, handler should remain default (not installed)
+  EXPECT_EQ(current.sa_handler, SIG_DFL);
+}
+
+TEST_F(StatusLineTest, testRaiseSigtstpWithIgnoreDoesNotCrash) {
+  struct sigaction prev {};
+  struct sigaction ignore {};
+  ignore.sa_handler = SIG_IGN;
+  sigemptyset(&ignore.sa_mask);
+  sigaction(SIGTSTP, &ignore, &prev);
+
+  StatusLine sl;
+  EXPECT_NO_THROW({
+    raise(SIGTSTP);
+  });
+
+  sigaction(SIGTSTP, &prev, nullptr);
+}
+
+TEST_F(StatusLineTest, testDisableRestoresSuspendHandlers) {
+  StatusLine sl;
+  struct sigaction before {};
+  sigaction(SIGTSTP, nullptr, &before);
+
+  sl.enable();
+  sl.disable();
+
+  struct sigaction after {};
+  sigaction(SIGTSTP, nullptr, &after);
+  EXPECT_EQ(before.sa_handler, after.sa_handler);
 }
 
 }  // namespace sentinel

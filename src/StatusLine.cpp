@@ -7,6 +7,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <algorithm>
+#include <csignal>
 #include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
@@ -16,8 +17,32 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Timestamper.hpp"
+#include "sentinel/util/signal.hpp"
 
 namespace sentinel {
+
+namespace {
+StatusLine* sActiveInstance = nullptr;
+struct sigaction sPrevTstp {};
+struct sigaction sPrevCont {};
+}  // namespace
+
+namespace detail {
+void handleSigtstp(int /*signum*/) {
+  if (sActiveInstance != nullptr && sActiveInstance->isEnabled()) {
+    sActiveInstance->suspend();
+  }
+  signal::setSignalHandler(SIGTSTP, SIG_DFL);
+  raise(SIGTSTP);
+}
+
+void handleSigcont(int /*signum*/) {
+  if (sActiveInstance != nullptr) {
+    signal::setSignalHandler(SIGTSTP, handleSigtstp);
+    sActiveInstance->resume();
+  }
+}
+}  // namespace detail
 
 namespace fs = std::filesystem;
 
@@ -40,6 +65,7 @@ void StatusLine::enable() {
   queryTermSize();
   mTimestamper.reset();
   mEnabled = true;
+  installSuspendHandlers();
   setScrollRegion();
   redraw();
 }
@@ -54,6 +80,7 @@ void StatusLine::disable() {
   clearScrollRegion();
   Console::print("\0338");
   Console::flush();
+  uninstallSuspendHandlers();
   mEnabled = false;
 }
 
@@ -105,6 +132,41 @@ void StatusLine::queryTermSize() {
     mTermRows = ws.ws_row;
     mTermCols = ws.ws_col;
   }
+}
+
+void StatusLine::installSuspendHandlers() {
+  sActiveInstance = this;
+  signal::getSigaction(SIGTSTP, &sPrevTstp);
+  signal::getSigaction(SIGCONT, &sPrevCont);
+  signal::setSignalHandler(SIGTSTP, detail::handleSigtstp);
+  signal::setSignalHandler(SIGCONT, detail::handleSigcont);
+}
+
+void StatusLine::uninstallSuspendHandlers() {
+  signal::setSigaction(SIGTSTP, &sPrevTstp);
+  signal::setSigaction(SIGCONT, &sPrevCont);
+  sActiveInstance = nullptr;
+}
+
+void StatusLine::suspend() {
+  if (!mEnabled) {
+    return;
+  }
+  Console::print("\0337\033[{};1H\033[2K", mTermRows);
+  clearScrollRegion();
+  Console::print("\0338");
+  Console::flush();
+  mEnabled = false;
+}
+
+void StatusLine::resume() {
+  if (!isatty(STDOUT_FILENO)) {
+    return;
+  }
+  queryTermSize();
+  mEnabled = true;
+  setScrollRegion();
+  redraw();
 }
 
 void StatusLine::setScrollRegion() {

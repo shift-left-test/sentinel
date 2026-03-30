@@ -11,6 +11,11 @@
 
 namespace sentinel {
 
+namespace detail {
+void handleSigtstp(int signum);
+void handleSigcont(int signum);
+}  // namespace detail
+
 /**
  * @brief Terminal status line displayed at the bottom of the terminal during sentinel run.
  *
@@ -19,6 +24,9 @@ namespace sentinel {
  * Automatically disabled when stdout is not a TTY (pipe/redirect).
  */
 class StatusLine {
+  friend void detail::handleSigtstp(int);
+  friend void detail::handleSigcont(int);
+
  public:
   /**
    * @brief Execution phase shown in the status line.
@@ -114,6 +122,10 @@ class StatusLine {
   std::string buildProgressString(size_t current) const;
   std::string phaseLabel() const;
   int countWidth() const;
+  void installSuspendHandlers();
+  void uninstallSuspendHandlers();
+  void suspend();
+  void resume();
 
   bool mEnabled = false;
   bool mDryRun = false;
