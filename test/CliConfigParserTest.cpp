@@ -125,4 +125,81 @@ TEST_F(CliConfigParserTest, testCliOverwritesDefaults) {
   EXPECT_EQ("random", cfg.generator);
 }
 
+TEST_F(CliConfigParserTest, testWorkspaceParsedAndAbsolute) {
+  Config cfg = parse({"--workspace", "ws"});
+  EXPECT_TRUE(cfg.workDir.is_absolute());
+  EXPECT_NE(cfg.workDir.string().find("ws"), std::string::npos);
+}
+
+TEST_F(CliConfigParserTest, testCompileDbDirParsedAndAbsolute) {
+  Config cfg = parse({"--compiledb-dir", "build"});
+  EXPECT_TRUE(cfg.compileDbDir.is_absolute());
+  EXPECT_NE(cfg.compileDbDir.string().find("build"), std::string::npos);
+}
+
+TEST_F(CliConfigParserTest, testTestResultDirParsedAndAbsolute) {
+  Config cfg = parse({"--test-result-dir", "results"});
+  EXPECT_TRUE(cfg.testResultDir.is_absolute());
+  EXPECT_NE(cfg.testResultDir.string().find("results"), std::string::npos);
+}
+
+TEST_F(CliConfigParserTest, testBuildCommandParsed) {
+  Config cfg = parse({"--build-command", "make all -j4"});
+  EXPECT_EQ(cfg.buildCmd, "make all -j4");
+}
+
+TEST_F(CliConfigParserTest, testTestCommandParsed) {
+  Config cfg = parse({"--test-command", "ctest -j8"});
+  EXPECT_EQ(cfg.testCmd, "ctest -j8");
+}
+
+TEST_F(CliConfigParserTest, testTestResultExtParsed) {
+  Config cfg = parse({"--test-result-ext", "xml", "--test-result-ext", "json"});
+  EXPECT_EQ(cfg.testResultExts.size(), 2u);
+}
+
+TEST_F(CliConfigParserTest, testCoverageFileParsed) {
+  Config cfg = parse({"--coverage", "cov1.info", "--coverage", "cov2.info"});
+  EXPECT_EQ(cfg.coverageFiles.size(), 2u);
+}
+
+TEST_F(CliConfigParserTest, testSourceDirParsedAndAbsolute) {
+  Config cfg = parse({"--source-dir", "src"});
+  EXPECT_TRUE(cfg.sourceDir.is_absolute());
+}
+
+TEST_F(CliConfigParserTest, testDryRunParsed) {
+  Config cfg = parse({"--dry-run"});
+  EXPECT_TRUE(cfg.dryRun);
+}
+
+TEST_F(CliConfigParserTest, testNoStatusLineParsed) {
+  Config cfg = parse({"--no-statusline"});
+  EXPECT_TRUE(cfg.noStatusLine);
+}
+
+TEST_F(CliConfigParserTest, testInitParsed) {
+  Config cfg = parse({"--init"});
+  EXPECT_TRUE(cfg.init);
+}
+
+TEST_F(CliConfigParserTest, testPartitionParsed) {
+  Config cfg = parse({"--partition", "2/4"});
+  ASSERT_TRUE(cfg.partition.has_value());
+  EXPECT_EQ(*cfg.partition, "2/4");
+}
+
+TEST_F(CliConfigParserTest, testPatternParsed) {
+  Config cfg = parse({"--pattern", "src/**/*.cpp", "--pattern", "lib/**/*.cpp"});
+  EXPECT_EQ(cfg.patterns.size(), 2u);
+}
+
+TEST_F(CliConfigParserTest, testKillAfterNonNumericThrows) {
+  EXPECT_THROW(parse({"--kill-after", "abc"}), std::invalid_argument);
+}
+
+TEST_F(CliConfigParserTest, testLimitNonNumericThrows) {
+  EXPECT_THROW(parse({"--limit", "abc"}), args::ParseError);
+}
+
 }  // namespace sentinel

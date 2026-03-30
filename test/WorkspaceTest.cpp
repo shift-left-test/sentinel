@@ -491,4 +491,94 @@ TEST(WorkspaceStatusTest, testStreamOperatorPartialFields) {
   EXPECT_FALSE(loaded.partCount.has_value());
 }
 
+TEST_F(WorkspaceTest, testGetMutantDirFiveDigitFormat) {
+  Workspace ws(mRoot);
+  EXPECT_EQ(mRoot / "00099", ws.getMutantDir(99));
+  EXPECT_EQ(mRoot / "99999", ws.getMutantDir(99999));
+}
+
+TEST_F(WorkspaceTest, testSaveStatusPartialUpdatePreservesExistingFields) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  WorkspaceStatus a;
+  a.originalTime = 30;
+  a.candidateCount = 500;
+  ws.saveStatus(a);
+
+  WorkspaceStatus b;
+  b.partIndex = 1;
+  b.partCount = 3;
+  ws.saveStatus(b);
+
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.originalTime.has_value());
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  ASSERT_TRUE(loaded.partIndex.has_value());
+  ASSERT_TRUE(loaded.partCount.has_value());
+  EXPECT_EQ(30u, *loaded.originalTime);
+  EXPECT_EQ(500u, *loaded.candidateCount);
+  EXPECT_EQ(1u, *loaded.partIndex);
+  EXPECT_EQ(3u, *loaded.partCount);
+}
+
+TEST_F(WorkspaceTest, testLoadMutantsReturnsEmptyForNoMutants) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  auto mutants = ws.loadMutants();
+  EXPECT_TRUE(mutants.empty());
+}
+
+TEST_F(WorkspaceTest, testDonePreservesRuntimeErrorState) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(1, m);
+
+  MutationResult result(m, "", "crash info", MutationState::RUNTIME_ERROR);
+  ws.setDone(1, result);
+
+  MutationResult loaded = ws.getDoneResult(1);
+  EXPECT_EQ(MutationState::RUNTIME_ERROR, loaded.getMutationState());
+  EXPECT_EQ("crash info", loaded.getErrorTest());
+}
+
+TEST_F(WorkspaceTest, testMultipleMutantsLoadedInOrder) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  fs::path p = mSrcFile;
+
+  const std::vector<int> createOrder = {5, 3, 1, 4, 2};
+  for (int id : createOrder) {
+    Mutant m("AOR", p, "func", id, 1, id, 1, "+");
+    ws.createMutant(id, m);
+  }
+
+  auto mutants = ws.loadMutants();
+  ASSERT_EQ(5u, mutants.size());
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(i + 1, mutants[i].first);
+  }
+}
+
+TEST_F(WorkspaceTest, testSaveConfigPreservesAllFields) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  EXPECT_FALSE(ws.hasPreviousRun());
+
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "cmake --build .";
+  cfg.testCmd = "ctest -j4";
+  cfg.sourceDir = mBase / "src";
+
+  ws.saveConfig(cfg);
+  EXPECT_TRUE(ws.hasPreviousRun());
+  EXPECT_TRUE(fs::exists(mRoot / "config.yaml"));
+
+  std::ifstream in(mRoot / "config.yaml");
+  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  EXPECT_NE(std::string::npos, content.find("build-command: cmake --build ."));
+  EXPECT_NE(std::string::npos, content.find("test-command: ctest -j4"));
+}
+
 }  // namespace sentinel

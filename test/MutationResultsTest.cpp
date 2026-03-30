@@ -10,6 +10,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -140,6 +141,68 @@ TEST_F(MutationResultsTest, testStreamOperatorYamlFormat) {
   EXPECT_NE(std::string::npos, yaml.find("killing-test: testKill"));
   EXPECT_NE(std::string::npos, yaml.find("error-test: testError"));
   EXPECT_NE(std::string::npos, yaml.find("mutant:"));
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorEmptyInputSetsFail) {
+  std::istringstream in("");
+  MutationResult mr;
+  in >> mr;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorInvalidYamlSetsFail) {
+  std::istringstream in("{{{invalid");
+  MutationResult mr;
+  in >> mr;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorNonMapYamlSetsFail) {
+  std::istringstream in("- just a list\n- not a map\n");
+  MutationResult mr;
+  in >> mr;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorInvalidStateSetsFail) {
+  static constexpr const char* kYaml =
+      "state: INVALID_STATE\n"
+      "killing-test: \"\"\n"
+      "error-test: \"\"\n"
+      "mutant:\n"
+      "  op: AOR\n"
+      "  path: foo.cpp\n"
+      "  func: f\n"
+      "  first-line: 1\n"
+      "  first-col: 1\n"
+      "  last-line: 1\n"
+      "  last-col: 5\n"
+      "  token: \"+\"\n";
+  std::istringstream in(kYaml);
+  MutationResult mr;
+  in >> mr;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorAllStatesRoundTrip) {
+  const std::vector<MutationState> states = {
+      MutationState::KILLED,
+      MutationState::SURVIVED,
+      MutationState::RUNTIME_ERROR,
+      MutationState::BUILD_FAILURE,
+      MutationState::TIMEOUT,
+  };
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  for (const auto& state : states) {
+    MutationResult original(m, "t1", "t2", state);
+    std::ostringstream out;
+    out << original;
+    std::istringstream in(out.str());
+    MutationResult loaded;
+    in >> loaded;
+    EXPECT_FALSE(in.fail());
+    EXPECT_EQ(state, loaded.getMutationState());
+  }
 }
 
 }  // namespace sentinel

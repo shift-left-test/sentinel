@@ -23,7 +23,9 @@ build_test_program(
        CliConfigParserTest.cpp StatusLineTest.cpp
        TimestamperTest.cpp AORTest.cpp BORTest.cpp LCRTest.cpp RORTest.cpp SDLTest.cpp SORTest.cpp UOITest.cpp
        DocGeneratorTest.cpp StageTest.cpp ConfigValidatorTest.cpp
-       EvaluationStageTest.cpp SignalHandlerTest.cpp YamlConfigWriterTest.cpp
+       EvaluationStageTest.cpp DryRunStageTest.cpp ReportStageTest.cpp
+       OriginalBuildStageTest.cpp OriginalTestStageTest.cpp
+       SignalHandlerTest.cpp YamlConfigWriterTest.cpp
        FormatterTest.cpp
        Utf8CharTest.cpp
 
