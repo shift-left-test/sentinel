@@ -87,7 +87,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
   if ((cfg.dryRun || cfg.clean) && ws->hasPreviousRun()) {
-    sentinel::Logger::info("Workspace '{}' exists and will be cleared.", workDirPath);
+    sentinel::Logger::warn("Workspace '{}' exists and will be cleared.", workDirPath);
   }
 
   // Validate config (skipped for resumed/already-complete runs)
