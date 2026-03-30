@@ -73,6 +73,7 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
                                                         ldm = std::move(localDm), this]() mutable {
         Mutants localMutables;
         clang::tooling::ClangTool tool(*db, filename.string());
+        tool.setDiagnosticConsumer(new clang::IgnoringDiagConsumer());
         tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
         tool.run(createDepthAwareActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators).get());
         return std::make_pair(std::move(localMutables), std::move(ldm));

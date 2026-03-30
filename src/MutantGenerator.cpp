@@ -92,6 +92,7 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
           std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
             Mutants localMutables;
             clang::tooling::ClangTool tool(*db, filename.string());
+            tool.setDiagnosticConsumer(new clang::IgnoringDiagConsumer());
             tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
             tool.run(createActionFactory(&localMutables, lines, mSelectedOperators).get());
             return localMutables;
