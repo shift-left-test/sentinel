@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include "helper/TestTempDir.hpp"
 #include "sentinel/Config.hpp"
+#include "sentinel/PipelineContext.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/OriginalBuildStage.hpp"
@@ -30,6 +31,8 @@ class OriginalBuildStageTest : public ::testing::Test {
     fs::create_directories(mWorkDir);
     fs::create_directories(mCompileDbDir);
 
+    mWorkspace = std::make_shared<Workspace>(mWorkDir);
+
     mConfig.workDir = mWorkDir;
     mConfig.compileDbDir = mCompileDbDir;
     mConfig.verbose = false;
@@ -44,57 +47,62 @@ class OriginalBuildStageTest : public ::testing::Test {
     f << "[]";
   }
 
+  PipelineContext makeCtx() {
+    return {mConfig, mStatusLine, *mWorkspace};
+  }
+
   fs::path mBase;
   fs::path mWorkDir;
   fs::path mCompileDbDir;
   Config mConfig;
-  std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
+  StatusLine mStatusLine;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 TEST_F(OriginalBuildStageTest, testShouldSkipWhenBuildLogExists) {
-  auto workspace = std::make_shared<Workspace>(mWorkDir);
-  fs::create_directories(workspace->getOriginalDir());
-  std::ofstream f(workspace->getOriginalBuildLog());
+  fs::create_directories(mWorkspace->getOriginalDir());
+  std::ofstream f(mWorkspace->getOriginalBuildLog());
   f << "build log";
   f.close();
 
   mConfig.buildCmd = "false";  // would fail if actually executed
-  OriginalBuildStage stage(mConfig, mStatusLine, workspace);
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
 
-  EXPECT_NO_THROW(stage.run());
+  EXPECT_NO_THROW(stage->run(&ctx));
 }
 
 TEST_F(OriginalBuildStageTest, testExecuteSuccessfulBuild) {
-  auto workspace = std::make_shared<Workspace>(mWorkDir);
-  fs::create_directories(workspace->getOriginalDir());
+  fs::create_directories(mWorkspace->getOriginalDir());
   createCompileCommandsJson();
 
   mConfig.buildCmd = "true";
-  OriginalBuildStage stage(mConfig, mStatusLine, workspace);
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
 
-  EXPECT_NO_THROW(stage.run());
-  EXPECT_TRUE(fs::exists(workspace->getOriginalBuildLog()));
+  EXPECT_NO_THROW(stage->run(&ctx));
+  EXPECT_TRUE(fs::exists(mWorkspace->getOriginalBuildLog()));
 }
 
 TEST_F(OriginalBuildStageTest, testExecuteFailedBuildThrows) {
-  auto workspace = std::make_shared<Workspace>(mWorkDir);
-  fs::create_directories(workspace->getOriginalDir());
+  fs::create_directories(mWorkspace->getOriginalDir());
 
   mConfig.buildCmd = "false";
-  OriginalBuildStage stage(mConfig, mStatusLine, workspace);
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
 
-  EXPECT_THROW(stage.run(), std::runtime_error);
+  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
 }
 
 TEST_F(OriginalBuildStageTest, testMissingCompileCommandsThrows) {
-  auto workspace = std::make_shared<Workspace>(mWorkDir);
-  fs::create_directories(workspace->getOriginalDir());
+  fs::create_directories(mWorkspace->getOriginalDir());
   // compile_commands.json intentionally not created
 
   mConfig.buildCmd = "true";
-  OriginalBuildStage stage(mConfig, mStatusLine, workspace);
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
 
-  EXPECT_THROW(stage.run(), std::runtime_error);
+  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
 }
 
 }  // namespace sentinel

@@ -15,6 +15,7 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationState.hpp"
+#include "sentinel/PipelineContext.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
@@ -41,7 +42,6 @@ class ReportStageTest : public ::testing::Test {
     mWorkspace = std::make_shared<Workspace>(mWorkspaceDir);
     mWorkspace->initialize();
 
-    mStatusLine = std::make_shared<StatusLine>();
     Logger::setLevel(Logger::Level::OFF);
   }
 
@@ -81,17 +81,22 @@ class ReportStageTest : public ::testing::Test {
     return cfg;
   }
 
+  PipelineContext makeCtx(Config* cfg) {
+    return {*cfg, mStatusLine, *mWorkspace};
+  }
+
   fs::path mBase;
   fs::path mSourceDir;
   fs::path mWorkspaceDir;
   std::shared_ptr<Workspace> mWorkspace;
-  std::shared_ptr<StatusLine> mStatusLine;
+  StatusLine mStatusLine;
 };
 
 TEST_F(ReportStageTest, testShouldSkipAlwaysReturnsFalse) {
   Config cfg = makeConfig();
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
 }
 
 TEST_F(ReportStageTest, testNoMutantsNoThreshold) {
@@ -99,8 +104,9 @@ TEST_F(ReportStageTest, testNoMutantsNoThreshold) {
   Logger::setLevel(Logger::Level::INFO);
 
   testing::internal::CaptureStderr();
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, ::testing::HasSubstr("-"));
@@ -114,8 +120,9 @@ TEST_F(ReportStageTest, testAllKilledScoreIs100) {
   Logger::setLevel(Logger::Level::INFO);
 
   testing::internal::CaptureStderr();
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, ::testing::HasSubstr("100.0%"));
@@ -131,8 +138,9 @@ TEST_F(ReportStageTest, testMixedResultsScore) {
   Logger::setLevel(Logger::Level::INFO);
 
   testing::internal::CaptureStderr();
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, ::testing::HasSubstr("50.0%"));
@@ -145,8 +153,9 @@ TEST_F(ReportStageTest, testThresholdPassedDoesNotThrow) {
   addResult(3, MutationState::SURVIVED);
 
   Config cfg = makeConfig(fs::path{}, 50.0);
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
 }
 
 TEST_F(ReportStageTest, testThresholdFailedThrowsThresholdError) {
@@ -157,15 +166,17 @@ TEST_F(ReportStageTest, testThresholdFailedThrowsThresholdError) {
   addResult(4, MutationState::SURVIVED);
 
   Config cfg = makeConfig(fs::path{}, 50.0);
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_THROW(stage.run(), ThresholdError);
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_THROW(stage->run(&ctx), ThresholdError);
 }
 
 TEST_F(ReportStageTest, testThresholdWithNoMutationsDoesNotThrow) {
   // No mutants => score is nullopt; threshold should not trigger
   Config cfg = makeConfig(fs::path{}, 80.0);
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
 }
 
 TEST_F(ReportStageTest, testOutputDirSavesReports) {
@@ -173,8 +184,9 @@ TEST_F(ReportStageTest, testOutputDirSavesReports) {
 
   fs::path outputDir = mBase / "reports";
   Config cfg = makeConfig(outputDir);
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
 
   EXPECT_TRUE(fs::exists(outputDir));
   EXPECT_TRUE(fs::exists(outputDir / "mutations.xml"));
@@ -184,8 +196,9 @@ TEST_F(ReportStageTest, testEmptyOutputDirDoesNotSaveReports) {
   addResult(1, MutationState::KILLED);
 
   Config cfg = makeConfig(fs::path{});
-  ReportStage stage(cfg, mStatusLine, mWorkspace);
-  EXPECT_NO_THROW(stage.run());
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
 
   // No report directory should have been created under mBase beyond src/ and workspace/
   EXPECT_FALSE(fs::exists(mBase / "reports"));

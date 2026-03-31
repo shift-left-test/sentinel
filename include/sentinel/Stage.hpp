@@ -7,8 +7,7 @@
 #define INCLUDE_SENTINEL_STAGE_HPP_
 
 #include <memory>
-#include "sentinel/Config.hpp"
-#include "sentinel/StatusLine.hpp"
+#include "sentinel/PipelineContext.hpp"
 
 namespace sentinel {
 
@@ -21,13 +20,7 @@ namespace sentinel {
  */
 class Stage {
  public:
-  /**
-   * @brief Constructor.
-   * @param cfg        Fully resolved configuration (immutable throughout pipeline).
-   * @param statusLine Shared status line for progress display.
-   */
-  Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine);
-
+  Stage();
   Stage(const Stage&) = delete;
   Stage& operator=(const Stage&) = delete;
   virtual ~Stage();
@@ -42,16 +35,13 @@ class Stage {
    * @brief Execute this stage; if execute() returns true and a next stage exists,
    *        invoke it.
    */
-  void run();
+  void run(PipelineContext* ctx);
 
  protected:
   /**
    * @brief Return true if this stage should be skipped.
-   *
-   * When skipped, execute() is not called and the phase is not set.
-   * The chain continues to the next stage as if execute() returned true.
    */
-  virtual bool shouldSkip() const = 0;
+  virtual bool shouldSkip(const PipelineContext& ctx) const = 0;
 
   /**
    * @brief Return the StatusLine phase to display when this stage runs.
@@ -62,15 +52,10 @@ class Stage {
    * @brief Perform this stage's work.
    * @return true to continue the chain, false to stop.
    */
-  virtual bool execute() = 0;
+  virtual bool execute(PipelineContext* ctx) = 0;
 
   /** @brief Check whether verbose mode is enabled. */
-  bool isVerbose() const { return mConfig.verbose; }
-
-  /** @brief Fully resolved configuration (read-only). */
-  const Config& mConfig;
-  /** @brief Shared status line for phase and progress updates. */
-  std::shared_ptr<StatusLine> mStatusLine;
+  static bool isVerbose(const PipelineContext& ctx) { return ctx.config.verbose; }
 
  private:
   std::shared_ptr<Stage> mNext;

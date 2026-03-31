@@ -7,8 +7,9 @@
 #define INCLUDE_SENTINEL_STAGES_GENERATIONSTAGE_HPP_
 
 #include <memory>
+#include "sentinel/GitRepository.hpp"
+#include "sentinel/MutantGenerator.hpp"
 #include "sentinel/Stage.hpp"
-#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -19,19 +20,19 @@ class GenerationStage : public Stage {
  public:
   /**
    * @brief Constructor.
-   * @param cfg        Resolved configuration.
-   * @param statusLine Shared status line.
-   * @param workspace  Shared workspace.
+   * @param repo      Git repository for scanning source lines.
+   * @param generator Mutant generator strategy.
    */
-  GenerationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
+  GenerationStage(std::shared_ptr<GitRepository> repo, std::shared_ptr<MutantGenerator> generator);
 
  protected:
-  bool shouldSkip() const override;
+  bool shouldSkip(const PipelineContext& ctx) const override;
   StatusLine::Phase getPhase() const override;
-  bool execute() override;
+  bool execute(PipelineContext* ctx) override;
 
  private:
-  std::shared_ptr<Workspace> mWorkspace;
+  std::shared_ptr<GitRepository> mRepo;
+  std::shared_ptr<MutantGenerator> mGenerator;
 };
 
 }  // namespace sentinel

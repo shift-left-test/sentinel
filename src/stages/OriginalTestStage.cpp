@@ -8,13 +8,10 @@
 #include <algorithm>
 #include <cmath>
 #include <filesystem>  // NOLINT
-#include <memory>
 #include <stdexcept>
 #include <string>
-#include <utility>
 #include <vector>
 #include "sentinel/Logger.hpp"
-#include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/Workspace.hpp"
@@ -28,58 +25,53 @@ namespace fs = std::filesystem;
 static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
 static constexpr double kAutoTimeoutFactor = 1.5;
 
-OriginalTestStage::OriginalTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                     std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
-}
-
-bool OriginalTestStage::shouldSkip() const {
-  return fs::exists(mWorkspace->getOriginalTestLog()) && mWorkspace->hasPreviousRun();
+bool OriginalTestStage::shouldSkip(const PipelineContext& ctx) const {
+  return fs::exists(ctx.workspace.getOriginalTestLog()) && ctx.workspace.hasPreviousRun();
 }
 
 StatusLine::Phase OriginalTestStage::getPhase() const {
   return StatusLine::Phase::TEST_ORIG;
 }
 
-bool OriginalTestStage::execute() {
+bool OriginalTestStage::execute(PipelineContext* ctx) {
   Logger::info("Running original test...");
-  fs::path testLog = mWorkspace->getOriginalTestLog();
-  Logger::verbose("Test command: {}", mConfig.testCmd);
+  fs::path testLog = ctx->workspace.getOriginalTestLog();
+  Logger::verbose("Test command: {}", ctx->config.testCmd);
   Logger::verbose("Test log: {}", testLog);
   Logger::verbose("Test result dir: {} (ext: {})",
-                  mConfig.testResultDir.string(),
-                  fmt::join(mConfig.testResultExts, ", "));
+                  ctx->config.testResultDir.string(),
+                  fmt::join(ctx->config.testResultExts, ", "));
 
-  const std::size_t killAfterSecs = mConfig.killAfter;
+  const std::size_t killAfterSecs = ctx->config.killAfter;
   std::size_t computedTimeLimit = 0;
-  if (mConfig.timeout.has_value()) {
-    computedTimeLimit = *mConfig.timeout;
+  if (ctx->config.timeout.has_value()) {
+    computedTimeLimit = *ctx->config.timeout;
     Logger::info("Timeout: {}s, kill-after: {}s", computedTimeLimit, killAfterSecs);
   }
 
   Timestamper testTimer;
-  Subprocess testProc(mConfig.testCmd, computedTimeLimit, killAfterSecs, testLog.string(),
-                      !isVerbose());
+  Subprocess testProc(ctx->config.testCmd, computedTimeLimit, killAfterSecs, testLog.string(),
+                      !isVerbose(*ctx));
   testProc.execute();
   const double testElapsed = testTimer.toDouble();
 
-  if (!mConfig.timeout) {
+  if (!ctx->config.timeout) {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * kAutoTimeoutFactor)) + kAutoTimeoutPaddingSecs;
     Logger::info("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;
-    mWorkspace->saveStatus(status);
+    ctx->workspace.saveStatus(status);
   }
 
-  io::syncFiles(mConfig.testResultDir, mWorkspace->getOriginalResultsDir(), mConfig.testResultExts);
+  io::syncFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir(), ctx->config.testResultExts);
 
-  if (fs::is_empty(mWorkspace->getOriginalResultsDir())) {
+  if (fs::is_empty(ctx->workspace.getOriginalResultsDir())) {
     throw std::runtime_error(fmt::format("No test result files found in '{}' after running test command. See: {}",
-                                         mConfig.testResultDir.string(), testLog.string()));
+                                         ctx->config.testResultDir.string(), testLog.string()));
   }
 
   Logger::info("Original test completed ({})", Timestamper::format(testElapsed));
-  mWorkspace->saveConfig(mConfig);
+  ctx->workspace.saveConfig(ctx->config);
   return true;
 }
 

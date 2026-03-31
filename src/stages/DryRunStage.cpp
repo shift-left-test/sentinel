@@ -3,27 +3,21 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <memory>
-#include <utility>
 #include "sentinel/Logger.hpp"
 #include "sentinel/stages/DryRunStage.hpp"
 
 namespace sentinel {
 
-DryRunStage::DryRunStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
-}
-
-bool DryRunStage::shouldSkip() const {
-  return !mConfig.dryRun;
+bool DryRunStage::shouldSkip(const PipelineContext& ctx) const {
+  return !ctx.config.dryRun;
 }
 
 StatusLine::Phase DryRunStage::getPhase() const {
   return StatusLine::Phase::GENERATION;
 }
 
-bool DryRunStage::execute() {
-  mStatusLine->setTotalMutants(mWorkspace->loadMutants().size());
+bool DryRunStage::execute(PipelineContext* ctx) {
+  ctx->statusLine.setTotalMutants(ctx->workspace.loadMutants().size());
   Logger::info("Evaluation skipped (dry run).");
   return false;
 }

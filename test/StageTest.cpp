@@ -5,27 +5,34 @@
 
 #include <gtest/gtest.h>
 #include <stdexcept>
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <utility>
 #include <vector>
-#include "sentinel/Config.hpp"
+#include "sentinel/PipelineContext.hpp"
 #include "sentinel/Stage.hpp"
-#include "sentinel/StatusLine.hpp"
+#include "sentinel/Workspace.hpp"
+#include "helper/TestTempDir.hpp"
 
 namespace sentinel {
 
-// Minimal concrete stage for testing
+namespace fs = std::filesystem;
+
 class RecordingStage : public Stage {
  public:
-  RecordingStage(const Config& cfg, std::shared_ptr<StatusLine> sl, bool returnVal, bool skipVal = false) :
-      Stage(cfg, std::move(sl)), mReturn(returnVal), mSkip(skipVal) {
+  explicit RecordingStage(bool returnVal, bool skipVal = false) :
+      mReturn(returnVal), mSkip(skipVal) {
   }
   bool wasExecuted() const { return mExecuted; }
 
  protected:
-  bool shouldSkip() const override { return mSkip; }
+  bool shouldSkip(const PipelineContext& ctx) const override {
+    (void)ctx;
+    return mSkip;
+  }
   StatusLine::Phase getPhase() const override { return StatusLine::Phase::INIT; }
-  bool execute() override {
+  bool execute(PipelineContext* ctx) override {
+    (void)ctx;
     mExecuted = true;
     return mReturn;
   }
@@ -37,74 +44,99 @@ class RecordingStage : public Stage {
 };
 
 class ThrowingStage : public Stage {
- public:
-  ThrowingStage(const Config& cfg, std::shared_ptr<StatusLine> sl) : Stage(cfg, std::move(sl)) {}
-
  protected:
-  bool shouldSkip() const override { return false; }
+  bool shouldSkip(const PipelineContext& ctx) const override {
+    (void)ctx;
+    return false;
+  }
   StatusLine::Phase getPhase() const override { return StatusLine::Phase::INIT; }
-  bool execute() override { throw std::runtime_error("test error"); }
+  bool execute(PipelineContext* ctx) override {
+    (void)ctx;
+    throw std::runtime_error("test error");
+  }
 };
 
 class StageTest : public ::testing::Test {
  protected:
+  void SetUp() override {
+    mBase = testTempDir("SENTINEL_STAGE_TEST");
+    fs::remove_all(mBase);
+    fs::create_directories(mBase);
+    mWorkspace = std::make_shared<Workspace>(mBase / "ws");
+  }
+  void TearDown() override {
+    fs::remove_all(mBase);
+  }
+  PipelineContext makeCtx() {
+    return {mConfig, mStatusLine, *mWorkspace};
+  }
+
+  fs::path mBase;
   Config mConfig;
-  std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
+  StatusLine mStatusLine;
+  std::shared_ptr<Workspace> mWorkspace;
 };
 
 TEST_F(StageTest, testHandleCallsExecute) {
-  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
-  stage->run();
+  auto stage = std::make_shared<RecordingStage>(true);
+  auto ctx = makeCtx();
+  stage->run(&ctx);
   EXPECT_TRUE(stage->wasExecuted());
 }
 
 TEST_F(StageTest, testHandleProceedsToNextWhenExecuteReturnsTrue) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto first = std::make_shared<RecordingStage>(true);
+  auto second = std::make_shared<RecordingStage>(true);
   first->setNext(second);
-  first->run();
+  auto ctx = makeCtx();
+  first->run(&ctx);
   EXPECT_TRUE(first->wasExecuted());
   EXPECT_TRUE(second->wasExecuted());
 }
 
 TEST_F(StageTest, testHandleStopsWhenExecuteReturnsFalse) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, false);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto first = std::make_shared<RecordingStage>(false);
+  auto second = std::make_shared<RecordingStage>(true);
   first->setNext(second);
-  first->run();
+  auto ctx = makeCtx();
+  first->run(&ctx);
   EXPECT_TRUE(first->wasExecuted());
   EXPECT_FALSE(second->wasExecuted());
 }
 
 TEST_F(StageTest, testSetNextReturnsNextForChaining) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
-  auto third = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto first = std::make_shared<RecordingStage>(true);
+  auto second = std::make_shared<RecordingStage>(true);
+  auto third = std::make_shared<RecordingStage>(true);
   first->setNext(second)->setNext(third);
-  first->run();
+  auto ctx = makeCtx();
+  first->run(&ctx);
   EXPECT_TRUE(first->wasExecuted());
   EXPECT_TRUE(second->wasExecuted());
   EXPECT_TRUE(third->wasExecuted());
 }
 
 TEST_F(StageTest, testSkippedStageDoesNotCallExecute) {
-  auto stage = std::make_shared<RecordingStage>(mConfig, mStatusLine, true, /*skip=*/true);
-  stage->run();
+  auto stage = std::make_shared<RecordingStage>(true, /*skip=*/true);
+  auto ctx = makeCtx();
+  stage->run(&ctx);
   EXPECT_FALSE(stage->wasExecuted());
 }
 
 TEST_F(StageTest, testSkippedStageProceedsToNext) {
-  auto first = std::make_shared<RecordingStage>(mConfig, mStatusLine, true, /*skip=*/true);
-  auto second = std::make_shared<RecordingStage>(mConfig, mStatusLine, true);
+  auto first = std::make_shared<RecordingStage>(true, /*skip=*/true);
+  auto second = std::make_shared<RecordingStage>(true);
   first->setNext(second);
-  first->run();
+  auto ctx = makeCtx();
+  first->run(&ctx);
   EXPECT_FALSE(first->wasExecuted());
   EXPECT_TRUE(second->wasExecuted());
 }
 
 TEST_F(StageTest, testExceptionFromExecutePropagates) {
-  auto stage = std::make_shared<ThrowingStage>(mConfig, mStatusLine);
-  EXPECT_THROW(stage->run(), std::runtime_error);
+  auto stage = std::make_shared<ThrowingStage>();
+  auto ctx = makeCtx();
+  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
 }
 
 }  // namespace sentinel

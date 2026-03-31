@@ -14,12 +14,8 @@
 #include <string>
 #include <utility>
 #include "sentinel/Console.hpp"
-#include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
-#include "sentinel/MutantGenerator.hpp"
 #include "sentinel/MutationFactory.hpp"
-#include "sentinel/StatusLine.hpp"
-#include "sentinel/Workspace.hpp"
 #include "sentinel/stages/GenerationStage.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/util/string.hpp"
@@ -119,47 +115,44 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("{}", thick);
 }
 
-GenerationStage::GenerationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                 std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+GenerationStage::GenerationStage(std::shared_ptr<GitRepository> repo,
+                                 std::shared_ptr<MutantGenerator> generator) :
+    mRepo(std::move(repo)), mGenerator(std::move(generator)) {
 }
 
-bool GenerationStage::shouldSkip() const {
-  return !mWorkspace->loadMutants().empty();
+bool GenerationStage::shouldSkip(const PipelineContext& ctx) const {
+  return !ctx.workspace.loadMutants().empty();
 }
 
 StatusLine::Phase GenerationStage::getPhase() const {
   return StatusLine::Phase::GENERATION;
 }
 
-bool GenerationStage::execute() {
+bool GenerationStage::execute(PipelineContext* ctx) {
   Logger::info("Generating mutants...");
-  auto repo =
-      std::make_unique<GitRepository>(mConfig.sourceDir, mConfig.extensions, mConfig.patterns);
-  repo->addSkipDir(mWorkspace->getRoot());
-  SourceLines sourceLines = repo->getSourceLines(mConfig.scope);
+  mRepo->addSkipDir(ctx->workspace.getRoot());
+  SourceLines sourceLines = mRepo->getSourceLines(ctx->config.scope);
 
   // Verbose: source scan results and config
-  if (isVerbose()) {
+  if (isVerbose(*ctx)) {
     std::set<fs::path> uniqueFiles;
     for (const auto& sl : sourceLines) {
       uniqueFiles.insert(sl.getPath());
     }
     Logger::verbose("Source: {} lines from {} files", sourceLines.size(), uniqueFiles.size());
-    Logger::verbose("Extensions: {}", fmt::join(mConfig.extensions, ", "));
-    if (!mConfig.patterns.empty()) {
-      Logger::verbose("Patterns: {}", fmt::join(mConfig.patterns, ", "));
+    Logger::verbose("Extensions: {}", fmt::join(ctx->config.extensions, ", "));
+    if (!ctx->config.patterns.empty()) {
+      Logger::verbose("Patterns: {}", fmt::join(ctx->config.patterns, ", "));
     }
   }
 
-  unsigned int seed = mConfig.seed ? *mConfig.seed : std::random_device {}();
+  unsigned int seed = ctx->config.seed ? *ctx->config.seed : std::random_device {}();
   std::shuffle(sourceLines.begin(), sourceLines.end(), std::mt19937(seed));
 
-  auto generator = MutantGenerator::getInstance(mConfig.generator, mConfig.compileDbDir);
-  generator->setOperators(mConfig.operators);
-  MutationFactory factory(generator);
-  auto mutants = factory.generate(mConfig.sourceDir, sourceLines, mConfig.limit, seed);
-  std::size_t candidateCount = generator->getCandidateCount();
+  mGenerator->setOperators(ctx->config.operators);
+  MutationFactory factory(mGenerator);
+  auto mutants = factory.generate(ctx->config.sourceDir, sourceLines, ctx->config.limit, seed);
+  std::size_t candidateCount = mGenerator->getCandidateCount();
 
   if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
     throw std::runtime_error(
@@ -169,10 +162,10 @@ bool GenerationStage::execute() {
   }
 
   // Print summary before partition (shows full generation results)
-  std::string partition = mConfig.partition.value_or("");
-  auto linesByPath = generator->getLinesByPath();
-  printGenerationSummary(mutants, candidateCount, linesByPath, mConfig.sourceDir, mConfig.generator, seed,
-                         mConfig.limit, mConfig.scope, partition);
+  std::string partition = ctx->config.partition.value_or("");
+  auto linesByPath = mGenerator->getLinesByPath();
+  printGenerationSummary(mutants, candidateCount, linesByPath, ctx->config.sourceDir, ctx->config.generator, seed,
+                         ctx->config.limit, ctx->config.scope, partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;
@@ -191,7 +184,7 @@ bool GenerationStage::execute() {
 
   int id = static_cast<int>(partStart) + 1;
   for (auto& m : mutants) {
-    mWorkspace->createMutant(id, m);
+    ctx->workspace.createMutant(id, m);
     id++;
   }
 
@@ -199,7 +192,7 @@ bool GenerationStage::execute() {
   status.candidateCount = candidateCount;
   status.partIndex = partIdx;
   status.partCount = partCount;
-  mWorkspace->saveStatus(status);
+  ctx->workspace.saveStatus(status);
 
   return true;
 }

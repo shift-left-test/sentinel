@@ -9,31 +9,29 @@
 
 namespace sentinel {
 
-Stage::~Stage() = default;
+Stage::Stage() = default;
 
-Stage::Stage(const Config& cfg, std::shared_ptr<StatusLine> statusLine) :
-    mConfig(cfg), mStatusLine(std::move(statusLine)) {
-}
+Stage::~Stage() = default;
 
 std::shared_ptr<Stage> Stage::setNext(std::shared_ptr<Stage> next) {
   mNext = std::move(next);
   return mNext;
 }
 
-void Stage::run() {
-  if (!shouldSkip()) {
-    mStatusLine->setPhase(getPhase());
+void Stage::run(PipelineContext* ctx) {
+  if (!shouldSkip(*ctx)) {
+    ctx->statusLine.setPhase(getPhase());
     try {
-      if (!execute()) {
-        mStatusLine->disable(); return;
+      if (!execute(ctx)) {
+        ctx->statusLine.disable(); return;
       }
     } catch (...) {
-      mStatusLine->disable();
+      ctx->statusLine.disable();
       throw;
     }
   }
-  if (mNext) mNext->run();
-  else mStatusLine->disable();
+  if (mNext) mNext->run(ctx);
+  else ctx->statusLine.disable();
 }
 
 }  // namespace sentinel

@@ -12,7 +12,10 @@
 #include <vector>
 #include "sentinel/CliConfigParser.hpp"
 #include "sentinel/ConfigValidator.hpp"
+#include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
+#include "sentinel/MutantGenerator.hpp"
+#include "sentinel/PipelineContext.hpp"
 #include "sentinel/SignalHandler.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
@@ -107,23 +110,28 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     ws->initialize();
   }
 
-  // 8. Assemble stage chain
-  auto originalBuild = std::make_shared<sentinel::OriginalBuildStage>(cfg, statusLine, ws);
-  auto originalTest = std::make_shared<sentinel::OriginalTestStage>(cfg, statusLine, ws);
-  auto generation = std::make_shared<sentinel::GenerationStage>(cfg, statusLine, ws);
-  auto dryRunStage = std::make_shared<sentinel::DryRunStage>(cfg, statusLine, ws);
-  auto evaluation = std::make_shared<sentinel::EvaluationStage>(cfg, statusLine, ws);
-  auto report = std::make_shared<sentinel::ReportStage>(cfg, statusLine, ws);
+  // 8. Create stage-specific dependencies
+  auto repo = std::make_shared<sentinel::GitRepository>(cfg.sourceDir, cfg.extensions, cfg.patterns);
+  auto generator = sentinel::MutantGenerator::getInstance(cfg.generator, cfg.compileDbDir);
+
+  // 9. Assemble stage chain
+  auto originalBuild = std::make_shared<sentinel::OriginalBuildStage>();
+  auto originalTest = std::make_shared<sentinel::OriginalTestStage>();
+  auto generation = std::make_shared<sentinel::GenerationStage>(repo, generator);
+  auto dryRunStage = std::make_shared<sentinel::DryRunStage>();
+  auto evaluation = std::make_shared<sentinel::EvaluationStage>(repo);
+  auto report = std::make_shared<sentinel::ReportStage>();
 
   originalBuild->setNext(originalTest)->setNext(generation)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
-  // 9. Install signal handlers
+  // 10. Install signal handlers
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
   sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(cfg.sourceDir); });
   sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
-  // 10. Run pipeline
-  originalBuild->run();
+  // 11. Create pipeline context and run
+  sentinel::PipelineContext ctx{cfg, *statusLine, *ws};
+  originalBuild->run(&ctx);
   return 0;
 }
 

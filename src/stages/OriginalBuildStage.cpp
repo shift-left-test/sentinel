@@ -5,12 +5,9 @@
 
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
-#include <memory>
 #include <stdexcept>
 #include <string>
-#include <utility>
 #include "sentinel/Logger.hpp"
-#include "sentinel/StatusLine.hpp"
 #include "sentinel/Subprocess.hpp"
 #include "sentinel/Timestamper.hpp"
 #include "sentinel/stages/OriginalBuildStage.hpp"
@@ -19,36 +16,31 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-OriginalBuildStage::OriginalBuildStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                       std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
-}
-
-bool OriginalBuildStage::shouldSkip() const {
-  return fs::exists(mWorkspace->getOriginalBuildLog());
+bool OriginalBuildStage::shouldSkip(const PipelineContext& ctx) const {
+  return fs::exists(ctx.workspace.getOriginalBuildLog());
 }
 
 StatusLine::Phase OriginalBuildStage::getPhase() const {
   return StatusLine::Phase::BUILD_ORIG;
 }
 
-bool OriginalBuildStage::execute() {
+bool OriginalBuildStage::execute(PipelineContext* ctx) {
   Logger::info("Running original build...");
-  fs::path buildLog = mWorkspace->getOriginalBuildLog();
-  Logger::verbose("Build command: {}", mConfig.buildCmd);
+  fs::path buildLog = ctx->workspace.getOriginalBuildLog();
+  Logger::verbose("Build command: {}", ctx->config.buildCmd);
   Logger::verbose("Build log: {}", buildLog);
   Timestamper ts;
-  Subprocess buildProc(mConfig.buildCmd, 0, 0, buildLog.string(), !isVerbose());
+  Subprocess buildProc(ctx->config.buildCmd, 0, 0, buildLog.string(), !isVerbose(*ctx));
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
     throw std::runtime_error(fmt::format("Original build failed. See: {}", buildLog.string()));
   }
   Logger::info("Original build completed ({})", Timestamper::format(ts.toDouble()));
-  if (!fs::exists(mConfig.compileDbDir / "compile_commands.json")) {
+  if (!fs::exists(ctx->config.compileDbDir / "compile_commands.json")) {
     throw std::runtime_error(
         fmt::format("compile_commands.json not found in '{}'. "
                     "Make sure build-command generates it (e.g., add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON to cmake).",
-                    mConfig.compileDbDir.string()));
+                    ctx->config.compileDbDir.string()));
   }
   return true;
 }

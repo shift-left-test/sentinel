@@ -5,15 +5,12 @@
 
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
-#include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationSummary.hpp"
-#include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
@@ -24,11 +21,8 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-ReportStage::ReportStage(const Config& cfg, std::shared_ptr<StatusLine> sl, std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
-}
-
-bool ReportStage::shouldSkip() const {
+bool ReportStage::shouldSkip(const PipelineContext& ctx) const {
+  (void)ctx;
   return false;
 }
 
@@ -36,20 +30,20 @@ StatusLine::Phase ReportStage::getPhase() const {
   return StatusLine::Phase::REPORT;
 }
 
-bool ReportStage::execute() {
+bool ReportStage::execute(PipelineContext* ctx) {
   Logger::info("Generating report...");
   MutationResults results;
-  for (const auto& [id, m] : mWorkspace->loadMutants()) {
-    results.push_back(mWorkspace->getDoneResult(id));
+  for (const auto& [id, m] : ctx->workspace.loadMutants()) {
+    results.push_back(ctx->workspace.getDoneResult(id));
   }
 
-  MutationSummary summary(results, mConfig.sourceDir);
+  MutationSummary summary(results, ctx->config.sourceDir);
   XmlReport xmlReport(summary);
   xmlReport.printSummary();
-  if (!mConfig.outputDir.empty()) {
-    xmlReport.save(mConfig.outputDir);
-    HtmlReport(summary).save(mConfig.outputDir);
-    Logger::info("Reports saved to {}", mConfig.outputDir);
+  if (!ctx->config.outputDir.empty()) {
+    xmlReport.save(ctx->config.outputDir);
+    HtmlReport(summary).save(ctx->config.outputDir);
+    Logger::info("Reports saved to {}", ctx->config.outputDir);
   }
 
   std::optional<double> score;
@@ -59,16 +53,16 @@ bool ReportStage::execute() {
   }
 
   std::string scoreStr = score ? fmt::format("{:.1f}%", *score) : "-";
-  if (mConfig.threshold) {
-    bool passed = !score || *score >= *mConfig.threshold;
+  if (ctx->config.threshold) {
+    bool passed = !score || *score >= *ctx->config.threshold;
     auto icon = passed ? Utf8Char::CheckMark : Utf8Char::CrossMark;
     std::string msg = fmt::format("Mutation testing complete {} {} {} (threshold: {:.1f}%)",
-                                  Utf8Char::EmDash, scoreStr, icon, *mConfig.threshold);
+                                  Utf8Char::EmDash, scoreStr, icon, *ctx->config.threshold);
     if (passed) {
       Logger::info("{}", msg);
     } else {
       Logger::error("{}", msg);
-      throw ThresholdError(*score, *mConfig.threshold);
+      throw ThresholdError(*score, *ctx->config.threshold);
     }
   } else {
     Logger::info("Mutation testing complete {} {}", Utf8Char::EmDash, scoreStr);

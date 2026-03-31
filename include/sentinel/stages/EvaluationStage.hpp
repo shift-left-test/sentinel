@@ -12,7 +12,6 @@
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Stage.hpp"
-#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -33,33 +32,23 @@ class EvaluationStage : public Stage {
  public:
   /**
    * @brief Constructor.
-   * @param cfg        Resolved configuration.
-   * @param statusLine Shared status line.
-   * @param workspace  Shared workspace.
+   * @param repo Git repository for applying/reverting source patches.
    */
-  EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> statusLine, std::shared_ptr<Workspace> workspace);
+  explicit EvaluationStage(std::shared_ptr<GitRepository> repo);
 
  protected:
-  bool shouldSkip() const override;
+  bool shouldSkip(const PipelineContext& ctx) const override;
   StatusLine::Phase getPhase() const override;
-  bool execute() override;
+  bool execute(PipelineContext* ctx) override;
 
  private:
-  std::shared_ptr<Workspace> mWorkspace;
+  std::shared_ptr<GitRepository> mRepo;
 
   /**
    * @brief Apply a mutant, run build/test, compare results, then restore backup.
-   *
-   * @param m              Mutant to evaluate.
-   * @param id             1-based mutant ID (used for log paths).
-   * @param timeLimit      Test timeout in seconds (0 = no limit).
-   * @param killAfterSecs  Seconds to wait before force-killing a timed-out process.
-   * @param evaluator      Evaluator used to compare expected vs actual results.
-   * @param repo           GitRepository used to apply/revert source patches.
-   * @return EvaluationDetail containing the result and build/test durations.
    */
   EvaluationDetail evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
-                                  Evaluator* evaluator, GitRepository* repo);
+                                  Evaluator* evaluator, PipelineContext* ctx);
 };
 
 }  // namespace sentinel

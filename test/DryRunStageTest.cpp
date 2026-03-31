@@ -8,10 +8,10 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include <utility>
 #include "helper/TestTempDir.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/Mutant.hpp"
+#include "sentinel/PipelineContext.hpp"
 #include "sentinel/Stage.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
@@ -25,15 +25,16 @@ namespace sentinel {
 // Named differently from PassthroughStage in StageTest.cpp to avoid ODR violation.
 class PassthroughStage : public Stage {
  public:
-  PassthroughStage(const Config& cfg, std::shared_ptr<StatusLine> sl) :
-      Stage(cfg, std::move(sl)) {}
-
   bool wasExecuted() const { return mExecuted; }
 
  protected:
-  bool shouldSkip() const override { return false; }
+  bool shouldSkip(const PipelineContext& ctx) const override {
+    (void)ctx;
+    return false;
+  }
   StatusLine::Phase getPhase() const override { return StatusLine::Phase::INIT; }
-  bool execute() override {
+  bool execute(PipelineContext* ctx) override {
+    (void)ctx;
     mExecuted = true;
     return true;
   }
@@ -72,8 +73,12 @@ class DryRunStageTest : public ::testing::Test {
     }
   }
 
+  PipelineContext makeCtx(Workspace* ws) {
+    return {mConfig, mStatusLine, *ws};
+  }
+
   Config mConfig;
-  std::shared_ptr<StatusLine> mStatusLine = std::make_shared<StatusLine>();
+  StatusLine mStatusLine;
   fs::path mBase;
   fs::path mWorkspaceRoot;
 };
@@ -84,12 +89,13 @@ TEST_F(DryRunStageTest, testShouldSkipWhenDryRunDisabled) {
   mConfig.dryRun = false;
 
   auto ws = makeWorkspace();
-  auto stage = std::make_shared<DryRunStage>(mConfig, mStatusLine, ws);
-  auto next = std::make_shared<PassthroughStage>(mConfig, mStatusLine);
+  auto stage = std::make_shared<DryRunStage>();
+  auto next = std::make_shared<PassthroughStage>();
   stage->setNext(next);
 
+  auto ctx = makeCtx(ws.get());
   // run() must not throw; the stage is skipped and the chain proceeds.
-  EXPECT_NO_THROW(stage->run());
+  EXPECT_NO_THROW(stage->run(&ctx));
   EXPECT_TRUE(next->wasExecuted());
 }
 
@@ -100,12 +106,13 @@ TEST_F(DryRunStageTest, testExecuteWhenDryRunEnabled) {
   auto ws = makeWorkspace();
   populateMutants(ws.get(), 2);
 
-  auto stage = std::make_shared<DryRunStage>(mConfig, mStatusLine, ws);
+  auto stage = std::make_shared<DryRunStage>();
 
-  EXPECT_NO_THROW(stage->run());
+  auto ctx = makeCtx(ws.get());
+  EXPECT_NO_THROW(stage->run(&ctx));
 
   // The status text must reflect the total mutant count of 2 ("[0/2]").
-  const std::string statusText = mStatusLine->getStatusText();
+  const std::string statusText = mStatusLine.getStatusText();
   EXPECT_NE(std::string::npos, statusText.find("2")) << "Status text: " << statusText;
 }
 
@@ -115,11 +122,12 @@ TEST_F(DryRunStageTest, testExecuteReturnsFalseStopsChain) {
   mConfig.dryRun = true;
 
   auto ws = makeWorkspace();
-  auto stage = std::make_shared<DryRunStage>(mConfig, mStatusLine, ws);
-  auto next = std::make_shared<PassthroughStage>(mConfig, mStatusLine);
+  auto stage = std::make_shared<DryRunStage>();
+  auto next = std::make_shared<PassthroughStage>();
   stage->setNext(next);
 
-  EXPECT_NO_THROW(stage->run());
+  auto ctx = makeCtx(ws.get());
+  EXPECT_NO_THROW(stage->run(&ctx));
   EXPECT_FALSE(next->wasExecuted());
 }
 

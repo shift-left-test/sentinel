@@ -26,52 +26,50 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-EvaluationStage::EvaluationStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
-                                 std::shared_ptr<Workspace> workspace) :
-    Stage(cfg, std::move(sl)), mWorkspace(std::move(workspace)) {
+EvaluationStage::EvaluationStage(std::shared_ptr<GitRepository> repo) :
+    mRepo(std::move(repo)) {
 }
 
-bool EvaluationStage::shouldSkip() const {
-  return mWorkspace->isComplete();
+bool EvaluationStage::shouldSkip(const PipelineContext& ctx) const {
+  return ctx.workspace.isComplete();
 }
 
 StatusLine::Phase EvaluationStage::getPhase() const {
   return StatusLine::Phase::EVALUATION;
 }
 
-bool EvaluationStage::execute() {
-  auto indexedMutants = mWorkspace->loadMutants();
+bool EvaluationStage::execute(PipelineContext* ctx) {
+  auto indexedMutants = ctx->workspace.loadMutants();
   std::size_t totalMutants = indexedMutants.size();
   Logger::info("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s");
-  mStatusLine->setTotalMutants(totalMutants);
+  ctx->statusLine.setTotalMutants(totalMutants);
 
   // Determine timeout
-  const bool isAutoTimeout = !mConfig.timeout.has_value();
+  const bool isAutoTimeout = !ctx->config.timeout.has_value();
   std::size_t computedTimeLimit = 0;
   if (isAutoTimeout) {
-    auto status = mWorkspace->loadStatus();
+    auto status = ctx->workspace.loadStatus();
     computedTimeLimit = status.originalTime.value_or(0);
   } else {
-    computedTimeLimit = *mConfig.timeout;
+    computedTimeLimit = *ctx->config.timeout;
   }
-  const std::size_t killAfterSecs = mConfig.killAfter;
+  const std::size_t killAfterSecs = ctx->config.killAfter;
 
-  Evaluator evaluator(mWorkspace->getOriginalResultsDir(), mConfig.sourceDir);
-  GitRepository repo(mConfig.sourceDir, mConfig.extensions);
+  Evaluator evaluator(ctx->workspace.getOriginalResultsDir(), ctx->config.sourceDir);
   std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
     ++current;
-    if (mWorkspace->isDone(id)) {
-      auto doneResult = mWorkspace->getDoneResult(id);
-      mStatusLine->recordResult(static_cast<int>(doneResult.getMutationState()));
+    if (ctx->workspace.isDone(id)) {
+      auto doneResult = ctx->workspace.getDoneResult(id);
+      ctx->statusLine.recordResult(static_cast<int>(doneResult.getMutationState()));
       continue;
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
-    mWorkspace->setLock(id);
-    mStatusLine->setMutantInfo(id);
+    ctx->workspace.setLock(id);
+    ctx->statusLine.setMutantInfo(id);
 
-    auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, &repo);
+    auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, ctx);
     const auto& result = detail.result;
 
     auto state = result.getMutationState();
@@ -96,54 +94,54 @@ bool EvaluationStage::execute() {
       Console::out("          {} {}", Utf8Char::ArrowLeft, summary);
     }
     if (state == MutationState::BUILD_FAILURE) {
-      Console::out("          {} {}", Utf8Char::ArrowHook, mWorkspace->getMutantBuildLog(id));
+      Console::out("          {} {}", Utf8Char::ArrowHook, ctx->workspace.getMutantBuildLog(id));
     } else if (state == MutationState::RUNTIME_ERROR || state == MutationState::TIMEOUT) {
-      Console::out("          {} {}", Utf8Char::ArrowHook, mWorkspace->getMutantTestLog(id));
+      Console::out("          {} {}", Utf8Char::ArrowHook, ctx->workspace.getMutantTestLog(id));
     }
 
-    mWorkspace->clearLock(id);
-    mWorkspace->setDone(id, result);
-    mStatusLine->recordResult(static_cast<int>(result.getMutationState()));
+    ctx->workspace.clearLock(id);
+    ctx->workspace.setDone(id, result);
+    ctx->statusLine.recordResult(static_cast<int>(result.getMutationState()));
   }
 
-  mWorkspace->setComplete();
+  ctx->workspace.setComplete();
   return true;
 }
 
 EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
                                                  std::size_t killAfterSecs, Evaluator* evaluator,
-                                                 GitRepository* repo) {
-  const fs::path backupDir = mWorkspace->getBackupDir();
-  const fs::path actualDir = mWorkspace->getActualDir();
+                                                 PipelineContext* ctx) {
+  const fs::path backupDir = ctx->workspace.getBackupDir();
+  const fs::path actualDir = ctx->workspace.getActualDir();
 
-  repo->getSourceTree()->modify(m, backupDir.string());
+  mRepo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
-  Subprocess mBuild(mConfig.buildCmd, 0, 0, mWorkspace->getMutantBuildLog(id).string(),
-                    !isVerbose());
+  Subprocess mBuild(ctx->config.buildCmd, 0, 0, ctx->workspace.getMutantBuildLog(id).string(),
+                    !isVerbose(*ctx));
   mBuild.execute();
   const double buildSecs = buildTimer.toDouble();
 
   double testSecs = 0.0;
   TestExecutionState testState = TestExecutionState::SUCCESS;
   if (mBuild.isSuccessfulExit()) {
-    fs::remove_all(mConfig.testResultDir);
-    Subprocess mTest(mConfig.testCmd, timeLimit, killAfterSecs, mWorkspace->getMutantTestLog(id).string(),
-                     !isVerbose());
+    fs::remove_all(ctx->config.testResultDir);
+    Subprocess mTest(ctx->config.testCmd, timeLimit, killAfterSecs, ctx->workspace.getMutantTestLog(id).string(),
+                     !isVerbose(*ctx));
     Timestamper testTimer;
     mTest.execute();
     testSecs = testTimer.toDouble();
     if (mTest.isTimedOut()) {
       testState = TestExecutionState::TIMEOUT;
     } else {
-      io::syncFiles(mConfig.testResultDir, actualDir, mConfig.testResultExts);
+      io::syncFiles(ctx->config.testResultDir, actualDir, ctx->config.testResultExts);
     }
   } else {
     testState = TestExecutionState::BUILD_FAILURE;
   }
 
   MutationResult result = evaluator->compare(m, actualDir, testState);
-  mWorkspace->restoreBackup(mConfig.sourceDir);
+  ctx->workspace.restoreBackup(ctx->config.sourceDir);
   fs::remove_all(actualDir);
   return {result, buildSecs, testSecs};
 }
