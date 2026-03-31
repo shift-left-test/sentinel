@@ -76,8 +76,8 @@ class CliConfigParser {
   args::Flag mDryRun;
   /** @brief Command line flag for verbose mode. */
   args::Flag mVerbose;
-  /** @brief Command line flag to hide the status line. */
-  args::Flag mNoStatusLine;
+  /** @brief Command line flag to disable TTY features. */
+  args::Flag mNoTTY;
 
   // Setup options
   /** @brief Command line flag to initialize the project. */

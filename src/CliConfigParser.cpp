@@ -24,8 +24,9 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
             "Build, test, and generate mutants then exit; prints a readiness summary without evaluating mutants",
             {"dry-run"}),
     mVerbose(mGroupRunCtrl, "verbose", "Show build/test subprocess output and enable verbose logging.", {"verbose"}),
-    mNoStatusLine(mGroupRunCtrl, "no-statusline", "Disable the live status line shown in TTY mode",
-                  {"no-statusline"}),
+    mNoTTY(mGroupRunCtrl, "no-tty",
+           "Disable TTY features: suppress the live status line and use text-based progress logging instead",
+           {"no-tty"}),
     mInit(mGroupSetup, "init", "Write a sentinel.yaml config template to the current directory and exit", {"init"}),
     mForce(mGroupSetup, "force", "Overwrite existing files (used with --init).", {"force"}),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}),
@@ -92,7 +93,7 @@ void CliConfigParser::applyTo(Config* cfg) {
 
   cfg->init = mInit;
   cfg->dryRun = mDryRun;
-  cfg->noStatusLine = mNoStatusLine;
+  cfg->noTTY = mNoTTY;
   cfg->verbose = mVerbose;
   cfg->force = mForce;
   cfg->clean = mClean;

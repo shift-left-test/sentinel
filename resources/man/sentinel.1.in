@@ -48,8 +48,8 @@ resumes directly at the evaluation phase, skipping build and generation.
 Show build/test subprocess output on the terminal and enable verbose logging to stderr.
 By default, subprocess output is suppressed (still written to workspace log files).
 .TP
-\fB\-\-no\-statusline\fR
-Disable the live status line shown at the bottom of the terminal in TTY mode.
+\fB\-\-no\-tty\fR
+Disable TTY features: suppress the live status line and use text-based progress logging instead.
 .SS Setup options
 .TP
 \fB\-\-init\fR
@@ -300,7 +300,7 @@ When stdout is a TTY, a live status line is displayed at the bottom of the termi
 throughout all phases. The symbols are:
 \fB\[u2717]\fR = Killed, \fB\[u2713]\fR = Survived,
 \fB\[u26A0]\fR = Abnormal (build failure, timeout, or runtime error).
-Use \fB\-\-no\-statusline\fR to disable it.
+Use \fB\-\-no\-tty\fR to disable it.
 .SH EXIT CODES
 .TP
 .B 0

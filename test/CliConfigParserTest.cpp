@@ -173,9 +173,9 @@ TEST_F(CliConfigParserTest, testDryRunParsed) {
   EXPECT_TRUE(cfg.dryRun);
 }
 
-TEST_F(CliConfigParserTest, testNoStatusLineParsed) {
-  Config cfg = parse({"--no-statusline"});
-  EXPECT_TRUE(cfg.noStatusLine);
+TEST_F(CliConfigParserTest, testNoTTYParsed) {
+  Config cfg = parse({"--no-tty"});
+  EXPECT_TRUE(cfg.noTTY);
 }
 
 TEST_F(CliConfigParserTest, testInitParsed) {

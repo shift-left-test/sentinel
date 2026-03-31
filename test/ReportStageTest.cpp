@@ -77,7 +77,7 @@ class ReportStageTest : public ::testing::Test {
     cfg.sourceDir = mSourceDir;
     cfg.outputDir = outputDir;
     cfg.threshold = threshold;
-    cfg.noStatusLine = true;
+    cfg.noTTY = true;
     return cfg;
   }
 
