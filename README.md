@@ -449,7 +449,7 @@ version: 1
 # test-result-ext:
 #   - xml
 
-## Test time limit in seconds (default: 2x original test time; 0 = no limit)
+## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
 # timeout: 60
 
 ## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)

@@ -26,6 +26,7 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
+static constexpr double kAutoTimeoutFactor = 1.5;
 
 OriginalTestStage::OriginalTestStage(const Config& cfg, std::shared_ptr<StatusLine> sl,
                                      std::shared_ptr<Workspace> workspace) :
@@ -63,7 +64,7 @@ bool OriginalTestStage::execute() {
   const double testElapsed = testTimer.toDouble();
 
   if (!mConfig.timeout) {
-    computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * 2.0)) + kAutoTimeoutPaddingSecs;
+    computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * kAutoTimeoutFactor)) + kAutoTimeoutPaddingSecs;
     Logger::info("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;

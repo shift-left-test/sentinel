@@ -100,7 +100,7 @@ TEST_F(OriginalTestStageTest, testAutoTimeoutSavesStatus) {
 
   WorkspaceStatus status = mWorkspace->loadStatus();
   ASSERT_TRUE(status.originalTime.has_value());
-  // Auto timeout = ceil(elapsed * 2.0) + 5; even with elapsed ~0, result must be >= 5
+  // Auto timeout = ceil(elapsed * 1.5) + 5; even with elapsed ~0, result must be >= 5
   EXPECT_GE(*status.originalTime, static_cast<std::size_t>(5));
 }
 

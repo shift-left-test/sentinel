@@ -35,7 +35,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory", {"test-result-dir"}),
     mTestResultExts(mGroupBuildTest, "EXT", "File extension of the test report", {"test-result-ext"}),
-    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 2x original test time)",
+    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 1.5x original test time)",
              {"timeout"}),
     mKillAfter(mGroupBuildTest, "SEC", "Seconds to wait after timeout before sending SIGKILL (0 = disabled)",
                {"kill-after"}),

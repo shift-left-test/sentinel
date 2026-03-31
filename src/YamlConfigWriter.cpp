@@ -49,7 +49,7 @@ static const char* const kYamlTemplate =
     "# test-result-ext:\n"
     "#   - xml\n"
     "\n"
-    "## Test time limit in seconds (default: 2x original test time; 0 = no limit)\n"
+    "## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)\n"
     "# timeout: 60\n"
     "\n"
     "## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)\n"
