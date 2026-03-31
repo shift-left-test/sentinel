@@ -286,6 +286,7 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/emacs,vim,c++,python,cmake
 
 unittest
+unittest[[]*.cmake
 CMakeDoxyfile.in
 CMakeDoxygenDefaults.cmake
 Doxyfile.bak

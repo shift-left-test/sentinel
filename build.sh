@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-cmake . -DENABLE_TEST=ON
-make doc
+cmake . -DCMAKE_TESTING_ENABLED=ON
+make cppcheck cpplint doc
 make -j
 ctest --output-on-failure -j$(nproc)
-make coverage
+gcovr -s -r . --object-directory .
 make package

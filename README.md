@@ -564,7 +564,7 @@ The test runner must be configured to write results to the directory specified b
 To build with tests and static analysis enabled:
 
 ```bash
-cmake -DENABLE_TEST=ON .
+cmake -DCMAKE_TESTING_ENABLED=ON .
 make all -j
 ./test/unittest
 ```

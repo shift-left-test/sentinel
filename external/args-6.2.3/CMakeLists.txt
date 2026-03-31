@@ -1,7 +1,6 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-build_external_interface_library(
-  NAME args
-  PUBLIC_HEADERS .
-)
+add_library(args INTERFACE)
+target_include_directories(args SYSTEM INTERFACE .)
+add_library(args::lib ALIAS args)

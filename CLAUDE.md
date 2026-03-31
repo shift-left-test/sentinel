@@ -10,7 +10,7 @@ cmake .
 make all -j
 
 # Development build (tests, static analysis, coverage, docs)
-cmake -DENABLE_TEST=ON .
+cmake -DCMAKE_TESTING_ENABLED=ON .
 make all -j
 
 # Run tests
@@ -19,17 +19,20 @@ make all -j
 # Run a specific test (GoogleTest filter)
 ./test/unittest --gtest_filter=ConfigTest.*
 
-# Full CI build (build + doc + test + coverage + package)
-./build.sh
+# Run static analysis
+make cppcheck cpplint
+
+# Generate coverage report
+gcovr -s -r . --object-directory .
+
+# Generate Doxygen docs
+make doc
 
 # Generate Debian package
 make package
 
-# Generate coverage report
-make coverage
-
-# Generate Doxygen docs
-make doc
+# Full CI build (build + doc + test + static analysis + coverage + package)
+./build.sh
 ```
 
 ## Architecture Overview
@@ -110,7 +113,8 @@ Before starting any code work, always follow these steps:
 
 ## Verification
 
-- After completing code changes, run `./build.sh` to verify the full build (build + doc + test + coverage + package).
+- After completing code changes, run `./build.sh` to verify the full build (build + doc + test + static analysis + coverage + package).
+- Run `make doc` to verify Doxygen documentation generates without warnings.
 - If code changes affect user-facing behavior, options, or commands, update the following where applicable:
   - `README.md` — options table, full config template
   - `resources/man/sentinel.1.in` — man page (cmake generates `sentinel.1` from this file)
@@ -144,4 +148,4 @@ C++ syntax and style rules:
 - Const correctness — apply `const` to variables, parameters, and member functions that do not modify state
 - No magic numbers or strings — use named constants (e.g., `static constexpr`)
 - Error handling — use `std::runtime_error` with `fmt::format` for error messages; throw on unrecoverable errors, propagate exceptions up the call stack
-- For classes with virtual functions, `= default` definitions of special member functions (destructor, copy, move) must be placed out-of-line in the `.cpp` file — inline `= default` in headers causes gcov instrumentation conflicts across translation units, breaking `make coverage`.
+- For classes with virtual functions, `= default` definitions of special member functions (destructor, copy, move) must be placed out-of-line in the `.cpp` file — inline `= default` in headers causes gcov instrumentation conflicts across translation units, breaking coverage measurement.
