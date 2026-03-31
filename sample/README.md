@@ -39,6 +39,7 @@ The project implements a stack-based expression evaluator using the **Shunting-y
 | CMake | 3.13+ | |
 | C++ compiler | C++17 support | GCC or Clang |
 | sentinel | any | Must be on `PATH` |
+| gcovr | any | For coverage report (optional) |
 | Internet access | — | GoogleTest is downloaded via FetchContent on first build |
 
 ---
@@ -56,6 +57,20 @@ Verify the tests pass:
 
 ```bash
 cd build && ctest --output-on-failure
+```
+
+### Build with Coverage
+
+```bash
+cmake -DCMAKE_TESTING_ENABLED=ON -B build
+cmake --build build
+cd build && ctest --output-on-failure
+```
+
+After running the tests, `.gcda` / `.gcno` files are generated in the build tree. Use `gcovr` to produce an HTML report:
+
+```bash
+gcovr --html-details coverage.html -r ../src .
 ```
 
 ---

@@ -7,17 +7,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 enable_testing()
 
-add_library(stack src/Stack.cpp)
-target_include_directories(stack PUBLIC src)
+add_library(coverage_options INTERFACE)
+target_compile_options(coverage_options INTERFACE -O0 -fprofile-arcs -ftest-coverage)
+target_link_options(coverage_options INTERFACE -fprofile-arcs -ftest-coverage)
 
-add_library(tokenizer src/Tokenizer.cpp)
-target_include_directories(tokenizer PUBLIC src)
-
-add_library(calculator src/Calculator.cpp)
-target_include_directories(calculator PUBLIC src)
-target_link_libraries(calculator PUBLIC stack tokenizer)
-
-add_executable(calc src/main.cpp)
-target_link_libraries(calc calculator)
-
+add_subdirectory(src)
 add_subdirectory(test)

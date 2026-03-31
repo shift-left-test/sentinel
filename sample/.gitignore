@@ -2,4 +2,7 @@ build/
 Testing/
 .sentinel/
 sentinel_output/
-StackTest
+src/calc
+test/CalculatorTest
+test/StackTest
+test/TokenizerTest
