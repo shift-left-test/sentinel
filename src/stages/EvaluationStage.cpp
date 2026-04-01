@@ -133,6 +133,8 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
     testSecs = testTimer.toDouble();
     if (mTest.isTimedOut()) {
       testState = TestExecutionState::TIMEOUT;
+    } else if (mTest.isSignaled()) {
+      testState = TestExecutionState::RUNTIME_ERROR;
     } else {
       io::syncFiles(ctx->config.testResultDir, actualDir, ctx->config.testResultExts);
     }

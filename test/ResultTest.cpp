@@ -282,7 +282,7 @@ TEST_F(ResultTest, testResultWithKErrorMutationErrorTCandKilledTC) {
 
   std::string killingTest;
   std::string errorTest;
-  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::RUNTIME_ERROR);
+  EXPECT_EQ(Result::compare(ori, mut, &killingTest, &errorTest), MutationState::KILLED);
   EXPECT_EQ("C1.TC1", killingTest);
   EXPECT_EQ("C2.TC2", errorTest);
 }

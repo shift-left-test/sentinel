@@ -67,11 +67,11 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
   std::unique_ptr<Mutant> mutable1;
   std::unique_ptr<Mutant> mutable2;
   fs::path BASE;
-  std::string ORI_DIR;
-  std::string ORI_DIR_FAIL;
+  fs::path ORI_DIR;
+  fs::path ORI_DIR_FAIL;
   fs::path OUT_DIR;
-  std::string MUT_DIR;
-  std::string MUT_DIR_SURVIVED;
+  fs::path MUT_DIR;
+  fs::path MUT_DIR_SURVIVED;
   std::string TC1 =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<testsuites tests=\"1\" failures=\"0\" disabled=\"0\" errors=\"0\""
@@ -104,8 +104,6 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
       "\t\t</testcase>\n"
       "\t</testsuite>\n"
       "</testsuites>\n";
-
- private:
 };
 
 TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
@@ -197,6 +195,25 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
+
+  MutationResults MRs;
+  MRs.load(mrPath);
+  auto mr = MRs[0];
+  EXPECT_TRUE(mr.compare(result));
+  fs::remove(mrPath);
+  fs::remove(emptyPath);
+}
+
+TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
+  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+
+  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
+  auto emptyPath = OUT_DIR / "emptyDir";
+  fs::create_directories(emptyPath);
+  auto result =
+      mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::RUNTIME_ERROR);
+  EXPECT_FALSE(result.getDetected());
+  EXPECT_EQ(result.getMutationState(), MutationState::RUNTIME_ERROR);
 
   MutationResults MRs;
   MRs.load(mrPath);

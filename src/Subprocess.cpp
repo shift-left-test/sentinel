@@ -107,7 +107,7 @@ int Subprocess::execute() {
                                       });
 
     // Just catch SIGCHLD
-    signal::setMultipleSignalHandlers({SIGCHLD}, [](int signum) {});
+    signal::setMultipleSignalHandlers({SIGCHLD}, [](int) {});
 
     // SIGALRM handler
     // NOTE: Console::err uses fmt::format which is not strictly async-signal-safe,
@@ -134,32 +134,29 @@ int Subprocess::execute() {
       logStream.open(mLogFile.string(), std::ios::out | std::ios::trunc);
     }
 
-    const int MAXBUFSZ = 4096;
-    char buffer[MAXBUFSZ];
+    static constexpr int kMaxBufSize = 4096;
+    char buffer[kMaxBufSize];
+
+    auto consumeOutput = [&](ssize_t nb) {
+      if (!mSilent) {
+        std::cout << std::string(buffer, nb);
+      }
+      if (logStream.is_open()) {
+        logStream.write(buffer, nb);
+      }
+    };
 
     while (waitpid(pid, &status, WNOHANG) == 0) {
-      auto nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ);
+      auto nb = read(pfd[0], buffer, kMaxBufSize);
       if (nb > 0) {
-        if (!mSilent) {
-          std::cout << std::string(static_cast<char*>(buffer), nb);
-        }
-        if (logStream.is_open()) {
-          logStream.write(static_cast<char*>(buffer), nb);
-        }
+        consumeOutput(nb);
       }
     }
 
     // Drain any data remaining in the pipe after the child exited
-    {
-      ssize_t nb = 0;
-      while ((nb = read(pfd[0], static_cast<char*>(buffer), MAXBUFSZ)) > 0) {
-        if (!mSilent) {
-          std::cout << std::string(static_cast<char*>(buffer), nb);
-        }
-        if (logStream.is_open()) {
-          logStream.write(static_cast<char*>(buffer), nb);
-        }
-      }
+    ssize_t nb = 0;
+    while ((nb = read(pfd[0], buffer, kMaxBufSize)) > 0) {
+      consumeOutput(nb);
     }
 
     // Alarm cancel
@@ -204,6 +201,10 @@ bool Subprocess::isTimedOut() const {
 
 bool Subprocess::isSuccessfulExit() const {
   return WIFEXITED(mStatus) && (WEXITSTATUS(mStatus) == 0);
+}
+
+bool Subprocess::isSignaled() const {
+  return WIFSIGNALED(mStatus);
 }
 
 }  // namespace sentinel

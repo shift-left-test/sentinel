@@ -60,6 +60,13 @@ class Subprocess {
    */
   bool isSuccessfulExit() const;
 
+  /**
+   * @brief check if process was terminated by a signal
+   *
+   * @return true if process was killed by a signal (e.g. SIGSEGV, SIGABRT)
+   */
+  bool isSignaled() const;
+
  private:
   std::string mCmd;
   std::size_t mSec;

@@ -20,8 +20,7 @@ namespace fs = std::filesystem;
 Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath) :
     mSourcePath(sourcePath),
     mExpectedResult(expectedResultDir.string()) {
-  auto checkZero = mExpectedResult.checkPassedTCEmpty();
-  if (checkZero) {
+  if (mExpectedResult.checkPassedTCEmpty()) {
     throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir.string()));
   }
 }
@@ -42,9 +41,12 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
     case TestExecutionState::UNCOVERED:
       state = MutationState::SURVIVED;
       break;
+    case TestExecutionState::RUNTIME_ERROR:
+      state = MutationState::RUNTIME_ERROR;
+      break;
     case TestExecutionState::SUCCESS: {
-      Result mActualResult(actualResultDir.string());
-      state = Result::compare(mExpectedResult, mActualResult, &killingTC, &errorTC);
+      Result actualResult(actualResultDir.string());
+      state = Result::compare(mExpectedResult, actualResult, &killingTC, &errorTC);
       break;
     }
   }

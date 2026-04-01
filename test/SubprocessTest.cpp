@@ -84,6 +84,26 @@ TEST_F(SubprocessTest, testConstructorThrowsWhenAnotherRunning) {
   t.join();
 }
 
+TEST_F(SubprocessTest, testExecuteSignaledCommand) {
+  Subprocess sp("kill -SEGV $$", 0, 0, "", true);
+  sp.execute();
+  EXPECT_TRUE(sp.isSignaled());
+  EXPECT_FALSE(sp.isSuccessfulExit());
+  EXPECT_FALSE(sp.isTimedOut());
+}
+
+TEST_F(SubprocessTest, testExecuteSuccessfulCommandNotSignaled) {
+  Subprocess sp("echo hello");
+  sp.execute();
+  EXPECT_FALSE(sp.isSignaled());
+}
+
+TEST_F(SubprocessTest, testExecuteFailingCommandNotSignaled) {
+  Subprocess sp("exit 1", 0, 0, "", true);
+  sp.execute();
+  EXPECT_FALSE(sp.isSignaled());
+}
+
 TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
   // silent=false with a logFile: covers both the stdout-print and logStream branches
   // in the main read loop and drain loop.

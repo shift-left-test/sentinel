@@ -16,7 +16,7 @@ namespace sentinel {
 /**
  * @brief Represents the outcome of building and running tests on a mutant.
  */
-enum class TestExecutionState { SUCCESS, BUILD_FAILURE, TIMEOUT, UNCOVERED };
+enum class TestExecutionState { SUCCESS, BUILD_FAILURE, TIMEOUT, UNCOVERED, RUNTIME_ERROR };
 
 /**
  * @brief Evaluator class

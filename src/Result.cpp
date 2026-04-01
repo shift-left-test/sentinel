@@ -61,11 +61,11 @@ MutationState Result::compare(const Result& original, const Result& mutated, std
       }
     }
   }
-  if (!errorTest->empty()) {
-    return MutationState::RUNTIME_ERROR;
-  }
   if (!killingTest->empty()) {
     return MutationState::KILLED;
+  }
+  if (!errorTest->empty()) {
+    return MutationState::RUNTIME_ERROR;
   }
   return MutationState::SURVIVED;
 }
