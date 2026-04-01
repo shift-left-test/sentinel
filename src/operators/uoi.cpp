@@ -79,6 +79,12 @@ bool UOI::canMutate(clang::Stmt* s) {
     parent = getParentStmt(parent);
   }
 
+  // Block ++/-- insertion in loop conditions to prevent infinite loops.
+  // Boolean negation (!) is allowed since it has no side effects.
+  if (!getExprType(e)->isBooleanType() && isLoopCondition(s)) {
+    return false;
+  }
+
   return true;
 }
 

@@ -157,6 +157,34 @@ Book temporaryBook() {
 int blockUOIForMaterializedTemporaryExpr() {
   int ret = temporaryBook().num_pages;
   return ret;
+}
+
+int loopConditionTest(int n) {
+  int sum = 0;
+  for (int i = 0; i < n; i++) {
+    sum += i;
+  }
+  while (sum > 0 && n > 0) {
+    sum--;
+    n--;
+  }
+  do {
+    sum++;
+  } while (sum < 0);
+  return sum;
+}
+
+int literalOperandTest(int x) {
+  int a = x + 0;
+  int b = x * 1;
+  int c = x * 0;
+  int d = 0 * x;
+  int e = x & 0;
+  int f = x | 0;
+  int g = x << 0;
+  int h = 0 >> x;
+  int j = x << 2;
+  return a + b + c + d + e + f + g + h + j;
 })cpp";
   std::filesystem::path SAMPLE1B_PATH;
   std::string SAMPLE1B_NAME;
@@ -191,6 +219,7 @@ int sdlBlockedCases() {
   for (;;) break;  // NOLINT
   do {} while (true);
   while (true) {}
+  while (true) continue;
 
   return ({3;});
 

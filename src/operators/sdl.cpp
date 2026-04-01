@@ -18,7 +18,8 @@ bool SDL::canMutate(clang::Stmt* s) {
   if (clang::isa<clang::DeclStmt>(s) || clang::isa<clang::NullStmt>(s) || clang::isa<clang::IfStmt>(s) ||
       clang::isa<clang::ForStmt>(s) || clang::isa<clang::CXXForRangeStmt>(s) || clang::isa<clang::DoStmt>(s) ||
       clang::isa<clang::WhileStmt>(s) || clang::isa<clang::CompoundStmt>(s) || clang::isa<clang::SwitchStmt>(s) ||
-      clang::isa<clang::CXXTryStmt>(s) || clang::isa<clang::CXXDeleteExpr>(s) || clang::isa<clang::ReturnStmt>(s)) {
+      clang::isa<clang::CXXTryStmt>(s) || clang::isa<clang::CXXDeleteExpr>(s) || clang::isa<clang::ReturnStmt>(s) ||
+      clang::isa<clang::BreakStmt>(s) || clang::isa<clang::ContinueStmt>(s)) {
     return false;
   }
 

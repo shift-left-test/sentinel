@@ -20,6 +20,16 @@ bool BOR::canMutate(clang::Stmt* s) {
 
 void BOR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
+  clang::Expr* lhs = bo->getLHS()->IgnoreImpCasts();
+  clang::Expr* rhs = bo->getRHS()->IgnoreImpCasts();
+
+  // Skip all mutations when either operand is literal 0 (equivalent mutants).
+  int64_t val = 0;
+  if ((getIntegerLiteralValue(lhs, &val) && val == 0) ||
+      (getIntegerLiteralValue(rhs, &val) && val == 0)) {
+    return;
+  }
+
   populateBinaryReplacements(bo, s, mBitwiseOperators, mutables);
 }
 

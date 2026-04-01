@@ -36,4 +36,32 @@ TEST_F(LCRTest, testLCRSkipsBitwiseOperators) {
   }
 }
 
+TEST_F(LCRTest, testLCRSkipsTrueFalseReplacementInLoopCondition) {
+  // Line 109 of sample1.cpp: "  while (sum > 0 && n > 0) {"
+  // LCR should generate operator replacement (||) but NOT 1/0
+  // because the expression is a loop condition.
+  Mutants mutants = generateAll("LCR", 109);
+  EXPECT_GT(mutants.size(), 0u);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() != "LCR") continue;
+    EXPECT_NE(mutants.at(i).getToken(), "1");
+    EXPECT_NE(mutants.at(i).getToken(), "0");
+  }
+}
+
+TEST_F(LCRTest, testLCRKeepsTrueFalseReplacementInNonLoopCondition) {
+  // Line 58: "    if ((i & 1) == (1 << 0) && i > 0) {"
+  // Not a loop condition — LCR should still generate 1/0 replacements.
+  Mutants mutants = generateAll("LCR", 58);
+  bool hasTrue = false;
+  bool hasFalse = false;
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() != "LCR") continue;
+    if (mutants.at(i).getToken() == "1") hasTrue = true;
+    if (mutants.at(i).getToken() == "0") hasFalse = true;
+  }
+  EXPECT_TRUE(hasTrue);
+  EXPECT_TRUE(hasFalse);
+}
+
 }  // namespace sentinel

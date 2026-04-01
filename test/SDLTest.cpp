@@ -26,14 +26,18 @@ TEST_F(SDLTest, testSDLPopulatesOnSimpleStatement) {
   }
 }
 
-TEST_F(SDLTest, testSDLMutatesBreakInForLoop) {
+TEST_F(SDLTest, testSDLSkipsBreakInForLoop) {
   // Line 28 of sample1b.cpp: "  for (;;) break;  // NOLINT"
-  // The "break" is the single-statement body of the for loop — SDL deletes it.
+  // Deleting break would cause an infinite loop — SDL must skip it.
   Mutants mutants = generate(SAMPLE1B_PATH, 28);
-  EXPECT_GT(mutants.size(), 0u);
-  for (std::size_t i = 0; i < mutants.size(); ++i) {
-    EXPECT_EQ(mutants.at(i).getOperator(), "SDL");
-  }
+  EXPECT_EQ(mutants.size(), 0u);
+}
+
+TEST_F(SDLTest, testSDLSkipsContinueInWhileLoop) {
+  // Line 31 of sample1b.cpp: "  while (true) continue;"
+  // Deleting continue would cause an infinite loop — SDL must skip it.
+  Mutants mutants = generate(SAMPLE1B_PATH, 31);
+  EXPECT_EQ(mutants.size(), 0u);
 }
 
 TEST_F(SDLTest, testSDLSkipsEmptyWhileBody) {

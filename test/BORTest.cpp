@@ -38,4 +38,28 @@ TEST_F(BORTest, testBORSkipsLogicalOperators) {
   }
 }
 
+TEST_F(BORTest, testBORSkipsEquivalentMutantsWithLiteralZeroRHS) {
+  // Line 124 of sample1.cpp: "  int e = x & 0;"
+  // x & 0 -> x | 0 -> x ^ 0 are all constant/identity — skip.
+  Mutants mutants = generate(124);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() == "BOR") {
+      FAIL() << "BOR should skip mutations when RHS is literal 0, but got: "
+             << mutants.at(i).getToken();
+    }
+  }
+}
+
+TEST_F(BORTest, testBORSkipsEquivalentMutantsWithLiteralZeroRHS2) {
+  // Line 125 of sample1.cpp: "  int f = x | 0;"
+  // x | 0 -> x & 0 -> x ^ 0 are all constant/identity — skip.
+  Mutants mutants = generate(125);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() == "BOR") {
+      FAIL() << "BOR should skip mutations when RHS is literal 0, but got: "
+             << mutants.at(i).getToken();
+    }
+  }
+}
+
 }  // namespace sentinel

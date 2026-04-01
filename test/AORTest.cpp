@@ -68,4 +68,42 @@ TEST_F(AORTest, testAORSkipsMacroExpansion) {
   fs::remove_all(tmpDir);
 }
 
+TEST_F(AORTest, testAORSkipsEquivalentMutantsWithLiteralZeroRHS) {
+  // Line 120 of sample1.cpp: "  int a = x + 0;"
+  // x + 0 mutations are all equivalent or dangerous (x/0, x%0) — skip all.
+  Mutants mutants = generate(120);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() == "AOR") {
+      FAIL() << "AOR should skip mutations when RHS is literal 0, but got: "
+             << mutants.at(i).getToken();
+    }
+  }
+}
+
+TEST_F(AORTest, testAORSkipsEquivalentMutantsWithLiteralZeroLHS) {
+  // Line 123 of sample1.cpp: "  int d = 0 * x;"
+  // 0 * x -> 0 / x -> 0 % x are all 0 (equivalent among multiplicative ops).
+  // 0 + x and 0 - x differ, so those replacements should be allowed.
+  Mutants mutants = generate(123);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() != "AOR") continue;
+    std::string token = mutants.at(i).getToken();
+    EXPECT_TRUE(token != "/" && token != "%")
+        << "AOR should skip multiplicative replacements when LHS is literal 0, but got: "
+        << token;
+  }
+}
+
+TEST_F(AORTest, testAORSkipsEquivalentMutantsWithLiteralOneRHS) {
+  // Line 121 of sample1.cpp: "  int b = x * 1;"
+  // x * 1 <-> x / 1 are equivalent — skip * <-> / replacement.
+  Mutants mutants = generate(121);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() != "AOR") continue;
+    // "/" should be filtered (x*1 -> x/1 is equivalent)
+    EXPECT_NE(mutants.at(i).getToken(), "/")
+        << "AOR should skip * -> / when RHS is literal 1";
+  }
+}
+
 }  // namespace sentinel

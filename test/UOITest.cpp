@@ -43,4 +43,17 @@ TEST_F(UOITest, testUOISkipsMaterializedTemporaryExpr) {
   EXPECT_EQ(mutants.size(), 0u);
 }
 
+TEST_F(UOITest, testUOISkipsIncrementDecrementInLoopCondition) {
+  // Line 109 of sample1.cpp: "  while (sum > 0 && n > 0) {"
+  // UOI must not insert ++(sum) or --(sum) in loop condition — side effects alter loop control.
+  // Boolean negation !(bool) would be OK but sum/n are int, not bool.
+  Mutants mutants = generate(109);
+  for (std::size_t i = 0; i < mutants.size(); ++i) {
+    if (mutants.at(i).getOperator() != "UOI") continue;
+    // No UOI mutants should exist for variables in this loop condition
+    FAIL() << "UOI should not generate mutants in loop condition, but got: "
+           << mutants.at(i).getToken();
+  }
+}
+
 }  // namespace sentinel

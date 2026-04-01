@@ -25,6 +25,11 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
   // create mutables by changing the operator
   populateBinaryReplacements(bo, s, mLogicalOperators, mutables);
 
+  // Skip true(1)/false(0) replacement in loop conditions to prevent infinite loops.
+  if (isLoopCondition(s)) {
+    return;
+  }
+
   // create mutables by changing the whole expression to true(1) and false(0)
   clang::SourceLocation stmtStartLoc = bo->getBeginLoc();
   clang::SourceLocation stmtEndLoc =

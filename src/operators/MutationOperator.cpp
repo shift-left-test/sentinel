@@ -12,6 +12,7 @@
 #include <clang/AST/Type.h>
 #include <clang/Lex/Lexer.h>
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <set>
@@ -131,6 +132,48 @@ bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc,
   }
 
   return true;
+}
+
+bool MutationOperator::isLoopCondition(const clang::Stmt* s) {
+  const clang::Stmt* child = s;
+  const clang::Stmt* parent = getParentStmt(s);
+
+  while (parent != nullptr) {
+    if (auto fs = clang::dyn_cast<clang::ForStmt>(parent)) {
+      if (fs->getCond() == child) {
+        return true;
+      }
+    } else if (auto ws = clang::dyn_cast<clang::WhileStmt>(parent)) {
+      if (ws->getCond() == child) {
+        return true;
+      }
+    } else if (auto ds = clang::dyn_cast<clang::DoStmt>(parent)) {
+      if (ds->getCond() == child) {
+        return true;
+      }
+    }
+
+    child = parent;
+    parent = getParentStmt(parent);
+  }
+
+  return false;
+}
+
+bool MutationOperator::getIntegerLiteralValue(const clang::Expr* e, int64_t* value) {
+  const clang::Expr* stripped = e->IgnoreImpCasts();
+
+  if (auto il = clang::dyn_cast<clang::IntegerLiteral>(stripped)) {
+    *value = il->getValue().getSExtValue();
+    return true;
+  }
+
+  if (auto bl = clang::dyn_cast<clang::CXXBoolLiteralExpr>(stripped)) {
+    *value = bl->getValue() ? 1 : 0;
+    return true;
+  }
+
+  return false;
 }
 
 void MutationOperator::populateBinaryReplacements(

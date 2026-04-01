@@ -11,6 +11,7 @@
 #include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
+#include <cstdint>
 #include <functional>
 #include <set>
 #include <vector>
@@ -147,6 +148,26 @@ class MutationOperator {
       clang::BinaryOperator* bo, clang::Stmt* s,
       const std::set<std::string>& operators, Mutants* mutables,
       const std::function<bool(const std::string&)>& filter = {});
+
+  /**
+   * @brief Return True if the given statement is inside the condition
+   *        expression of a for, while, or do-while loop.
+   *
+   * @param s target AST node
+   * @return True if s is part of a loop condition
+   */
+  bool isLoopCondition(const clang::Stmt* s);
+
+  /**
+   * @brief Extract the integer value from an expression if it is an
+   *        IntegerLiteral or CXXBoolLiteralExpr (after stripping implicit
+   *        casts).
+   *
+   * @param e target expression
+   * @param value receives the integer value when the function returns true
+   * @return True if e is an integer or boolean literal
+   */
+  bool getIntegerLiteralValue(const clang::Expr* e, int64_t* value);
 
   /**
    * @brief name of mutation operator

@@ -20,6 +20,20 @@
 namespace sentinel {
 
 /**
+ * @brief A generator that returns all candidates without selection or limit.
+ */
+class AllMutantGenerator : public UniformMutantGenerator {
+ public:
+  using UniformMutantGenerator::UniformMutantGenerator;
+
+ protected:
+  Mutants selectMutants(const SourceLines& sourceLines, std::size_t /*maxMutants*/,
+                        unsigned int /*randomSeed*/, const CandidateIndex& index) override {
+    return index.allMutants;
+  }
+};
+
+/**
  * @brief Base fixture for mutation operator tests (AOR, BOR, LCR, etc.).
  *
  * Provides shared generate() and generateRange() helpers that suppress
@@ -40,6 +54,12 @@ class OperatorTestBase : public SampleFileGeneratorForTest {
     return runGenerate(op, lines, limit);
   }
 
+  Mutants generateAll(const std::string& op, int line) {
+    SourceLines lines;
+    lines.push_back(SourceLine(SAMPLE1_PATH, line));
+    return runGenerateAll(op, lines);
+  }
+
   Mutants generateRange(const std::string& op, int fromLine, int toLine, int limit = 100) {
     SourceLines lines;
     lines.reserve(toLine - fromLine + 1);
@@ -56,6 +76,16 @@ class OperatorTestBase : public SampleFileGeneratorForTest {
     MutationFactory factory(generator);
     testing::internal::CaptureStdout();
     Mutants result = factory.generate(SAMPLE1_DIR, lines, limit, kTestSeed);
+    testing::internal::GetCapturedStdout();
+    return result;
+  }
+
+  Mutants runGenerateAll(const std::string& op, const SourceLines& lines) {
+    auto generator = std::make_shared<AllMutantGenerator>(SAMPLE1_DIR);
+    generator->setOperators({op});
+    MutationFactory factory(generator);
+    testing::internal::CaptureStdout();
+    Mutants result = factory.generate(SAMPLE1_DIR, lines, 0, kTestSeed);
     testing::internal::GetCapturedStdout();
     return result;
   }

@@ -33,10 +33,10 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     mSourceLines.push_back(SourceLine(mTargetFile2, 28));
     mSourceLines.push_back(SourceLine(mTargetFile2, 29));
     mSourceLines.push_back(SourceLine(mTargetFile2, 30));
-    mSourceLines.push_back(SourceLine(mTargetFile2, 32));
-    mSourceLines.push_back(SourceLine(mTargetFile2, 36));
-    mSourceLines.push_back(SourceLine(mTargetFile2, 38));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 33));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 37));
     mSourceLines.push_back(SourceLine(mTargetFile2, 39));
+    mSourceLines.push_back(SourceLine(mTargetFile2, 40));
 
     mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, ">="));
     mAllMutants.push_back(Mutant("ROR", mTargetFile1, "isWeekend", 41, 9, 41, 10, "<"));
@@ -59,7 +59,6 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     mAllMutants.push_back(Mutant("BOR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 12, 58, 13, "|"));
     mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(++(i))"));
     mAllMutants.push_back(Mutant("UOI", mTargetFile1, "sumOfEvenPositiveNumber", 58, 10, 58, 11, "(--(i))"));
-    mAllMutants.push_back(Mutant("SOR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 23, 58, 25, ">>"));
     mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "!="));
     mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<"));
     mAllMutants.push_back(Mutant("ROR", mTargetFile1, "sumOfEvenPositiveNumber", 58, 34, 58, 35, "<="));
@@ -90,9 +89,8 @@ class WeightedMutantGeneratorTest : public SampleFileGeneratorForTest {
     mAllMutants.push_back(Mutant("AOR", mTargetFile1, "foo", 76, 30, 76, 31, "/"));
     mAllMutants.push_back(Mutant("UOI", mTargetFile1, "foo", 76, 32, 76, 33, "(++(f))"));
     mAllMutants.push_back(Mutant("UOI", mTargetFile1, "foo", 76, 32, 76, 33, "(--(f))"));
-    mAllMutants.push_back(Mutant("SDL", mTargetFile2, "sdlBlockedCases", 28, 12, 28, 18, "{}"));
-    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 39, 13, 39, 14, "(++(a))"));
-    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 39, 13, 39, 14, "(--(a))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 40, 13, 40, 14, "(++(a))"));
+    mAllMutants.push_back(Mutant("UOI", mTargetFile2, "sdlBlockedCases", 40, 13, 40, 14, "(--(a))"));
   }
 
   Mutants mAllMutants;
@@ -111,9 +109,9 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
   Mutants mutants = generator.generate(mSourceLines, 100, kSeed);
 
-  std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 28, 39};
+  std::vector<std::size_t> lines = {41, 58, 59, 61, 68, 75, 76, 40};
 
-  ASSERT_EQ(mutants.size(), 9);
+  ASSERT_EQ(mutants.size(), 8);
   EXPECT_EQ(mutants[0].getFirst().line, 59);
 
   for (const auto& e1 : mutants) {
@@ -131,7 +129,7 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWorkWhenLimitExceeded) {
   WeightedMutantGenerator generator{SAMPLE1_DIR};
   Mutants mutants = generator.generate(mSourceLines, 4, kSeed);
 
-  std::vector<std::size_t> lines = {32, 38, 39, 58, 59, 61, 76};
+  std::vector<std::size_t> lines = {33, 39, 40, 58, 59, 61, 76};
 
   ASSERT_EQ(mutants.size(), 4);
   EXPECT_EQ(mutants[0].getFirst().line, 59);
