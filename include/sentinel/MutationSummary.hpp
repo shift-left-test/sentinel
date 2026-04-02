@@ -6,11 +6,13 @@
 #ifndef INCLUDE_SENTINEL_MUTATIONSUMMARY_HPP_
 #define INCLUDE_SENTINEL_MUTATIONSUMMARY_HPP_
 
+#include <cstddef>
 #include <filesystem>  // NOLINT
 #include <map>
 #include <vector>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
+#include "sentinel/MutationState.hpp"
 
 namespace sentinel {
 
@@ -51,6 +53,21 @@ struct MutationSummary {
   std::size_t totNumberOfBuildFailure = 0;  ///< Total build failures
   std::size_t totNumberOfRuntimeError = 0;  ///< Total runtime errors
   std::size_t totNumberOfTimeout = 0;  ///< Total timeouts
+
+  /**
+   * @brief Aggregated timing statistics for a single mutation state.
+   */
+  struct StateTiming {
+    double buildSecs = 0.0;   ///< Cumulative build duration in seconds
+    double testSecs = 0.0;    ///< Cumulative test duration in seconds
+    std::size_t count = 0;    ///< Total number of mutants in this state
+    std::size_t timedCount = 0;  ///< Number of mutants with timing data
+  };
+
+  std::map<MutationState, StateTiming> timeByState;  ///< Per-state timing statistics
+  double totalBuildSecs = 0.0;      ///< Cumulative build duration across all states
+  double totalTestSecs = 0.0;       ///< Cumulative test duration across all states
+  std::size_t timedMutantCount = 0;  ///< Number of mutants with timing data
 
   /**
    * @brief Construct and aggregate from in-memory results.

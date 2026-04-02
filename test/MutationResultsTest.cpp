@@ -184,6 +184,84 @@ TEST_F(MutationResultsTest, testStreamOperatorInvalidStateSetsFail) {
   EXPECT_TRUE(in.fail());
 }
 
+TEST_F(MutationResultsTest, testDefaultTimingIsZero) {
+  MutationResult mr;
+  EXPECT_DOUBLE_EQ(0.0, mr.getBuildSecs());
+  EXPECT_DOUBLE_EQ(0.0, mr.getTestSecs());
+
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr2(m, "t1", "", MutationState::KILLED);
+  EXPECT_DOUBLE_EQ(0.0, mr2.getBuildSecs());
+  EXPECT_DOUBLE_EQ(0.0, mr2.getTestSecs());
+}
+
+TEST_F(MutationResultsTest, testSetAndGetTiming) {
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr(m, "t1", "", MutationState::KILLED);
+  mr.setBuildSecs(3.42);
+  mr.setTestSecs(12.87);
+  EXPECT_DOUBLE_EQ(3.42, mr.getBuildSecs());
+  EXPECT_DOUBLE_EQ(12.87, mr.getTestSecs());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorYamlRoundTripWithTiming) {
+  Mutant m("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  MutationResult original(m, "testAdd", "testMinus", MutationState::RUNTIME_ERROR);
+  original.setBuildSecs(3.42);
+  original.setTestSecs(12.87);
+  std::ostringstream out;
+  out << original;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("build-time: 3.42"));
+  EXPECT_NE(std::string::npos, yaml.find("test-time: 12.87"));
+  std::istringstream in(yaml);
+  MutationResult loaded;
+  in >> loaded;
+  EXPECT_TRUE(loaded.compare(original));
+  EXPECT_DOUBLE_EQ(3.42, loaded.getBuildSecs());
+  EXPECT_DOUBLE_EQ(12.87, loaded.getTestSecs());
+}
+
+TEST_F(MutationResultsTest, testStreamOperatorYamlBackwardCompatibility) {
+  static constexpr const char* kYaml =
+      "state: KILLED\n"
+      "killing-test: testKill\n"
+      "error-test: \"\"\n"
+      "mutant:\n"
+      "  operator: AOR\n"
+      "  path: foo.cpp\n"
+      "  function: f\n"
+      "  first: {line: 1, column: 0}\n"
+      "  last: {line: 1, column: 5}\n"
+      "  token: \"+\"\n";
+  std::istringstream in(kYaml);
+  MutationResult mr;
+  in >> mr;
+  EXPECT_FALSE(in.fail());
+  EXPECT_EQ(MutationState::KILLED, mr.getMutationState());
+  EXPECT_DOUBLE_EQ(0.0, mr.getBuildSecs());
+  EXPECT_DOUBLE_EQ(0.0, mr.getTestSecs());
+}
+
+TEST_F(MutationResultsTest, testCompareIncludesTiming) {
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr1(m, "t1", "", MutationState::KILLED);
+  MutationResult mr2(m, "t1", "", MutationState::KILLED);
+  EXPECT_TRUE(mr1.compare(mr2));
+
+  mr1.setBuildSecs(1.0);
+  EXPECT_FALSE(mr1.compare(mr2));
+
+  mr2.setBuildSecs(1.0);
+  EXPECT_TRUE(mr1.compare(mr2));
+
+  mr1.setTestSecs(2.0);
+  EXPECT_FALSE(mr1.compare(mr2));
+
+  mr2.setTestSecs(2.0);
+  EXPECT_TRUE(mr1.compare(mr2));
+}
+
 TEST_F(MutationResultsTest, testStreamOperatorAllStatesRoundTrip) {
   const std::vector<MutationState> states = {
       MutationState::KILLED,

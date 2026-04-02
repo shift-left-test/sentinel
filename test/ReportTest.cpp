@@ -11,6 +11,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
+#include "sentinel/Timestamper.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -164,6 +165,83 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
   EXPECT_TRUE(string::contains(out, "Skipped: 1 runtime error, 1 timeout"));
 }
 
+TEST_F(ReportTest, testMutationSummaryAggregatesTimeByState) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_TIME";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(1.5);
+  MRs.back().setTestSecs(2.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "testB", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(0.5);
+  MRs.back().setTestSecs(3.0);
+
+  Mutant M3("AOR", REL_PATH3, "func", 4, 12, 4, 13, "*");
+  MRs.emplace_back(M3, "", "", MutationState::SURVIVED);
+  MRs.back().setBuildSecs(1.0);
+  MRs.back().setTestSecs(4.0);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  MutationSummary summary(MRPath, SOURCE_DIR);
+
+  // Verify per-state timing
+  const auto& killed = summary.timeByState.at(MutationState::KILLED);
+  EXPECT_DOUBLE_EQ(killed.buildSecs, 2.0);
+  EXPECT_DOUBLE_EQ(killed.testSecs, 5.0);
+  EXPECT_EQ(killed.count, 2u);
+  EXPECT_EQ(killed.timedCount, 2u);
+
+  const auto& survived = summary.timeByState.at(MutationState::SURVIVED);
+  EXPECT_DOUBLE_EQ(survived.buildSecs, 1.0);
+  EXPECT_DOUBLE_EQ(survived.testSecs, 4.0);
+  EXPECT_EQ(survived.count, 1u);
+  EXPECT_EQ(survived.timedCount, 1u);
+
+  // Verify totals
+  EXPECT_DOUBLE_EQ(summary.totalBuildSecs, 3.0);
+  EXPECT_DOUBLE_EQ(summary.totalTestSecs, 9.0);
+  EXPECT_EQ(summary.timedMutantCount, 3u);
+}
+
+TEST_F(ReportTest, testMutationSummaryPartialTiming) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_PARTIAL";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(1.5);
+  MRs.back().setTestSecs(2.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+  // No timing set — backward compat with old mt.done files
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  MutationSummary summary(MRPath, SOURCE_DIR);
+
+  EXPECT_EQ(summary.timedMutantCount, 1u);
+  EXPECT_EQ(summary.totNumberOfMutation, 2u);
+
+  const auto& killed = summary.timeByState.at(MutationState::KILLED);
+  EXPECT_EQ(killed.timedCount, 1u);
+  EXPECT_EQ(killed.count, 1u);
+
+  const auto& survived = summary.timeByState.at(MutationState::SURVIVED);
+  EXPECT_EQ(survived.timedCount, 0u);
+  EXPECT_EQ(survived.count, 1u);
+}
+
 TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_4";
   fs::create_directories(MUT_RESULT_DIR);
@@ -196,6 +274,133 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
   EXPECT_TRUE(string::contains(out, "50.0%"));
   EXPECT_TRUE(string::contains(out, "Skipped: 1 build failure, 1 runtime error, 1 timeout"));
+}
+
+TEST_F(ReportTest, testPrintReportWithTimingSection) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_TIME_SECTION";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(10.0);
+  MRs.back().setTestSecs(20.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+  MRs.back().setBuildSecs(5.0);
+  MRs.back().setTestSecs(15.0);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "Time:"));
+  EXPECT_TRUE(string::contains(out, "Killed"));
+  EXPECT_TRUE(string::contains(out, "Survived"));
+  EXPECT_FALSE(string::contains(out, "Skipped"));
+  // Killed has 30s total (10+20), Survived has 20s (5+15)
+  EXPECT_TRUE(string::contains(out, Timestamper::format(30.0)));
+  EXPECT_TRUE(string::contains(out, Timestamper::format(20.0)));
+}
+
+TEST_F(ReportTest, testPrintReportWithoutTimingOmitsTimeSection) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_NO_TIME";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_FALSE(string::contains(out, "Time:"));
+  EXPECT_FALSE(string::contains(out, "Time ("));
+}
+
+TEST_F(ReportTest, testPrintReportWithPartialTimingShowsCount) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_PARTIAL_TIME";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(1.5);
+  MRs.back().setTestSecs(2.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+  // No timing set
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "Time (1/2 mutants):"));
+}
+
+TEST_F(ReportTest, testPrintReportWithTimingAndSkipped) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_TIME_SKIP";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  MRs.back().setBuildSecs(10.0);
+  MRs.back().setTestSecs(20.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::BUILD_FAILURE);
+  MRs.back().setBuildSecs(8.0);
+  MRs.back().setTestSecs(0.0);
+
+  Mutant M3("AOR", REL_PATH3, "func", 4, 12, 4, 13, "*");
+  MRs.emplace_back(M3, "", "", MutationState::TIMEOUT);
+  MRs.back().setBuildSecs(3.0);
+  MRs.back().setTestSecs(90.0);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "Time:"));
+  EXPECT_TRUE(string::contains(out, "Killed"));
+  EXPECT_TRUE(string::contains(out, "Timeout"));
+  EXPECT_TRUE(string::contains(out, "Build Failure"));
+  EXPECT_TRUE(string::contains(out, "Skipped:"));
+  // Survived and Runtime Error have 0 timed mutants, should be omitted
+  // Need to check that "Survived" and "Runtime Error" do NOT appear in the Time section
+  // But "Survived" appears in the header row, so check it doesn't appear after "Time:"
+  auto timePos = out.find("Time:");
+  ASSERT_NE(timePos, std::string::npos);
+  std::string timeSection = out.substr(timePos);
+  EXPECT_FALSE(string::contains(timeSection, "Survived"));
+  EXPECT_FALSE(string::contains(timeSection, "Runtime Error"));
 }
 
 }  // namespace sentinel

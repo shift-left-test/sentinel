@@ -62,6 +62,34 @@ class MutationResult {
   const Mutant& getMutant() const;
 
   /**
+   * @brief Return the build duration in seconds
+   *
+   * @return build duration in seconds
+   */
+  double getBuildSecs() const;
+
+  /**
+   * @brief Return the test duration in seconds
+   *
+   * @return test duration in seconds
+   */
+  double getTestSecs() const;
+
+  /**
+   * @brief Set the build duration in seconds
+   *
+   * @param secs build duration in seconds
+   */
+  void setBuildSecs(double secs);
+
+  /**
+   * @brief Set the test duration in seconds
+   *
+   * @param secs test duration in seconds
+   */
+  void setTestSecs(double secs);
+
+  /**
    * @brief compare this with other
    *
    * @param other
@@ -82,6 +110,8 @@ class MutationResult {
   std::string mErrorTest;
   MutationState mState;
   Mutant mMutant;
+  double mBuildSecs = 0.0;
+  double mTestSecs = 0.0;
 };
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr);

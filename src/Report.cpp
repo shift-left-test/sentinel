@@ -4,12 +4,18 @@
  */
 
 #include <fmt/core.h>
+#include <algorithm>
+#include <cmath>
 #include <filesystem>  // NOLINT
 #include <string>
+#include <utility>
+#include <vector>
 #include "sentinel/Console.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationState.hpp"
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Report.hpp"
+#include "sentinel/Timestamper.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -18,6 +24,17 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 static constexpr std::size_t kReportWidth = 80;
+
+static std::string stateToLabel(MutationState state) {
+  switch (state) {
+    case MutationState::KILLED: return "Killed";
+    case MutationState::SURVIVED: return "Survived";
+    case MutationState::BUILD_FAILURE: return "Build Failure";
+    case MutationState::RUNTIME_ERROR: return "Runtime Error";
+    case MutationState::TIMEOUT: return "Timeout";
+    default: return "Unknown";
+  }
+}
 
 Report::~Report() = default;
 
@@ -91,6 +108,57 @@ void Report::printSummary() const {
     }
     Console::out("  Skipped: {}", skipped);
   }
+  // Time section
+  if (mSummary.timedMutantCount > 0) {
+    Console::out("{}", thin);
+
+    std::size_t totalMutants = mSummary.totNumberOfMutation + mSummary.totNumberOfBuildFailure +
+                               mSummary.totNumberOfRuntimeError + mSummary.totNumberOfTimeout;
+    double totalTimeSecs = mSummary.totalBuildSecs + mSummary.totalTestSecs;
+
+    // State rows have a 27-char prefix ("    " + 17-char label + 3-char pct + "%  ").
+    // A 10-char time field accommodates values like "10h 30m".
+    static constexpr std::size_t kTimeEndCol = 37;
+    static constexpr std::size_t kStatePrefixLen = 27;  // 4 + 17 + 3 + 3
+    static constexpr std::size_t kStateTimeWidth = kTimeEndCol - kStatePrefixLen;
+
+    // Header line — align "100%" with per-state "XX%" column
+    std::string prefix = (mSummary.timedMutantCount < totalMutants)
+        ? fmt::format("  Time ({}/{} mutants):", mSummary.timedMutantCount, totalMutants)
+        : std::string("  Time:");
+    static constexpr std::size_t kPctCol = 21;  // column where pct digits start (4 + 17)
+    std::size_t padLen = prefix.size() < kPctCol ? kPctCol - prefix.size() : 1;
+    Console::out("{}{}100%  {:>{}s}  [{}/{}]",
+                 prefix, std::string(padLen, ' '),
+                 Timestamper::format(totalTimeSecs), kStateTimeWidth,
+                 Timestamper::format(mSummary.totalBuildSecs),
+                 Timestamper::format(mSummary.totalTestSecs));
+
+    // Collect states with timed mutants, sort by total time descending
+    std::vector<std::pair<MutationState, MutationSummary::StateTiming>> timedStates;
+    for (const auto& [state, timing] : mSummary.timeByState) {
+      if (timing.timedCount > 0) {
+        timedStates.emplace_back(state, timing);
+      }
+    }
+    std::sort(timedStates.begin(), timedStates.end(),
+              [](const auto& a, const auto& b) {
+                return (a.second.buildSecs + a.second.testSecs) >
+                       (b.second.buildSecs + b.second.testSecs);
+              });
+
+    // Print each state row
+    for (const auto& [state, timing] : timedStates) {
+      double stateTotal = timing.buildSecs + timing.testSecs;
+      double pct = std::round((stateTotal / totalTimeSecs) * 100.0);
+      Console::out("    {:<17s}{:>3.0f}%  {:>{}s}  [{}/{}]",
+                   stateToLabel(state), pct,
+                   Timestamper::format(stateTotal), kStateTimeWidth,
+                   Timestamper::format(timing.buildSecs),
+                   Timestamper::format(timing.testSecs));
+    }
+  }
+
   Console::out("{}", thick);
 }
 

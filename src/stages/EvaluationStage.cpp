@@ -69,15 +69,14 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     ctx->workspace.setLock(id);
     ctx->statusLine.setMutantInfo(id);
 
-    auto detail = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, ctx);
-    const auto& result = detail.result;
+    auto result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, ctx);
 
     auto state = result.getMutationState();
     auto relPath = m.getPath();
     std::string token = m.getToken().empty() ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
     std::string timing = fmt::format("  [{}/{}]",
-                                      Timestamper::format(detail.buildSecs),
-                                      Timestamper::format(detail.testSecs));
+                                      Timestamper::format(result.getBuildSecs()),
+                                      Timestamper::format(result.getTestSecs()));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),
                  totalMutants, MutationStateIcon(state), MutationStateToStr(state), m.getOperator(), relPath,
                  m.getFirst().line, token, timing);
@@ -108,9 +107,9 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   return true;
 }
 
-EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
-                                                 std::size_t killAfterSecs, Evaluator* evaluator,
-                                                 PipelineContext* ctx) {
+MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
+                                               std::size_t killAfterSecs, Evaluator* evaluator,
+                                               PipelineContext* ctx) {
   const fs::path backupDir = ctx->workspace.getBackupDir();
   const fs::path actualDir = ctx->workspace.getActualDir();
 
@@ -143,9 +142,11 @@ EvaluationDetail EvaluationStage::evaluateMutant(const Mutant& m, int id, std::s
   }
 
   MutationResult result = evaluator->compare(m, actualDir, testState);
+  result.setBuildSecs(buildSecs);
+  result.setTestSecs(testSecs);
   ctx->workspace.restoreBackup(ctx->config.sourceDir);
   fs::remove_all(actualDir);
-  return {result, buildSecs, testSecs};
+  return result;
 }
 
 }  // namespace sentinel

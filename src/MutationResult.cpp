@@ -37,9 +37,25 @@ bool MutationResult::getDetected() const {
   return mState == MutationState::KILLED;
 }
 
+double MutationResult::getBuildSecs() const {
+  return mBuildSecs;
+}
+
+double MutationResult::getTestSecs() const {
+  return mTestSecs;
+}
+
+void MutationResult::setBuildSecs(double secs) {
+  mBuildSecs = secs;
+}
+
+void MutationResult::setTestSecs(double secs) {
+  mTestSecs = secs;
+}
+
 bool MutationResult::compare(const MutationResult& other) const {
   return mMutant == other.mMutant && mKillingTest == other.mKillingTest && mErrorTest == other.mErrorTest &&
-         mState == other.mState;
+         mState == other.mState && mBuildSecs == other.mBuildSecs && mTestSecs == other.mTestSecs;
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
@@ -51,6 +67,8 @@ std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
   emitter << YAML::Key << "state" << YAML::Value << MutationStateToStr(mr.getMutationState());
   emitter << YAML::Key << "killing-test" << YAML::Value << mr.getKillingTest();
   emitter << YAML::Key << "error-test" << YAML::Value << mr.getErrorTest();
+  emitter << YAML::Key << "build-time" << YAML::Value << mr.getBuildSecs();
+  emitter << YAML::Key << "test-time" << YAML::Value << mr.getTestSecs();
   emitter << YAML::Key << "mutant" << YAML::Value << YAML::Load(mutantYaml.str());
   emitter << YAML::EndMap;
   out << emitter.c_str();
@@ -83,6 +101,12 @@ std::istream& operator>>(std::istream& in, MutationResult& mr) {
                         node["killing-test"].as<std::string>(),
                         node["error-test"].as<std::string>(),
                         StrToMutationState(node["state"].as<std::string>()));
+    if (node["build-time"]) {
+      mr.setBuildSecs(node["build-time"].as<double>());
+    }
+    if (node["test-time"]) {
+      mr.setTestSecs(node["test-time"].as<double>());
+    }
   } catch (const YAML::Exception&) {
     in.setstate(std::ios::failbit);
   } catch (const std::invalid_argument&) {

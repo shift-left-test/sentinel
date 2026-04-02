@@ -43,8 +43,12 @@ MutationSummary::MutationSummary(const MutationSummary& other) :
     totNumberOfDetectedMutation(other.totNumberOfDetectedMutation),
     totNumberOfBuildFailure(other.totNumberOfBuildFailure),
     totNumberOfRuntimeError(other.totNumberOfRuntimeError),
-    totNumberOfTimeout(other.totNumberOfTimeout) {
-  if (other.results.size() == 0) {
+    totNumberOfTimeout(other.totNumberOfTimeout),
+    timeByState(other.timeByState),
+    totalBuildSecs(other.totalBuildSecs),
+    totalTestSecs(other.totalTestSecs),
+    timedMutantCount(other.timedMutantCount) {
+  if (other.results.empty()) {
     return;
   }
   const MutationResult* base = &(*other.results.begin());
@@ -77,12 +81,31 @@ MutationSummary& MutationSummary::operator=(MutationSummary other) {
   std::swap(totNumberOfBuildFailure, other.totNumberOfBuildFailure);
   std::swap(totNumberOfRuntimeError, other.totNumberOfRuntimeError);
   std::swap(totNumberOfTimeout, other.totNumberOfTimeout);
+  std::swap(timeByState, other.timeByState);
+  std::swap(totalBuildSecs, other.totalBuildSecs);
+  std::swap(totalTestSecs, other.totalTestSecs);
+  std::swap(timedMutantCount, other.timedMutantCount);
   return *this;
 }
 
 void MutationSummary::aggregate() {
   for (const MutationResult& mr : results) {
     auto currentState = mr.getMutationState();
+
+    auto& timing = timeByState[currentState];
+    timing.count++;
+    const double buildSecs = mr.getBuildSecs();
+    const double testSecs = mr.getTestSecs();
+    const bool hasTiming = (buildSecs > 0.0 || testSecs > 0.0);
+    if (hasTiming) {
+      timing.buildSecs += buildSecs;
+      timing.testSecs += testSecs;
+      timing.timedCount++;
+      totalBuildSecs += buildSecs;
+      totalTestSecs += testSecs;
+      timedMutantCount++;
+    }
+
     if (currentState == MutationState::BUILD_FAILURE) {
       totNumberOfBuildFailure++;
       continue;
@@ -98,18 +121,19 @@ void MutationSummary::aggregate() {
     totNumberOfMutation++;
 
     fs::path mrPath = mr.getMutant().getPath();
-    fs::path curDirpath = mrPath.parent_path();
+    auto& dirStats = groupByDirPath[mrPath.parent_path()];
+    auto& fileStats = groupByPath[mrPath];
 
-    groupByDirPath[curDirpath].results.push_back(&mr);
-    groupByDirPath[curDirpath].total += 1;
+    dirStats.results.push_back(&mr);
+    dirStats.total++;
 
-    groupByPath[mrPath].results.push_back(&mr);
-    groupByPath[mrPath].total += 1;
+    fileStats.results.push_back(&mr);
+    fileStats.total++;
 
     if (mr.getDetected()) {
-      groupByDirPath[curDirpath].detected += 1;
-      groupByPath[mrPath].detected += 1;
-      totNumberOfDetectedMutation += 1;
+      dirStats.detected++;
+      fileStats.detected++;
+      totNumberOfDetectedMutation++;
     }
   }
 
