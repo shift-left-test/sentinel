@@ -4,6 +4,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -348,6 +349,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedRepos) {
   fs::path fileB = fs::canonical(compB / "b.cpp");
   EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(fileA, 3)), 1);
   EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(fileB, 3)), 1);
+  EXPECT_TRUE(std::is_sorted(sourceLines.begin(), sourceLines.end()));
 
   fs::remove_all(multiRoot);
 }
@@ -386,6 +388,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedReposAllScope) {
   EXPECT_GT(std::count_if(sourceLines.begin(), sourceLines.end(),
                           [&](const SourceLine& sl) { return sl.getPath() == fileB; }),
             0);
+  EXPECT_TRUE(std::is_sorted(sourceLines.begin(), sourceLines.end()));
 
   fs::remove_all(multiRoot);
 }

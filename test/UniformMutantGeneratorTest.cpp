@@ -158,15 +158,17 @@ TEST_F(UniformMutantGeneratorTest, testRandomWithDifferentSeedWorks) {
 }
 
 TEST_F(UniformMutantGeneratorTest, testRandomWithSameSeedWorks) {
-  UniformMutantGenerator generator1{SAMPLE1_DIR};
-  Mutants mutants1 = generator1.generate(mSourceLines, 3, kSeed);
+  UniformMutantGenerator baselineGenerator{SAMPLE1_DIR};
+  Mutants baseline = baselineGenerator.generate(mSourceLines, 3, kSeed);
 
-  UniformMutantGenerator generator2{SAMPLE1_DIR};
-  Mutants mutants2 = generator2.generate(mSourceLines, 3, kSeed);
+  ASSERT_EQ(baseline.size(), 3);
+  for (int i = 0; i < 10; ++i) {
+    UniformMutantGenerator generator{SAMPLE1_DIR};
+    Mutants mutants = generator.generate(mSourceLines, 3, kSeed);
 
-  ASSERT_EQ(mutants1.size(), 3);
-  ASSERT_EQ(mutants2.size(), 3);
-  EXPECT_TRUE(mutants1[0] == mutants2[0] && mutants1[1] == mutants2[1] && mutants1[2] == mutants2[2]);
+    ASSERT_EQ(mutants.size(), baseline.size());
+    EXPECT_TRUE(std::equal(mutants.begin(), mutants.end(), baseline.begin()));
+  }
 }
 
 TEST_F(UniformMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates) {

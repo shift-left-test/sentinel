@@ -114,6 +114,7 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
 // ---------------------------------------------------------------------------
 CandidateIndex MutantGenerator::buildCandidateIndex(Mutants mutants) {
   CandidateIndex index;
+  std::sort(mutants.begin(), mutants.end());
   index.allMutants = std::move(mutants);
 
   for (const auto& m : index.allMutants) {
@@ -121,7 +122,7 @@ CandidateIndex MutantGenerator::buildCandidateIndex(Mutants mutants) {
   }
   for (auto& entry : index.mutantsByFile) {
     std::sort(entry.second.begin(), entry.second.end(),
-              [](const Mutant* a, const Mutant* b) { return a->getFirst().line < b->getFirst().line; });
+              [](const Mutant* lhs, const Mutant* rhs) { return *lhs < *rhs; });
   }
 
   return index;

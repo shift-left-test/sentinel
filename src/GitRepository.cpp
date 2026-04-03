@@ -8,6 +8,7 @@
 #include <git2.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
+#include <iterator>
 #include <memory>
 #include <set>
 #include <string>
@@ -168,7 +169,13 @@ static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
   }
 
   try {
-    for (const auto& entry : fs::directory_iterator(dir)) {
+    std::vector<fs::directory_entry> entries;
+    std::copy(fs::directory_iterator(dir), fs::directory_iterator(), std::back_inserter(entries));
+    std::sort(entries.begin(), entries.end(),
+              [](const fs::directory_entry& lhs, const fs::directory_entry& rhs) {
+                return lhs.path().string() < rhs.path().string();
+              });
+    for (const auto& entry : entries) {
       // Skip symlinks: following them risks infinite loops (self-referential
       // links) and traversal outside the source root.
       if (fs::is_symlink(entry.path())) {
@@ -432,6 +439,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     }
   }
 
+  std::sort(allSourceLines.begin(), allSourceLines.end());
   return allSourceLines;
 }
 

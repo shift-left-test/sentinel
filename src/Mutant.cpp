@@ -38,17 +38,19 @@ Mutant::Mutant(const std::string& mutationOperator, const std::filesystem::path&
 
 bool Mutant::operator==(const Mutant& other) const {
   return mOperator == other.getOperator() && mPath == other.getPath() &&
+         mQualifiedFunction == other.getQualifiedFunction() &&
          mFirst.line == other.getFirst().line && mFirst.column == other.getFirst().column &&
          mLast.line == other.getLast().line && mLast.column == other.getLast().column && mToken == other.getToken();
 }
 
 bool Mutant::operator<(const Mutant& other) const {
-  if (mOperator != other.mOperator) return mOperator < other.mOperator;
   if (mPath != other.mPath) return mPath < other.mPath;
   if (mFirst.line != other.mFirst.line) return mFirst.line < other.mFirst.line;
   if (mFirst.column != other.mFirst.column) return mFirst.column < other.mFirst.column;
   if (mLast.line != other.mLast.line) return mLast.line < other.mLast.line;
   if (mLast.column != other.mLast.column) return mLast.column < other.mLast.column;
+  if (mOperator != other.mOperator) return mOperator < other.mOperator;
+  if (mQualifiedFunction != other.mQualifiedFunction) return mQualifiedFunction < other.mQualifiedFunction;
   return mToken < other.mToken;
 }
 

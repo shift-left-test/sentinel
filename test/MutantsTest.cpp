@@ -191,6 +191,13 @@ TEST_F(MutantsTest, testEqualityOperator) {
   EXPECT_FALSE(m1 != m2);
 }
 
+TEST_F(MutantsTest, testInequalityOperatorDifferentQualifiedFunction) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "bar", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 != m2);
+  EXPECT_FALSE(m1 == m2);
+}
+
 TEST_F(MutantsTest, testInequalityOperatorDifferentOperator) {
   Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
   Mutant m2("BOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
@@ -213,13 +220,17 @@ TEST_F(MutantsTest, testEqualityWithRelativePath) {
 TEST_F(MutantsTest, testLessThanOperator) {
   Mutant m1("AOR", NORMAL_FILENAME, "aaa", 1, 2, 3, 4, "+");
   Mutant m2("AOR", NORMAL_FILENAME, "zzz", 1, 2, 3, 4, "+");
-  // qualifiedFunction is not part of operator<, so these are equal
-  EXPECT_FALSE(m1 < m2);
+  EXPECT_TRUE(m1 < m2);
   EXPECT_FALSE(m2 < m1);
 
   Mutant m3("BOR", NORMAL_FILENAME, "aaa", 1, 2, 3, 4, "+");
   EXPECT_TRUE(m1 < m3);
   EXPECT_FALSE(m3 < m1);
+
+  Mutant m4("AOR", "src/a.cpp", "aaa", 1, 2, 3, 4, "+");
+  Mutant m5("AOR", "src/z.cpp", "aaa", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m4 < m5);
+  EXPECT_FALSE(m5 < m4);
 }
 
 TEST_F(MutantsTest, testStrContainsExpectedFields) {
