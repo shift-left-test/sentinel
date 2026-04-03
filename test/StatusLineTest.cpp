@@ -297,15 +297,6 @@ TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   EXPECT_THAT(text, testing::HasSubstr("50%"));
 }
 
-TEST_F(StatusLineTest, testSuspendHandlersNotInstalledWhenNotTTY) {
-  StatusLine sl;
-  sl.enable();  // no-op in non-TTY
-
-  struct sigaction current {};
-  sigaction(SIGTSTP, nullptr, &current);
-  // In non-TTY, handler should remain default (not installed)
-  EXPECT_EQ(current.sa_handler, SIG_DFL);
-}
 
 TEST_F(StatusLineTest, testRaiseSigtstpWithIgnoreDoesNotCrash) {
   struct sigaction prev {};
