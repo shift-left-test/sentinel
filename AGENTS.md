@@ -105,7 +105,7 @@ To add a new operator: add header in `include/sentinel/operators/`, implementati
 
 | Library | Location | Purpose |
 |---------|----------|---------|
-| libgit2 | system | git operations |
+| libgit2 | `external/libgit2/` | git operations |
 | fmt | `external/fmt/` | string formatting |
 | yaml-cpp | `external/yaml-cpp/` | YAML config parsing |
 | tinyxml2 | `external/tinyxml2/` | XML test report parsing |
@@ -119,7 +119,7 @@ src/                — implementation files
 src/operators/      — mutation operator implementations
 src/stages/         — pipeline stage implementations
 test/               — GoogleTest unit tests
-cmake/              — CMake modules (FindLibGit2, FindClang, etc.)
+cmake/              — CMake modules (FindClang, etc.)
 external/           — vendored third-party libraries
 resources/          — man page template
 ```

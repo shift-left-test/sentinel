@@ -1,7 +1,6 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-find_package(LibGit2 REQUIRED)
 find_package(Clang REQUIRED)
 link_directories(${LLVM_LIBRARY_DIRS})
 
@@ -22,7 +21,7 @@ add_library(sentinel-core STATIC
 target_include_directories(sentinel-core PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(sentinel-core SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 target_link_libraries(sentinel-core PUBLIC
-  tinyxml2 fmt yaml-cpp ${LIBGIT2_LIBRARIES} stdc++fs args
+  tinyxml2 fmt yaml-cpp libgit2package stdc++fs args
   $<$<BOOL:${CMAKE_TESTING_ENABLED}>:coverage_options>
 )
 

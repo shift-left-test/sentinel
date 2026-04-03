@@ -25,7 +25,6 @@ RUN apt-get install -y \
     git-core \
     gnupg \
     graphviz \
-    libgit2-dev \
     libgtest-dev \
     libncurses5-dev \
     libzstd-dev \

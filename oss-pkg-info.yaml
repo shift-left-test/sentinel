@@ -9,6 +9,11 @@ Open Source Software Package:
   source: https://github.com/fmtlib/fmt
   license : LicenseRef-MIT-with-executable-object-exception
   copyright : Copyright (c) 2012 - present, Victor Zverovich
+- name: libgit2
+  version: 1.9.2
+  source: https://github.com/libgit2/libgit2
+  license : LicenseRef-GPL-2.0-with-linking-exception
+  copyright : Copyright (C) the libgit2 contributors.
 - name: tinyxml2
   version: 8.0.0
   source: https://github.com/leethomason/tinyxml2

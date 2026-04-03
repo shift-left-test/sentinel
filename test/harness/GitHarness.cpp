@@ -242,7 +242,7 @@ GitHarness& GitHarness::addTagLightweight(const std::string& tag_name, const std
   git_object* target;
   const char* buf = oid_str.c_str();
 
-  libgitErrorCheck(git_oid_fromstrp(&oid, buf), "Error retrieving commit");
+  libgitErrorCheck(git_oid_fromstr(&oid, buf), "Error retrieving commit");
   libgitErrorCheck(git_revparse_single(&target, repo, static_cast<const char*>(buf)), "Unable to identify commit");
   libgitErrorCheck(git_tag_create_lightweight(&oid, repo, tag_name.c_str(), target, 0),
                    "Unable to create lightweight tag");
@@ -272,12 +272,12 @@ GitHarness& GitHarness::createBranch(const std::string& branch_name, const std::
   git_object* object = nullptr;
 
   checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
-  if (git_oid_fromstrp(&oid, buf) < 0) {
+  if (git_oid_fromstr(&oid, buf) < 0) {
     libgitErrorCheck(git_reference_name_to_id(&oid, repo, commit_id.c_str()), "Fail to retrieve git_oid");
   }
 
   libgitErrorCheck(git_commit_lookup(&target_commit, repo, &oid), "Fail to retrieve commit");
-  libgitErrorCheck(git_object_lookup(&object, repo, &oid, GIT_OBJ_ANY), "Fail to retrieve object");
+  libgitErrorCheck(git_object_lookup(&object, repo, &oid, GIT_OBJECT_ANY), "Fail to retrieve object");
   libgitErrorCheck(git_checkout_tree(repo, object, &checkout_opts), "Fail to checkout tree");
   libgitErrorCheck(git_branch_create(&branch, repo, branch_name.c_str(), target_commit, 0),
                    "Fail to create new branch");
@@ -300,7 +300,7 @@ GitHarness& GitHarness::checkoutBranch(const std::string& branch_name) {
 
   checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
   libgitErrorCheck(git_branch_lookup(&branch, repo, branch_name.c_str(), GIT_BRANCH_LOCAL), "Fail to retrieve branch");
-  libgitErrorCheck(git_object_lookup(&object, repo, git_reference_target(branch), GIT_OBJ_ANY),
+  libgitErrorCheck(git_object_lookup(&object, repo, git_reference_target(branch), GIT_OBJECT_ANY),
                    "Fail to retrieve object");
   libgitErrorCheck(git_checkout_tree(repo, object, &checkout_opts), "Fail to checkout tree");
 
@@ -391,9 +391,9 @@ std::string GitHarness::getLatestCommitId() {
     throw std::range_error("No commit was made yet");
   }
 
-  char buf[GIT_OID_HEXSZ + 1];
+  char buf[GIT_OID_SHA1_HEXSIZE + 1];
   git_oid_tostr(static_cast<char*>(buf), sizeof(buf), &commit_ids.back());
-  std::string ret(static_cast<char*>(buf), GIT_OID_HEXSZ + 1);
+  std::string ret(static_cast<char*>(buf), GIT_OID_SHA1_HEXSIZE + 1);
   return ret;
 }
 
