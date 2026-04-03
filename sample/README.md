@@ -144,13 +144,13 @@ Evaluating 30 mutants...
 - **✓ SURVIVED** — no test caught it; this is a test coverage gap
 - **⚠ BUILD_FAILURE / TIMEOUT / RUNTIME_ERROR** — skipped from the score (the `↪` line points to the log file)
 
-### 3. Mutation Coverage Report
+### 3. Mutation Score Report
 
 After all evaluations, the final summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                         Mutation Coverage Report
+                          Mutation Score Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   File                                              Killed  Survived  Total  Score
 ──────────────────────────────────────────────────────────────────────────────────

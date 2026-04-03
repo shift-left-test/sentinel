@@ -26,13 +26,13 @@ static constexpr unsigned int kMidThreshold = 40;
 
 IndexHtmlGenerator::IndexHtmlGenerator(
     bool root, const std::filesystem::path& dirName,
-    std::size_t sizeOfTargetFiles, unsigned int coverage,
+    std::size_t sizeOfTargetFiles, unsigned int score,
     std::size_t numerator, std::size_t denominator,
     std::size_t skipped, const std::string& skippedDetail)
     : mRoot(root),
       mDirName(dirName),
       mSizeOfTargetFiles(sizeOfTargetFiles),
-      mCoverage(coverage),
+      mScore(score),
       mNumerator(numerator),
       mDenominator(denominator),
       mSkipped(skipped),
@@ -41,14 +41,14 @@ IndexHtmlGenerator::IndexHtmlGenerator(
 
 IndexHtmlGenerator::IndexHtmlGenerator(
     bool root, const std::filesystem::path& dirName,
-    std::size_t sizeOfTargetFiles, unsigned int coverage,
+    std::size_t sizeOfTargetFiles, unsigned int score,
     std::size_t numerator, std::size_t denominator,
     const MutationSummary& summary, const Config& config,
     const std::string& timestamp, const std::string& version)
     : mRoot(root),
       mDirName(dirName),
       mSizeOfTargetFiles(sizeOfTargetFiles),
-      mCoverage(coverage),
+      mScore(score),
       mNumerator(numerator),
       mDenominator(denominator),
       mSkipped(summary.totNumberOfBuildFailure +
@@ -65,7 +65,7 @@ IndexHtmlGenerator::IndexHtmlGenerator(
 }
 
 void IndexHtmlGenerator::pushItemToTable(
-    const std::string& subName, int subCoverage,
+    const std::string& subName, int subScore,
     std::size_t subNumerator, std::size_t subDenominator,
     std::size_t numOfFiles) {
   std::string subPath;
@@ -78,9 +78,9 @@ void IndexHtmlGenerator::pushItemToTable(
   }
 
   const auto* covClass = coverageClass(
-      static_cast<unsigned int>(subCoverage));
+      static_cast<unsigned int>(subScore));
   const auto* fillClass = coverageFillClass(
-      static_cast<unsigned int>(subCoverage));
+      static_cast<unsigned int>(subScore));
   const std::string displayName = subName.empty() ? "." : subName;
 
   if (mRoot) {
@@ -92,7 +92,7 @@ R"(        <tr>
         </tr>
 )",
         subPath, displayName, numOfFiles,
-        covClass, subCoverage, fillClass, subCoverage,
+        covClass, subScore, fillClass, subScore,
         subNumerator, subDenominator);
   } else {
     mTableItem += fmt::format(
@@ -102,7 +102,7 @@ R"(        <tr>
         </tr>
 )",
         subPath, displayName,
-        covClass, subCoverage, fillClass, subCoverage,
+        covClass, subScore, fillClass, subScore,
         subNumerator, subDenominator);
   }
 }
@@ -200,9 +200,9 @@ R"(  <section class="cards cards--4">
   </section>
 
 )",
-      mCoverage,
+      mScore,
       mNumerator, mDenominator,
-      mCoverage,
+      mScore,
       mNumerator,
       survived,
       mSkipped, mSkippedDetail);

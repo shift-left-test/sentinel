@@ -243,13 +243,13 @@ Each line contains:
 | `←` | Killing test names (shown only for killed mutants; up to 2, with "+N more" if more exist) |
 | `↪` | Log file path (shown for build failures, timeouts, and runtime errors) |
 
-#### 3. Mutation Coverage Report (Final)
+#### 3. Mutation Score Report (Final)
 
 After all mutants are evaluated, Sentinel prints the final summary to stdout:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                         Mutation Coverage Report
+                          Mutation Score Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   File                                              Killed  Survived  Total  Score
 ──────────────────────────────────────────────────────────────────────────────────

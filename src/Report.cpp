@@ -56,7 +56,7 @@ void Report::printSummary() const {
 
   // Header
   Console::out("{}", thick);
-  Console::out("{:^{}}", "Mutation Coverage Report", kReportWidth);
+  Console::out("{:^{}}", "Mutation Score Report", kReportWidth);
   Console::out("{}", thick);
   Console::out(rowFmt, "File", flen, "Killed", klen, "Survived", slen, "Total", mlen, "Score", clen);
   Console::out("{}", thin);

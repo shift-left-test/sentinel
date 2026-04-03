@@ -63,7 +63,7 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
-  EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
+  EXPECT_TRUE(string::contains(out, "Mutation Score Report"));
   EXPECT_TRUE(string::contains(out, "Killed"));
   EXPECT_TRUE(string::contains(out, "Survived"));
   EXPECT_TRUE(string::contains(out, "TOTAL"));
@@ -87,7 +87,7 @@ TEST_F(ReportTest, testPrintEmptyReport) {
   testing::internal::CaptureStdout();
   report2.printSummary();
   std::string out2 = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out2, "Mutation Coverage Report"));
+  EXPECT_TRUE(string::contains(out2, "Mutation Score Report"));
   EXPECT_TRUE(string::contains(out2, "TOTAL"));
   EXPECT_TRUE(string::contains(out2, "-%"));
   EXPECT_TRUE(string::contains(out2, "Skipped: 1 build failure, 1 runtime error, 1 timeout"));
@@ -123,7 +123,7 @@ TEST_F(ReportTest, testPrintReportWithNoRuntimeerrorAndNoBuildFailure) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
   EXPECT_TRUE(!string::contains(out, "Ignored Mutation"));
-  EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
+  EXPECT_TRUE(string::contains(out, "Mutation Score Report"));
   EXPECT_TRUE(string::contains(out, "target2.cpp"));
   EXPECT_TRUE(string::contains(out, "target3.cpp"));
   EXPECT_TRUE(string::contains(out, "target4.cpp"));
@@ -160,7 +160,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndTimeout) {
   testing::internal::CaptureStdout();
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
+  EXPECT_TRUE(string::contains(out, "Mutation Score Report"));
   EXPECT_TRUE(string::contains(out, "33.3%"));
   EXPECT_TRUE(string::contains(out, "Skipped: 1 runtime error, 1 timeout"));
 }
@@ -271,7 +271,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   testing::internal::CaptureStdout();
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
-  EXPECT_TRUE(string::contains(out, "Mutation Coverage Report"));
+  EXPECT_TRUE(string::contains(out, "Mutation Score Report"));
   EXPECT_TRUE(string::contains(out, "50.0%"));
   EXPECT_TRUE(string::contains(out, "Skipped: 1 build failure, 1 runtime error, 1 timeout"));
 }

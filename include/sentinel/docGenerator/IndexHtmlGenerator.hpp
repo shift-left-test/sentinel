@@ -27,14 +27,14 @@ class IndexHtmlGenerator : public DocGenerator {
    * @param root root index or not
    * @param dirName current dirName
    * @param sizeOfTargetFiles number of target files
-   * @param coverage mutation coverage percentage
+   * @param score mutation score percentage
    * @param numerator killed mutants count
    * @param denominator total evaluated mutants count
    * @param skipped number of skipped mutants
    * @param skippedDetail breakdown of skipped types
    */
   IndexHtmlGenerator(bool root, const std::filesystem::path& dirName,
-                     std::size_t sizeOfTargetFiles, unsigned int coverage,
+                     std::size_t sizeOfTargetFiles, unsigned int score,
                      std::size_t numerator, std::size_t denominator,
                      std::size_t skipped, const std::string& skippedDetail);
 
@@ -44,7 +44,7 @@ class IndexHtmlGenerator : public DocGenerator {
    * @param root root index or not
    * @param dirName current dirName
    * @param sizeOfTargetFiles number of target files
-   * @param coverage mutation coverage percentage
+   * @param score mutation score percentage
    * @param numerator killed mutants count
    * @param denominator total evaluated mutants count (killed + survived)
    * @param summary aggregated mutation summary
@@ -53,7 +53,7 @@ class IndexHtmlGenerator : public DocGenerator {
    * @param version program version string
    */
   IndexHtmlGenerator(bool root, const std::filesystem::path& dirName,
-                     std::size_t sizeOfTargetFiles, unsigned int coverage,
+                     std::size_t sizeOfTargetFiles, unsigned int score,
                      std::size_t numerator, std::size_t denominator,
                      const MutationSummary& summary, const Config& config,
                      const std::string& timestamp, const std::string& version);
@@ -62,12 +62,12 @@ class IndexHtmlGenerator : public DocGenerator {
    * @brief push a item to table
    *
    * @param subName dir name or file name
-   * @param subCoverage dir's coverage or file's coverage
+   * @param subScore dir's score or file's score
    * @param subNumerator
    * @param subDenominator
    * @param numOfFiles in dir (only used if root)
    */
-  void pushItemToTable(const std::string& subName, int subCoverage,
+  void pushItemToTable(const std::string& subName, int subScore,
                        std::size_t subNumerator, std::size_t subDenominator,
                        std::size_t numOfFiles);
 
@@ -102,7 +102,7 @@ class IndexHtmlGenerator : public DocGenerator {
   bool mRoot;
   std::filesystem::path mDirName;
   std::size_t mSizeOfTargetFiles;
-  unsigned int mCoverage;
+  unsigned int mScore;
   std::size_t mNumerator;
   std::size_t mDenominator;
   std::size_t mSkipped = 0;

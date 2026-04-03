@@ -97,12 +97,12 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     numerator = dirStats.detected;
     denominator = dirStats.total;
   }
-  unsigned int cov = 100 * numerator / denominator;
+  unsigned int score = 100 * numerator / denominator;
 
   std::unique_ptr<IndexHtmlGenerator> ihgPtr;
   if (root) {
     ihgPtr = std::make_unique<IndexHtmlGenerator>(
-        root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator,
+        root, currentDirPath, sizeOfTargetFiles, score, numerator, denominator,
         mSummary, mConfig, mTimestamp, mVersion);
   } else {
     // Compute per-directory skipped counts from directory results
@@ -124,7 +124,7 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     auto skippedDetail = IndexHtmlGenerator::formatSkippedDetail(
         dirTimeout, dirBuildFailure, dirRuntimeError);
     ihgPtr = std::make_unique<IndexHtmlGenerator>(
-        root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator,
+        root, currentDirPath, sizeOfTargetFiles, score, numerator, denominator,
         dirSkipped, skippedDetail);
   }
   auto& ihg = *ihgPtr;
@@ -134,8 +134,8 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
       std::size_t numOfFiles = p.second.fileCount;
       std::size_t subDetected = p.second.detected;
       std::size_t subMut = p.second.total;
-      unsigned int subCov = 100 * subDetected / subMut;
-      ihg.pushItemToTable(p.first, subCov, subDetected, subMut, numOfFiles);
+      unsigned int subScore = 100 * subDetected / subMut;
+      ihg.pushItemToTable(p.first, subScore, subDetected, subMut, numOfFiles);
     }
   } else {
     for (const auto& p : mSummary.groupByPath) {
@@ -146,9 +146,9 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
 
       std::size_t subDetected = p.second.detected;
       std::size_t subMut = p.second.total;
-      auto subCov = 100 * subDetected / subMut;
+      auto subScore = 100 * subDetected / subMut;
 
-      ihg.pushItemToTable(p.first.filename(), subCov, subDetected, subMut, -1);
+      ihg.pushItemToTable(p.first.filename(), subScore, subDetected, subMut, -1);
     }
   }
 

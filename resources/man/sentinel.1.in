@@ -264,7 +264,7 @@ For killed mutants, the names of the killing tests are shown on the next line
 (prefixed with \fB\[char"2190]\fR).
 For build failures, timeouts, and runtime errors, the path to the relevant log file
 is shown (prefixed with \fB\[char"21AA]\fR).
-.SS Mutation Coverage Report
+.SS Mutation Score Report
 After all mutants are evaluated, sentinel prints a summary table to stdout showing
 per-file and total statistics: \fBKilled\fR, \fBSurvived\fR, \fBTotal\fR, and \fBScore\fR.
 Skipped mutants (build failures, timeouts, runtime errors) are listed separately.
