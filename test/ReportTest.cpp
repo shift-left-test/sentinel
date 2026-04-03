@@ -276,7 +276,7 @@ TEST_F(ReportTest, testPrintReportWithRuntimeerrorAndBuildFailureAndTimeout) {
   EXPECT_TRUE(string::contains(out, "Skipped: 1 build failure, 1 runtime error, 1 timeout"));
 }
 
-TEST_F(ReportTest, testPrintReportWithTimingSection) {
+TEST_F(ReportTest, testPrintReportWithDurationSection) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_TIME_SECTION";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -300,7 +300,7 @@ TEST_F(ReportTest, testPrintReportWithTimingSection) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
 
-  EXPECT_TRUE(string::contains(out, "Time:"));
+  EXPECT_TRUE(string::contains(out, "Duration:"));
   EXPECT_TRUE(string::contains(out, "Killed"));
   EXPECT_TRUE(string::contains(out, "Survived"));
   EXPECT_FALSE(string::contains(out, "Skipped"));
@@ -309,7 +309,7 @@ TEST_F(ReportTest, testPrintReportWithTimingSection) {
   EXPECT_TRUE(string::contains(out, Timestamper::format(20.0)));
 }
 
-TEST_F(ReportTest, testPrintReportWithoutTimingOmitsTimeSection) {
+TEST_F(ReportTest, testPrintReportWithoutTimingOmitsDurationSection) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_NO_TIME";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -329,11 +329,11 @@ TEST_F(ReportTest, testPrintReportWithoutTimingOmitsTimeSection) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
 
-  EXPECT_FALSE(string::contains(out, "Time:"));
-  EXPECT_FALSE(string::contains(out, "Time ("));
+  EXPECT_FALSE(string::contains(out, "Duration:"));
+  EXPECT_FALSE(string::contains(out, "Duration ("));
 }
 
-TEST_F(ReportTest, testPrintReportWithPartialTimingShowsCount) {
+TEST_F(ReportTest, testPrintReportWithPartialTimingShowsDurationCount) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_PARTIAL_TIME";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -356,10 +356,10 @@ TEST_F(ReportTest, testPrintReportWithPartialTimingShowsCount) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
 
-  EXPECT_TRUE(string::contains(out, "Time (1/2 mutants):"));
+  EXPECT_TRUE(string::contains(out, "Duration (1/2 mutants):"));
 }
 
-TEST_F(ReportTest, testPrintReportWithTimingAndSkipped) {
+TEST_F(ReportTest, testPrintReportWithDurationAndSkipped) {
   auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_TIME_SKIP";
   fs::create_directories(MUT_RESULT_DIR);
 
@@ -388,19 +388,19 @@ TEST_F(ReportTest, testPrintReportWithTimingAndSkipped) {
   report.printSummary();
   std::string out = testing::internal::GetCapturedStdout();
 
-  EXPECT_TRUE(string::contains(out, "Time:"));
+  EXPECT_TRUE(string::contains(out, "Duration:"));
   EXPECT_TRUE(string::contains(out, "Killed"));
   EXPECT_TRUE(string::contains(out, "Timeout"));
   EXPECT_TRUE(string::contains(out, "Build Failure"));
   EXPECT_TRUE(string::contains(out, "Skipped:"));
   // Survived and Runtime Error have 0 timed mutants, should be omitted
-  // Need to check that "Survived" and "Runtime Error" do NOT appear in the Time section
-  // But "Survived" appears in the header row, so check it doesn't appear after "Time:"
-  auto timePos = out.find("Time:");
-  ASSERT_NE(timePos, std::string::npos);
-  std::string timeSection = out.substr(timePos);
-  EXPECT_FALSE(string::contains(timeSection, "Survived"));
-  EXPECT_FALSE(string::contains(timeSection, "Runtime Error"));
+  // Need to check that "Survived" and "Runtime Error" do NOT appear in the Duration section
+  // But "Survived" appears in the header row, so check it doesn't appear after "Duration:"
+  auto durationPos = out.find("Duration:");
+  ASSERT_NE(durationPos, std::string::npos);
+  std::string durationSection = out.substr(durationPos);
+  EXPECT_FALSE(string::contains(durationSection, "Survived"));
+  EXPECT_FALSE(string::contains(durationSection, "Runtime Error"));
 }
 
 }  // namespace sentinel

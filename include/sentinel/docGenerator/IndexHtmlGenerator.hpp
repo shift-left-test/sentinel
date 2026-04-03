@@ -10,6 +10,8 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
+#include "sentinel/Config.hpp"
+#include "sentinel/MutationSummary.hpp"
 #include "sentinel/docGenerator/DocGenerator.hpp"
 
 namespace sentinel {
@@ -20,17 +22,41 @@ namespace sentinel {
 class IndexHtmlGenerator : public DocGenerator {
  public:
   /**
-   * @brief Default constructor
+   * @brief Constructor for directory (non-root) pages.
    *
    * @param root root index or not
    * @param dirName current dirName
-   * @param sizeOfTargetFiles
-   * @param coverage
-   * @param numerator
-   * @param denominator
+   * @param sizeOfTargetFiles number of target files
+   * @param coverage mutation coverage percentage
+   * @param numerator killed mutants count
+   * @param denominator total evaluated mutants count
+   * @param skipped number of skipped mutants
+   * @param skippedDetail breakdown of skipped types
    */
-  IndexHtmlGenerator(bool root, const std::filesystem::path& dirName, std::size_t sizeOfTargetFiles,
-                     unsigned int coverage, std::size_t numerator, std::size_t denominator);
+  IndexHtmlGenerator(bool root, const std::filesystem::path& dirName,
+                     std::size_t sizeOfTargetFiles, unsigned int coverage,
+                     std::size_t numerator, std::size_t denominator,
+                     std::size_t skipped, const std::string& skippedDetail);
+
+  /**
+   * @brief Constructor for root page with full summary data.
+   *
+   * @param root root index or not
+   * @param dirName current dirName
+   * @param sizeOfTargetFiles number of target files
+   * @param coverage mutation coverage percentage
+   * @param numerator killed mutants count
+   * @param denominator total evaluated mutants count (killed + survived)
+   * @param summary aggregated mutation summary
+   * @param config run configuration
+   * @param timestamp report generation timestamp
+   * @param version program version string
+   */
+  IndexHtmlGenerator(bool root, const std::filesystem::path& dirName,
+                     std::size_t sizeOfTargetFiles, unsigned int coverage,
+                     std::size_t numerator, std::size_t denominator,
+                     const MutationSummary& summary, const Config& config,
+                     const std::string& timestamp, const std::string& version);
 
   /**
    * @brief push a item to table
@@ -41,115 +67,52 @@ class IndexHtmlGenerator : public DocGenerator {
    * @param subDenominator
    * @param numOfFiles in dir (only used if root)
    */
-  void pushItemToTable(const std::string& subName, int subCoverage, std::size_t subNumerator,
-                       std::size_t subDenominator, std::size_t numOfFiles);
+  void pushItemToTable(const std::string& subName, int subCoverage,
+                       std::size_t subNumerator, std::size_t subDenominator,
+                       std::size_t numOfFiles);
 
   /**
    * @brief make html string
    */
   std::string str() const override;
 
+  /**
+   * @brief Format skipped mutant detail string.
+   *
+   * @param timeout    Number of timeout mutants.
+   * @param buildFailure Number of build failure mutants.
+   * @param runtimeError Number of runtime error mutants.
+   * @return Formatted string (e.g., "3 timeout · 2 build failure").
+   */
+  static std::string formatSkippedDetail(std::size_t timeout,
+                                         std::size_t buildFailure,
+                                         std::size_t runtimeError);
+
  private:
+  std::string buildCardsHtml() const;
+  std::string buildRootPanelsHtml() const;
+  std::string buildConfigHtml() const;
+  std::string buildTableHtml() const;
+  std::string buildBreadcrumbHtml() const;
+
+  static std::string formatDuration(double secs);
+  static const char* coverageClass(unsigned int cov);
+  static const char* coverageFillClass(unsigned int cov);
+
   bool mRoot;
   std::filesystem::path mDirName;
   std::size_t mSizeOfTargetFiles;
   unsigned int mCoverage;
   std::size_t mNumerator;
   std::size_t mDenominator;
+  std::size_t mSkipped = 0;
+  std::string mSkippedDetail;
   std::string mTableItem;
 
-  std::string indexRootTitle = R"(        <h3>Project Summary</h3>)";
-
-  std::string indexSubTitle =
-      R"(        <h2>Directory Summary</h2>
-        <h3>{dir_name}</h3>)";
-
-  std::string indexRootTableCol =
-      R"(                    <th>Name</th>
-                    <th>Number of Files</th>
-                    <th>Mutation Coverage</th>)";
-
-  std::string indexSubTableCol =
-      R"(                    <th>Name</th>
-                    <th>Mutation Coverage</th>)";
-  std::string indexRootTableItem =
-      R"(                <tr>
-                    <td>
-                        <a href="{sub_path}">{sub_name}</a>
-                    </td>
-                    <td>{num_of_files}</td>
-                    <td>
-                        <div class="coverage_percentage">{sub_cov}% </div>
-                        <div class="coverage_bar">
-                            <div class="coverage_complete width-{sub_cov}">
-                                <div class="coverage_legend">{sub_numerator}/{sub_denominator}</div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-)";
-
-  std::string indexSubTableItem =
-      R"(                <tr>
-                    <td>
-                        <a href="{sub_path}">{sub_name}</a>
-                    </td>
-                    <td>
-                        <div class="coverage_percentage">{sub_cov}% </div>
-                        <div class="coverage_bar">
-                            <div class="coverage_complete width-{sub_cov}">
-                                <div class="coverage_legend">{sub_numerator}/{sub_denominator}</div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-)";
-
-  std::string indexSkeleton =
-      R"(<!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="{style_path}style.css"/>
-    </head>
-    <body>
-        <h1>Sentinel Mutation Coverage Report</h1>
-{index_title}
-        <table>
-            <thead>
-                <tr>
-                    <th>Number of Files</th>
-                    <th>Mutation Coverage</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{size_of_target_files}</td>
-                    <td>{cov}%
-                        <div class="coverage_bar">
-                            <div class="coverage_complete width-{cov}">
-                                <div class="coverage_legend">{numerator}/{denominator}</div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <h3>Breakdown by {Directory_or_File}</h3>
-        <table>
-            <thead>
-                <tr>
-{table_col}
-                </tr>
-            </thead>
-            <tbody>
-{table_item}            </tbody>
-        </table>
-        <hr/>
-        <h5>Report generated by <a href="{https}github.com/shift-left-test/sentinel">Sentinel</a>
-        </h5>
-    </body>
-</html>
-)";
+  const MutationSummary* mSummary = nullptr;
+  const Config* mConfig = nullptr;
+  std::string mTimestamp;
+  std::string mVersion;
 };
 
 }  // namespace sentinel

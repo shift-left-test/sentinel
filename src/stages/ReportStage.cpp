@@ -42,7 +42,7 @@ bool ReportStage::execute(PipelineContext* ctx) {
   xmlReport.printSummary();
   if (!ctx->config.outputDir.empty()) {
     xmlReport.save(ctx->config.outputDir);
-    HtmlReport(summary).save(ctx->config.outputDir);
+    HtmlReport(summary, ctx->config).save(ctx->config.outputDir);
     Logger::info("Reports saved to {}", ctx->config.outputDir);
   }
 

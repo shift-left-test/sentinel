@@ -108,7 +108,7 @@ void Report::printSummary() const {
     }
     Console::out("  Skipped: {}", skipped);
   }
-  // Time section
+  // Duration section
   if (mSummary.timedMutantCount > 0) {
     Console::out("{}", thin);
 
@@ -124,8 +124,8 @@ void Report::printSummary() const {
 
     // Header line — align "100%" with per-state "XX%" column
     std::string prefix = (mSummary.timedMutantCount < totalMutants)
-        ? fmt::format("  Time ({}/{} mutants):", mSummary.timedMutantCount, totalMutants)
-        : std::string("  Time:");
+        ? fmt::format("  Duration ({}/{} mutants):", mSummary.timedMutantCount, totalMutants)
+        : std::string("  Duration:");
     static constexpr std::size_t kPctCol = 21;  // column where pct digits start (4 + 17)
     std::size_t padLen = prefix.size() < kPctCol ? kPctCol - prefix.size() : 1;
     Console::out("{}{}100%  {:>{}s}  [{}/{}]",

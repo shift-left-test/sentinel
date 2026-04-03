@@ -3,14 +3,20 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
+#include <chrono>
+#include <ctime>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <iomanip>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "sentinel/HtmlReport.hpp"
+#include "sentinel/MutationState.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/docGenerator/CssGenerator.hpp"
@@ -22,12 +28,32 @@
 #include "sentinel/util/formatter.hpp"
 #include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
+#include "sentinel/version.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
 
 HtmlReport::HtmlReport(const MutationSummary& summary) : Report(summary) {
+  initMetadata();
+}
+
+HtmlReport::HtmlReport(const MutationSummary& summary, const Config& config)
+    : Report(summary), mConfig(config) {
+  initMetadata();
+}
+
+HtmlReport::~HtmlReport() = default;
+
+void HtmlReport::initMetadata() {
+  mVersion = PROGRAM_VERSION;
+  auto now = std::chrono::system_clock::now();
+  auto time = std::chrono::system_clock::to_time_t(now);
+  struct tm tmBuf{};
+  localtime_r(&time, &tmBuf);
+  std::ostringstream oss;
+  oss << std::put_time(&tmBuf, "%Y-%m-%d %H:%M:%S");
+  mTimestamp = oss.str();
 }
 
 void HtmlReport::save(const std::filesystem::path& dirPath) {
@@ -66,13 +92,42 @@ void HtmlReport::makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totN
     numerator = totNumberOfDetectedMutation;
     denominator = totNumberOfMutation;
   } else {
-    sizeOfTargetFiles = mSummary.groupByDirPath.at(currentDirPath).fileCount;
-    numerator = mSummary.groupByDirPath.at(currentDirPath).detected;
-    denominator = mSummary.groupByDirPath.at(currentDirPath).total;
+    const auto& dirStats = mSummary.groupByDirPath.at(currentDirPath);
+    sizeOfTargetFiles = dirStats.fileCount;
+    numerator = dirStats.detected;
+    denominator = dirStats.total;
   }
   unsigned int cov = 100 * numerator / denominator;
 
-  IndexHtmlGenerator ihg(root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator);
+  std::unique_ptr<IndexHtmlGenerator> ihgPtr;
+  if (root) {
+    ihgPtr = std::make_unique<IndexHtmlGenerator>(
+        root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator,
+        mSummary, mConfig, mTimestamp, mVersion);
+  } else {
+    // Compute per-directory skipped counts from directory results
+    std::size_t dirTimeout = 0;
+    std::size_t dirBuildFailure = 0;
+    std::size_t dirRuntimeError = 0;
+    const auto& dirResults = mSummary.groupByDirPath.at(currentDirPath).results;
+    for (const auto* mr : dirResults) {
+      auto state = mr->getMutationState();
+      if (state == MutationState::TIMEOUT) {
+        dirTimeout++;
+      } else if (state == MutationState::BUILD_FAILURE) {
+        dirBuildFailure++;
+      } else if (state == MutationState::RUNTIME_ERROR) {
+        dirRuntimeError++;
+      }
+    }
+    const std::size_t dirSkipped = dirTimeout + dirBuildFailure + dirRuntimeError;
+    auto skippedDetail = IndexHtmlGenerator::formatSkippedDetail(
+        dirTimeout, dirBuildFailure, dirRuntimeError);
+    ihgPtr = std::make_unique<IndexHtmlGenerator>(
+        root, currentDirPath, sizeOfTargetFiles, cov, numerator, denominator,
+        dirSkipped, skippedDetail);
+  }
+  auto& ihg = *ihgPtr;
 
   if (root) {
     for (const auto& p : mSummary.groupByDirPath) {
@@ -125,7 +180,35 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
   std::set<std::string> uniqueMutator;
 
   std::size_t maxLineNum = 0;
+  std::size_t fileKilled = 0;
+  std::size_t fileSurvived = 0;
+  std::size_t fileSkipped = 0;
+  std::size_t fileTimeout = 0;
+  std::size_t fileBuildFailure = 0;
+  std::size_t fileRuntimeError = 0;
+
   for (const MutationResult* mr : mrs) {
+    switch (mr->getMutationState()) {
+      case MutationState::KILLED:
+        fileKilled++;
+        break;
+      case MutationState::SURVIVED:
+        fileSurvived++;
+        break;
+      case MutationState::TIMEOUT:
+        fileTimeout++;
+        fileSkipped++;
+        break;
+      case MutationState::BUILD_FAILURE:
+        fileBuildFailure++;
+        fileSkipped++;
+        break;
+      case MutationState::RUNTIME_ERROR:
+        fileRuntimeError++;
+        fileSkipped++;
+        break;
+    }
+
     auto tmpvector = string::split(mr->getKillingTest(), ", ");
     for (const auto& ts : tmpvector) {
       if (!ts.empty()) {
@@ -141,11 +224,13 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
     if (curLineNum > maxLineNum) {
       maxLineNum = curLineNum;
     }
-    if (groupByLine.empty() || groupByLine.count(curLineNum) == 0) {
-      groupByLine.emplace(curLineNum, std::make_shared<std::vector<const MutationResult*>>());
-    }
-    groupByLine[curLineNum]->push_back(mr);
+    auto [it, _] = groupByLine.try_emplace(
+        curLineNum, std::make_shared<std::vector<const MutationResult*>>());
+    it->second->push_back(mr);
   }
+
+  auto skippedDetail = IndexHtmlGenerator::formatSkippedDetail(
+      fileTimeout, fileBuildFailure, fileRuntimeError);
 
   std::ifstream tf(absSrcPath.string());
   std::stringstream buffer;
@@ -160,13 +245,16 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
                                                srcLineByLine.size(), maxLineNum));
   }
 
-  SrcHtmlGenerator shg(srcName, srcPath.parent_path().empty());
+  SrcHtmlGenerator shg(srcName, srcPath.parent_path().empty(),
+                       srcPath.parent_path(), fileKilled, fileSurvived,
+                       fileSkipped, skippedDetail, mVersion);
 
   for (auto it = srcLineByLine.begin(); it != srcLineByLine.end(); ++it) {
     auto curLineNum = std::distance(srcLineByLine.begin(), it) + 1;
-    std::shared_ptr<std::vector<const MutationResult*>> curLineMrs(nullptr);
-    if (groupByLine.count(curLineNum) != 0) {
-      curLineMrs = groupByLine[curLineNum];
+    std::shared_ptr<std::vector<const MutationResult*>> curLineMrs;
+    auto glIt = groupByLine.find(curLineNum);
+    if (glIt != groupByLine.end()) {
+      curLineMrs = glIt->second;
     }
 
     const char* curClass = "";
@@ -190,12 +278,12 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
     }
     size_t numCurLineMrs = curLineMrs != nullptr ? curLineMrs->size() : 0;
 
-    std::vector<std::tuple<int, std::string, std::string, std::string, bool>> lineExplainVec;
+    std::vector<std::tuple<int, std::string, std::string, std::string, bool, std::string>> lineExplainVec;
 
     if (curLineMrs != nullptr) {
       std::size_t count = 0;
       for (const auto& mr : *curLineMrs) {
-        count += 1;
+        ++count;
         std::string oriCode;
         std::string mutatedCodeHead;
         std::string mutatedCodeTail;
@@ -219,7 +307,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
         mutatedCode.append(mr->getMutant().getToken());
         mutatedCode.append(mutatedCodeTail);
         lineExplainVec.emplace_back(count, MutationOperatorToExpansion(mr->getMutant().getOperator()), oriCode,
-                                    mutatedCode, mr->getDetected());
+                                    mutatedCode, mr->getDetected(), mr->getKillingTest());
       }
     }
     shg.pushLine(curLineNum, curClass, numCurLineMrs, *it, lineExplainVec);

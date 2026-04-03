@@ -9,6 +9,7 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
+#include "sentinel/Config.hpp"
 #include "sentinel/Report.hpp"
 
 namespace sentinel {
@@ -26,6 +27,19 @@ class HtmlReport : public Report {
   explicit HtmlReport(const MutationSummary& summary);
 
   /**
+   * @brief Construct an HTML report view from a precomputed summary and config.
+   *
+   * @param summary Aggregated mutation data to render.
+   * @param config  Run configuration used to generate the report.
+   */
+  HtmlReport(const MutationSummary& summary, const Config& config);
+
+  /**
+   * @brief Destructor.
+   */
+  ~HtmlReport() override;
+
+  /**
    * @brief Save the report in HTML format to @p dirPath.
    *
    * @param dirPath Directory to save the HTML files into.
@@ -34,6 +48,11 @@ class HtmlReport : public Report {
   void save(const std::filesystem::path& dirPath) override;
 
  private:
+  /**
+   * @brief Initialize timestamp and version fields.
+   */
+  void initMetadata();
+
   /**
    * @brief makeIndexHtml
    *
@@ -55,6 +74,10 @@ class HtmlReport : public Report {
    */
   void makeSourceHtml(const std::vector<const MutationResult*>& mrs, const std::filesystem::path& srcPath,
                       const std::filesystem::path& outputDir);
+
+  Config mConfig;             ///< Run configuration
+  std::string mTimestamp;     ///< Report generation timestamp
+  std::string mVersion;       ///< Program version
 };
 
 }  // namespace sentinel
