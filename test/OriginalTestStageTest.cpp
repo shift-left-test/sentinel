@@ -145,4 +145,15 @@ TEST_F(OriginalTestStageTest, testSuccessfulRunSavesConfig) {
   EXPECT_TRUE(mWorkspace->hasPreviousRun());
 }
 
+TEST_F(OriginalTestStageTest, testSignalExitThrows) {
+  // When the test command exits with a signal-like code (128+N via sh -c),
+  // the stage must throw instead of saving corrupted baseline results.
+  mConfig.testCmd = "sh -c 'kill -SEGV $$' && echo unreachable";
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
+}
+
 }  // namespace sentinel

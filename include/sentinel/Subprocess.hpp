@@ -23,7 +23,7 @@ namespace sentinel {
 class Subprocess {
  public:
   /**
-   * @brief Default constructor
+   * @brief Constructor
    *
    * @param cmd       Shell command to execute.
    * @param sec       Timeout in seconds (0 = no timeout).
@@ -49,14 +49,14 @@ class Subprocess {
   /**
    * @brief check if timeout occurs
    *
-   * @return 1 if timeout occurs
+   * @return true if timeout occurs
    */
   bool isTimedOut() const;
 
   /**
-   * @brief check if exit and return 0
+   * @brief check if process exited normally with exit code 0
    *
-   * @return 1 if exit and return 0
+   * @return true if process exited with code 0
    */
   bool isSuccessfulExit() const;
 
@@ -66,6 +66,16 @@ class Subprocess {
    * @return true if process was killed by a signal (e.g. SIGSEGV, SIGABRT)
    */
   bool isSignaled() const;
+
+  /**
+   * @brief check if process exited with a signal-like exit code (128+N)
+   *
+   * When a command run via sh -c is killed by a signal, the shell itself
+   * exits normally with code 128+signum.  This method detects that pattern.
+   *
+   * @return true if exit code is in the range [129, 192]
+   */
+  bool isSignalExit() const;
 
  private:
   std::string mCmd;

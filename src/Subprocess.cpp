@@ -207,4 +207,14 @@ bool Subprocess::isSignaled() const {
   return WIFSIGNALED(mStatus);
 }
 
+bool Subprocess::isSignalExit() const {
+  if (!WIFEXITED(mStatus)) {
+    return false;
+  }
+  static constexpr int kSignalExitBase = 129;
+  static constexpr int kSignalExitMax = 192;
+  int code = WEXITSTATUS(mStatus);
+  return code >= kSignalExitBase && code <= kSignalExitMax;
+}
+
 }  // namespace sentinel

@@ -104,6 +104,41 @@ TEST_F(SubprocessTest, testExecuteFailingCommandNotSignaled) {
   EXPECT_FALSE(sp.isSignaled());
 }
 
+TEST_F(SubprocessTest, testSignalExitDetectedForSegfault) {
+  // Compound command: the outer shell observes the child's signal death
+  // and exits normally with code 128+11=139 (WIFEXITED, not WIFSIGNALED).
+  Subprocess sp("sh -c 'kill -SEGV $$' && echo second", 0, 0, "", true);
+  sp.execute();
+  EXPECT_TRUE(sp.isSignalExit());
+  EXPECT_FALSE(sp.isSuccessfulExit());
+}
+
+TEST_F(SubprocessTest, testSignalExitFalseForNormalFailure) {
+  Subprocess sp("exit 1", 0, 0, "", true);
+  sp.execute();
+  EXPECT_FALSE(sp.isSignalExit());
+}
+
+TEST_F(SubprocessTest, testSignalExitFalseForSuccess) {
+  Subprocess sp("echo hello", 0, 0, "", true);
+  sp.execute();
+  EXPECT_FALSE(sp.isSignalExit());
+}
+
+TEST_F(SubprocessTest, testCompoundCommandSegfaultDetected) {
+  Subprocess sp("sh -c 'kill -SEGV $$' && echo second && echo third", 0, 0, "", true);
+  sp.execute();
+  EXPECT_FALSE(sp.isTimedOut());
+  EXPECT_TRUE(sp.isSignalExit() || sp.isSignaled());
+  EXPECT_FALSE(sp.isSuccessfulExit());
+}
+
+TEST_F(SubprocessTest, testSignalExitFalseForExit128) {
+  Subprocess sp("exit 128", 0, 0, "", true);
+  sp.execute();
+  EXPECT_FALSE(sp.isSignalExit());
+}
+
 TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
   // silent=false with a logFile: covers both the stdout-print and logStream branches
   // in the main read loop and drain loop.

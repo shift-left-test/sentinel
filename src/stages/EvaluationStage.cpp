@@ -116,23 +116,23 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   mRepo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
-  Subprocess mBuild(ctx->config.buildCmd, 0, 0, ctx->workspace.getMutantBuildLog(id).string(),
-                    !isVerbose(*ctx));
-  mBuild.execute();
+  Subprocess buildProc(ctx->config.buildCmd, 0, 0, ctx->workspace.getMutantBuildLog(id).string(),
+                       !isVerbose(*ctx));
+  buildProc.execute();
   const double buildSecs = buildTimer.toDouble();
 
   double testSecs = 0.0;
   TestExecutionState testState = TestExecutionState::SUCCESS;
-  if (mBuild.isSuccessfulExit()) {
+  if (buildProc.isSuccessfulExit()) {
     fs::remove_all(ctx->config.testResultDir);
-    Subprocess mTest(ctx->config.testCmd, timeLimit, killAfterSecs, ctx->workspace.getMutantTestLog(id).string(),
-                     !isVerbose(*ctx));
+    Subprocess testProc(ctx->config.testCmd, timeLimit, killAfterSecs, ctx->workspace.getMutantTestLog(id).string(),
+                        !isVerbose(*ctx));
     Timestamper testTimer;
-    mTest.execute();
+    testProc.execute();
     testSecs = testTimer.toDouble();
-    if (mTest.isTimedOut()) {
+    if (testProc.isTimedOut()) {
       testState = TestExecutionState::TIMEOUT;
-    } else if (mTest.isSignaled()) {
+    } else if (testProc.isSignaled() || testProc.isSignalExit()) {
       testState = TestExecutionState::RUNTIME_ERROR;
     } else {
       io::syncFiles(ctx->config.testResultDir, actualDir, ctx->config.testResultExts);

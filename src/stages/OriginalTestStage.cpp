@@ -55,6 +55,12 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
   testProc.execute();
   const double testElapsed = testTimer.toDouble();
 
+  if (testProc.isSignaled() || testProc.isSignalExit()) {
+    throw std::runtime_error(fmt::format(
+        "Original test command was killed by a signal. See: {}",
+        testLog.string()));
+  }
+
   if (!ctx->config.timeout) {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * kAutoTimeoutFactor)) + kAutoTimeoutPaddingSecs;
     Logger::info("Timeout: {}s (auto), kill-after: {}s", computedTimeLimit, killAfterSecs);
