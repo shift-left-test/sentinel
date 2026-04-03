@@ -196,9 +196,6 @@ Supported keys (all optional):
 \fBsource-dir\fR
 Root of the source tree to test.
 .TP
-\fBworkspace\fR
-Directory for all run artifacts.
-.TP
 \fBoutput-dir\fR
 Directory to write HTML/XML reports.
 .TP

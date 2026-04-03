@@ -46,7 +46,8 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
   std::size_t computedTimeLimit = 0;
   if (ctx->config.timeout.has_value()) {
     computedTimeLimit = *ctx->config.timeout;
-    Logger::info("Timeout: {}, kill-after: {}", Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
+    Logger::info("Timeout: {}, kill-after: {}",
+                 Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
   }
 
   Timestamper testTimer;
@@ -63,7 +64,8 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
 
   if (!ctx->config.timeout) {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * kAutoTimeoutFactor)) + kAutoTimeoutPaddingSecs;
-    Logger::info("Timeout: {} (auto), kill-after: {}", Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
+    Logger::info("Timeout: {} (auto), kill-after: {}",
+                 Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;
     ctx->workspace.saveStatus(status);

@@ -424,9 +424,6 @@ version: 1
 ## Directory for output reports (default: none)
 # output-dir: ./sentinel_output
 
-## Workspace directory for all sentinel run artifacts (default: ./.sentinel)
-# workspace: ./.sentinel
-
 # --- Build & test options ---
 
 ## Source root directory (default: .)

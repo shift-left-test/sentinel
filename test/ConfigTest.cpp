@@ -70,7 +70,6 @@ TEST_F(ConfigTest, testYamlApplyOverwritesFields) {
   writeFile("sentinel.yaml", R"(
 version: 1
 source-dir: ./src
-workspace: ./work
 output-dir: ./out
 compiledb-dir: ./build
 scope: commit
@@ -99,7 +98,6 @@ operator:
   YamlConfigParser::applyTo(&cfg, configPath("sentinel.yaml"));
 
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
-  EXPECT_EQ((mTmpDir / "work").lexically_normal(), cfg.workDir);
   EXPECT_EQ((mTmpDir / "out").lexically_normal(), cfg.outputDir);
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
   EXPECT_EQ("commit", cfg.scope);
@@ -140,14 +138,12 @@ TEST_F(ConfigTest, testYamlApplyResolvesPathsRelativeToYamlFile) {
   writeFile("sentinel.yaml", R"(
 version: 1
 source-dir: ./src
-workspace: ./.sentinel
 )");
 
   Config cfg = Config::withDefaults();
   YamlConfigParser::applyTo(&cfg, configPath("sentinel.yaml"));
 
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
-  EXPECT_EQ((mTmpDir / ".sentinel").lexically_normal(), cfg.workDir);
 }
 
 TEST_F(ConfigTest, testYamlIgnoresSeedLimitThresholdPartition) {
@@ -169,6 +165,20 @@ partition: 2/4
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_FALSE(cfg.threshold.has_value());
   EXPECT_FALSE(cfg.partition.has_value());
+}
+
+TEST_F(ConfigTest, testYamlIgnoresWorkspace) {
+  writeFile("sentinel.yaml", R"(
+version: 1
+workspace: ./custom-ws
+build-command: make
+)");
+
+  Config cfg = Config::withDefaults();
+  auto originalWorkDir = cfg.workDir;
+  YamlConfigParser::applyTo(&cfg, configPath("sentinel.yaml"));
+
+  EXPECT_EQ(originalWorkDir, cfg.workDir);
 }
 
 TEST_F(ConfigTest, testYamlTimeoutAsNumberIsAccepted) {

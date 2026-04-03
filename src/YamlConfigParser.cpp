@@ -81,7 +81,6 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
 
   try {
     if (root["source-dir"]) cfg->sourceDir = resolvePath(base, root["source-dir"].as<std::string>());
-    if (root["workspace"]) cfg->workDir = resolvePath(base, root["workspace"].as<std::string>());
     if (root["output-dir"]) cfg->outputDir = resolvePath(base, root["output-dir"].as<std::string>());
     if (root["compiledb-dir"]) cfg->compileDbDir = resolvePath(base, root["compiledb-dir"].as<std::string>());
     if (root["test-result-dir"]) cfg->testResultDir = resolvePath(base, root["test-result-dir"].as<std::string>());
