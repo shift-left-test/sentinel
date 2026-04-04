@@ -103,7 +103,6 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     ctx->statusLine.recordResult(static_cast<int>(result.getMutationState()));
   }
 
-  ctx->statusLine.logSummary();
   ctx->workspace.setComplete();
   return true;
 }

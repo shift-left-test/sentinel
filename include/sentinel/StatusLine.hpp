@@ -112,14 +112,6 @@ class StatusLine {
    */
   std::string getStatusText() const;
 
-  /**
-   * @brief Log the final evaluation summary.
-   *
-   * Outputs the progress string with total counts and score via Logger::info.
-   * No-op if total is zero.
-   */
-  void logSummary() const;
-
  private:
   void refreshTermSize();
   void setScrollRegion();

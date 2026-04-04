@@ -16,7 +16,6 @@
 #include <ftxui/screen/terminal.hpp>
 #include "sentinel/Console.hpp"
 #include "sentinel/util/Utf8Char.hpp"
-#include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Timestamper.hpp"
@@ -264,18 +263,6 @@ std::string StatusLine::renderToString(const ftxui::Element& element) const {
       ftxui::Dimension::Fixed(mTermCols), ftxui::Dimension::Fixed(1));
   ftxui::Render(screen, element);
   return screen.ToString();
-}
-
-void StatusLine::logSummary() const {
-  if (mTotal == 0) {
-    return;
-  }
-  size_t processed = mKilled + mSurvived + mAbnormal;
-  auto element = buildProgressElement(processed);
-  auto dim = ftxui::Dimension::Fit(element);
-  auto screen = ftxui::Screen::Create(dim);
-  ftxui::Render(screen, element);
-  Logger::info("Summary: {}", screen.ToString());
 }
 
 }  // namespace sentinel

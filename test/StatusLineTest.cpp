@@ -79,64 +79,6 @@ TEST_F(StatusLineTest, testDestructorCallsDisable) {
   });
 }
 
-TEST_F(StatusLineTest, testSummaryUsesUtf8Icons) {
-  Logger::setLevel(Logger::Level::INFO);
-  StatusLine sl;
-  sl.setTotalMutants(10);
-  for (int i = 0; i < 6; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-
-  testing::internal::CaptureStderr();
-  sl.logSummary();
-  std::string output = testing::internal::GetCapturedStderr();
-
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x97"));
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x93"));
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9a\xa0"));
-  EXPECT_THAT(output, testing::Not(testing::HasSubstr("K:")));
-  Logger::setLevel(Logger::Level::OFF);
-}
-
-TEST_F(StatusLineTest, testScoreExcludesAbnormalFromDenominator) {
-  Logger::setLevel(Logger::Level::INFO);
-  StatusLine sl;
-  sl.setTotalMutants(10);
-  // Record: 6 killed, 2 survived, 1 build failure, 1 timeout
-  for (int i = 0; i < 6; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-
-  testing::internal::CaptureStderr();
-  sl.logSummary();
-  std::string output = testing::internal::GetCapturedStderr();
-
-  // Score should be 6/(6+2) = 75.0%, NOT 6/(6+2+2) = 60.0%
-  EXPECT_THAT(output, testing::HasSubstr("75.0%"));
-  Logger::setLevel(Logger::Level::OFF);
-}
-
-TEST_F(StatusLineTest, testLogSummaryWithPartialResults) {
-  Logger::setLevel(Logger::Level::INFO);
-  StatusLine sl;
-  sl.setTotalMutants(10);
-  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  // 4 processed out of 10
-
-  testing::internal::CaptureStderr();
-  sl.logSummary();
-  std::string output = testing::internal::GetCapturedStderr();
-
-  EXPECT_THAT(output, testing::HasSubstr("Summary:"));
-  EXPECT_THAT(output, testing::HasSubstr("[4/10]"));
-  EXPECT_THAT(output, testing::HasSubstr("40%"));
-  // score = 3/(3+1) = 75.0%
-  EXPECT_THAT(output, testing::HasSubstr("75.0%"));
-  Logger::setLevel(Logger::Level::OFF);
-}
 
 TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
   StatusLine sl;
@@ -164,32 +106,6 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
   EXPECT_THAT(text, testing::HasSubstr("0%"));
 }
 
-TEST_F(StatusLineTest, testAdaptiveCountWidth) {
-  Logger::setLevel(Logger::Level::INFO);
-
-  StatusLine sl1;
-  sl1.setTotalMutants(10);
-  for (int i = 0; i < 8; ++i) sl1.recordResult(static_cast<int>(MutationState::KILLED));
-  sl1.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl1.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-
-  testing::internal::CaptureStderr();
-  sl1.logSummary();
-  std::string output1 = testing::internal::GetCapturedStderr();
-  EXPECT_THAT(output1, testing::HasSubstr("[10/10]"));
-
-  StatusLine sl2;
-  sl2.setTotalMutants(10000);
-  for (int i = 0; i < 8000; ++i) sl2.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 2000; ++i) sl2.recordResult(static_cast<int>(MutationState::SURVIVED));
-
-  testing::internal::CaptureStderr();
-  sl2.logSummary();
-  std::string output2 = testing::internal::GetCapturedStderr();
-  EXPECT_THAT(output2, testing::HasSubstr("[10000/10000]"));
-
-  Logger::setLevel(Logger::Level::OFF);
-}
 
 TEST_F(StatusLineTest, testDryRunPrefix) {
   StatusLine sl;
@@ -253,41 +169,6 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogAtCompletion) {
   Logger::setLevel(Logger::Level::OFF);
 }
 
-TEST_F(StatusLineTest, testLogSummaryOutputsProgress) {
-  Logger::setLevel(Logger::Level::INFO);
-  StatusLine sl;
-  sl.setTotalMutants(10);
-  for (int i = 0; i < 6; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-
-  testing::internal::CaptureStderr();
-  sl.logSummary();
-  std::string output = testing::internal::GetCapturedStderr();
-
-  EXPECT_THAT(output, testing::HasSubstr("Summary:"));
-  EXPECT_THAT(output, testing::HasSubstr("[10/10]"));
-  EXPECT_THAT(output, testing::HasSubstr("100%"));
-  EXPECT_THAT(output, testing::HasSubstr("75.0%"));
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x97"));
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9c\x93"));
-  EXPECT_THAT(output, testing::HasSubstr("\xe2\x9a\xa0"));
-  Logger::setLevel(Logger::Level::OFF);
-}
-
-TEST_F(StatusLineTest, testLogSummarySkippedForZeroTotal) {
-  Logger::setLevel(Logger::Level::INFO);
-  StatusLine sl;
-  sl.setTotalMutants(0);
-
-  testing::internal::CaptureStderr();
-  sl.logSummary();
-  std::string output = testing::internal::GetCapturedStderr();
-
-  EXPECT_THAT(output, testing::Not(testing::HasSubstr("Summary:")));
-  Logger::setLevel(Logger::Level::OFF);
-}
 
 TEST_F(StatusLineTest, testPhaseLabelCoversAllPhases) {
   const std::vector<std::pair<StatusLine::Phase, std::string>> phases = {
