@@ -68,6 +68,13 @@ std::ostream& operator<<(std::ostream& out, const WorkspaceStatus& status) {
   if (status.partCount.has_value()) {
     emitter << YAML::Key << "part-count" << YAML::Value << *status.partCount;
   }
+  if (status.mergedPartitions.has_value()) {
+    emitter << YAML::Key << "merged-partitions" << YAML::Value << YAML::BeginSeq;
+    for (auto idx : *status.mergedPartitions) {
+      emitter << idx;
+    }
+    emitter << YAML::EndSeq;
+  }
   emitter << YAML::EndMap;
   out << emitter.c_str();
   return out;
@@ -85,6 +92,13 @@ std::istream& operator>>(std::istream& in, WorkspaceStatus& status) {
     if (node["candidate-count"]) status.candidateCount = node["candidate-count"].as<std::size_t>();
     if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
     if (node["part-count"]) status.partCount = node["part-count"].as<std::size_t>();
+    if (node["merged-partitions"]) {
+      const auto& seq = node["merged-partitions"];
+      std::vector<std::size_t> parts(seq.size());
+      std::transform(seq.begin(), seq.end(), parts.begin(),
+                     [](const YAML::Node& n) { return n.as<std::size_t>(); });
+      status.mergedPartitions = parts;
+    }
   } catch (const YAML::Exception&) {
     in.setstate(std::ios::failbit);
   }
@@ -101,6 +115,7 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (status.candidateCount.has_value()) current.candidateCount = status.candidateCount;
   if (status.partIndex.has_value()) current.partIndex = status.partIndex;
   if (status.partCount.has_value()) current.partCount = status.partCount;
+  if (status.mergedPartitions.has_value()) current.mergedPartitions = status.mergedPartitions;
 
   std::ofstream f(p);
   if (!f) {

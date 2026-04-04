@@ -127,6 +127,9 @@ source tree.
 \fBNote:\fR source isolation and workspace separation between partition instances are the
 responsibility of the calling environment.
 .TP
+\fB\-\-merge\-partition\fR=\fIPATH\fR
+Merge a partitioned workspace result into the target workspace. Can be specified multiple times to merge multiple partitions at once. Use with \fB\-\-workspace\fR to specify the target workspace path. Requires that each source workspace was produced by a \fB\-\-partition\fR run and has completed successfully.
+.TP
 \fB\-\-threshold\fR=\fIPCT\fR
 Fail with exit code 3 if the mutation score is strictly below this percentage (0.0\(en100.0).
 A one-line score summary is always written to stderr at the end of the run.

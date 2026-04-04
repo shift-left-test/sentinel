@@ -142,4 +142,11 @@ TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternInsideSourceDir) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
+TEST_F(ConfigValidatorTest, testMergeModeSkipsRequiredFieldValidation) {
+  Config cfg = Config::withDefaults();
+  cfg.mergeWorkspaces = {"/data/part1"};
+  // buildCmd, testCmd, testResultDir are all empty — normally would throw
+  EXPECT_NO_THROW(ConfigValidator::validate(cfg));
+}
+
 }  // namespace sentinel

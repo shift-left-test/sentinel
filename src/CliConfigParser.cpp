@@ -51,6 +51,9 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                    {"coverage"}),
     mPartition(mGroupAdvanced, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
                {"partition"}),
+    mMergePartitions(mGroupAdvanced, "PATH",
+                     "Merge a partitioned workspace result into the target workspace (repeatable)",
+                     {"merge-partition"}),
     mThreshold(mGroupAdvanced, "PCT", "Fail with exit code 3 if mutation score is below this percentage (0.0-100.0)",
                {"threshold"}) {
 }
@@ -85,6 +88,12 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mSeed) cfg->seed = static_cast<unsigned int>(std::stoul(mSeed.Get()));
   if (mThreshold) cfg->threshold = mThreshold.Get();
   if (mPartition) cfg->partition = mPartition.Get();
+  if (mMergePartitions) {
+    cfg->mergeWorkspaces.clear();
+    for (const auto& p : mMergePartitions.Get()) {
+      cfg->mergeWorkspaces.push_back(fs::absolute(p).lexically_normal());
+    }
+  }
 
   cfg->init = mInit;
   cfg->dryRun = mDryRun;

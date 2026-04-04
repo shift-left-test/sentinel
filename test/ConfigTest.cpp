@@ -333,4 +333,9 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   EXPECT_EQ(*original.timeout, *loaded.timeout);
 }
 
+TEST_F(ConfigTest, testMergeWorkspacesDefaultsToEmpty) {
+  Config cfg = Config::withDefaults();
+  EXPECT_TRUE(cfg.mergeWorkspaces.empty());
+}
+
 }  // namespace sentinel

@@ -14,7 +14,7 @@ add_library(sentinel-core STATIC
   operators/ror.cpp operators/sdl.cpp operators/sor.cpp operators/uoi.cpp
   operators/MutationOperator.cpp Subprocess.cpp
   docGenerator/DocGenerator.cpp docGenerator/IndexHtmlGenerator.cpp docGenerator/SrcHtmlGenerator.cpp
-  CliConfigParser.cpp YamlConfigParser.cpp YamlConfigWriter.cpp Config.cpp ConfigValidator.cpp CoverageInfo.cpp Workspace.cpp StatusLine.cpp Stage.cpp SignalHandler.cpp
+  CliConfigParser.cpp YamlConfigParser.cpp YamlConfigWriter.cpp Config.cpp ConfigValidator.cpp CoverageInfo.cpp Workspace.cpp PartitionedWorkspaceMerger.cpp StatusLine.cpp Stage.cpp SignalHandler.cpp
   stages/OriginalBuildStage.cpp stages/OriginalTestStage.cpp
   stages/GenerationStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
 )

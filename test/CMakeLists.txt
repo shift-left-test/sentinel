@@ -30,6 +30,7 @@ add_executable(unittest
   SignalHandlerTest.cpp YamlConfigWriterTest.cpp
   FormatterTest.cpp
   Utf8CharTest.cpp
+  PartitionedWorkspaceMergerTest.cpp
 )
 target_include_directories(unittest PRIVATE
   ${CMAKE_SOURCE_DIR}/test/include

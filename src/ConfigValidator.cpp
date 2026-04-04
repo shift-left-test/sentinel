@@ -17,6 +17,10 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 void ConfigValidator::validate(const Config& config) {
+  if (!config.mergeWorkspaces.empty()) {
+    return;
+  }
+
   // Precondition: buildCmd, testCmd, testResultDir are always set by ConfigResolver.
   if (config.buildCmd.empty()) {
     throw InvalidArgumentException("Option --build-command is required.");

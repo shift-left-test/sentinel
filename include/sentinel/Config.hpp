@@ -103,6 +103,8 @@ struct Config {
   std::optional<double> threshold;
   /** @brief Partition for parallel execution, e.g., "N/TOTAL" (CLI-only). */
   std::optional<std::string> partition;
+  /** @brief Paths to partitioned workspaces to merge (CLI-only). */
+  std::vector<std::filesystem::path> mergeWorkspaces;
 
   // Special control flags
   /** @brief Initialize sentinel in the current directory. */

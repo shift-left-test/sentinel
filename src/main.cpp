@@ -15,6 +15,7 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
+#include "sentinel/PartitionedWorkspaceMerger.hpp"
 #include "sentinel/PipelineContext.hpp"
 #include "sentinel/SignalHandler.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -50,12 +51,28 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     return 0;
   }
 
-  // 2. Determine workspace path early for mode detection
+  // 2. Determine workspace path early
   fs::path workDirPath = cliParser->getWorkDir().empty()
       ? fs::absolute(".sentinel") : cliParser->getWorkDir();
+
+  // 3. Handle --merge-partition (merge mode)
+  {
+    sentinel::Config mergeCfg = sentinel::Config::withDefaults();
+    cliParser->applyTo(&mergeCfg);
+    if (!mergeCfg.mergeWorkspaces.empty()) {
+      if (mergeCfg.verbose) {
+        sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
+      }
+      sentinel::PartitionedWorkspaceMerger merger(
+          workDirPath, mergeCfg.mergeWorkspaces, mergeCfg.force);
+      merger.merge();
+      return 0;
+    }
+  }
+
   auto ws = std::make_shared<sentinel::Workspace>(workDirPath);
 
-  // 3. Detect run mode
+  // 4. Detect run mode
   bool alreadyComplete = false;
   bool resuming = false;
   if (!cliParser->isClean() && !cliParser->isDryRun() && ws->hasPreviousRun()) {
@@ -68,7 +85,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     }
   }
 
-  // 4. Build config: defaults -> YAML -> CLI
+  // 5. Build config: defaults -> YAML -> CLI
   sentinel::Config cfg = sentinel::Config::withDefaults();
 
   if (alreadyComplete || resuming) {
@@ -85,7 +102,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   cliParser->applyTo(&cfg);
 
-  // 5. Configure logger
+  // 6. Configure logger
   if (cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
@@ -98,21 +115,21 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     sentinel::ConfigValidator::validate(cfg);
   }
 
-  // 6. Create StatusLine
+  // 7. Create StatusLine
   auto statusLine = std::make_shared<sentinel::StatusLine>();
   statusLine->setDryRun(cfg.dryRun);
   statusLine->enable();
 
-  // 7. Initialize workspace for fresh runs
+  // 8. Initialize workspace for fresh runs
   if (!alreadyComplete && !resuming) {
     ws->initialize();
   }
 
-  // 8. Create stage-specific dependencies
+  // 9. Create stage-specific dependencies
   auto repo = std::make_shared<sentinel::GitRepository>(cfg.sourceDir, cfg.extensions, cfg.patterns);
   auto generator = sentinel::MutantGenerator::getInstance(cfg.generator, cfg.compileDbDir);
 
-  // 9. Assemble stage chain
+  // 10. Assemble stage chain
   auto originalBuild = std::make_shared<sentinel::OriginalBuildStage>();
   auto originalTest = std::make_shared<sentinel::OriginalTestStage>();
   auto generation = std::make_shared<sentinel::GenerationStage>(repo, generator);
@@ -122,12 +139,12 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   originalBuild->setNext(originalTest)->setNext(generation)->setNext(dryRunStage)->setNext(evaluation)->setNext(report);
 
-  // 10. Install signal handlers
+  // 11. Install signal handlers
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
   sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(cfg.sourceDir); });
   sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
-  // 11. Create pipeline context and run
+  // 12. Create pipeline context and run
   sentinel::PipelineContext ctx{cfg, *statusLine, *ws};
   originalBuild->run(&ctx);
   return 0;

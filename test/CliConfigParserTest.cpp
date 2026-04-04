@@ -206,4 +206,16 @@ TEST_F(CliConfigParserTest, testExtensionShortOptionRemoved) {
   EXPECT_THROW(parse({"-t", "cpp"}), args::ParseError);
 }
 
+TEST_F(CliConfigParserTest, testMergePartitionParsed) {
+  Config cfg = parse({"--merge-partition", "/data/part1", "--merge-partition", "/data/part2"});
+  ASSERT_EQ(cfg.mergeWorkspaces.size(), 2u);
+  EXPECT_TRUE(cfg.mergeWorkspaces[0].is_absolute());
+  EXPECT_TRUE(cfg.mergeWorkspaces[1].is_absolute());
+}
+
+TEST_F(CliConfigParserTest, testMergePartitionDefaultsToEmpty) {
+  Config cfg = parse({});
+  EXPECT_TRUE(cfg.mergeWorkspaces.empty());
+}
+
 }  // namespace sentinel

@@ -581,4 +581,45 @@ TEST_F(WorkspaceTest, testSaveConfigPreservesAllFields) {
   EXPECT_NE(std::string::npos, content.find("test-command: ctest -j4"));
 }
 
+TEST_F(WorkspaceTest, testSaveAndLoadStatusMergedPartitions) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.candidateCount = 5000;
+  s.partCount = 3;
+  s.mergedPartitions = std::vector<std::size_t>{1, 3};
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.mergedPartitions.has_value());
+  EXPECT_EQ(*loaded.mergedPartitions, (std::vector<std::size_t>{1, 3}));
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  EXPECT_EQ(*loaded.candidateCount, 5000u);
+}
+
+TEST_F(WorkspaceTest, testLoadStatusMergedPartitionsAbsentByDefault) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.originalTime = 10;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  EXPECT_FALSE(loaded.mergedPartitions.has_value());
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorMergedPartitionsRoundTrip) {
+  WorkspaceStatus original;
+  original.candidateCount = 5000;
+  original.partCount = 3;
+  original.mergedPartitions = std::vector<std::size_t>{1, 2, 3};
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.mergedPartitions.has_value());
+  EXPECT_EQ(*loaded.mergedPartitions, (std::vector<std::size_t>{1, 2, 3}));
+}
+
 }  // namespace sentinel

@@ -119,6 +119,8 @@ class CliConfigParser {
   args::ValueFlagList<std::filesystem::path> mCoverageFiles;
   /** @brief Command line flag for execution partition. */
   args::ValueFlag<std::string> mPartition;
+  /** @brief Command line flag for merge partition workspaces. */
+  args::ValueFlagList<std::filesystem::path> mMergePartitions;
   /** @brief Command line flag for mutation threshold. */
   args::ValueFlag<double> mThreshold;
 };
