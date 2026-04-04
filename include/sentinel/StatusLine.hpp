@@ -130,8 +130,10 @@ class StatusLine {
 
   bool mEnabled = false;
   bool mDryRun = false;
-  int mTermRows = 24;
-  int mTermCols = 80;
+  static constexpr int kDefaultTermRows = 24;
+  static constexpr int kDefaultTermCols = 120;
+  int mTermRows = kDefaultTermRows;
+  int mTermCols = kDefaultTermCols;
   Phase mPhase = Phase::INIT;
   size_t mCurrent = 0;
   size_t mTotal = 0;

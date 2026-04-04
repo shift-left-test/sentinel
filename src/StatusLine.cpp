@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <algorithm>
 #include <csignal>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <ftxui/dom/elements.hpp>
@@ -24,6 +23,10 @@
 namespace sentinel {
 
 namespace {
+constexpr int kSpinnerCharset = 15;
+constexpr int kGaugeWidth = 20;
+constexpr int kPhaseLabelWidth = 10;
+
 StatusLine* sActiveInstance = nullptr;
 struct sigaction sPrevTstp {};
 struct sigaction sPrevCont {};
@@ -236,12 +239,18 @@ int StatusLine::countWidth() const {
 
 ftxui::Element StatusLine::buildProgressElement(size_t current) const {
   size_t pct = mTotal > 0 ? current * 100 / mTotal : 0;
-  return ftxui::hbox({
-      ftxui::text(fmt::format("[{}/{}] ({}%) ", current, mTotal, pct)),
-      ftxui::separatorLight(),
-      ftxui::text(" "),
-      buildSummaryElement(),
-  });
+  ftxui::Elements elements;
+  elements.push_back(ftxui::text(fmt::format("[{}/{}] ({}%) ", current, mTotal, pct)));
+  if (mPhase == Phase::EVALUATION && mTotal > 0) {
+    float progress = static_cast<float>(current) / static_cast<float>(mTotal);
+    elements.push_back(
+        ftxui::gauge(progress) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, kGaugeWidth));
+    elements.push_back(ftxui::text(" "));
+  }
+  elements.push_back(ftxui::separatorLight());
+  elements.push_back(ftxui::text(" "));
+  elements.push_back(buildSummaryElement());
+  return ftxui::hbox(std::move(elements));
 }
 
 ftxui::Element StatusLine::buildElement() const {
@@ -249,7 +258,11 @@ ftxui::Element StatusLine::buildElement() const {
   if (mDryRun) {
     elements.push_back(ftxui::text(" [DRY-RUN]"));
   }
-  elements.push_back(ftxui::text(fmt::format(" {:<10}", phaseLabel())));
+  if (mPhase == Phase::EVALUATION) {
+    elements.push_back(ftxui::text(" "));
+    elements.push_back(ftxui::spinner(kSpinnerCharset, mCurrent));
+  }
+  elements.push_back(ftxui::text(fmt::format(" {:<{}}", phaseLabel(), kPhaseLabelWidth)));
   elements.push_back(ftxui::text(" "));
   elements.push_back(ftxui::separatorLight());
   elements.push_back(ftxui::text(" "));

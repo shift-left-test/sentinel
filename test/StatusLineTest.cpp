@@ -79,7 +79,6 @@ TEST_F(StatusLineTest, testDestructorCallsDisable) {
   });
 }
 
-
 TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::EVALUATION);
@@ -95,6 +94,51 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
   EXPECT_THAT(text, testing::HasSubstr("\xe2\x9c\x97"));  // CrossMark
 }
 
+TEST_F(StatusLineTest, testEvaluationPhaseShowsSpinner) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::EVALUATION);
+  sl.setTotalMutants(100);
+  sl.setMutantInfo(1);
+
+  std::string text = sl.getStatusText();
+
+  // Spinner charset 15 frame 1 is U+2819, encoded as \xe2\xa0\x99
+  EXPECT_THAT(text, testing::HasSubstr("\xe2\xa0\x99"));
+}
+
+TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoSpinner) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+
+  std::string text = sl.getStatusText();
+
+  // Charset 15 braille frames should not appear
+  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\xa0\x8b")));
+  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\xa0\x99")));
+}
+
+TEST_F(StatusLineTest, testEvaluationPhaseShowsGauge) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::EVALUATION);
+  sl.setTotalMutants(100);
+  sl.setMutantInfo(50);
+
+  std::string text = sl.getStatusText();
+
+  // gauge(0.5) renders full-block chars (U+2588 = \xe2\x96\x88)
+  EXPECT_THAT(text, testing::HasSubstr("\xe2\x96\x88"));
+}
+
+TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoGauge) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+
+  std::string text = sl.getStatusText();
+
+  // No full-block character (U+2588) should appear without gauge
+  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\x96\x88")));
+}
+
 TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::BUILD_ORIG);
@@ -105,7 +149,6 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
   EXPECT_THAT(text, testing::HasSubstr("[0/0]"));
   EXPECT_THAT(text, testing::HasSubstr("0%"));
 }
-
 
 TEST_F(StatusLineTest, testDryRunPrefix) {
   StatusLine sl;
@@ -169,7 +212,6 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogAtCompletion) {
   Logger::setLevel(Logger::Level::OFF);
 }
 
-
 TEST_F(StatusLineTest, testPhaseLabelCoversAllPhases) {
   const std::vector<std::pair<StatusLine::Phase, std::string>> phases = {
       {StatusLine::Phase::INIT, "INIT"},
@@ -215,7 +257,6 @@ TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   // pct = 25 * 100 / 50 = 50 → "50%"
   EXPECT_THAT(text, testing::HasSubstr("50%"));
 }
-
 
 TEST_F(StatusLineTest, testRaiseSigtstpWithIgnoreDoesNotCrash) {
   struct sigaction prev {};
