@@ -35,7 +35,6 @@ TEST_F(CliConfigParserTest, testDefaultsPreservedWhenNoCli) {
   EXPECT_EQ("all", cfg.scope);
   EXPECT_EQ("uniform", cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
-  EXPECT_EQ(60u, cfg.killAfter);
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_FALSE(cfg.seed.has_value());
   EXPECT_FALSE(cfg.threshold.has_value());
@@ -97,11 +96,6 @@ TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {
 
 TEST_F(CliConfigParserTest, testTimeoutNonNumericThrows) {
   EXPECT_THROW(parse({"--timeout", "auto"}), std::invalid_argument);
-}
-
-TEST_F(CliConfigParserTest, testKillAfterParsed) {
-  Config cfg = parse({"--kill-after", "30"});
-  EXPECT_EQ(cfg.killAfter, 30u);
 }
 
 TEST_F(CliConfigParserTest, testVerboseParsed) {
@@ -192,10 +186,6 @@ TEST_F(CliConfigParserTest, testPartitionParsed) {
 TEST_F(CliConfigParserTest, testPatternParsed) {
   Config cfg = parse({"--pattern", "src/**/*.cpp", "--pattern", "lib/**/*.cpp"});
   EXPECT_EQ(cfg.patterns.size(), 2u);
-}
-
-TEST_F(CliConfigParserTest, testKillAfterNonNumericThrows) {
-  EXPECT_THROW(parse({"--kill-after", "abc"}), std::invalid_argument);
 }
 
 TEST_F(CliConfigParserTest, testLimitNonNumericThrows) {

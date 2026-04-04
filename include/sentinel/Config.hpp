@@ -79,8 +79,6 @@ struct Config {
   std::vector<std::string> testResultExts = {"xml", "XML"};
   /** @brief Time limit for test execution; nullopt = auto (2x baseline), 0 = no limit. */
   std::optional<size_t> timeout;
-  /** @brief Seconds to wait before sending SIGKILL after timeout; 0 = disabled. */
-  size_t killAfter = 60;
 
   // Mutation options
   /** @brief Scope of mutation: "commit" or "all". */

@@ -38,7 +38,6 @@ class OriginalTestStageTest : public ::testing::Test {
     mConfig.testCmd = "true";
     mConfig.testResultDir = mTestResultDir;
     mConfig.testResultExts = {"xml", "XML"};
-    mConfig.killAfter = 60;
     mConfig.timeout = std::nullopt;
   }
 

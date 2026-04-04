@@ -25,13 +25,12 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 volatile pid_t Subprocess::childPid;
-volatile std::size_t Subprocess::killAfter;
 volatile bool Subprocess::timedOut;
 volatile int Subprocess::pendSig;
 
-Subprocess::Subprocess(const std::string& cmd, std::size_t sec, std::size_t secForKill,
+Subprocess::Subprocess(const std::string& cmd, std::size_t sec,
                        const std::filesystem::path& logFile, bool silent) :
-    mCmd(cmd), mSec(sec), mSecForKill(secForKill), mLogFile(logFile), mSilent(silent) {
+    mCmd(cmd), mSec(sec), mLogFile(logFile), mSilent(silent) {
   if (Subprocess::childPid != 0) {
     throw std::runtime_error("Another subprocess is running. (Problem with sentinel logic)");
   }
@@ -92,7 +91,6 @@ int Subprocess::execute() {
     Subprocess::childPid = pid;
     Subprocess::timedOut = false;
     Subprocess::pendSig = 0;
-    Subprocess::killAfter = mSecForKill;
 
     int status;
 
@@ -116,11 +114,11 @@ int Subprocess::execute() {
       int termSignal = SIGTERM;
       if (!Subprocess::timedOut) {
         Subprocess::timedOut = true;
-        alarm(Subprocess::killAfter);
+        alarm(kKillAfterSecs);
       } else {
         termSignal = SIGKILL;
         Console::err("Failed to terminate child process within {}s. Sending {} to child process group.",
-                     Subprocess::killAfter, strsignal(termSignal));
+                     kKillAfterSecs, strsignal(termSignal));
       }
       kill(-Subprocess::childPid, termSignal);
     });
@@ -176,7 +174,6 @@ int Subprocess::execute() {
     Subprocess::childPid = 0;
     Subprocess::timedOut = false;
     Subprocess::pendSig = 0;
-    Subprocess::killAfter = 0;
 
     // restore signal handler
     sc.reset();

@@ -49,7 +49,6 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   if (cfg.timeout) {
     emitter << YAML::Key << "timeout" << YAML::Value << *cfg.timeout;
   }
-  emitter << YAML::Key << "kill-after" << YAML::Value << cfg.killAfter;
   emitter << YAML::Key << "operator" << YAML::Value << YAML::BeginSeq;
   for (const auto& op : cfg.operators) emitter << op;
   emitter << YAML::EndSeq;

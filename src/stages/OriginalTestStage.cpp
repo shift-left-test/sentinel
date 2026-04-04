@@ -42,16 +42,14 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
                   ctx->config.testResultDir.string(),
                   fmt::join(ctx->config.testResultExts, ", "));
 
-  const std::size_t killAfterSecs = ctx->config.killAfter;
   std::size_t computedTimeLimit = 0;
   if (ctx->config.timeout.has_value()) {
     computedTimeLimit = *ctx->config.timeout;
-    Logger::info("Timeout: {}, kill-after: {}",
-                 Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
+    Logger::info("Timeout: {}", Timestamper::format(computedTimeLimit));
   }
 
   Timestamper testTimer;
-  Subprocess testProc(ctx->config.testCmd, computedTimeLimit, killAfterSecs, testLog.string(),
+  Subprocess testProc(ctx->config.testCmd, computedTimeLimit, testLog.string(),
                       !isVerbose(*ctx));
   testProc.execute();
   const double testElapsed = testTimer.toDouble();
@@ -64,8 +62,7 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
 
   if (!ctx->config.timeout) {
     computedTimeLimit = static_cast<std::size_t>(std::ceil(testElapsed * kAutoTimeoutFactor)) + kAutoTimeoutPaddingSecs;
-    Logger::info("Timeout: {} (auto), kill-after: {}",
-                 Timestamper::format(computedTimeLimit), Timestamper::format(killAfterSecs));
+    Logger::info("Timeout: {} (auto)", Timestamper::format(computedTimeLimit));
     WorkspaceStatus status;
     status.originalTime = computedTimeLimit;
     ctx->workspace.saveStatus(status);

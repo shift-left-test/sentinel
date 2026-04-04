@@ -39,8 +39,6 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mTestResultExts(mGroupBuildTest, "EXT", "File extension of the test report", {"test-result-ext"}),
     mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 1.5x original test time)",
              {"timeout"}),
-    mKillAfter(mGroupBuildTest, "SEC", "Seconds to wait after timeout before sending SIGKILL (0 = disabled)",
-               {"kill-after"}),
     mScope(mGroupMutation, "SCOPE", "Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)",
            {'s', "scope"}),
     mPatterns(mGroupMutation, "EXPR",
@@ -73,7 +71,6 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mTestCmd) cfg->testCmd = mTestCmd.Get();
   if (mTestResultExts) cfg->testResultExts = mTestResultExts.Get();
   if (mTimeout) cfg->timeout = std::stoul(mTimeout.Get());
-  if (mKillAfter) cfg->killAfter = std::stoul(mKillAfter.Get());
 
   if (mScope) cfg->scope = mScope.Get();
   if (mExtensions) cfg->extensions = mExtensions.Get();

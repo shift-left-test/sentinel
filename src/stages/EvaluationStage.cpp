@@ -53,8 +53,6 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   } else {
     computedTimeLimit = *ctx->config.timeout;
   }
-  const std::size_t killAfterSecs = ctx->config.killAfter;
-
   Evaluator evaluator(ctx->workspace.getOriginalResultsDir(), ctx->config.sourceDir);
   std::size_t current = 0;
 
@@ -69,7 +67,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     ctx->workspace.setLock(id);
     ctx->statusLine.setMutantInfo(id);
 
-    auto result = evaluateMutant(m, id, computedTimeLimit, killAfterSecs, &evaluator, ctx);
+    auto result = evaluateMutant(m, id, computedTimeLimit, &evaluator, ctx);
 
     auto state = result.getMutationState();
     auto relPath = m.getPath();
@@ -108,15 +106,14 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
 }
 
 MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
-                                               std::size_t killAfterSecs, Evaluator* evaluator,
-                                               PipelineContext* ctx) {
+                                               Evaluator* evaluator, PipelineContext* ctx) {
   const fs::path backupDir = ctx->workspace.getBackupDir();
   const fs::path actualDir = ctx->workspace.getActualDir();
 
   mRepo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
-  Subprocess buildProc(ctx->config.buildCmd, 0, 0, ctx->workspace.getMutantBuildLog(id).string(),
+  Subprocess buildProc(ctx->config.buildCmd, 0, ctx->workspace.getMutantBuildLog(id).string(),
                        !isVerbose(*ctx));
   buildProc.execute();
   const double buildSecs = buildTimer.toDouble();
@@ -125,7 +122,7 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   TestExecutionState testState = TestExecutionState::SUCCESS;
   if (buildProc.isSuccessfulExit()) {
     fs::remove_all(ctx->config.testResultDir);
-    Subprocess testProc(ctx->config.testCmd, timeLimit, killAfterSecs, ctx->workspace.getMutantTestLog(id).string(),
+    Subprocess testProc(ctx->config.testCmd, timeLimit, ctx->workspace.getMutantTestLog(id).string(),
                         !isVerbose(*ctx));
     Timestamper testTimer;
     testProc.execute();

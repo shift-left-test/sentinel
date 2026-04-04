@@ -100,8 +100,6 @@ class CliConfigParser {
   args::ValueFlagList<std::string> mTestResultExts;
   /** @brief Command line flag for test time limit. */
   args::ValueFlag<std::string> mTimeout;
-  /** @brief Command line flag for kill after timeout. */
-  args::ValueFlag<std::string> mKillAfter;
 
   // Mutation options
   /** @brief Command line flag for mutation scope. */

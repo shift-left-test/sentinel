@@ -38,7 +38,7 @@ class EvaluationStage : public Stage {
   /**
    * @brief Apply a mutant, run build/test, compare results, then restore backup.
    */
-  MutationResult evaluateMutant(const Mutant& m, int id, std::size_t timeLimit, std::size_t killAfterSecs,
+  MutationResult evaluateMutant(const Mutant& m, int id, std::size_t timeLimit,
                                 Evaluator* evaluator, PipelineContext* ctx);
 };
 

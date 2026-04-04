@@ -30,7 +30,7 @@ bool OriginalBuildStage::execute(PipelineContext* ctx) {
   Logger::verbose("Build command: {}", ctx->config.buildCmd);
   Logger::verbose("Build log: {}", buildLog);
   Timestamper ts;
-  Subprocess buildProc(ctx->config.buildCmd, 0, 0, buildLog.string(), !isVerbose(*ctx));
+  Subprocess buildProc(ctx->config.buildCmd, 0, buildLog.string(), !isVerbose(*ctx));
   buildProc.execute();
   if (!buildProc.isSuccessfulExit()) {
     throw std::runtime_error(fmt::format("Original build failed. See: {}", buildLog.string()));

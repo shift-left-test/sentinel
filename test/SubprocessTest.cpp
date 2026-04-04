@@ -40,7 +40,7 @@ TEST_F(SubprocessTest, testExecuteSuccessfulCommand) {
 }
 
 TEST_F(SubprocessTest, testExecuteFailingCommand) {
-  Subprocess sp("exit 1", 0, 0, "", true);
+  Subprocess sp("exit 1", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isSuccessfulExit());
   EXPECT_FALSE(sp.isTimedOut());
@@ -53,7 +53,7 @@ TEST_F(SubprocessTest, testExecuteEmptyCommandReturnsNegOne) {
 }
 
 TEST_F(SubprocessTest, testExecuteWithTimeout) {
-  Subprocess sp("sleep 10", 1, 1);
+  Subprocess sp("sleep 10", 1);
   sp.execute();
   EXPECT_TRUE(sp.isTimedOut());
   EXPECT_FALSE(sp.isSuccessfulExit());
@@ -61,7 +61,7 @@ TEST_F(SubprocessTest, testExecuteWithTimeout) {
 
 TEST_F(SubprocessTest, testExecuteWritesToLogFile) {
   auto logPath = mBase / "test.log";
-  Subprocess sp("echo sentinel_marker", 0, 0, logPath, true);
+  Subprocess sp("echo sentinel_marker", 0, logPath, true);
   sp.execute();
   EXPECT_TRUE(fs::exists(logPath));
   EXPECT_NE(testutil::readFile(logPath).find("sentinel_marker"), std::string::npos);
@@ -69,7 +69,7 @@ TEST_F(SubprocessTest, testExecuteWritesToLogFile) {
 
 TEST_F(SubprocessTest, testExecuteSilentDoesNotPrintToStdout) {
   // silent=true suppresses child stdout; verify indirectly by checking successful exit.
-  Subprocess sp("echo hello", 0, 0, "", true);
+  Subprocess sp("echo hello", 0, "", true);
   sp.execute();
   EXPECT_TRUE(sp.isSuccessfulExit());
 }
@@ -85,7 +85,7 @@ TEST_F(SubprocessTest, testConstructorThrowsWhenAnotherRunning) {
 }
 
 TEST_F(SubprocessTest, testExecuteSignaledCommand) {
-  Subprocess sp("kill -SEGV $$", 0, 0, "", true);
+  Subprocess sp("kill -SEGV $$", 0, "", true);
   sp.execute();
   EXPECT_TRUE(sp.isSignaled());
   EXPECT_FALSE(sp.isSuccessfulExit());
@@ -99,7 +99,7 @@ TEST_F(SubprocessTest, testExecuteSuccessfulCommandNotSignaled) {
 }
 
 TEST_F(SubprocessTest, testExecuteFailingCommandNotSignaled) {
-  Subprocess sp("exit 1", 0, 0, "", true);
+  Subprocess sp("exit 1", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isSignaled());
 }
@@ -107,26 +107,26 @@ TEST_F(SubprocessTest, testExecuteFailingCommandNotSignaled) {
 TEST_F(SubprocessTest, testSignalExitDetectedForSegfault) {
   // Compound command: the outer shell observes the child's signal death
   // and exits normally with code 128+11=139 (WIFEXITED, not WIFSIGNALED).
-  Subprocess sp("sh -c 'kill -SEGV $$' && echo second", 0, 0, "", true);
+  Subprocess sp("sh -c 'kill -SEGV $$' && echo second", 0, "", true);
   sp.execute();
   EXPECT_TRUE(sp.isSignalExit());
   EXPECT_FALSE(sp.isSuccessfulExit());
 }
 
 TEST_F(SubprocessTest, testSignalExitFalseForNormalFailure) {
-  Subprocess sp("exit 1", 0, 0, "", true);
+  Subprocess sp("exit 1", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isSignalExit());
 }
 
 TEST_F(SubprocessTest, testSignalExitFalseForSuccess) {
-  Subprocess sp("echo hello", 0, 0, "", true);
+  Subprocess sp("echo hello", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isSignalExit());
 }
 
 TEST_F(SubprocessTest, testCompoundCommandSegfaultDetected) {
-  Subprocess sp("sh -c 'kill -SEGV $$' && echo second && echo third", 0, 0, "", true);
+  Subprocess sp("sh -c 'kill -SEGV $$' && echo second && echo third", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isTimedOut());
   EXPECT_TRUE(sp.isSignalExit() || sp.isSignaled());
@@ -134,7 +134,7 @@ TEST_F(SubprocessTest, testCompoundCommandSegfaultDetected) {
 }
 
 TEST_F(SubprocessTest, testSignalExitFalseForExit128) {
-  Subprocess sp("exit 128", 0, 0, "", true);
+  Subprocess sp("exit 128", 0, "", true);
   sp.execute();
   EXPECT_FALSE(sp.isSignalExit());
 }
@@ -144,7 +144,7 @@ TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
   // in the main read loop and drain loop.
   // Use large output (> 64 KB pipe buffer) to ensure the drain loop body executes.
   auto logPath = mBase / "nonsilent.log";
-  Subprocess sp("seq 1 20000", 0, 0, logPath, false);
+  Subprocess sp("seq 1 20000", 0, logPath, false);
   sp.execute();
   EXPECT_TRUE(sp.isSuccessfulExit());
   EXPECT_TRUE(fs::exists(logPath));

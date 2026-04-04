@@ -35,9 +35,6 @@ test-result-dir: ./build/test-results
 ## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
 # timeout: 60
 
-## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
-# kill-after: 60
-
 # --- Mutation options ---
 
 ## Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)

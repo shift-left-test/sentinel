@@ -355,7 +355,6 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
 | `--test-result-ext=EXT` | File extension of test result files (repeatable) | `xml` |
 | `--timeout=SEC` | Test time limit in seconds; `0` = no limit (triggers pre-run warning) | 1.5× baseline |
-| `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
 #### Mutation options
 
@@ -447,9 +446,6 @@ version: 1
 
 ## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
 # timeout: 60
-
-## Seconds to wait after timeout before sending SIGKILL (default: 60; 0 = disabled)
-# kill-after: 60
 
 # --- Mutation options ---
 

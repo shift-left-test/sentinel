@@ -208,8 +208,8 @@ Shell commands to build the project and run the test suite.
 \fBtest-result-dir\fR / \fBtest-result-ext\fR
 Test result directory and file extensions.
 .TP
-\fBtimeout\fR / \fBkill-after\fR
-Test time limit (seconds or \fBauto\fR) and post-timeout SIGKILL delay.
+\fBtimeout\fR
+Test time limit in seconds (default: 1.5\(mu original test time).
 .TP
 \fBscope\fR
 Mutation scope: \fBcommit\fR or \fBall\fR.

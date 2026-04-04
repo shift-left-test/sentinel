@@ -60,7 +60,6 @@ TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   EXPECT_EQ("all", cfg.scope);
   EXPECT_EQ("uniform", cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
-  EXPECT_EQ(60u, cfg.killAfter);
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_TRUE(cfg.buildCmd.empty());
   EXPECT_TRUE(cfg.testCmd.empty());
@@ -88,7 +87,6 @@ coverage:
   - coverage.info
 generator: random
 timeout: 30
-kill-after: 10
 operator:
   - AOR
   - ROR
@@ -111,7 +109,6 @@ operator:
   EXPECT_EQ("random", cfg.generator);
   ASSERT_TRUE(cfg.timeout.has_value());
   EXPECT_EQ(30u, *cfg.timeout);
-  EXPECT_EQ(10u, cfg.killAfter);
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), cfg.operators);
 }
 
@@ -292,7 +289,6 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   cfg.testCmd = "ctest";
   cfg.scope = "all";
   cfg.generator = "uniform";
-  cfg.killAfter = 60;
   cfg.extensions = {"cpp", "cc"};
   cfg.operators = {"AOR", "ROR"};
   cfg.testResultExts = {"xml"};
@@ -314,7 +310,6 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.testResultDir = fs::absolute("results");
   original.scope = "commit";
   original.generator = "random";
-  original.killAfter = 30;
   original.timeout = 120;
   original.extensions = {"cpp"};
   original.operators = {"AOR"};
@@ -334,7 +329,6 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   EXPECT_EQ(original.testCmd, loaded.testCmd);
   EXPECT_EQ(original.scope, loaded.scope);
   EXPECT_EQ(original.generator, loaded.generator);
-  EXPECT_EQ(original.killAfter, loaded.killAfter);
   ASSERT_TRUE(loaded.timeout.has_value());
   EXPECT_EQ(*original.timeout, *loaded.timeout);
 }
