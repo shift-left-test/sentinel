@@ -111,12 +111,19 @@ class StatusLine {
    */
   std::string getStatusText() const;
 
+  /**
+   * @brief Log the final evaluation summary.
+   *
+   * Outputs the progress string with total counts and score via Logger::info.
+   * No-op if total is zero.
+   */
+  void logSummary() const;
+
  private:
   void queryTermSize();
   void setScrollRegion();
   void clearScrollRegion();
   void redraw();
-  void logProgress();
   std::string buildStatusString() const;
   std::string buildSummaryString() const;
   std::string buildProgressString(size_t current) const;
@@ -137,7 +144,6 @@ class StatusLine {
   size_t mKilled = 0;
   size_t mSurvived = 0;
   size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
-  size_t mProgressInterval = 0;
   Timestamper mTimestamper;
 };
 

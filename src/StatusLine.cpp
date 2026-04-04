@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <algorithm>
 #include <csignal>
-#include <filesystem>  // NOLINT
 #include <iostream>
 #include <string>
 #include "sentinel/Console.hpp"
@@ -43,8 +42,6 @@ void handleSigcont(int /*signum*/) {
   }
 }
 }  // namespace detail
-
-namespace fs = std::filesystem;
 
 StatusLine::StatusLine() = default;
 
@@ -91,7 +88,6 @@ void StatusLine::setPhase(Phase phase) {
 
 void StatusLine::setTotalMutants(size_t total) {
   mTotal = total;
-  mProgressInterval = std::max(static_cast<size_t>(10), total / 10);
   redraw();
 }
 
@@ -121,8 +117,6 @@ void StatusLine::recordResult(int state) {
   }
   if (mEnabled) {
     redraw();
-  } else {
-    logProgress();
   }
 }
 
@@ -261,15 +255,12 @@ std::string StatusLine::buildStatusString() const {
   return result;
 }
 
-void StatusLine::logProgress() {
+void StatusLine::logSummary() const {
+  if (mTotal == 0) {
+    return;
+  }
   size_t processed = mKilled + mSurvived + mAbnormal;
-  if (mTotal == 0 || mProgressInterval == 0) {
-    return;
-  }
-  if (processed % mProgressInterval != 0 && processed != mTotal) {
-    return;
-  }
-  Logger::info("Progress: {}", buildProgressString(processed));
+  Logger::info("Summary: {}", buildProgressString(processed));
 }
 
 }  // namespace sentinel
