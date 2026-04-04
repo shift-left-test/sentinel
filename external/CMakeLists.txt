@@ -22,3 +22,7 @@ set(DEPRECATE_HARD ON CACHE BOOL "" FORCE)
 add_subdirectory(libgit2)
 target_include_directories(libgit2package SYSTEM PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgit2/include>)
+
+# ftxui - terminal UI library (must follow libgit2; find_package(Threads)
+# pollutes CMake cache and breaks libgit2 GIT_USE_NSEC detection if loaded first)
+add_subdirectory(ftxui)

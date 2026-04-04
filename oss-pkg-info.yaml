@@ -9,6 +9,11 @@ Open Source Software Package:
   source: https://github.com/fmtlib/fmt
   license : LicenseRef-MIT-with-executable-object-exception
   copyright : Copyright (c) 2012 - present, Victor Zverovich
+- name: ftxui
+  version: 6.1.9
+  source: https://github.com/ArthurSonzogni/FTXUI
+  license : MIT
+  copyright : Copyright (c) 2019 Arthur Sonzogni.
 - name: libgit2
   version: 1.9.2
   source: https://github.com/libgit2/libgit2
