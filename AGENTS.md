@@ -11,6 +11,7 @@ make all -j
 
 # Development build (tests, static analysis, coverage, docs)
 cmake -DCMAKE_TESTING_ENABLED=ON .
+find . -name "*.gcda" -delete  # prevent libgcov merge warnings
 make all -j
 
 # Run tests
