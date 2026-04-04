@@ -202,4 +202,23 @@ TEST_F(CliConfigParserTest, testLimitNonNumericThrows) {
   EXPECT_THROW(parse({"--limit", "abc"}), args::ParseError);
 }
 
+TEST_F(CliConfigParserTest, testCleanShortOptionParsed) {
+  Config cfg = parse({"-c"});
+  EXPECT_TRUE(cfg.clean);
+}
+
+TEST_F(CliConfigParserTest, testDryRunShortOptionParsed) {
+  Config cfg = parse({"-n"});
+  EXPECT_TRUE(cfg.dryRun);
+}
+
+TEST_F(CliConfigParserTest, testVerboseShortOptionParsed) {
+  Config cfg = parse({"-v"});
+  EXPECT_TRUE(cfg.verbose);
+}
+
+TEST_F(CliConfigParserTest, testExtensionShortOptionRemoved) {
+  EXPECT_THROW(parse({"-t", "cpp"}), args::ParseError);
+}
+
 }  // namespace sentinel

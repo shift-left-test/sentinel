@@ -330,11 +330,11 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--config=PATH` | YAML config file path. When the config is in a different directory, sentinel changes to that location before running; a pre-run warning is shown. | `sentinel.yaml` (auto-detected) |
-| `-w, --workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
-| `--clean` | Clear workspace and start a fresh run instead of resuming | |
+| `--workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
+| `-c, --clean` | Clear workspace and start a fresh run instead of resuming | |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
-| `--dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |
-| `--verbose` | Show build/test subprocess output and enable verbose logging to stderr | |
+| `-n, --dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |
+| `-v, --verbose` | Show build/test subprocess output and enable verbose logging to stderr | |
 | `--no-tty` | Disable TTY features: suppress the live status line and use text-based progress logging instead | |
 
 #### Setup options
@@ -354,7 +354,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--test-command=CMD` | Shell command to run tests | **required** |
 | `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
 | `--test-result-ext=EXT` | File extension of test result files (repeatable) | `xml` |
-| `--timeout=SEC` | Test time limit in seconds; `0` = no limit (triggers pre-run warning) | 2× baseline |
+| `--timeout=SEC` | Test time limit in seconds; `0` = no limit (triggers pre-run warning) | 1.5× baseline |
 | `--kill-after=SEC` | Seconds after timeout before sending SIGKILL (0 = disabled) | `60` |
 
 #### Mutation options
@@ -362,8 +362,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-s, --scope=SCOPE` | `commit` (changed lines only) or `all` (entire codebase) | `all` |
-| `-t, --extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
 | `-p, --pattern=PATTERN` | Glob patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Prefix with `!` to exclude matching files. Absolute paths trigger a pre-run warning. | |
+| `--extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--seed=N` | Random seed for mutant selection | random |
 | `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |

@@ -16,7 +16,7 @@ cover the code under mutation.
 \fB\-h\fR, \fB\-\-help\fR
 Display the help menu.
 .TP
-\fB\-v\fR, \fB\-\-version\fR
+\fB\-\-version\fR
 Print the program version and exit.
 .SS Run options
 .TP
@@ -27,10 +27,10 @@ config and build/test commands are resolved from that location.
 When omitted, \fBsentinel.yaml\fR in the current directory is used
 automatically if it exists.
 .TP
-\fB\-w\fR \fIPATH\fR, \fB\-\-workspace\fR=\fIPATH\fR
+\fB\-\-workspace\fR=\fIPATH\fR
 Directory for all run artifacts. Default: \fB./.sentinel\fR
 .TP
-\fB\-\-clean\fR
+\fB\-c\fR, \fB\-\-clean\fR
 Clear the workspace and start a fresh run.
 By default, sentinel automatically resumes an interrupted previous run.
 Use \fB\-\-clean\fR to discard the previous state and start over.
@@ -38,13 +38,13 @@ Use \fB\-\-clean\fR to discard the previous state and start over.
 \fB\-o\fR \fIPATH\fR, \fB\-\-output\-dir\fR=\fIPATH\fR
 Directory to write HTML/XML reports.
 .TP
-\fB\-\-dry\-run\fR
+\fB\-n\fR, \fB\-\-dry\-run\fR
 Run only the build, test, and mutant-generation phases, then exit without
 evaluating any mutants.
 The workspace is preserved so that the next \fBsentinel\fR invocation (without \fB\-\-dry\-run\fR)
 resumes directly at the evaluation phase, skipping build and generation.
 .TP
-\fB\-\-verbose\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 Show build/test subprocess output on the terminal and enable verbose logging to stderr.
 By default, subprocess output is suppressed (still written to workspace log files).
 .TP
@@ -74,15 +74,15 @@ Default: \fB.\fR
 \fB\-\-test\-command\fR=\fICMD\fR
 Shell command to run the test suite. \fBRequired.\fR
 .TP
-\fB\-\-test\-report\-dir\fR=\fIPATH\fR
+\fB\-\-test\-result\-dir\fR=\fIPATH\fR
 Directory where the test command writes its result files. \fBRequired.\fR
 .TP
-\fB\-\-test\-report\-extension\fR=\fIEXT\fR
+\fB\-\-test\-result\-ext\fR=\fIEXT\fR
 File extension of test result files (repeatable). Default: \fBxml\fR
 .TP
 \fB\-\-timeout\fR=\fISEC\fR
 Test time limit in seconds. \fB0\fR = no limit.
-Default: 2\(mu the measured baseline run time.
+Default: 1.5\(mu the measured baseline run time.
 .TP
 \fB\-\-kill\-after\fR=\fISEC\fR
 Seconds to wait after \fB\-\-timeout\fR before sending SIGKILL to the test process.
@@ -93,14 +93,14 @@ Seconds to wait after \fB\-\-timeout\fR before sending SIGKILL to the test proce
 Mutation scope: \fBcommit\fR limits mutation to lines changed in the latest git commit;
 \fBall\fR mutates the entire codebase. Default: \fBall\fR
 .TP
-\fB\-t\fR \fIEXT\fR, \fB\-\-extension\fR=\fIEXT\fR
-Source file extension to mutate (repeatable).
-Default: \fBcxx cpp cc c c++ cu\fR
-.TP
 \fB\-p\fR \fIPATTERN\fR, \fB\-\-pattern\fR=\fIPATTERN\fR
 Glob pattern to constrain the mutation scope (repeatable). Matched against
 repository-relative paths. Prefix with \fB!\fR to exclude matching files
 (e.g., \fB\-\-pattern="!*/test/*"\fR).
+.TP
+\fB\-\-extension\fR=\fIEXT\fR
+Source file extension to mutate (repeatable).
+Default: \fBcxx cpp cc c c++ cu\fR
 .TP
 \fB\-\-generator\fR=\fITYPE\fR
 Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR

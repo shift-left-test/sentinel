@@ -106,10 +106,10 @@ class CliConfigParser {
   // Mutation options
   /** @brief Command line flag for mutation scope. */
   args::ValueFlag<std::string> mScope;
-  /** @brief Command line flag for source file extensions. */
-  args::ValueFlagList<std::string> mExtensions;
   /** @brief Command line flag for inclusion patterns. */
   args::ValueFlagList<std::string> mPatterns;
+  /** @brief Command line flag for source file extensions. */
+  args::ValueFlagList<std::string> mExtensions;
   /** @brief Command line flag for mutant generator. */
   args::ValueFlag<std::string> mGenerator;
   /** @brief Command line flag for random seed. */
