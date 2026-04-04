@@ -21,7 +21,7 @@ add_library(sentinel-core STATIC
 target_include_directories(sentinel-core PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(sentinel-core SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 target_link_libraries(sentinel-core PUBLIC
-  tinyxml2 fmt yaml-cpp libgit2package stdc++fs args
+  tinyxml2 fmt yaml-cpp libgit2package stdc++fs args ftxui-dom
   $<$<BOOL:${CMAKE_TESTING_ENABLED}>:coverage_options>
 )
 

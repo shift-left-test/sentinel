@@ -4,12 +4,16 @@
  */
 
 #include <fmt/core.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include <algorithm>
 #include <csignal>
 #include <iostream>
 #include <string>
+#include <utility>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/dom/node.hpp>
+#include <ftxui/screen/screen.hpp>
+#include <ftxui/screen/terminal.hpp>
 #include "sentinel/Console.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/Logger.hpp"
@@ -46,7 +50,7 @@ void handleSigcont(int /*signum*/) {
 StatusLine::StatusLine() = default;
 
 std::string StatusLine::getStatusText() const {
-  return buildStatusString();
+  return renderToString(buildElement());
 }
 
 StatusLine::~StatusLine() {
@@ -55,11 +59,17 @@ StatusLine::~StatusLine() {
   }
 }
 
+void StatusLine::refreshTermSize() {
+  auto dim = ftxui::Terminal::Size();
+  mTermRows = dim.dimy;
+  mTermCols = dim.dimx;
+}
+
 void StatusLine::enable() {
   if (!isatty(STDOUT_FILENO)) {
     return;
   }
-  queryTermSize();
+  refreshTermSize();
   mTimestamper.reset();
   mEnabled = true;
   installSuspendHandlers();
@@ -120,14 +130,6 @@ void StatusLine::recordResult(int state) {
   }
 }
 
-void StatusLine::queryTermSize() {
-  struct winsize ws = {};
-  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_row > 0 && ws.ws_col > 0) {
-    mTermRows = ws.ws_row;
-    mTermCols = ws.ws_col;
-  }
-}
-
 void StatusLine::installSuspendHandlers() {
   sActiveInstance = this;
   signal::getSigaction(SIGTSTP, &sPrevTstp);
@@ -157,7 +159,7 @@ void StatusLine::resume() {
   if (!isatty(STDOUT_FILENO)) {
     return;
   }
-  queryTermSize();
+  refreshTermSize();
   mEnabled = true;
   setScrollRegion();
   redraw();
@@ -185,13 +187,9 @@ void StatusLine::redraw() {
   if (!mEnabled) {
     return;
   }
-  std::string status = buildStatusString();
-  if (static_cast<int>(status.size()) > mTermCols) {
-    status.resize(mTermCols);
-  }
-  // Save cursor, jump to status row, clear line, print reverse-video content, restore cursor
-  Console::print("\0337\033[{};1H\033[2K", mTermRows);
-  Console::print("\033[7m{}\033[0m\0338", status);
+  std::string rendered = renderToString(buildElement());
+  // Save cursor, jump to status row, clear line, print rendered content, restore cursor
+  Console::print("\0337\033[{};1H\033[2K{}\0338", mTermRows, rendered);
   Console::flush();
 }
 
@@ -215,44 +213,57 @@ std::string StatusLine::phaseLabel() const {
   return "UNKNOWN";
 }
 
-std::string StatusLine::buildSummaryString() const {
+ftxui::Element StatusLine::buildSummaryElement() const {
   size_t denominator = mKilled + mSurvived;
   double score = denominator > 0
       ? 100.0 * static_cast<double>(mKilled) / static_cast<double>(denominator)
       : 0.0;
   std::string scoreStr = fmt::format("{:.1f}%", score);
   int w = countWidth();
-  return fmt::format("{}{:>{}} {}{:>{}} {}{:>{}}  {}  {:>6}  {}  {}",
-                     Utf8Char::CrossMark, mKilled, w,
-                     Utf8Char::CheckMark, mSurvived, w,
-                     Utf8Char::Warning, mAbnormal, w,
-                     Utf8Char::VerticalBar, scoreStr,
-                     Utf8Char::VerticalBar,
-                     mTimestamper.toString(Timestamper::Format::Clock));
+  return ftxui::hbox({
+      ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::CrossMark, mKilled, w)),
+      ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::CheckMark, mSurvived, w)),
+      ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::Warning, mAbnormal, w)),
+      ftxui::separatorLight(),
+      ftxui::text(fmt::format(" {:>6} ", scoreStr)),
+      ftxui::separatorLight(),
+      ftxui::text(fmt::format(" {}", mTimestamper.toString(Timestamper::Format::Clock))),
+  });
 }
 
 int StatusLine::countWidth() const {
   return std::max(2, static_cast<int>(fmt::formatted_size("{}", mTotal)));
 }
 
-std::string StatusLine::buildProgressString(size_t current) const {
+ftxui::Element StatusLine::buildProgressElement(size_t current) const {
   size_t pct = mTotal > 0 ? current * 100 / mTotal : 0;
-  return fmt::format("[{}/{}] ({}%)  {}  {}", current, mTotal, pct,
-                     Utf8Char::VerticalBar, buildSummaryString());
+  return ftxui::hbox({
+      ftxui::text(fmt::format("[{}/{}] ({}%) ", current, mTotal, pct)),
+      ftxui::separatorLight(),
+      ftxui::text(" "),
+      buildSummaryElement(),
+  });
 }
 
-std::string StatusLine::buildStatusString() const {
-  std::string result;
-
+ftxui::Element StatusLine::buildElement() const {
+  ftxui::Elements elements;
   if (mDryRun) {
-    result += " [DRY-RUN]";
+    elements.push_back(ftxui::text(" [DRY-RUN]"));
   }
+  elements.push_back(ftxui::text(fmt::format(" {:<10}", phaseLabel())));
+  elements.push_back(ftxui::text(" "));
+  elements.push_back(ftxui::separatorLight());
+  elements.push_back(ftxui::text(" "));
+  elements.push_back(buildProgressElement(mCurrent));
+  elements.push_back(ftxui::filler());
+  return ftxui::hbox(std::move(elements)) | ftxui::inverted;
+}
 
-  result += fmt::format(" {:<10}", phaseLabel());
-
-  result += fmt::format("  {}  ", Utf8Char::VerticalBar) + buildProgressString(mCurrent);
-
-  return result;
+std::string StatusLine::renderToString(const ftxui::Element& element) const {
+  auto screen = ftxui::Screen::Create(
+      ftxui::Dimension::Fixed(mTermCols), ftxui::Dimension::Fixed(1));
+  ftxui::Render(screen, element);
+  return screen.ToString();
 }
 
 void StatusLine::logSummary() const {
@@ -260,7 +271,11 @@ void StatusLine::logSummary() const {
     return;
   }
   size_t processed = mKilled + mSurvived + mAbnormal;
-  Logger::info("Summary: {}", buildProgressString(processed));
+  auto element = buildProgressElement(processed);
+  auto dim = ftxui::Dimension::Fit(element);
+  auto screen = ftxui::Screen::Create(dim);
+  ftxui::Render(screen, element);
+  Logger::info("Summary: {}", screen.ToString());
 }
 
 }  // namespace sentinel

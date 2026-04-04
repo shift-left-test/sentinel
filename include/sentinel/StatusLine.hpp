@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
 #include <string>
+#include <ftxui/dom/elements.hpp>
 #include "sentinel/Timestamper.hpp"
 
 namespace sentinel {
@@ -120,13 +121,14 @@ class StatusLine {
   void logSummary() const;
 
  private:
-  void queryTermSize();
+  void refreshTermSize();
   void setScrollRegion();
   void clearScrollRegion();
   void redraw();
-  std::string buildStatusString() const;
-  std::string buildSummaryString() const;
-  std::string buildProgressString(size_t current) const;
+  ftxui::Element buildElement() const;
+  ftxui::Element buildSummaryElement() const;
+  ftxui::Element buildProgressElement(size_t current) const;
+  std::string renderToString(const ftxui::Element& element) const;
   std::string phaseLabel() const;
   int countWidth() const;
   void installSuspendHandlers();
