@@ -50,7 +50,7 @@ Precedence: **CLI > YAML > built-in defaults**.
 
 `Config` (`include/sentinel/Config.hpp`) uses `std::optional` for fields settable via CLI or YAML
 so the resolver can distinguish "not set" from "set to default".
-CLI-only control flags (`init`, `dryRun`, `noTTY`, `verbose`, `force`, `clean`)
+CLI-only control flags (`init`, `dryRun`, `verbose`, `force`, `clean`)
 are plain `bool` and copied directly from CLI config.
 
 ### Core Pipeline — Chain of Responsibility (`main.cpp`)

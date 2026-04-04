@@ -167,11 +167,6 @@ TEST_F(CliConfigParserTest, testDryRunParsed) {
   EXPECT_TRUE(cfg.dryRun);
 }
 
-TEST_F(CliConfigParserTest, testNoTTYParsed) {
-  Config cfg = parse({"--no-tty"});
-  EXPECT_TRUE(cfg.noTTY);
-}
-
 TEST_F(CliConfigParserTest, testInitParsed) {
   Config cfg = parse({"--init"});
   EXPECT_TRUE(cfg.init);

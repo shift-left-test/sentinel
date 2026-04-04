@@ -109,8 +109,6 @@ struct Config {
   bool init = false;
   /** @brief Run without performing actual mutations. */
   bool dryRun = false;
-  /** @brief Disable TTY features (status line and terminal control). */
-  bool noTTY = false;
   /** @brief Enable verbose output. */
   bool verbose = false;
   /** @brief Force overwrite (used with --init). */

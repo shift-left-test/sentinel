@@ -101,9 +101,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   // 6. Create StatusLine
   auto statusLine = std::make_shared<sentinel::StatusLine>();
   statusLine->setDryRun(cfg.dryRun);
-  if (!cfg.noTTY) {
-    statusLine->enable();
-  }
+  statusLine->enable();
 
   // 7. Initialize workspace for fresh runs
   if (!alreadyComplete && !resuming) {

@@ -314,7 +314,7 @@ When stdout is a TTY, Sentinel displays a live status line at the bottom of the 
 | **✓** | Survived |
 | **⚠** | Abnormal (Build Failure + Timeout + Runtime Error) |
 
-The status line is suppressed when output is piped or redirected. Use `--no-tty` to disable it explicitly.
+The status line is automatically suppressed when output is piped or redirected.
 
 ### Resume
 
@@ -334,7 +334,6 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
 | `-n, --dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |
 | `-v, --verbose` | Show build/test subprocess output and enable verbose logging to stderr | |
-| `--no-tty` | Disable TTY features: suppress the live status line and use text-based progress logging instead | |
 
 #### Setup options
 
