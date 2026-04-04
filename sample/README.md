@@ -86,7 +86,7 @@ sentinel
 Sentinel reads `sentinel.yaml` automatically. It will:
 
 1. Build the project and run the test suite once (baseline)
-2. Generate up to 30 mutants from `src/` (adjust `limit` in `sentinel.yaml` to change this, or remove it to test all mutants)
+2. Generate mutants from `src/` (pass `--limit=N` on the command line to cap the number of mutants)
 3. Apply each mutant, rebuild, and check whether the tests catch it
 4. Write an HTML report to `./sentinel_output/`
 

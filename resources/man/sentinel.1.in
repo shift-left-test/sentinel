@@ -83,10 +83,6 @@ File extension of test result files (repeatable). Default: \fBxml\fR
 \fB\-\-timeout\fR=\fISEC\fR
 Test time limit in seconds. \fB0\fR = no limit.
 Default: 1.5\(mu the measured baseline run time.
-.TP
-\fB\-\-kill\-after\fR=\fISEC\fR
-Seconds to wait after \fB\-\-timeout\fR before sending SIGKILL to the test process.
-\fB0\fR = disabled. Default: \fB60\fR
 .SS Mutation options
 .TP
 \fB\-s\fR \fISCOPE\fR, \fB\-\-scope\fR=\fISCOPE\fR

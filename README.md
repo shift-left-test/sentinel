@@ -142,14 +142,13 @@ compiledb-dir: ./build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
 scope: commit
-limit: 50
 pattern:
   - "!*/third_party/*"
   - "!*/test/*"
 ```
 
 ```bash
-sentinel
+sentinel --limit=50
 ```
 
 Run `sentinel --init` to generate a fully commented template in the current directory.
