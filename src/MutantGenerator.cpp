@@ -24,6 +24,7 @@
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -36,13 +37,14 @@ MutantGenerator::~MutantGenerator() = default;
 // ---------------------------------------------------------------------------
 std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string& generator,
                                                               const std::filesystem::path& directory) {
-  if (generator == "uniform") {
+  std::string normalized = string::toLower(generator);
+  if (normalized == "uniform") {
     return std::make_shared<UniformMutantGenerator>(directory);
   }
-  if (generator == "random") {
+  if (normalized == "random") {
     return std::make_shared<RandomMutantGenerator>(directory);
   }
-  if (generator == "weighted") {
+  if (normalized == "weighted") {
     return std::make_shared<WeightedMutantGenerator>(directory);
   }
   throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", generator));

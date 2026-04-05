@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 #include "helper/SampleFileGeneratorForTest.hpp"
+#include "sentinel/MutantGenerator.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
@@ -204,6 +206,18 @@ TEST_F(UniformMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
   auto canon1b = fs::canonical(SAMPLE1B_PATH);
   EXPECT_NE(linesByPath.find(canon1), linesByPath.end());
   EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
+}
+
+TEST(MutantGeneratorFactoryTest, getInstanceAcceptsCaseInsensitiveGenerator) {
+  auto tmpDir = std::filesystem::temp_directory_path();
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("UNIFORM", tmpDir));
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Uniform", tmpDir));
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("RANDOM", tmpDir));
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Random", tmpDir));
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("WEIGHTED", tmpDir));
+  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Weighted", tmpDir));
+  EXPECT_THROW(sentinel::MutantGenerator::getInstance("invalid", tmpDir),
+               sentinel::InvalidArgumentException);
 }
 
 }  // namespace sentinel

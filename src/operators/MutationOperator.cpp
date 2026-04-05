@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include "sentinel/operators/MutationOperator.hpp"
+#include "sentinel/util/string.hpp"
 #include "sentinel/operators/aor.hpp"
 #include "sentinel/operators/bor.hpp"
 #include "sentinel/operators/lcr.hpp"
@@ -232,9 +233,11 @@ void resolveExpansionLineRange(clang::Stmt* s, clang::SourceManager* srcMgr,
 
 std::vector<std::unique_ptr<MutationOperator>> createOperators(
     clang::ASTContext* context, const std::vector<std::string>& selectedOps) {
-  auto include = [&selectedOps](const std::string& name) {
-    return selectedOps.empty() ||
-           std::find(selectedOps.begin(), selectedOps.end(), name) != selectedOps.end();
+  std::vector<std::string> normalizedOps(selectedOps.size());
+  std::transform(selectedOps.begin(), selectedOps.end(), normalizedOps.begin(), string::toUpper);
+  auto include = [&normalizedOps](const std::string& name) {
+    return normalizedOps.empty() ||
+           std::find(normalizedOps.begin(), normalizedOps.end(), name) != normalizedOps.end();
   };
   std::vector<std::unique_ptr<MutationOperator>> ops;
   if (include("AOR")) ops.push_back(std::make_unique<AOR>(context));

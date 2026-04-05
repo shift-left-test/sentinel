@@ -306,6 +306,14 @@ TEST_F(GitRepositoryTest, testMixedIncludeAndExcludePatterns) {
   EXPECT_FALSE(hasMock);
 }
 
+TEST_F(GitRepositoryTest, getSourceLinesAcceptsCaseInsensitiveScope) {
+  GitRepository repo(mRepoName, {".cpp"}, {});
+  EXPECT_NO_THROW(repo.getSourceLines("ALL"));
+  EXPECT_NO_THROW(repo.getSourceLines("All"));
+  EXPECT_NO_THROW(repo.getSourceLines("COMMIT"));
+  EXPECT_NO_THROW(repo.getSourceLines("Commit"));
+}
+
 // ---------------------------------------------------------------------------
 // Multi-repo tests (Android-style workspace with multiple nested git repos)
 // ---------------------------------------------------------------------------

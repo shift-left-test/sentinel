@@ -305,6 +305,30 @@ inline std::string truncate(const std::string& s, std::size_t maxLen) {
   return "..." + s.substr(s.size() - maxLen + 3);
 }
 
+/**
+ * @brief Convert a string to lowercase
+ *
+ * @param s input string
+ * @return lowercase string
+ */
+inline std::string toLower(std::string s) {
+  std::transform(s.begin(), s.end(), s.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  return s;
+}
+
+/**
+ * @brief Convert a string to uppercase
+ *
+ * @param s input string
+ * @return uppercase string
+ */
+inline std::string toUpper(std::string s) {
+  std::transform(s.begin(), s.end(), s.begin(),
+                 [](unsigned char c) { return std::toupper(c); });
+  return s;
+}
+
 }  // namespace sentinel::string
 
 #endif  // INCLUDE_SENTINEL_UTIL_STRING_HPP_

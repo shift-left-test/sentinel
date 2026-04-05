@@ -337,7 +337,8 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
 }
 
 SourceLines GitRepository::getSourceLines(const std::string& scope) {
-  if (scope != "commit" && scope != "all") {
+  std::string normalizedScope = string::toLower(scope);
+  if (normalizedScope != "commit" && normalizedScope != "all") {
     throw InvalidArgumentException(fmt::format("scope '{}' is invalid.", scope));
   }
 
@@ -401,7 +402,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     git_diff_options opts = buildOpts(cstrs);
     DiffData d(this, gitWorkdir);
     try {
-      applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
+      applyDiffScope(static_cast<git_repository*>(repo), normalizedScope, &opts, &d, gitWorkdir);
     } catch (const RepositoryException& e) {
       Logger::warn("diff failed for {}: {}", gitWorkdir, e.what());
       continue;
@@ -425,7 +426,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
         git_diff_options opts = buildOpts(cstrs);
         DiffData d(this, gitWorkdir);
         try {
-          applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
+          applyDiffScope(static_cast<git_repository*>(repo), normalizedScope, &opts, &d, gitWorkdir);
         } catch (const RepositoryException& e) {
           if (repoPaths.empty()) {
             throw;  // Only repo available; propagate so the caller sees the error.

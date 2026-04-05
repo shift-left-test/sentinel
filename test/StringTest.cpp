@@ -127,4 +127,20 @@ TEST_F(StringTest, testReplaceAll) {
   EXPECT_STREQ(HELLO_HELLO, string::replaceAll(WORLD_WORLD, WORLD, HELLO).c_str());
 }
 
+TEST_F(StringTest, testToLowerConvertsUppercaseToLowercase) {
+  EXPECT_EQ("hello world", string::toLower("HELLO WORLD"));
+  EXPECT_EQ("hello world", string::toLower("Hello World"));
+  EXPECT_EQ("hello world", string::toLower("hello world"));
+  EXPECT_EQ("", string::toLower(""));
+  EXPECT_EQ("abc123", string::toLower("ABC123"));
+}
+
+TEST_F(StringTest, testToUpperConvertsLowercaseToUppercase) {
+  EXPECT_EQ("HELLO WORLD", string::toUpper("hello world"));
+  EXPECT_EQ("HELLO WORLD", string::toUpper("Hello World"));
+  EXPECT_EQ("HELLO WORLD", string::toUpper("HELLO WORLD"));
+  EXPECT_EQ("", string::toUpper(""));
+  EXPECT_EQ("ABC123", string::toUpper("abc123"));
+}
+
 }  // namespace sentinel
