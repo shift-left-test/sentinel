@@ -103,29 +103,32 @@ open sentinel_output/index.html        # macOS
 
 Sentinel produces output at three stages. Here is what you will see when running it on this sample project.
 
-### 1. Mutant Population Report
+### 1. Mutant Generation Summary
 
 After generation, Sentinel shows what was created:
 
 ```
-==============================================================
-               Mutant Population Report
-==============================================================
-File                                            Mutants  Lines
---------------------------------------------------------------
-src/Calculator.cpp                                   12     85
-src/Stack.cpp                                         8     52
-src/Tokenizer.cpp                                    10     63
---------------------------------------------------------------
-TOTAL                                                30    200
-==============================================================
-Generator : uniform  |  Seed: 1234567890
-Analyzed  : 200 source lines across 3 files
-Selected  : 30 out of 200 candidates
-==============================================================
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                       Mutant Generation Summary
+  Scope:      all (3 files, 200 lines)
+  Generator:  uniform (seed: 1234567890)
+  Mutants:    30
+────────────────────────────────────────────────────────────────────────────────────
+  File                                                    Mutants    Lines
+────────────────────────────────────────────────────────────────────────────────────
+  src/Calculator.cpp                                           12       85
+  src/Stack.cpp                                                 8       52
+  src/Tokenizer.cpp                                            10       63
+────────────────────────────────────────────────────────────────────────────────────
+  Operator
+────────────────────────────────────────────────────────────────────────────────────
+  AOR (Arithmetic Operator Replacement)                        12
+  ROR (Relational Operator Replacement)                        10
+  SDL (Statement Deletion)                                      8
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-This tells you how many mutants were generated per file, which generator strategy was used, and the random seed (use `--seed` to reproduce the same mutant set).
+This tells you the mutation scope, how many mutants were generated per file and per operator, which generator strategy was used, and the random seed (use `--seed` to reproduce the same mutant set).
 
 ### 2. Per-Mutant Evaluation
 
@@ -149,19 +152,19 @@ Evaluating 30 mutants...
 After all evaluations, the final summary:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                           Mutation Score Report
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  File                                              Killed  Survived  Total  Score
-──────────────────────────────────────────────────────────────────────────────────
-  src/Calculator.cpp                                     8         2     10  80.0%
-  src/Stack.cpp                                          5         1      6  83.3%
-  src/Tokenizer.cpp                                      9         3     12  75.0%
-──────────────────────────────────────────────────────────────────────────────────
-  TOTAL                                                 22         6     28  78.6%
-──────────────────────────────────────────────────────────────────────────────────
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File                                       Killed  Survived   Total   Score
+────────────────────────────────────────────────────────────────────────────────────
+  src/Calculator.cpp                              8         2      10   80.0%
+  src/Stack.cpp                                   5         1       6   83.3%
+  src/Tokenizer.cpp                               9         3      12   75.0%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TOTAL                                          22         6      28   78.6%
+────────────────────────────────────────────────────────────────────────────────────
   Skipped: 2 build failures
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 The **mutation score** (Killed / Total) tells you how effective your tests are at detecting faults. Only Killed and Survived mutants count; build failures, timeouts, and runtime errors are listed under "Skipped".

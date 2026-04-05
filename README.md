@@ -175,43 +175,36 @@ sentinel \
 
 Sentinel produces output at three stages: generation, evaluation, and the final report.
 
-#### 1. Mutant Population Report (Generation)
+#### 1. Mutant Generation Summary
 
 After mutant generation, Sentinel prints a summary of what was generated:
 
 ```
-==============================================================
-               Mutant Population Report
-==============================================================
-File                                            Mutants  Lines
---------------------------------------------------------------
-src/foo.cpp                                          45     180
-src/bar.cpp                                          30     140
---------------------------------------------------------------
-TOTAL                                                75     320
-==============================================================
-
-Operator                                              Mutants
---------------------------------------------------------------
-AOR                                                        42
-LCR                                                        33
---------------------------------------------------------------
-TOTAL                                                      75
-==============================================================
-Generator : uniform  |  Seed: 3721894056
-Analyzed  : 320 source lines across 2 files
-Selected  : 75 out of 320 candidates
-==============================================================
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                       Mutant Generation Summary
+  Scope:      all (2 files, 320 lines)
+  Generator:  uniform (seed: 3721894056)
+  Mutants:    75
+────────────────────────────────────────────────────────────────────────────────────
+  File                                                    Mutants    Lines
+────────────────────────────────────────────────────────────────────────────────────
+  src/foo.cpp                                                  45      180
+  src/bar.cpp                                                  30      140
+────────────────────────────────────────────────────────────────────────────────────
+  Operator
+────────────────────────────────────────────────────────────────────────────────────
+  AOR (Arithmetic Operator Replacement)                        42
+  LCR (Logical Connector Replacement)                          33
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 | Field | Description |
 |-------|-------------|
+| **Scope** | Mutation scope, number of target files, and total source lines scanned |
+| **Generator** | Mutant selection strategy used and random seed (use with `--seed` to reproduce) |
+| **Mutants** | Number of mutants selected (with limit and partition info if applicable) |
 | **File / Mutants / Lines** | Per-file breakdown of generated mutants and analyzed source lines |
-| **Operator / Mutants** | Per-operator breakdown (AOR, LCR, ROR, etc.) |
-| **Generator** | Mutant selection strategy used (`uniform`, `random`, or `weighted`) |
-| **Seed** | Random seed — use this value with `--seed` to reproduce the same mutant set |
-| **Analyzed** | Total source lines scanned across all target files |
-| **Selected** | How many mutants were selected out of all possible candidates |
+| **Operator** | Per-operator breakdown with full operator name |
 
 #### 2. Per-Mutant Evaluation Results
 
@@ -247,18 +240,23 @@ Each line contains:
 After all mutants are evaluated, Sentinel prints the final summary to stdout:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                           Mutation Score Report
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  File                                              Killed  Survived  Total  Score
-──────────────────────────────────────────────────────────────────────────────────
-  src/foo.cpp                                           12         3     15  80.0%
-  src/bar.cpp                                            8         2     10  80.0%
-──────────────────────────────────────────────────────────────────────────────────
-  TOTAL                                                 20         5     25  80.0%
-──────────────────────────────────────────────────────────────────────────────────
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File                                       Killed  Survived   Total   Score
+────────────────────────────────────────────────────────────────────────────────────
+  src/foo.cpp                                    12         3      15   80.0%
+  src/bar.cpp                                     8         2      10   80.0%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TOTAL                                          20         5      25   80.0%
+────────────────────────────────────────────────────────────────────────────────────
   Skipped: 2 build failures, 1 timeout
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────────────────────────────────────────────────
+  Duration:          100%      42m 17s  [12m 30s/29m 47s]
+    Killed            72%      30m 25s  [ 8m 30s/21m 55s]
+    Survived          20%       8m 27s  [ 3m 15s/ 5m 12s]
+    Timeout            8%       3m 25s  [ 0m 45s/ 2m 40s]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 | Column | Description |
@@ -272,10 +270,12 @@ When **Total** is 0 for a file (all mutants were skipped), the score is displaye
 
 The **Skipped** line lists counts of build failures, timeouts, and runtime errors. It is omitted when there are no skipped mutants.
 
+The **Duration** section shows total wall time spent on build and test across all evaluated mutants, with a per-state breakdown sorted by time. The `[build/test]` suffix shows the build and test time components separately. This section is omitted when no timing data is available.
+
 A final one-line summary is always written to stderr:
 
 ```
-Mutation testing complete – 25 mutants, score: 80.0% (threshold: 70.0% ✓)
+Mutation testing complete — 80.0% ✓ (threshold: 70.0%)
 ```
 
 #### Mutation States
@@ -410,7 +410,7 @@ pattern:
 Run `sentinel --init` to write a fully commented template to the current directory, or see the template below.
 
 ```yaml
-# sentinel.yaml — full configuration template
+# sentinel.yaml - full configuration template
 #
 # Uncomment and edit the options you need.
 # CLI arguments always take priority over values in this file.

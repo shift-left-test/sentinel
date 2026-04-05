@@ -74,9 +74,6 @@ Shell command to run the test suite. \fBRequired.\fR
 \fB\-\-test\-result\-dir\fR=\fIPATH\fR
 Directory where the test command writes its result files. \fBRequired.\fR
 .TP
-\fB\-\-test\-result\-ext\fR=\fIEXT\fR
-File extension of test result files (repeatable). Default: \fBxml\fR
-.TP
 \fB\-\-timeout\fR=\fISEC\fR
 Test time limit in seconds. \fB0\fR = no limit.
 Default: 1.5\(mu the measured baseline run time.
@@ -241,10 +238,10 @@ sentinel --init
 .fi
 .SH UNDERSTANDING OUTPUT
 sentinel produces output at three stages: generation, evaluation, and the final report.
-.SS Mutant Population Report
-After mutant generation, a summary table is printed showing the number of mutants
-per file and per operator, the generator strategy, random seed, and how many
-candidates were analyzed and selected.
+.SS Mutant Generation Summary
+After mutant generation, a summary is printed showing the mutation scope,
+generator strategy and random seed, number of selected mutants,
+per-file breakdown of mutants and lines, and per-operator breakdown.
 The seed value can be reused with \fB\-\-seed\fR to reproduce the same mutant set.
 .SS Per-Mutant Evaluation Results
 During evaluation, each mutant result is printed as it completes.
@@ -261,6 +258,8 @@ is shown (prefixed with \fB\[char"21AA]\fR).
 After all mutants are evaluated, sentinel prints a summary table to stdout showing
 per-file and total statistics: \fBKilled\fR, \fBSurvived\fR, \fBTotal\fR, and \fBScore\fR.
 Skipped mutants (build failures, timeouts, runtime errors) are listed separately.
+A \fBDuration\fR section shows total wall time with per-state breakdown and
+build/test time components.
 A final one-line summary is also written to stderr.
 .SS Mutation States
 Each mutant evaluation results in one of five states:

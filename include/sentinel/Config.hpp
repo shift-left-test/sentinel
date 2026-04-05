@@ -75,7 +75,7 @@ struct Config {
   std::string testCmd;
   /** @brief Absolute path to directory where test results are stored (empty = not set). */
   std::filesystem::path testResultDir;
-  /** @brief Time limit for test execution; nullopt = auto (2x baseline), 0 = no limit. */
+  /** @brief Time limit for test execution; nullopt = auto (1.5x baseline + 5s), 0 = no limit. */
   std::optional<size_t> timeout;
 
   // Mutation options
