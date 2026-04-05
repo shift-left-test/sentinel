@@ -7,8 +7,6 @@
 #define INCLUDE_SENTINEL_LOGGER_HPP_
 
 #include <fmt/core.h>
-#include <fmt/format.h>
-#include <iostream>
 #include <string>
 #include <utility>
 #include "sentinel/Console.hpp"
@@ -50,7 +48,7 @@ class Logger {
   template <typename... Args>
   static void verbose(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::VERBOSE)) {
-      Console::err("{}", fmt::format(pattern, std::forward<Args>(args)...));
+      logMessage(kColorDarkGray, fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -63,7 +61,7 @@ class Logger {
   template <typename... Args>
   static void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
-      Console::err("[INFO]  {}", fmt::format(pattern, std::forward<Args>(args)...));
+      logMessage(kColorLightGray, fmt::format("INFO: {}", fmt::format(pattern, std::forward<Args>(args)...)));
     }
   }
 
@@ -76,7 +74,7 @@ class Logger {
   template <typename... Args>
   static void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
-      Console::err("[WARN]  {}", fmt::format(pattern, std::forward<Args>(args)...));
+      logMessage(kColorYellow, fmt::format("WARN: {}", fmt::format(pattern, std::forward<Args>(args)...)));
     }
   }
 
@@ -89,11 +87,17 @@ class Logger {
   template <typename... Args>
   static void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
-      Console::err("[ERROR] {}", fmt::format(pattern, std::forward<Args>(args)...));
+      logMessage(kColorRed, fmt::format("ERROR: {}", fmt::format(pattern, std::forward<Args>(args)...)));
     }
   }
 
  private:
+  static constexpr const char* kColorReset = "\033[0m";
+  static constexpr const char* kColorDarkGray = "\033[90m";
+  static constexpr const char* kColorLightGray = "\033[37m";
+  static constexpr const char* kColorYellow = "\033[33m";
+  static constexpr const char* kColorRed = "\033[31m";
+
   /**
    * @brief Test if the level is allowed to log
    *
@@ -101,6 +105,21 @@ class Logger {
    * @return true if the level is allowed, false otherwise
    */
   static bool isAllowed(Logger::Level level);
+
+  /**
+   * @brief Test if stderr is a TTY
+   *
+   * @return true if stderr is connected to a terminal, false otherwise
+   */
+  static bool isTty();
+
+  /**
+   * @brief Log a message with the given color, stripping color codes if not a TTY
+   *
+   * @param color ANSI color escape sequence
+   * @param msg message to log
+   */
+  static void logMessage(const char* color, const std::string& msg);
 };
 
 }  // namespace sentinel

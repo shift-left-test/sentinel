@@ -37,19 +37,19 @@ TEST_F(LoggerTest, testVerboseWithInfoLevel) {
 TEST_F(LoggerTest, testInfoWithInfoLevel) {
   testing::internal::CaptureStderr();
   Logger::info("hello world");
-  EXPECT_STREQ("[INFO]  hello world\n", testing::internal::GetCapturedStderr().c_str());
+  EXPECT_STREQ("INFO: hello world\n", testing::internal::GetCapturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testWarnWithInfoLevel) {
   testing::internal::CaptureStderr();
   Logger::warn("hello world");
-  EXPECT_STREQ("[WARN]  hello world\n", testing::internal::GetCapturedStderr().c_str());
+  EXPECT_STREQ("WARN: hello world\n", testing::internal::GetCapturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testErrorWithInfoLevel) {
   testing::internal::CaptureStderr();
   Logger::error("hello world");
-  EXPECT_STREQ("[ERROR] hello world\n", testing::internal::GetCapturedStderr().c_str());
+  EXPECT_STREQ("ERROR: hello world\n", testing::internal::GetCapturedStderr().c_str());
 }
 
 TEST_F(LoggerTest, testVerboseWithDebugLevel) {
@@ -68,7 +68,7 @@ TEST_F(LoggerTest, testLogsWithAllLevel) {
   Logger::warn("W");
   Logger::error("E");
   EXPECT_STREQ("", testing::internal::GetCapturedStdout().c_str());
-  EXPECT_STREQ("D\n[INFO]  I\n[WARN]  W\n[ERROR] E\n",
+  EXPECT_STREQ("D\nINFO: I\nWARN: W\nERROR: E\n",
                testing::internal::GetCapturedStderr().c_str());
 }
 
