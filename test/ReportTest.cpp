@@ -189,6 +189,7 @@ TEST_F(ReportTest, testMutationSummaryAggregatesTimeByState) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
+  // cppcheck-suppress unreadVariable
   MutationSummary summary(MRPath, SOURCE_DIR);
 
   // Verify per-state timing
@@ -228,6 +229,7 @@ TEST_F(ReportTest, testMutationSummaryPartialTiming) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
+  // cppcheck-suppress unreadVariable
   MutationSummary summary(MRPath, SOURCE_DIR);
 
   EXPECT_EQ(summary.timedMutantCount, 1u);
