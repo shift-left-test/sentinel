@@ -26,7 +26,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mVerbose(mGroupRunCtrl, "verbose", "Show build/test subprocess output and enable verbose logging.",
              {'v', "verbose"}),
     mInit(mGroupSetup, "init", "Write a sentinel.yaml config template to the current directory and exit", {"init"}),
-    mForce(mGroupSetup, "force", "Overwrite existing files (used with --init).", {"force"}),
+    mForce(mGroupSetup, "force", "Force overwrite of existing files.", {"force"}),
     mSourceDir(mGroupBuildTest, "PATH", "Path to the root of the source tree.", {"source-dir"}),
     mBuildCmd(mGroupBuildTest, "CMD", "Shell command to build the project", {"build-command"}),
     mCompileDbDir(mGroupBuildTest, "PATH", "Path to the directory containing compile_commands.json.",

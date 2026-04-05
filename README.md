@@ -340,7 +340,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--init` | Write a `sentinel.yaml` config template and exit | |
-| `--force` | Overwrite existing files (used with `--init`) | |
+| `--force` | Force overwrite of existing files | |
 
 #### Build & test options
 

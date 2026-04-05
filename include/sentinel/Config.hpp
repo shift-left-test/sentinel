@@ -143,7 +143,7 @@ struct Config {
   bool dryRun = false;
   /** @brief Enable verbose output. */
   bool verbose = false;
-  /** @brief Force overwrite (used with --init). */
+  /** @brief Force overwrite of existing files. */
   bool force = false;
   /** @brief Clear workspace and start a fresh run. */
   bool clean = false;

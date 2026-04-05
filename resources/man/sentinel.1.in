@@ -54,8 +54,7 @@ Write a \fBsentinel.yaml\fR config template to the current directory and exit.
 Errors if the file already exists; use \fB\-\-force\fR to overwrite.
 .TP
 \fB\-\-force\fR
-Overwrite existing files. Currently only affects \fB\-\-init\fR: allows overwriting
-an existing \fBsentinel.yaml\fR without error.
+Force overwrite of existing files.
 .SS Build & test options
 .TP
 \fB\-\-source\-dir\fR=\fIPATH\fR
