@@ -189,6 +189,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   }
 
   WorkspaceStatus status;
+  status.seed = seed;
   status.candidateCount = candidateCount;
   status.partIndex = partIdx;
   status.partCount = partCount;

@@ -35,7 +35,8 @@ class PartitionedWorkspaceMergerTest : public ::testing::Test {
 
   fs::path createPartitionWorkspace(std::size_t partIndex,
                                     std::size_t partCount,
-                                    std::size_t candidateCount = 100) {
+                                    std::size_t candidateCount = 100,
+                                    unsigned int seed = 12345) {
     fs::path wsPath = mBase / fmt::format("part-{}", partIndex);
     Workspace ws(wsPath);
     ws.initialize();
@@ -53,6 +54,7 @@ class PartitionedWorkspaceMergerTest : public ::testing::Test {
     status.candidateCount = candidateCount;
     status.partIndex = partIndex;
     status.partCount = partCount;
+    status.seed = seed;
     ws.saveStatus(status);
 
     fs::create_directories(wsPath / "original" / "results");
@@ -160,6 +162,29 @@ TEST_F(PartitionedWorkspaceMergerTest,
   EXPECT_THROW(merger.merge(), std::runtime_error);
 }
 
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSourceMissingSeed) {
+  fs::path target = mBase / "merged";
+  fs::path source = mBase / "no-seed";
+  Workspace ws(source);
+  ws.initialize();
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make";
+  cfg.testCmd = "ctest";
+  cfg.testResultDir = "/tmp/results";
+  ws.saveConfig(cfg);
+
+  WorkspaceStatus status;
+  status.candidateCount = 100;
+  status.partIndex = 1;
+  status.partCount = 3;
+  ws.saveStatus(status);
+  ws.setComplete();
+
+  PartitionedWorkspaceMerger merger(target, {source}, false);
+  EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
 // Compatibility validation tests
 
 TEST_F(PartitionedWorkspaceMergerTest,
@@ -176,6 +201,7 @@ TEST_F(PartitionedWorkspaceMergerTest,
     s.partIndex = 2;
     s.partCount = 4;
     s.candidateCount = 100;
+    s.seed = 12345;
     ws.saveStatus(s);
   }
 
@@ -202,6 +228,39 @@ TEST_F(PartitionedWorkspaceMergerTest,
 
   PartitionedWorkspaceMerger merger(target, {src1, src2}, false);
   EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSeedMismatch) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 2, 100, 42);
+  fs::path src2 = createPartitionWorkspace(2, 2, 100, 99);
+  addMutant(src1, 1, MutationState::KILLED);
+  addMutant(src2, 2, MutationState::SURVIVED);
+
+  PartitionedWorkspaceMerger merger(target, {src1, src2}, false);
+  EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSeedMismatchWithTarget) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 3, 100, 42);
+  fs::path src2 = createPartitionWorkspace(2, 3, 100, 99);
+  addMutant(src1, 1, MutationState::KILLED);
+  addMutant(src2, 2, MutationState::SURVIVED);
+
+  // First merge with seed=42
+  {
+    PartitionedWorkspaceMerger merger(target, {src1}, false);
+    merger.merge();
+  }
+
+  // Second merge with seed=99 should fail
+  {
+    PartitionedWorkspaceMerger merger(target, {src2}, false);
+    EXPECT_THROW(merger.merge(), std::runtime_error);
+  }
 }
 
 TEST_F(PartitionedWorkspaceMergerTest,

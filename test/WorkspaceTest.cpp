@@ -429,6 +429,7 @@ TEST_F(WorkspaceTest, testLoadStatusReturnsEmptyWhenFileAbsent) {
   EXPECT_FALSE(loaded.candidateCount.has_value());
   EXPECT_FALSE(loaded.partIndex.has_value());
   EXPECT_FALSE(loaded.partCount.has_value());
+  EXPECT_FALSE(loaded.seed.has_value());
 }
 
 TEST_F(WorkspaceTest, testSaveStatusAllFields) {
@@ -439,16 +440,19 @@ TEST_F(WorkspaceTest, testSaveStatusAllFields) {
   s.candidateCount = 100;
   s.partIndex = 2;
   s.partCount = 4;
+  s.seed = 42u;
   ws.saveStatus(s);
   auto loaded = ws.loadStatus();
   ASSERT_TRUE(loaded.originalTime.has_value());
   ASSERT_TRUE(loaded.candidateCount.has_value());
   ASSERT_TRUE(loaded.partIndex.has_value());
   ASSERT_TRUE(loaded.partCount.has_value());
+  ASSERT_TRUE(loaded.seed.has_value());
   EXPECT_EQ(*loaded.originalTime, 5u);
   EXPECT_EQ(*loaded.candidateCount, 100u);
   EXPECT_EQ(*loaded.partIndex, 2u);
   EXPECT_EQ(*loaded.partCount, 4u);
+  EXPECT_EQ(*loaded.seed, 42u);
 }
 
 TEST(WorkspaceStatusTest, testStreamOperatorRoundTrip) {
@@ -620,6 +624,65 @@ TEST(WorkspaceStatusTest, testStreamOperatorMergedPartitionsRoundTrip) {
 
   ASSERT_TRUE(loaded.mergedPartitions.has_value());
   EXPECT_EQ(*loaded.mergedPartitions, (std::vector<std::size_t>{1, 2, 3}));
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorSeedRoundTrip) {
+  WorkspaceStatus original;
+  original.seed = 12345u;
+  original.candidateCount = 500;
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.seed.has_value());
+  EXPECT_EQ(*loaded.seed, 12345u);
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  EXPECT_EQ(*loaded.candidateCount, 500u);
+}
+
+TEST_F(WorkspaceTest, testLoadStatusSeedAbsentByDefault) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.originalTime = 10;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  EXPECT_FALSE(loaded.seed.has_value());
+}
+
+TEST_F(WorkspaceTest, testSaveAndLoadStatusSeed) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.seed = 42u;
+  s.candidateCount = 100;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.seed.has_value());
+  EXPECT_EQ(*loaded.seed, 42u);
+}
+
+TEST_F(WorkspaceTest, testSaveStatusPreservesSeedDuringPartialUpdate) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus a;
+  a.seed = 99u;
+  a.candidateCount = 500;
+  ws.saveStatus(a);
+
+  WorkspaceStatus b;
+  b.partIndex = 1;
+  b.partCount = 3;
+  ws.saveStatus(b);
+
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.seed.has_value());
+  EXPECT_EQ(*loaded.seed, 99u);
+  ASSERT_TRUE(loaded.partIndex.has_value());
+  EXPECT_EQ(*loaded.partIndex, 1u);
 }
 
 }  // namespace sentinel

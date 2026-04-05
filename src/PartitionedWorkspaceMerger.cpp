@@ -83,6 +83,12 @@ void PartitionedWorkspaceMerger::validateSource(
                     sourceDir.string()));
   }
 
+  if (!status.seed.has_value()) {
+    throw std::runtime_error(
+        fmt::format("Source workspace '{}' is missing seed in status.yaml.",
+                    sourceDir.string()));
+  }
+
   if (!ws.isComplete()) {
     throw std::runtime_error(
         fmt::format("Source workspace '{}' is not complete "
@@ -139,6 +145,14 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
                       mSourceDirs[0].string(),
                       *firstStatus.candidateCount));
     }
+    if (targetStatus.seed.has_value() &&
+        *targetStatus.seed != *firstStatus.seed) {
+      throw std::runtime_error(
+          fmt::format("seed mismatch: target has {} but source '{}' has {}.",
+                      *targetStatus.seed,
+                      mSourceDirs[0].string(),
+                      *firstStatus.seed));
+    }
   }
 
   for (std::size_t i = 1; i < mSourceDirs.size(); ++i) {
@@ -158,6 +172,13 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
                       "'{}' has {}.",
                       mSourceDirs[0].string(), *firstStatus.candidateCount,
                       mSourceDirs[i].string(), *status.candidateCount));
+    }
+
+    if (*status.seed != *firstStatus.seed) {
+      throw std::runtime_error(
+          fmt::format("seed mismatch: '{}' has {} but '{}' has {}.",
+                      mSourceDirs[0].string(), *firstStatus.seed,
+                      mSourceDirs[i].string(), *status.seed));
     }
 
     if (!seenIndices.insert(*status.partIndex).second) {
@@ -293,6 +314,7 @@ void PartitionedWorkspaceMerger::updateCompleteness() const {
   std::sort(merged.begin(), merged.end());
 
   WorkspaceStatus newStatus;
+  newStatus.seed = firstStatus.seed;
   newStatus.candidateCount = firstStatus.candidateCount;
   newStatus.partCount = partCount;
   newStatus.mergedPartitions = merged;
