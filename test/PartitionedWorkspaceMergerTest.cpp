@@ -15,6 +15,7 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/PartitionedWorkspaceMerger.hpp"
 #include "sentinel/Workspace.hpp"
+#include "sentinel/version.hpp"
 #include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
@@ -51,6 +52,7 @@ class PartitionedWorkspaceMergerTest : public ::testing::Test {
     ws.saveConfig(cfg);
 
     WorkspaceStatus status;
+    status.version = PROGRAM_VERSION;
     status.candidateCount = candidateCount;
     status.partIndex = partIndex;
     status.partCount = partCount;
@@ -185,6 +187,55 @@ TEST_F(PartitionedWorkspaceMergerTest,
   EXPECT_THROW(merger.merge(), std::runtime_error);
 }
 
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSourceMissingVersion) {
+  fs::path target = mBase / "merged";
+  fs::path source = mBase / "no-version";
+  Workspace ws(source);
+  ws.initialize();
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make";
+  cfg.testCmd = "ctest";
+  cfg.testResultDir = "/tmp/results";
+  ws.saveConfig(cfg);
+
+  WorkspaceStatus status;
+  status.candidateCount = 100;
+  status.partIndex = 1;
+  status.partCount = 3;
+  status.seed = 12345;
+  ws.saveStatus(status);
+  ws.setComplete();
+
+  PartitionedWorkspaceMerger merger(target, {source}, false);
+  EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSourceVersionDiffersFromProgram) {
+  fs::path target = mBase / "merged";
+  fs::path source = mBase / "old-version";
+  Workspace ws(source);
+  ws.initialize();
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make";
+  cfg.testCmd = "ctest";
+  cfg.testResultDir = "/tmp/results";
+  ws.saveConfig(cfg);
+
+  WorkspaceStatus status;
+  status.version = "0.0.1";
+  status.candidateCount = 100;
+  status.partIndex = 1;
+  status.partCount = 3;
+  status.seed = 12345;
+  ws.saveStatus(status);
+  ws.setComplete();
+
+  PartitionedWorkspaceMerger merger(target, {source}, false);
+  EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
 // Compatibility validation tests
 
 TEST_F(PartitionedWorkspaceMergerTest,
@@ -261,6 +312,53 @@ TEST_F(PartitionedWorkspaceMergerTest,
     PartitionedWorkspaceMerger merger(target, {src2}, false);
     EXPECT_THROW(merger.merge(), std::runtime_error);
   }
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenVersionMismatchWithTarget) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 3);
+  fs::path src2 = createPartitionWorkspace(2, 3);
+  addMutant(src1, 1, MutationState::KILLED);
+  addMutant(src2, 2, MutationState::SURVIVED);
+
+  // First merge
+  {
+    PartitionedWorkspaceMerger merger(target, {src1}, false);
+    merger.merge();
+  }
+
+  // Overwrite src2 version in status (but validateSource checks against
+  // PROGRAM_VERSION first, so we need to set a different version in target)
+  {
+    Workspace ws(target);
+    WorkspaceStatus s;
+    s.version = "0.0.1";
+    ws.saveStatus(s);
+  }
+
+  // Second merge should fail because target version != source version
+  {
+    PartitionedWorkspaceMerger merger(target, {src2}, false);
+    EXPECT_THROW(merger.merge(), std::runtime_error);
+  }
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testMergedStatusContainsVersion) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 2);
+  fs::path src2 = createPartitionWorkspace(2, 2);
+  addMutant(src1, 1, MutationState::KILLED);
+  addMutant(src2, 2, MutationState::SURVIVED);
+
+  PartitionedWorkspaceMerger merger(target, {src1, src2}, false);
+  merger.merge();
+
+  Workspace merged(target);
+  auto status = merged.loadStatus();
+  ASSERT_TRUE(status.version.has_value());
+  EXPECT_EQ(*status.version, PROGRAM_VERSION);
 }
 
 TEST_F(PartitionedWorkspaceMergerTest,

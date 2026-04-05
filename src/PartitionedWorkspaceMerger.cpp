@@ -16,6 +16,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/PartitionedWorkspaceMerger.hpp"
 #include "sentinel/Workspace.hpp"
+#include "sentinel/version.hpp"
 
 namespace sentinel {
 
@@ -89,6 +90,19 @@ void PartitionedWorkspaceMerger::validateSource(
                     sourceDir.string()));
   }
 
+  if (!status.version.has_value()) {
+    throw std::runtime_error(
+        fmt::format("Source workspace '{}' is missing version in status.yaml.",
+                    sourceDir.string()));
+  }
+
+  if (*status.version != PROGRAM_VERSION) {
+    throw std::runtime_error(
+        fmt::format("Source workspace '{}' has version {} but "
+                    "current program version is {}.",
+                    sourceDir.string(), *status.version, PROGRAM_VERSION));
+  }
+
   if (!ws.isComplete()) {
     throw std::runtime_error(
         fmt::format("Source workspace '{}' is not complete "
@@ -152,6 +166,14 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
                       *targetStatus.seed,
                       mSourceDirs[0].string(),
                       *firstStatus.seed));
+    }
+    if (targetStatus.version.has_value() &&
+        *targetStatus.version != *firstStatus.version) {
+      throw std::runtime_error(
+          fmt::format("version mismatch: target has {} but source '{}' has {}.",
+                      *targetStatus.version,
+                      mSourceDirs[0].string(),
+                      *firstStatus.version));
     }
   }
 
@@ -314,6 +336,7 @@ void PartitionedWorkspaceMerger::updateCompleteness() const {
   std::sort(merged.begin(), merged.end());
 
   WorkspaceStatus newStatus;
+  newStatus.version = firstStatus.version;
   newStatus.seed = firstStatus.seed;
   newStatus.candidateCount = firstStatus.candidateCount;
   newStatus.partCount = partCount;

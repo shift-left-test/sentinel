@@ -123,6 +123,9 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   // 8. Initialize workspace for fresh runs
   if (!alreadyComplete && !resuming) {
     ws->initialize();
+    sentinel::WorkspaceStatus versionStatus;
+    versionStatus.version = PROGRAM_VERSION;
+    ws->saveStatus(versionStatus);
   }
 
   // 9. Create stage-specific dependencies

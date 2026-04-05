@@ -23,6 +23,7 @@ namespace sentinel {
  * @brief Runtime state persisted between pipeline stages in workspace/status.yaml.
  */
 struct WorkspaceStatus {
+  std::optional<std::string> version;  ///< Program version that produced this workspace
   std::optional<std::size_t> originalTime;  ///< Computed timeout seconds (timeout:auto only)
   std::optional<std::size_t> candidateCount;  ///< Total candidates before partition
   std::optional<std::size_t> partIndex;  ///< Partition index N (0 = no partition)

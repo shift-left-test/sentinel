@@ -425,6 +425,7 @@ TEST_F(WorkspaceTest, testLoadStatusReturnsEmptyWhenFileAbsent) {
   Workspace ws(mRoot);
   ws.initialize();
   auto loaded = ws.loadStatus();
+  EXPECT_FALSE(loaded.version.has_value());
   EXPECT_FALSE(loaded.originalTime.has_value());
   EXPECT_FALSE(loaded.candidateCount.has_value());
   EXPECT_FALSE(loaded.partIndex.has_value());
@@ -683,6 +684,69 @@ TEST_F(WorkspaceTest, testSaveStatusPreservesSeedDuringPartialUpdate) {
   EXPECT_EQ(*loaded.seed, 99u);
   ASSERT_TRUE(loaded.partIndex.has_value());
   EXPECT_EQ(*loaded.partIndex, 1u);
+}
+
+TEST_F(WorkspaceTest, testSaveAndLoadStatusVersion) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.version = "1.2.3";
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.version.has_value());
+  EXPECT_EQ(*loaded.version, "1.2.3");
+}
+
+TEST_F(WorkspaceTest, testSaveStatusPreservesVersionDuringPartialUpdate) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus a;
+  a.version = "1.0.0";
+  ws.saveStatus(a);
+
+  WorkspaceStatus b;
+  b.originalTime = 42;
+  ws.saveStatus(b);
+
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.version.has_value());
+  EXPECT_EQ(*loaded.version, "1.0.0");
+  ASSERT_TRUE(loaded.originalTime.has_value());
+  EXPECT_EQ(*loaded.originalTime, 42u);
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorVersionRoundTrip) {
+  WorkspaceStatus original;
+  original.version = "0.4.8";
+  original.candidateCount = 100;
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.version.has_value());
+  EXPECT_EQ(*loaded.version, "0.4.8");
+  ASSERT_TRUE(loaded.candidateCount.has_value());
+  EXPECT_EQ(*loaded.candidateCount, 100u);
+}
+
+TEST(WorkspaceStatusTest, testVersionAppearsFirstInYaml) {
+  WorkspaceStatus s;
+  s.version = "0.4.8";
+  s.originalTime = 10;
+  s.candidateCount = 100;
+
+  std::ostringstream out;
+  out << s;
+  std::string yaml = out.str();
+
+  auto versionPos = yaml.find("version:");
+  auto timePos = yaml.find("original-time:");
+  ASSERT_NE(std::string::npos, versionPos);
+  ASSERT_NE(std::string::npos, timePos);
+  EXPECT_LT(versionPos, timePos);
 }
 
 }  // namespace sentinel

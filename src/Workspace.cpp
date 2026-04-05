@@ -56,6 +56,9 @@ void Workspace::saveConfig(const Config& cfg) {
 std::ostream& operator<<(std::ostream& out, const WorkspaceStatus& status) {
   YAML::Emitter emitter;
   emitter << YAML::BeginMap;
+  if (status.version.has_value()) {
+    emitter << YAML::Key << "version" << YAML::Value << *status.version;
+  }
   if (status.originalTime.has_value()) {
     emitter << YAML::Key << "original-time" << YAML::Value << *status.originalTime;
   }
@@ -91,6 +94,7 @@ std::istream& operator>>(std::istream& in, WorkspaceStatus& status) {
   }
   try {
     YAML::Node node = YAML::Load(content);
+    if (node["version"]) status.version = node["version"].as<std::string>();
     if (node["original-time"]) status.originalTime = node["original-time"].as<std::size_t>();
     if (node["candidate-count"]) status.candidateCount = node["candidate-count"].as<std::size_t>();
     if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
@@ -115,6 +119,7 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (fs::exists(p)) {
     current = loadStatus();
   }
+  if (status.version.has_value()) current.version = status.version;
   if (status.originalTime.has_value()) current.originalTime = status.originalTime;
   if (status.candidateCount.has_value()) current.candidateCount = status.candidateCount;
   if (status.partIndex.has_value()) current.partIndex = status.partIndex;
