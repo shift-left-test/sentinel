@@ -170,7 +170,8 @@ bool WeightedMutantGenerator::DepthAwareASTVisitor::VisitStmt(clang::Stmt* s) {
   resolveExpansionLineRange(s, &mSrcMgr, mContext->getLangOpts(),
                             &startLineNum, &endLineNum);
   bool containTargetLine =
-      std::any_of(mTargetLines.begin(), mTargetLines.end(), [startLineNum, endLineNum, s, this](SourceLine line) {
+      std::any_of(mTargetLines.begin(), mTargetLines.end(),
+                  [startLineNum, endLineNum, s, this](const SourceLine& line) {
         std::size_t lineNum = line.getLineNumber();
         bool ret = lineNum >= startLineNum && lineNum <= endLineNum;
         if (ret) {

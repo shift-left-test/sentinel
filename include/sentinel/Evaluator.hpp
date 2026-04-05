@@ -60,7 +60,6 @@ class Evaluator {
                                               const std::filesystem::path& evalFilePath, TestExecutionState testState);
 
  private:
-  std::filesystem::path mSourcePath;
   Result mExpectedResult;
 };
 

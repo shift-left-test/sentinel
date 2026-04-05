@@ -45,7 +45,7 @@ class MutationOperator {
    *
    * @return name of mutation operator
    */
-  std::string getName() const {
+  const std::string& getName() const {
     return mName;
   }
 

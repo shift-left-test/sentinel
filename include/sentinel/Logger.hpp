@@ -61,7 +61,7 @@ class Logger {
   template <typename... Args>
   static void info(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::INFO)) {
-      logMessage(kColorLightGray, fmt::format("INFO: {}", fmt::format(pattern, std::forward<Args>(args)...)));
+      logMessage(kColorLightGray, "INFO: " + fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -74,7 +74,7 @@ class Logger {
   template <typename... Args>
   static void warn(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::WARN)) {
-      logMessage(kColorYellow, fmt::format("WARN: {}", fmt::format(pattern, std::forward<Args>(args)...)));
+      logMessage(kColorYellow, "WARN: " + fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 
@@ -87,7 +87,7 @@ class Logger {
   template <typename... Args>
   static void error(const std::string& pattern, Args&&... args) {
     if (isAllowed(Level::ERROR)) {
-      logMessage(kColorRed, fmt::format("ERROR: {}", fmt::format(pattern, std::forward<Args>(args)...)));
+      logMessage(kColorRed, "ERROR: " + fmt::format(pattern, std::forward<Args>(args)...));
     }
   }
 

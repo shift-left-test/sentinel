@@ -31,7 +31,7 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator==(const SourceLine& other) const {
-    return mPath.string() == other.mPath.string() && mLineNumber == other.mLineNumber;
+    return mPath == other.mPath && mLineNumber == other.mLineNumber;
   }
 
   /**
@@ -40,10 +40,10 @@ class SourceLine {
    * @param other other SourceLine instance
    */
   bool operator<(const SourceLine& other) const {
-    if (mPath.string() < other.mPath.string()) {
+    if (mPath < other.mPath) {
       return true;
     }
-    if (mPath.string() > other.mPath.string()) {
+    if (mPath > other.mPath) {
       return false;
     }
     return mLineNumber < other.mLineNumber;

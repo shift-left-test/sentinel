@@ -6,11 +6,11 @@
 #ifndef INCLUDE_SENTINEL_UTIL_IO_HPP_
 #define INCLUDE_SENTINEL_UTIL_IO_HPP_
 
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/formatter.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel::io {
 
@@ -21,10 +21,7 @@ namespace sentinel::io {
  * @return true if the extension is .xml (any case).
  */
 inline bool isXmlFile(const std::filesystem::path& p) {
-  std::string ext = p.extension().string();
-  std::transform(ext.begin(), ext.end(), ext.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-  return ext == ".xml";
+  return string::toLower(p.extension().string()) == ".xml";
 }
 
 /**

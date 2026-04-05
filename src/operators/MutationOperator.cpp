@@ -234,7 +234,8 @@ void resolveExpansionLineRange(clang::Stmt* s, clang::SourceManager* srcMgr,
 std::vector<std::unique_ptr<MutationOperator>> createOperators(
     clang::ASTContext* context, const std::vector<std::string>& selectedOps) {
   std::vector<std::string> normalizedOps(selectedOps.size());
-  std::transform(selectedOps.begin(), selectedOps.end(), normalizedOps.begin(), string::toUpper);
+  std::transform(selectedOps.begin(), selectedOps.end(), normalizedOps.begin(),
+                 [](const std::string& s) { return string::toUpper(s); });
   auto include = [&normalizedOps](const std::string& name) {
     return normalizedOps.empty() ||
            std::find(normalizedOps.begin(), normalizedOps.end(), name) != normalizedOps.end();

@@ -14,7 +14,7 @@ namespace sentinel {
 
 XmlParser::~XmlParser() = default;
 
-XmlParser::XmlParser() : mNext(nullptr) {
+XmlParser::XmlParser() {
   reset();
 }
 
@@ -24,8 +24,8 @@ std::shared_ptr<XmlParser> XmlParser::setNext(std::shared_ptr<XmlParser> parser)
 }
 
 void XmlParser::reset() {
-  mPassed = std::vector<std::string>();
-  mFailed = std::vector<std::string>();
+  mPassed.clear();
+  mFailed.clear();
 }
 
 void XmlParser::addPassed(const std::string& name) {

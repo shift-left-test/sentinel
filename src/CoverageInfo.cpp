@@ -28,14 +28,14 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
     std::string currentFile;
 
     while (std::getline(coverageFile, line)) {
-      if (line.substr(0, 2) == "SF") {
+      if (string::startsWith(line, "SF")) {
         std::vector<std::string> v = string::split(line, ':');
         fs::path p = fs::absolute(fs::path(v[1]));
         mData[p.string()] = std::vector<size_t>();
         currentFile = p.string();
       }
 
-      if (line.substr(0, 2) == "DA") {
+      if (string::startsWith(line, "DA")) {
         std::vector<std::string> v1 = string::split(line, ':');
         std::vector<std::string> v2 = string::split(v1[1], ',');
         if (v2[1] != "0") {

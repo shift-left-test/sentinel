@@ -30,14 +30,14 @@ namespace fs = std::filesystem;
 template <typename T, void Free(T*)>
 class SafeGit2ObjPtr {
  private:
-  T* obj;
+  T* mObj;
 
  public:
-  SafeGit2ObjPtr() : obj(nullptr) {
+  SafeGit2ObjPtr() : mObj(nullptr) {
   }
   ~SafeGit2ObjPtr() {
-    if (obj) {
-      Free(obj);
+    if (mObj) {
+      Free(mObj);
     }
   }
 
@@ -45,29 +45,29 @@ class SafeGit2ObjPtr {
    * @brief get T pointer type member address to assign value
    */
   T** getPtr() {
-    return &obj;
+    return &mObj;
   }
 
   /**
    * @brief cast to T pointer
    */
   explicit operator T*() {
-    return obj;
+    return mObj;
   }
 
   /**
    * @brief cast to C
    */
   template <typename C>
-  C cast() {
-    return reinterpret_cast<C>(obj);
+  C cast() const {
+    return reinterpret_cast<C>(mObj);
   }
 
   /**
    * @brief check member obj is nullptr
    */
-  bool isNull() {
-    return obj == nullptr;
+  bool isNull() const {
+    return mObj == nullptr;
   }
 };
 
@@ -102,7 +102,7 @@ class DiffData {
   /**
    * @brief get source lines
    */
-  SourceLines getSourceLines() {
+  SourceLines getSourceLines() const {
     return mSourceLines;
   }
 
@@ -186,7 +186,8 @@ static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
       }
       // Skip hidden directories (e.g. .git, .cache, .ccache, .github).
       // They never contain nested source repos and traversing them is wasteful.
-      if (!entry.path().filename().string().empty() && entry.path().filename().string().front() == '.') {
+      auto filename = entry.path().filename().string();
+      if (!filename.empty() && filename.front() == '.') {
         continue;
       }
       // Skip sentinel-managed directories (workspace, output, etc.)
@@ -197,7 +198,7 @@ static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
         continue;
       }
       auto sub = collectGitRepos(entry.path(), skipDirs);
-      result.insert(result.end(), sub.begin(), sub.end());
+      result.insert(result.end(), std::make_move_iterator(sub.begin()), std::make_move_iterator(sub.end()));
     }
   } catch (const fs::filesystem_error& e) {
     Logger::warn("Skipping unreadable directory '{}': {}", dir, e.what());
