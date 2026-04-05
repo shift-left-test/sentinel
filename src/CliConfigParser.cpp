@@ -33,7 +33,6 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                   {"compiledb-dir"}),
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory", {"test-result-dir"}),
-    mTestResultExts(mGroupBuildTest, "EXT", "File extension of the test report", {"test-result-ext"}),
     mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 1.5x original test time)",
              {"timeout"}),
     mScope(mGroupMutation, "SCOPE", "Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)",
@@ -69,7 +68,6 @@ void CliConfigParser::applyTo(Config* cfg) {
 
   if (mBuildCmd) cfg->buildCmd = mBuildCmd.Get();
   if (mTestCmd) cfg->testCmd = mTestCmd.Get();
-  if (mTestResultExts) cfg->testResultExts = mTestResultExts.Get();
   if (mTimeout) cfg->timeout = std::stoul(mTimeout.Get());
 
   if (mScope) cfg->scope = mScope.Get();

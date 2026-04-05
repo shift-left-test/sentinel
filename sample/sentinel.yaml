@@ -28,10 +28,6 @@ test-command: >-
 ## Path to the test report directory
 test-result-dir: ./build/test-results
 
-## File extension of the test report (default: xml)
-# test-result-ext:
-#   - xml
-
 ## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
 # timeout: 60
 

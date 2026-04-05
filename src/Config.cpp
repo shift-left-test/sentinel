@@ -39,9 +39,6 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   emitter << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd;
   emitter << YAML::Key << "test-command" << YAML::Value << cfg.testCmd;
   emitter << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir.string();
-  emitter << YAML::Key << "test-result-ext" << YAML::Value << YAML::BeginSeq;
-  for (const auto& e : cfg.testResultExts) emitter << e;
-  emitter << YAML::EndSeq;
   emitter << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
   for (const auto& c : cfg.coverageFiles) emitter << c.string();
   emitter << YAML::EndSeq;

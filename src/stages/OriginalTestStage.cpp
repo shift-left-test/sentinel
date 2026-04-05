@@ -4,7 +4,6 @@
  */
 
 #include <fmt/core.h>
-#include <fmt/ranges.h>
 #include <algorithm>
 #include <cmath>
 #include <filesystem>  // NOLINT
@@ -38,9 +37,7 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
   fs::path testLog = ctx->workspace.getOriginalTestLog();
   Logger::verbose("Test command: {}", ctx->config.testCmd);
   Logger::verbose("Test log: {}", testLog);
-  Logger::verbose("Test result dir: {} (ext: {})",
-                  ctx->config.testResultDir.string(),
-                  fmt::join(ctx->config.testResultExts, ", "));
+  Logger::verbose("Test result dir: {}", ctx->config.testResultDir.string());
 
   std::size_t computedTimeLimit = 0;
   if (ctx->config.timeout.has_value()) {
@@ -68,7 +65,7 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
     ctx->workspace.saveStatus(status);
   }
 
-  io::syncFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir(), ctx->config.testResultExts);
+  io::syncFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir());
 
   if (fs::is_empty(ctx->workspace.getOriginalResultsDir())) {
     throw std::runtime_error(fmt::format("No test result files found in '{}' after running test command. See: {}",

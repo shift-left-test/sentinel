@@ -132,7 +132,7 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
     } else if (testProc.isSignaled() || testProc.isSignalExit()) {
       testState = TestExecutionState::RUNTIME_ERROR;
     } else {
-      io::syncFiles(ctx->config.testResultDir, actualDir, ctx->config.testResultExts);
+      io::syncFiles(ctx->config.testResultDir, actualDir);
     }
   } else {
     testState = TestExecutionState::BUILD_FAILURE;

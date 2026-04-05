@@ -62,30 +62,32 @@ TEST_F(IoTest, testEnsureDirectoryExistsThrowsWhenPathIsAFile) {
   EXPECT_THROW(io::ensureDirectoryExists(filePath), InvalidArgumentException);
 }
 
-TEST_F(IoTest, testSyncFilesFiltersByExtension) {
+TEST_F(IoTest, testSyncFilesCopiesXmlOnly) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
   writeFile(from / "a.xml", "<xml/>");
   writeFile(from / "b.txt", "text");
 
-  io::syncFiles(from, to, {"xml"});
+  io::syncFiles(from, to);
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
   EXPECT_FALSE(fs::exists(to / "b.txt"));
 }
 
-TEST_F(IoTest, testSyncFilesAllFilesWhenExtsEmpty) {
+TEST_F(IoTest, testSyncFilesCopiesXmlCaseInsensitive) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
   writeFile(from / "a.xml", "<xml/>");
-  writeFile(from / "b.txt", "text");
+  writeFile(from / "b.XML", "<XML/>");
+  writeFile(from / "c.txt", "text");
 
-  io::syncFiles(from, to, {});
+  io::syncFiles(from, to);
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
-  EXPECT_TRUE(fs::exists(to / "b.txt"));
+  EXPECT_TRUE(fs::exists(to / "b.XML"));
+  EXPECT_FALSE(fs::exists(to / "c.txt"));
 }
 
 TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
@@ -96,23 +98,10 @@ TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
   writeFile(to / "old.xml", "old");
   writeFile(from / "new.xml", "<xml/>");
 
-  io::syncFiles(from, to, {"xml"});
+  io::syncFiles(from, to);
 
   EXPECT_FALSE(fs::exists(to / "old.xml"));
   EXPECT_TRUE(fs::exists(to / "new.xml"));
-}
-
-TEST_F(IoTest, testSyncFilesOverloadCopiesAllFiles) {
-  auto from = mTestDir / "from";
-  auto to = mTestDir / "to";
-  fs::create_directories(from);
-  writeFile(from / "a.xml", "<xml/>");
-  writeFile(from / "b.txt", "text");
-
-  io::syncFiles(from, to);
-
-  EXPECT_TRUE(fs::exists(to / "a.xml"));
-  EXPECT_TRUE(fs::exists(to / "b.txt"));
 }
 
 }  // namespace sentinel

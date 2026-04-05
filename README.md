@@ -351,7 +351,6 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--compiledb-dir=PATH` | Directory containing `compile_commands.json` | `.` |
 | `--test-command=CMD` | Shell command to run tests | **required** |
 | `--test-result-dir=PATH` | Directory where the test command writes result files | **required** |
-| `--test-result-ext=EXT` | File extension of test result files (repeatable) | `xml` |
 | `--timeout=SEC` | Test time limit in seconds; `0` = no limit (triggers pre-run warning) | 1.5× baseline |
 
 #### Mutation options
@@ -438,10 +437,6 @@ version: 1
 
 ## Path to the test report directory
 # test-result-dir: ./test-results
-
-## File extension of the test report (default: xml)
-# test-result-ext:
-#   - xml
 
 ## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
 # timeout: 60

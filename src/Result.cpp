@@ -5,7 +5,6 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -15,6 +14,7 @@
 #include "sentinel/GoogleTestXmlParser.hpp"
 #include "sentinel/QTestXmlParser.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/util/io.hpp"
 
 namespace sentinel {
 
@@ -27,11 +27,8 @@ Result::Result(const std::string& path) {
   parser1->setNext(parser2)->setNext(parser3);
 
   for (const auto& dirent : fs::recursive_directory_iterator(path)) {
-    const auto& curPath = dirent.path();
-    std::string curExt = curPath.extension().string();
-    std::transform(curExt.begin(), curExt.end(), curExt.begin(), [](unsigned char c) { return std::tolower(c); });
-    if (fs::is_regular_file(curPath) && curExt == ".xml") {
-      parser1->process(curPath.string(), &mPassedTC, &mFailedTC);
+    if (dirent.is_regular_file() && io::isXmlFile(dirent.path())) {
+      parser1->process(dirent.path().string(), &mPassedTC, &mFailedTC);
     }
   }
 }

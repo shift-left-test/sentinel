@@ -201,8 +201,8 @@ Directory containing compile_commands.json.
 \fBbuild-command\fR / \fBtest-command\fR
 Shell commands to build the project and run the test suite.
 .TP
-\fBtest-result-dir\fR / \fBtest-result-ext\fR
-Test result directory and file extensions.
+\fBtest-result-dir\fR
+Test result directory (XML files are collected automatically).
 .TP
 \fBtimeout\fR
 Test time limit in seconds (default: 1.5\(mu original test time).

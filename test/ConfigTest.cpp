@@ -81,8 +81,6 @@ pattern:
 build-command: make
 test-command: ctest
 test-result-dir: ./results
-test-result-ext:
-  - xml
 coverage:
   - coverage.info
 generator: random
@@ -104,7 +102,6 @@ operator:
   EXPECT_EQ("make", cfg.buildCmd);
   EXPECT_EQ("ctest", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), cfg.testResultDir);
-  EXPECT_EQ(std::vector<std::string>({"xml"}), cfg.testResultExts);
   EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.coverageFiles);
   EXPECT_EQ("random", cfg.generator);
   ASSERT_TRUE(cfg.timeout.has_value());
@@ -291,7 +288,6 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   cfg.generator = "uniform";
   cfg.extensions = {"cpp", "cc"};
   cfg.operators = {"AOR", "ROR"};
-  cfg.testResultExts = {"xml"};
 
   std::ostringstream out;
   out << cfg;
@@ -313,7 +309,6 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.timeout = 120;
   original.extensions = {"cpp"};
   original.operators = {"AOR"};
-  original.testResultExts = {"xml"};
 
   auto tmpFile = mTmpDir / "config_roundtrip.yaml";
   {

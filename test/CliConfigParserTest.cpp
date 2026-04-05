@@ -147,11 +147,6 @@ TEST_F(CliConfigParserTest, testTestCommandParsed) {
   EXPECT_EQ(cfg.testCmd, "ctest -j8");
 }
 
-TEST_F(CliConfigParserTest, testTestResultExtParsed) {
-  Config cfg = parse({"--test-result-ext", "xml", "--test-result-ext", "json"});
-  EXPECT_EQ(cfg.testResultExts.size(), 2u);
-}
-
 TEST_F(CliConfigParserTest, testCoverageFileParsed) {
   Config cfg = parse({"--coverage", "cov1.info", "--coverage", "cov2.info"});
   EXPECT_EQ(cfg.coverageFiles.size(), 2u);

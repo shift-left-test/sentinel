@@ -75,8 +75,6 @@ struct Config {
   std::string testCmd;
   /** @brief Absolute path to directory where test results are stored (empty = not set). */
   std::filesystem::path testResultDir;
-  /** @brief File extensions for test result files. */
-  std::vector<std::string> testResultExts = {"xml", "XML"};
   /** @brief Time limit for test execution; nullopt = auto (2x baseline), 0 = no limit. */
   std::optional<size_t> timeout;
 
