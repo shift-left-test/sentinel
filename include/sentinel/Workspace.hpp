@@ -16,6 +16,7 @@
 #include "sentinel/Config.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 
 namespace sentinel {
 
@@ -182,11 +183,23 @@ class Workspace {
   MutationResult getDoneResult(int id) const;
 
   /**
+   * @brief Check whether the workspace contains any mutants.
+   * @return true if at least one mutant directory with mt.cfg exists.
+   */
+  bool hasMutants() const;
+
+  /**
    * @brief Load all mutants from existing NNNNN/mt.cfg files, sorted by ID.
    *
    * @return Vector of (id, Mutant) pairs sorted ascending by id.
    */
   std::vector<std::pair<int, Mutant>> loadMutants() const;
+
+  /**
+   * @brief Load all completed mutation results directly from mt.done files.
+   * @return Vector of MutationResult objects.
+   */
+  MutationResults loadResults() const;
 
   /**
    * @brief Restore original source files from the backup directory into @p srcRoot.

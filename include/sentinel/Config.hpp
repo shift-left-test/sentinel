@@ -17,6 +17,38 @@
 namespace sentinel {
 
 /**
+ * @brief Scope of mutation.
+ */
+enum class Scope { ALL, COMMIT };
+
+/**
+ * @brief Mutant generation strategy.
+ */
+enum class Generator { UNIFORM, RANDOM, WEIGHTED };
+
+/**
+ * @brief Convert a string to Scope (case-insensitive).
+ * @throw std::invalid_argument if the string is not a valid scope.
+ */
+Scope parseScope(const std::string& s);
+
+/**
+ * @brief Convert Scope to its string representation.
+ */
+std::string scopeToString(Scope scope);
+
+/**
+ * @brief Convert a string to Generator (case-insensitive).
+ * @throw std::invalid_argument if the string is not a valid generator.
+ */
+Generator parseGenerator(const std::string& s);
+
+/**
+ * @brief Convert Generator to its string representation.
+ */
+std::string generatorToString(Generator gen);
+
+/**
  * @brief Parsed partition specification (e.g., "2/4" means part 2 of 4).
  */
 struct Partition {
@@ -79,14 +111,14 @@ struct Config {
   std::optional<size_t> timeout;
 
   // Mutation options
-  /** @brief Scope of mutation: "commit" or "all". */
-  std::string scope = "all";
+  /** @brief Scope of mutation: ALL or COMMIT. */
+  Scope scope = Scope::ALL;
   /** @brief File extensions to consider for mutation. */
   std::vector<std::string> extensions = {"cxx", "cpp", "cc", "c", "c++", "cu"};
   /** @brief Glob patterns for files to include. */
   std::vector<std::string> patterns;
-  /** @brief Mutant generation strategy: "uniform", "random", or "weighted". */
-  std::string generator = "uniform";
+  /** @brief Mutant generation strategy: UNIFORM, RANDOM, or WEIGHTED. */
+  Generator generator = Generator::UNIFORM;
   /** @brief List of mutation operators to apply (empty = all). */
   std::vector<std::string> operators;
   /** @brief Absolute paths to code coverage information files. */

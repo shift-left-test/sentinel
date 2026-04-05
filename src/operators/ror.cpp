@@ -22,6 +22,7 @@ bool ROR::canMutate(clang::Stmt* s) {
 
 void ROR::populate(clang::Stmt* s, Mutants* mutables) {
   auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
+  const std::string func = getContainingFunctionQualifiedName(s);
 
   // create mutables by changing the operator
   std::string token{bo->getOpcodeStr()};
@@ -32,7 +33,6 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
 
   if (isValidMutantSourceRange(&opStartLoc, &opEndLoc)) {
     std::string path{mSrcMgr.getFilename(opStartLoc)};
-    std::string func = getContainingFunctionQualifiedName(s);
     bool operandIsNull = getExprType(bo->getLHS()->IgnoreImpCasts())->isNullPtrType() ||
                          getExprType(bo->getRHS()->IgnoreImpCasts())->isNullPtrType();
 
@@ -71,7 +71,6 @@ void ROR::populate(clang::Stmt* s, Mutants* mutables) {
   }
 
   std::string path{mSrcMgr.getFilename(stmtStartLoc)};
-  std::string func = getContainingFunctionQualifiedName(s);
 
   mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
                          mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),

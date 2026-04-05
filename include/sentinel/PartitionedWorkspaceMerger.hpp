@@ -7,8 +7,10 @@
 #define INCLUDE_SENTINEL_PARTITIONEDWORKSPACEMERGER_HPP_
 
 #include <filesystem>  // NOLINT
+#include <map>
 #include <string>
 #include <vector>
+#include "sentinel/Workspace.hpp"
 
 namespace sentinel {
 
@@ -45,6 +47,7 @@ class PartitionedWorkspaceMerger {
   std::filesystem::path mTargetDir;
   std::vector<std::filesystem::path> mSourceDirs;
   bool mForce;
+  mutable std::map<std::filesystem::path, WorkspaceStatus> mStatusCache;
 
   void validateSource(const std::filesystem::path& sourceDir) const;
   void validateCompatibility() const;

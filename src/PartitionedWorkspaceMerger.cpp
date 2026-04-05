@@ -12,6 +12,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 #include "sentinel/Logger.hpp"
 #include "sentinel/PartitionedWorkspaceMerger.hpp"
@@ -69,7 +70,7 @@ void PartitionedWorkspaceMerger::validateSource(
   }
 
   const Workspace ws(sourceDir);
-  const auto status = ws.loadStatus();
+  auto status = ws.loadStatus();
   if (!status.partIndex.has_value() || !status.partCount.has_value() ||
       *status.partIndex == 0 || *status.partCount == 0) {
     throw std::runtime_error(
@@ -109,6 +110,8 @@ void PartitionedWorkspaceMerger::validateSource(
                     "(run.done missing).",
                     sourceDir.string()));
   }
+
+  mStatusCache.emplace(sourceDir, std::move(status));
 }
 
 std::string PartitionedWorkspaceMerger::loadConfigWithoutExcludedFields(
@@ -124,8 +127,7 @@ std::string PartitionedWorkspaceMerger::loadConfigWithoutExcludedFields(
 }
 
 void PartitionedWorkspaceMerger::validateCompatibility() const {
-  const Workspace firstWs(mSourceDirs[0]);
-  const auto firstStatus = firstWs.loadStatus();
+  const auto& firstStatus = mStatusCache.at(mSourceDirs[0]);
   const std::string firstConfig =
       loadConfigWithoutExcludedFields(mSourceDirs[0]);
 
@@ -178,8 +180,7 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
   }
 
   for (std::size_t i = 1; i < mSourceDirs.size(); ++i) {
-    const Workspace ws(mSourceDirs[i]);
-    const auto status = ws.loadStatus();
+    const auto& status = mStatusCache.at(mSourceDirs[i]);
 
     if (*status.partCount != *firstStatus.partCount) {
       throw std::runtime_error(
@@ -315,8 +316,7 @@ void PartitionedWorkspaceMerger::copyFileWithConflictCheck(
 
 void PartitionedWorkspaceMerger::updateCompleteness() const {
   Workspace targetWs(mTargetDir);
-  const Workspace firstWs(mSourceDirs[0]);
-  const auto firstStatus = firstWs.loadStatus();
+  const auto& firstStatus = mStatusCache.at(mSourceDirs[0]);
   const std::size_t partCount = *firstStatus.partCount;
 
   std::vector<std::size_t> merged;
@@ -328,8 +328,7 @@ void PartitionedWorkspaceMerger::updateCompleteness() const {
   }
 
   for (const auto& source : mSourceDirs) {
-    const Workspace ws(source);
-    const auto status = ws.loadStatus();
+    const auto& status = mStatusCache.at(source);
     merged.push_back(*status.partIndex);
   }
 

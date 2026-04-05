@@ -144,9 +144,6 @@ class WeightedMutantGenerator : public MutantGenerator {
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
         clang::CompilerInstance& ci, llvm::StringRef inFile) override;
 
-   protected:
-    void ExecuteAction() override;
-
    private:
     Mutants* mMutants;
     SourceLines mTargetLines;

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include "sentinel/Config.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/SourceTree.hpp"
 
@@ -28,7 +29,7 @@ class Repository {
    *
    * @return SourceLines object
    */
-  virtual SourceLines getSourceLines(const std::string& scope) = 0;
+  virtual SourceLines getSourceLines(Scope scope) = 0;
 
   /**
    * @brief Return the source tree

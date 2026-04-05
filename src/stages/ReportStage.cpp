@@ -32,10 +32,7 @@ StatusLine::Phase ReportStage::getPhase() const {
 
 bool ReportStage::execute(PipelineContext* ctx) {
   Logger::info("Generating report...");
-  MutationResults results;
-  for (const auto& [id, m] : ctx->workspace.loadMutants()) {
-    results.push_back(ctx->workspace.getDoneResult(id));
-  }
+  MutationResults results = ctx->workspace.loadResults();
 
   MutationSummary summary(results, ctx->config.sourceDir);
   XmlReport xmlReport(summary);

@@ -15,6 +15,7 @@
 #include "sentinel/Config.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Workspace.hpp"
 #include "helper/TestTempDir.hpp"
@@ -730,6 +731,83 @@ TEST(WorkspaceStatusTest, testStreamOperatorVersionRoundTrip) {
   EXPECT_EQ(*loaded.version, "0.4.8");
   ASSERT_TRUE(loaded.candidateCount.has_value());
   EXPECT_EQ(*loaded.candidateCount, 100u);
+}
+
+TEST_F(WorkspaceTest, testHasMutantsReturnsFalseForEmptyWorkspace) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  EXPECT_FALSE(ws.hasMutants());
+}
+
+TEST_F(WorkspaceTest, testHasMutantsReturnsTrueWhenMutantExists) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(1, m);
+  EXPECT_TRUE(ws.hasMutants());
+}
+
+TEST_F(WorkspaceTest, testHasMutantsIgnoresNumericDirWithoutCfg) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  fs::create_directories(mRoot / "00001");
+  EXPECT_FALSE(ws.hasMutants());
+}
+
+TEST_F(WorkspaceTest, testHasMutantsReturnsFalseForNonExistentRoot) {
+  Workspace ws(mBase / "nonexistent");
+  EXPECT_FALSE(ws.hasMutants());
+}
+
+TEST_F(WorkspaceTest, testLoadResultsReturnsEmptyForNoResults) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(1, m);
+  auto results = ws.loadResults();
+  EXPECT_TRUE(results.empty());
+}
+
+TEST_F(WorkspaceTest, testLoadResultsReturnsDoneResults) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  fs::path p = mSrcFile;
+
+  Mutant m1("AOR", p, "func", 1, 1, 1, 1, "+");
+  Mutant m2("BOR", p, "func", 2, 1, 2, 1, "|");
+  ws.createMutant(1, m1);
+  ws.createMutant(2, m2);
+
+  MutationResult r1(m1, "Test1", "", MutationState::KILLED);
+  MutationResult r2(m2, "", "", MutationState::SURVIVED);
+  ws.setDone(1, r1);
+  ws.setDone(2, r2);
+
+  auto results = ws.loadResults();
+  ASSERT_EQ(2u, results.size());
+
+  // Results may be in any order; check both are present
+  bool foundKilled = false;
+  bool foundSurvived = false;
+  for (const auto& r : results) {
+    if (r.getMutationState() == MutationState::KILLED) foundKilled = true;
+    if (r.getMutationState() == MutationState::SURVIVED) foundSurvived = true;
+  }
+  EXPECT_TRUE(foundKilled);
+  EXPECT_TRUE(foundSurvived);
+}
+
+TEST_F(WorkspaceTest, testLoadResultsIgnoresNonMutantDirectories) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(1, m);
+  MutationResult r(m, "Test1", "", MutationState::KILLED);
+  ws.setDone(1, r);
+
+  auto results = ws.loadResults();
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(MutationState::KILLED, results[0].getMutationState());
 }
 
 TEST(WorkspaceStatusTest, testVersionAppearsFirstInYaml) {

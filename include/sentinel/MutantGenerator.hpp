@@ -11,11 +11,15 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <map>
 #include <memory>
+#include <random>
+#include <set>
 #include <string>
 #include <vector>
+#include "sentinel/Config.hpp"
 #include "sentinel/Mutants.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/operators/MutationOperator.hpp"
@@ -91,7 +95,7 @@ class MutantGenerator {
    * @param directory path to the directory containing the compile_commands.json file
    * @return mutant generator instance
    */
-  static std::shared_ptr<MutantGenerator> getInstance(const std::string& generator,
+  static std::shared_ptr<MutantGenerator> getInstance(Generator generator,
                                                       const std::filesystem::path& directory);
 
   /**
@@ -159,6 +163,66 @@ class MutantGenerator {
    */
   static void findCandidatesForLine(const CandidateIndex& index, const std::filesystem::path& canonPath,
                                     std::size_t targetLine, std::vector<const Mutant*>* out);
+
+  /**
+   * @brief Select one mutant per source line by iterating over a range.
+   *
+   * Shared logic for Uniform and Weighted generators. The LineExtractor
+   * callable converts each element in the range to a const SourceLine&.
+   *
+   * @tparam Range iterable container type
+   * @tparam LineExtractor callable: (const element&) -> const SourceLine&
+   * @param range iteration source
+   * @param maxMutants maximum number of mutants to select (0 = unlimited)
+   * @param randomSeed seed for the random number generator
+   * @param index pre-built candidate index
+   * @param getLine extracts a SourceLine from each range element
+   * @return selected mutants
+   */
+  template <typename Range, typename LineExtractor>
+  Mutants selectFromRange(const Range& range, std::size_t maxMutants,
+                          unsigned int randomSeed, const CandidateIndex& index,
+                          LineExtractor getLine) {
+    std::set<Mutant> selectedSet;
+    Mutants result;
+    std::mt19937 rng(randomSeed);
+    std::map<std::filesystem::path, std::filesystem::path> pathCache;
+    std::size_t candidateLineCount = 0;
+    std::vector<const Mutant*> candidates;
+
+    for (const auto& elem : range) {
+      const auto& line = getLine(elem);
+      std::filesystem::path rawPath = line.getPath();
+      auto emplaceResult = pathCache.emplace(rawPath, std::filesystem::path{});
+      if (emplaceResult.second) {
+        emplaceResult.first->second = std::filesystem::canonical(rawPath);
+      }
+      const std::filesystem::path& canonPath = emplaceResult.first->second;
+
+      findCandidatesForLine(index, canonPath, line.getLineNumber(), &candidates);
+      if (candidates.empty()) {
+        continue;
+      }
+
+      candidateLineCount++;
+      mLinesByPath[canonPath]++;
+
+      if (maxMutants > 0 && result.size() == maxMutants) {
+        continue;
+      }
+
+      std::shuffle(candidates.begin(), candidates.end(), rng);
+      for (const auto* candidate : candidates) {
+        if (selectedSet.insert(*candidate).second) {
+          result.push_back(*candidate);
+          break;
+        }
+      }
+    }
+
+    mCandidateCount = candidateLineCount;
+    return result;
+  }
 
   /// @brief Path to the directory containing compile_commands.json.
   std::filesystem::path mDbPath;
@@ -259,12 +323,6 @@ class MutantGenerator {
      */
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
         clang::CompilerInstance& ci, llvm::StringRef inFile) override;
-
-   protected:
-    /**
-     * @brief Execute the frontend action (runs the AST traversal).
-     */
-    void ExecuteAction() override;
 
    private:
     Mutants* mMutants;

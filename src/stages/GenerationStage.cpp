@@ -16,6 +16,7 @@
 #include "sentinel/Console.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationFactory.hpp"
+#include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/stages/GenerationStage.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/util/string.hpp"
@@ -29,20 +30,10 @@ static constexpr std::size_t kMutantsCol = 13;
 static constexpr std::size_t kLinesCol = 9;
 
 
-static const std::map<std::string, std::string> kOperatorNames = {
-    {"AOR", "Arithmetic Operator Replacement"},
-    {"BOR", "Bitwise Operator Replacement"},
-    {"LCR", "Logical Connector Replacement"},
-    {"ROR", "Relational Operator Replacement"},
-    {"SDL", "Statement Deletion"},
-    {"SOR", "Shift Operator Replacement"},
-    {"UOI", "Unary Operator Insertion"},
-};
-
 static void printGenerationSummary(const Mutants& mutants, std::size_t candidateCount,
                                    const std::map<fs::path, std::size_t>& linesByPath,
-                                   const fs::path& sourceDir, const std::string& generatorStr,
-                                   unsigned seed, std::size_t limit, const std::string& scope,
+                                   const fs::path& sourceDir, Generator generator,
+                                   unsigned seed, std::size_t limit, Scope scope,
                                    const std::string& partition) {
   const std::string thick = Utf8Char::ThickLine * kSummaryWidth;
   const std::string thin = Utf8Char::ThinLine * kSummaryWidth;
@@ -74,9 +65,9 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
 
   // Summary
   Console::out("  Scope:      {} ({} file{}, {} lines)",
-               scope, groupByPath.size(),
+               scopeToString(scope), groupByPath.size(),
                groupByPath.size() == 1 ? "" : "s", candidateCount);
-  Console::out("  Generator:  {} (seed: {})", generatorStr, seed);
+  Console::out("  Generator:  {} (seed: {})", generatorToString(generator), seed);
   std::string mutantsLine = fmt::format("{}", mutants.size());
   if (limit > 0) {
     mutantsLine += fmt::format(" of {} limit", limit);
@@ -105,10 +96,7 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("  Operator");
   Console::out("{}", thin);
   for (const auto& [op, count] : groupByOperator) {
-    auto nameIt = kOperatorNames.find(op);
-    std::string label = nameIt != kOperatorNames.end()
-        ? fmt::format("{} ({})", op, nameIt->second) : op;
-    Console::out(rowFmt1, label, flen, count, kMutantsCol);
+    Console::out(rowFmt1, MutationOperatorToExpansion(op), flen, count, kMutantsCol);
   }
 
   // Footer
@@ -121,7 +109,7 @@ GenerationStage::GenerationStage(std::shared_ptr<GitRepository> repo,
 }
 
 bool GenerationStage::shouldSkip(const PipelineContext& ctx) const {
-  return !ctx.workspace.loadMutants().empty();
+  return ctx.workspace.hasMutants();
 }
 
 StatusLine::Phase GenerationStage::getPhase() const {

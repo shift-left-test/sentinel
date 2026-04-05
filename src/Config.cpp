@@ -5,12 +5,47 @@
 
 #include <yaml-cpp/yaml.h>
 #include <filesystem>  // NOLINT
+#include <stdexcept>
 #include <string>
 #include "sentinel/Config.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
 namespace fs = std::filesystem;
+
+Scope parseScope(const std::string& s) {
+  std::string lower = string::toLower(s);
+  if (lower == "all") return Scope::ALL;
+  if (lower == "commit") return Scope::COMMIT;
+  throw std::invalid_argument(fmt::format("Invalid scope: '{}'. Expected 'all' or 'commit'.", s));
+}
+
+std::string scopeToString(Scope scope) {
+  switch (scope) {
+    case Scope::ALL: return "all";
+    case Scope::COMMIT: return "commit";
+  }
+  throw std::invalid_argument("Unknown Scope value");
+}
+
+Generator parseGenerator(const std::string& s) {
+  std::string lower = string::toLower(s);
+  if (lower == "uniform") return Generator::UNIFORM;
+  if (lower == "random") return Generator::RANDOM;
+  if (lower == "weighted") return Generator::WEIGHTED;
+  throw std::invalid_argument(
+      fmt::format("Invalid generator: '{}'. Expected 'uniform', 'random', or 'weighted'.", s));
+}
+
+std::string generatorToString(Generator gen) {
+  switch (gen) {
+    case Generator::UNIFORM: return "uniform";
+    case Generator::RANDOM: return "random";
+    case Generator::WEIGHTED: return "weighted";
+  }
+  throw std::invalid_argument("Unknown Generator value");
+}
 
 Config Config::withDefaults() {
   Config cfg;
@@ -29,7 +64,7 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
     emitter << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir.string();
   }
   emitter << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir.string();
-  emitter << YAML::Key << "scope" << YAML::Value << cfg.scope;
+  emitter << YAML::Key << "scope" << YAML::Value << scopeToString(cfg.scope);
   emitter << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : cfg.extensions) emitter << e;
   emitter << YAML::EndSeq;
@@ -42,7 +77,7 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   emitter << YAML::Key << "coverage" << YAML::Value << YAML::BeginSeq;
   for (const auto& c : cfg.coverageFiles) emitter << c.string();
   emitter << YAML::EndSeq;
-  emitter << YAML::Key << "generator" << YAML::Value << cfg.generator;
+  emitter << YAML::Key << "generator" << YAML::Value << generatorToString(cfg.generator);
   if (cfg.timeout) {
     emitter << YAML::Key << "timeout" << YAML::Value << *cfg.timeout;
   }

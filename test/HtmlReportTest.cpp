@@ -12,6 +12,7 @@
 #include "sentinel/HtmlReport.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationSummary.hpp"
+#include "sentinel/Config.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace fs = std::filesystem;
@@ -90,8 +91,8 @@ int minus(int a, int b){
     expectContains(content, "NESTED_DIR1/NESTED_DIR");
     expectContains(content, "./srcDir/NESTED_DIR2/index.html");
     expectContains(content, "NESTED_DIR2");
-    expectContains(content, "AOR (arithmetic operator replacement)");
-    expectContains(content, "BOR (bitwise operator replacement)");
+    expectContains(content, "AOR (Arithmetic Operator Replacement)");
+    expectContains(content, "BOR (Bitwise Operator Replacement)");
     EXPECT_EQ(content.find("stroke-linecap=\"round\""), std::string::npos);
     expectContains(content, "sentinel");
   }
@@ -189,7 +190,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
   auto MRPath = MUT_RESULT_DIR / "MutationResult";
   MRs.save(MRPath);
 
-  HtmlReport htmlreport(MutationSummary(MRPath, SOURCE_DIR));
+  HtmlReport htmlreport(MutationSummary(MRPath, SOURCE_DIR), Config{});
 
   htmlreport.save(OUT_DIR);
 
@@ -217,7 +218,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
           / (TARGET_FULL_PATH.filename().string() + ".html"),
       "target1_veryVeryVeryVeryVerylongFilePath.cpp",
       {"#include &lt;iostream&gt;", "int add(int a, int b)", "return a + b"},
-      {"AOR (arithmetic operator replacement)"}, {});
+      {"AOR (Arithmetic Operator Replacement)"}, {});
 
   // Source file: target2 (1 killed)
   verifySrcHtml(
@@ -225,7 +226,7 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
           / (TARGET_FULL_PATH2.filename().string() + ".html"),
       "target2.cpp",
       {"int bitwiseOR(int a, int b)", "return a | b"},
-      {"BOR (bitwise operator replacement)"}, {"testBitwiseOR"});
+      {"BOR (Bitwise Operator Replacement)"}, {"testBitwiseOR"});
 
   // Source file: target3 (1 killed, 1 survived)
   verifySrcHtml(
@@ -234,8 +235,8 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
       "target3.cpp",
       {"int bitwiseAND(int a, int b)", "return a &amp; b",
        "int minus(int a, int b)", "return a - b"},
-      {"AOR (arithmetic operator replacement)",
-       "BOR (bitwise operator replacement)"},
+      {"AOR (Arithmetic Operator Replacement)",
+       "BOR (Bitwise Operator Replacement)"},
       {"testBitwiseAND", "testBitwiseOP"});
 
   // Source file: target4 (1 killed)
@@ -244,16 +245,16 @@ TEST_F(HtmlReportTest, testMakeHtmlReport) {
           / (TARGET_FULL_PATH4.filename().string() + ".html"),
       "target4.cpp",
       {"int multiply(int a, int b)", "return a * b"},
-      {"AOR (arithmetic operator replacement)"}, {"testMultiply"});
+      {"AOR (Arithmetic Operator Replacement)"}, {"testMultiply"});
 }
 
 TEST_F(HtmlReportTest, testConstructorFailWhenInvalidPathGiven) {
-  EXPECT_THROW(HtmlReport(MutationSummary("unknown", "unknown")), InvalidArgumentException);
+  EXPECT_THROW(HtmlReport(MutationSummary("unknown", "unknown"), Config{}), InvalidArgumentException);
 }
 
 TEST_F(HtmlReportTest, testMakeHtmlReportWhenEmptyMutationResult) {
   MutationResults MRs;
-  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
   auto OUT_DIR = BASE / "OUT_DIR_EMPTYMUTATIONRESULT";
   htmlreport.save(OUT_DIR);
   auto outXMLPath = OUT_DIR / "index.html";
@@ -272,7 +273,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
 
   EXPECT_THROW(htmlreport.save(TARGET_FULL_PATH), InvalidArgumentException);
   EXPECT_NO_THROW(htmlreport.save("unknown"));
@@ -301,7 +302,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidSourcePath) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
   fs::remove(tmpPath);
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 }
@@ -315,7 +316,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs;
   MRs.push_back(MR1);
 
-  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR));
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
   EXPECT_THROW(htmlreport.save(OUT_DIR), InvalidArgumentException);
 
   auto OUT_DIR2 = BASE / "OUT_DIR_SAVEFAILWHENINVALIDLINENUMBER2";
@@ -326,7 +327,7 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
   MutationResults MRs2;
   MRs2.push_back(MR2);
 
-  HtmlReport htmlreport2(MutationSummary(MRs2, SOURCE_DIR));
+  HtmlReport htmlreport2(MutationSummary(MRs2, SOURCE_DIR), Config{});
   EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
 }
 

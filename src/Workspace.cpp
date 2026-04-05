@@ -16,6 +16,7 @@
 #include <vector>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
+#include "sentinel/MutationResults.hpp"
 #include "sentinel/Workspace.hpp"
 
 namespace sentinel {
@@ -243,6 +244,60 @@ MutationResult Workspace::getDoneResult(int id) const {
     throw std::runtime_error(fmt::format("Failed to parse mt.done for mutant {}", id));
   }
   return result;
+}
+
+bool Workspace::hasMutants() const {
+  if (!fs::is_directory(mRoot)) {
+    return false;
+  }
+  for (const auto& entry : fs::directory_iterator(mRoot)) {
+    if (!fs::is_directory(entry.path())) {
+      continue;
+    }
+    const std::string name = entry.path().filename().string();
+    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
+    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
+      continue;
+    }
+    if (fs::exists(entry.path() / "mt.cfg")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+MutationResults Workspace::loadResults() const {
+  MutationResults results;
+
+  for (const auto& entry : fs::directory_iterator(mRoot)) {
+    if (!fs::is_directory(entry.path())) {
+      continue;
+    }
+    const std::string name = entry.path().filename().string();
+    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
+    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
+      continue;
+    }
+
+    fs::path donePath = entry.path() / "mt.done";
+    if (!fs::exists(donePath)) {
+      continue;
+    }
+
+    std::ifstream in(donePath);
+    if (!in) {
+      int id = std::stoi(name);
+      throw std::runtime_error(fmt::format("Cannot read mt.done for mutant {}", id));
+    }
+    MutationResult result;
+    if (!(in >> result)) {
+      int id = std::stoi(name);
+      throw std::runtime_error(fmt::format("Failed to parse mt.done for mutant {}", id));
+    }
+    results.push_back(result);
+  }
+
+  return results;
 }
 
 std::vector<std::pair<int, Mutant>> Workspace::loadMutants() const {

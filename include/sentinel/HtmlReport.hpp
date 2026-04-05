@@ -20,13 +20,6 @@ namespace sentinel {
 class HtmlReport : public Report {
  public:
   /**
-   * @brief Construct an HTML report view from a precomputed summary.
-   *
-   * @param summary Aggregated mutation data to render.
-   */
-  explicit HtmlReport(const MutationSummary& summary);
-
-  /**
    * @brief Construct an HTML report view from a precomputed summary and config.
    *
    * @param summary Aggregated mutation data to render.

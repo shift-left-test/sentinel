@@ -70,10 +70,10 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mTestCmd) cfg->testCmd = mTestCmd.Get();
   if (mTimeout) cfg->timeout = std::stoul(mTimeout.Get());
 
-  if (mScope) cfg->scope = mScope.Get();
+  if (mScope) cfg->scope = parseScope(mScope.Get());
   if (mExtensions) cfg->extensions = mExtensions.Get();
   if (mPatterns) cfg->patterns = mPatterns.Get();
-  if (mGenerator) cfg->generator = mGenerator.Get();
+  if (mGenerator) cfg->generator = parseGenerator(mGenerator.Get());
   if (mOperators) cfg->operators = mOperators.Get();
   if (mCoverageFiles) {
     cfg->coverageFiles.clear();

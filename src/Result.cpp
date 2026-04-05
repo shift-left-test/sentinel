@@ -5,6 +5,7 @@
 
 #include <fmt/core.h>
 #include <tinyxml2/tinyxml2.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -31,6 +32,8 @@ Result::Result(const std::string& path) {
       parser1->process(dirent.path().string(), &mPassedTC, &mFailedTC);
     }
   }
+  std::sort(mPassedTC.begin(), mPassedTC.end());
+  std::sort(mFailedTC.begin(), mFailedTC.end());
 }
 
 bool Result::checkPassedTCEmpty() const {

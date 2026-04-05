@@ -5,13 +5,12 @@
 
 #include <fmt/core.h>
 #include <filesystem>  // NOLINT
-#include <fstream>
 #include <string>
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Mutant.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/Result.hpp"
-#include "sentinel/util/io.hpp"
 
 namespace sentinel {
 
@@ -51,21 +50,6 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
   }
 
   return {mut, killingTC, errorTC, state};
-}
-
-MutationResult Evaluator::compareAndSaveMutationResult(const Mutant& mut, const std::filesystem::path& actualResultDir,
-                                                       const std::filesystem::path& evalFilePath,
-                                                       TestExecutionState testState) {
-  auto outDir = evalFilePath.parent_path();
-  io::ensureDirectoryExists(outDir);
-
-  MutationResult ret = compare(mut, actualResultDir, testState);
-
-  std::ofstream outFile(evalFilePath.string(), std::ios::out | std::ios::app);
-  outFile << ret << "\n";
-  outFile.close();
-
-  return ret;
 }
 
 }  // namespace sentinel

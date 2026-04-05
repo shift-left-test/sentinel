@@ -208,16 +208,21 @@ TEST_F(UniformMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
   EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
 }
 
-TEST(MutantGeneratorFactoryTest, getInstanceAcceptsCaseInsensitiveGenerator) {
+TEST(MutantGeneratorFactoryTest, parseGeneratorAcceptsCaseInsensitiveInput) {
+  EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("UNIFORM"));
+  EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("Uniform"));
+  EXPECT_EQ(sentinel::Generator::RANDOM, sentinel::parseGenerator("RANDOM"));
+  EXPECT_EQ(sentinel::Generator::RANDOM, sentinel::parseGenerator("Random"));
+  EXPECT_EQ(sentinel::Generator::WEIGHTED, sentinel::parseGenerator("WEIGHTED"));
+  EXPECT_EQ(sentinel::Generator::WEIGHTED, sentinel::parseGenerator("Weighted"));
+  EXPECT_THROW(sentinel::parseGenerator("invalid"), std::invalid_argument);
+}
+
+TEST(MutantGeneratorFactoryTest, getInstanceReturnsCorrectType) {
   auto tmpDir = std::filesystem::temp_directory_path();
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("UNIFORM", tmpDir));
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Uniform", tmpDir));
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("RANDOM", tmpDir));
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Random", tmpDir));
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("WEIGHTED", tmpDir));
-  EXPECT_NO_THROW(sentinel::MutantGenerator::getInstance("Weighted", tmpDir));
-  EXPECT_THROW(sentinel::MutantGenerator::getInstance("invalid", tmpDir),
-               sentinel::InvalidArgumentException);
+  EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::UNIFORM, tmpDir));
+  EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::RANDOM, tmpDir));
+  EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::WEIGHTED, tmpDir));
 }
 
 }  // namespace sentinel

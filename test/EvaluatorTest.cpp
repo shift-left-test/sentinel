@@ -13,7 +13,6 @@
 #include "sentinel/Evaluator.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
-#include "sentinel/MutationResults.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace fs = std::filesystem;
@@ -106,15 +105,8 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
       "</testsuites>\n";
 };
 
-TEST_F(EvaluatorTest, testConstructorFailWhenInvalidOutDirGiven) {
-  auto mrPath = OUT_DIR / "MutationResult";
-  EXPECT_NO_THROW(Evaluator(ORI_DIR, SAMPLE_BASE)
-                      .compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath, TestExecutionState::SUCCESS));
-
-  auto mrPathForException = SAMPLE1_PATH / "MutationResult";
-  EXPECT_THROW(Evaluator(ORI_DIR, SAMPLE_BASE)
-                   .compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPathForException, TestExecutionState::SUCCESS),
-               InvalidArgumentException);
+TEST_F(EvaluatorTest, testConstructorSucceedsWithValidExpectedResult) {
+  EXPECT_NO_THROW(Evaluator(ORI_DIR, SAMPLE_BASE));
 }
 
 TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
@@ -128,116 +120,59 @@ TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "MutationResult";
-  auto result = mEvaluator.compareAndSaveMutationResult(*mutable1, MUT_DIR, mrPath, TestExecutionState::SUCCESS);
+  auto result = mEvaluator.compare(*mutable1, MUT_DIR, TestExecutionState::SUCCESS);
   EXPECT_TRUE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
-  auto result =
-      mEvaluator.compareAndSaveMutationResult(*mutable2, MUT_DIR_SURVIVED, mrPath, TestExecutionState::SUCCESS);
+  auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithUncoveredMutation) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
-  auto result =
-      mEvaluator.compareAndSaveMutationResult(*mutable2, MUT_DIR_SURVIVED, mrPath, TestExecutionState::UNCOVERED);
+  auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::UNCOVERED);
   EXPECT_FALSE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
-  auto result =
-      mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::BUILD_FAILURE);
+  auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::BUILD_FAILURE);
   EXPECT_FALSE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
-  fs::remove(emptyPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
-  auto result = mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::SUCCESS);
+  auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
-  fs::remove(emptyPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
-  auto result =
-      mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::RUNTIME_ERROR);
+  auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::RUNTIME_ERROR);
   EXPECT_FALSE(result.getDetected());
   EXPECT_EQ(result.getMutationState(), MutationState::RUNTIME_ERROR);
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
-  fs::remove(emptyPath);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
 
-  auto mrPath = OUT_DIR / "newDir" / "MutationResult";
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
-  auto result = mEvaluator.compareAndSaveMutationResult(*mutable2, emptyPath, mrPath, TestExecutionState::TIMEOUT);
+  auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::TIMEOUT);
   EXPECT_FALSE(result.getDetected());
-
-  MutationResults MRs;
-  MRs.load(mrPath);
-  auto mr = MRs[0];
-  EXPECT_TRUE(mr.compare(result));
-  fs::remove(mrPath);
-  fs::remove(emptyPath);
 }
 
 }  // namespace sentinel

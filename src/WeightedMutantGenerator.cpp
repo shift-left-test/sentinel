@@ -15,8 +15,6 @@
 #include <iterator>
 #include <map>
 #include <memory>
-#include <random>
-#include <set>
 #include <string>
 #include <thread>
 #include <utility>
@@ -106,46 +104,8 @@ Mutants WeightedMutantGenerator::selectMutants(const SourceLines& sourceLines, s
   std::copy(mDepthMap.begin(), mDepthMap.end(), std::back_inserter(sortedDepthMap));
   std::sort(sortedDepthMap.begin(), sortedDepthMap.end(), cmp);
 
-  std::map<fs::path, fs::path> pathCache;
-  std::set<Mutant> selectedSet;
-  Mutants result;
-  std::mt19937 rng(randomSeed);
-  std::size_t candidateLineCount = 0;
-  std::vector<const Mutant*> candidates;
-
-  for (const auto& it : sortedDepthMap) {
-    auto line = it.first;
-
-    fs::path rawPath = line.getPath();
-    auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
-    if (emplaceResult.second) {
-      emplaceResult.first->second = fs::canonical(rawPath);
-    }
-    const fs::path& canonPath = emplaceResult.first->second;
-
-    findCandidatesForLine(index, canonPath, line.getLineNumber(), &candidates);
-    if (candidates.empty()) {
-      continue;
-    }
-
-    candidateLineCount++;
-    mLinesByPath[canonPath]++;
-
-    if (maxMutants > 0 && result.size() == maxMutants) {
-      continue;
-    }
-
-    std::shuffle(candidates.begin(), candidates.end(), rng);
-    for (const auto* candidate : candidates) {
-      if (selectedSet.insert(*candidate).second) {
-        result.push_back(*candidate);
-        break;
-      }
-    }
-  }
-
-  mCandidateCount = candidateLineCount;
-  return result;
+  return selectFromRange(sortedDepthMap, maxMutants, randomSeed, index,
+                         [](const std::pair<SourceLine, int>& elem) -> const SourceLine& { return elem.first; });
 }
 
 // ---------------------------------------------------------------------------
@@ -264,10 +224,6 @@ std::unique_ptr<clang::ASTConsumer> WeightedMutantGenerator::DepthAwareAction::C
   ci.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
   return std::unique_ptr<clang::ASTConsumer>(
       new DepthAwareASTConsumer(ci, mMutants, mTargetLines, mDepthMap, mSelectedOps));
-}
-
-void WeightedMutantGenerator::DepthAwareAction::ExecuteAction() {
-  clang::ASTFrontendAction::ExecuteAction();
 }
 
 // ---------------------------------------------------------------------------

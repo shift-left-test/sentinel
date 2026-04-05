@@ -24,7 +24,6 @@
 #include "sentinel/WeightedMutantGenerator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -35,19 +34,18 @@ MutantGenerator::~MutantGenerator() = default;
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
-std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(const std::string& generator,
+std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(Generator generator,
                                                               const std::filesystem::path& directory) {
-  std::string normalized = string::toLower(generator);
-  if (normalized == "uniform") {
-    return std::make_shared<UniformMutantGenerator>(directory);
+  switch (generator) {
+    case Generator::UNIFORM:
+      return std::make_shared<UniformMutantGenerator>(directory);
+    case Generator::RANDOM:
+      return std::make_shared<RandomMutantGenerator>(directory);
+    case Generator::WEIGHTED:
+      return std::make_shared<WeightedMutantGenerator>(directory);
   }
-  if (normalized == "random") {
-    return std::make_shared<RandomMutantGenerator>(directory);
-  }
-  if (normalized == "weighted") {
-    return std::make_shared<WeightedMutantGenerator>(directory);
-  }
-  throw InvalidArgumentException(fmt::format("Invalid value for generator option: {0}", generator));
+  throw InvalidArgumentException(
+      fmt::format("Invalid value for generator option: {}", generatorToString(generator)));
 }
 
 // ---------------------------------------------------------------------------
@@ -220,10 +218,6 @@ std::unique_ptr<clang::ASTConsumer> MutantGenerator::GenerateMutantAction::Creat
     clang::CompilerInstance& ci, llvm::StringRef inFile) {
   ci.getDiagnostics().setClient(new clang::IgnoringDiagConsumer());
   return std::make_unique<SentinelASTConsumer>(ci, mMutants, mTargetLines, mSelectedOps);
-}
-
-void MutantGenerator::GenerateMutantAction::ExecuteAction() {
-  clang::ASTFrontendAction::ExecuteAction();
 }
 
 // ---------------------------------------------------------------------------

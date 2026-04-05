@@ -32,8 +32,8 @@ class CliConfigParserTest : public ::testing::Test {
 
 TEST_F(CliConfigParserTest, testDefaultsPreservedWhenNoCli) {
   Config cfg = parse({});
-  EXPECT_EQ("all", cfg.scope);
-  EXPECT_EQ("uniform", cfg.generator);
+  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_FALSE(cfg.seed.has_value());
@@ -115,8 +115,8 @@ TEST_F(CliConfigParserTest, testCleanParsed) {
 
 TEST_F(CliConfigParserTest, testCliOverwritesDefaults) {
   Config cfg = parse({"--scope", "commit", "--generator", "random"});
-  EXPECT_EQ("commit", cfg.scope);
-  EXPECT_EQ("random", cfg.generator);
+  EXPECT_EQ(Scope::COMMIT, cfg.scope);
+  EXPECT_EQ(Generator::RANDOM, cfg.generator);
 }
 
 TEST_F(CliConfigParserTest, testWorkspaceParsedAndAbsolute) {

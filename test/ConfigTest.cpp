@@ -57,8 +57,8 @@ TEST_F(ConfigTest, testWithDefaultsSetsAbsolutePaths) {
 
 TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   auto cfg = Config::withDefaults();
-  EXPECT_EQ("all", cfg.scope);
-  EXPECT_EQ("uniform", cfg.generator);
+  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_TRUE(cfg.buildCmd.empty());
@@ -96,14 +96,14 @@ operator:
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
   EXPECT_EQ((mTmpDir / "out").lexically_normal(), cfg.outputDir);
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
-  EXPECT_EQ("commit", cfg.scope);
+  EXPECT_EQ(Scope::COMMIT, cfg.scope);
   EXPECT_EQ(std::vector<std::string>({"cpp", "cxx"}), cfg.extensions);
   EXPECT_EQ(std::vector<std::string>({"src/**", "!test/**"}), cfg.patterns);
   EXPECT_EQ("make", cfg.buildCmd);
   EXPECT_EQ("ctest", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), cfg.testResultDir);
   EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.coverageFiles);
-  EXPECT_EQ("random", cfg.generator);
+  EXPECT_EQ(Generator::RANDOM, cfg.generator);
   ASSERT_TRUE(cfg.timeout.has_value());
   EXPECT_EQ(30u, *cfg.timeout);
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), cfg.operators);
@@ -123,8 +123,8 @@ test-result-dir: ./test-results
   EXPECT_EQ("make all", cfg.buildCmd);
   EXPECT_EQ("ctest --verbose", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "test-results").lexically_normal(), cfg.testResultDir);
-  EXPECT_EQ("all", cfg.scope);
-  EXPECT_EQ("uniform", cfg.generator);
+  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
 }
 
@@ -284,8 +284,8 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   Config cfg = Config::withDefaults();
   cfg.buildCmd = "make -j8";
   cfg.testCmd = "ctest";
-  cfg.scope = "all";
-  cfg.generator = "uniform";
+  cfg.scope = Scope::ALL;
+  cfg.generator = Generator::UNIFORM;
   cfg.extensions = {"cpp", "cc"};
   cfg.operators = {"AOR", "ROR"};
 
@@ -304,8 +304,8 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.buildCmd = "make";
   original.testCmd = "ctest";
   original.testResultDir = fs::absolute("results");
-  original.scope = "commit";
-  original.generator = "random";
+  original.scope = Scope::COMMIT;
+  original.generator = Generator::RANDOM;
   original.timeout = 120;
   original.extensions = {"cpp"};
   original.operators = {"AOR"};

@@ -11,6 +11,7 @@
 #include <vector>
 #include "harness/git-harness/GitHarness.hpp"
 #include "helper/TestTempDir.hpp"
+#include "sentinel/Config.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -48,7 +49,7 @@ TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   EXPECT_THROW(
       {
         GitRepository gitRepo(nonGitPath.string());
-        SourceLines lines = gitRepo.getSourceLines("commit");
+        SourceLines lines = gitRepo.getSourceLines(Scope::COMMIT);
       },
       RepositoryException);
 
@@ -63,7 +64,7 @@ TEST_F(GitRepositoryTest, testSubdirectoryOfRepoWorks) {
 
   EXPECT_NO_THROW({
     GitRepository gitRepo(subdir.string());
-    gitRepo.getSourceLines("all");
+    gitRepo.getSourceLines(Scope::ALL);
   });
 }
 
@@ -72,7 +73,7 @@ TEST_F(GitRepositoryTest, testPatterns) {
   fs::create_directories(tmpPath);
 
   GitRepository gitRepo(mRepoName, {}, {"file.txt", "file?.txt", "/tmp/", "*/test/*"});
-  EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
+  EXPECT_NO_THROW(gitRepo.getSourceLines(Scope::ALL));
 }
 
 TEST_F(GitRepositoryTest, testNegationPatterns) {
@@ -80,7 +81,7 @@ TEST_F(GitRepositoryTest, testNegationPatterns) {
   fs::create_directories(tmpPath);
 
   GitRepository gitRepo(mRepoName, {}, {"!*.c", "!file?.txt", "!data/*.csv", "!*/test/*"});
-  EXPECT_NO_THROW(gitRepo.getSourceLines("all"));
+  EXPECT_NO_THROW(gitRepo.getSourceLines(Scope::ALL));
 }
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
@@ -90,21 +91,21 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
 
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_TRUE(sourceLines.empty());
   }
   // only workdir
   {
     mRepo->addFile(stageFiles[0], content);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_TRUE(sourceLines.empty());
   }
   // only index
   {
     mRepo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 2);
   }
@@ -120,21 +121,21 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithSingleCommit) {
   mRepo->commit("init");
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 2);
   }
   // only workdir
   {
     mRepo->addCode(stageFiles[0], "int a = 1; a = a + 2;\n", 2, 1);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
   // only index
   {
     mRepo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
@@ -155,7 +156,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
 
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 1);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 2)), 1);
@@ -163,7 +164,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   // only workdir
   {
     mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 3)), 1);
@@ -171,7 +172,7 @@ TEST_F(GitRepositoryTest, testGetSourceLines) {
   // only index
   {
     mRepo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines("commit");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
     EXPECT_EQ(sourceLines.size(), 2);
     EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(), SourceLine(stageFilename, 3)), 1);
@@ -192,21 +193,21 @@ TEST_F(GitRepositoryTest, testGetSourceLinesAll) {
 
   // nothing
   {
-    SourceLines sourceLines = gitRepo.getSourceLines("all");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::ALL);
 
     EXPECT_EQ(sourceLines.size(), 3);
   }
   // only workdir
   {
     mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
-    SourceLines sourceLines = gitRepo.getSourceLines("all");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::ALL);
 
     EXPECT_EQ(sourceLines.size(), 4);
   }
   // only index
   {
     mRepo->stageFile(stageFiles);
-    SourceLines sourceLines = gitRepo.getSourceLines("all");
+    SourceLines sourceLines = gitRepo.getSourceLines(Scope::ALL);
 
     EXPECT_EQ(sourceLines.size(), 4);
   }
@@ -227,7 +228,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithDevtoolTag) {
   mRepo->addCode(stageFiles[0], "int b = 2; b = a + 4;\n", 3, 1);
   mRepo->stageFile(stageFiles);
   mRepo->commit("insert second line");
-  SourceLines sourceLines = gitRepo.getSourceLines("commit");
+  SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
   EXPECT_EQ(sourceLines.size(), 2);
 }
@@ -260,7 +261,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleParentCommit) {
 
   mRepo->merge(targetBranches);
 
-  SourceLines sourceLines = gitRepo.getSourceLines("commit");
+  SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
   EXPECT_EQ(sourceLines.size(), 4);
 }
 
@@ -290,7 +291,7 @@ TEST_F(GitRepositoryTest, testMixedIncludeAndExcludePatterns) {
   mRepo->commit("add files");
 
   GitRepository gitRepo(mRepoName, {"cpp"}, {"src/**", "!src/test/*"});
-  SourceLines lines = gitRepo.getSourceLines("all");
+  SourceLines lines = gitRepo.getSourceLines(Scope::ALL);
 
   bool hasMain = false;
   bool hasHelper = false;
@@ -306,12 +307,12 @@ TEST_F(GitRepositoryTest, testMixedIncludeAndExcludePatterns) {
   EXPECT_FALSE(hasMock);
 }
 
-TEST_F(GitRepositoryTest, getSourceLinesAcceptsCaseInsensitiveScope) {
-  GitRepository repo(mRepoName, {".cpp"}, {});
-  EXPECT_NO_THROW(repo.getSourceLines("ALL"));
-  EXPECT_NO_THROW(repo.getSourceLines("All"));
-  EXPECT_NO_THROW(repo.getSourceLines("COMMIT"));
-  EXPECT_NO_THROW(repo.getSourceLines("Commit"));
+TEST_F(GitRepositoryTest, parseScopeAcceptsCaseInsensitiveInput) {
+  EXPECT_EQ(Scope::ALL, parseScope("ALL"));
+  EXPECT_EQ(Scope::ALL, parseScope("All"));
+  EXPECT_EQ(Scope::COMMIT, parseScope("COMMIT"));
+  EXPECT_EQ(Scope::COMMIT, parseScope("Commit"));
+  EXPECT_THROW(parseScope("invalid"), std::invalid_argument);
 }
 
 // ---------------------------------------------------------------------------
@@ -348,7 +349,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedRepos) {
 
   // multiRoot has no .git; getSourceLines must still find both nested repos.
   GitRepository gitRepo(multiRoot);
-  SourceLines sourceLines = gitRepo.getSourceLines("commit");
+  SourceLines sourceLines = gitRepo.getSourceLines(Scope::COMMIT);
 
   // Each repo contributes exactly 1 changed line (the inserted line 3).
   EXPECT_EQ(sourceLines.size(), 2u);
@@ -382,7 +383,7 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithMultipleNestedReposAllScope) {
   repoB->commit("init B");
 
   GitRepository gitRepo(multiRoot);
-  SourceLines sourceLines = gitRepo.getSourceLines("all");
+  SourceLines sourceLines = gitRepo.getSourceLines(Scope::ALL);
 
   // a.cpp has 3 lines, b.cpp has 3 lines → 6 total.
   EXPECT_EQ(sourceLines.size(), 6u);
@@ -416,7 +417,7 @@ TEST_F(GitRepositoryTest, testSourceRootFilterExcludesSiblingDirs) {
 
   // Use target_subdir as sourceRoot — sibling_subdir/bar.cpp must be excluded.
   GitRepository gitRepo(subdir);
-  SourceLines sourceLines = gitRepo.getSourceLines("all");
+  SourceLines sourceLines = gitRepo.getSourceLines(Scope::ALL);
 
   bool hasFoo = false;
   bool hasBar = false;
@@ -449,7 +450,7 @@ TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
   // Without skipDir: nested repo's source lines are visible.
   {
     GitRepository gitRepo(mRepoName);
-    SourceLines lines = gitRepo.getSourceLines("all");
+    SourceLines lines = gitRepo.getSourceLines(Scope::ALL);
     bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {
       return sl.getPath().string().find("workspace") != std::string::npos;
     });
@@ -460,7 +461,7 @@ TEST_F(GitRepositoryTest, testAddSkipDirExcludesNestedRepo) {
   {
     GitRepository gitRepo(mRepoName);
     gitRepo.addSkipDir(workspaceDir);
-    SourceLines lines = gitRepo.getSourceLines("all");
+    SourceLines lines = gitRepo.getSourceLines(Scope::ALL);
     bool hasNestedFile = std::any_of(lines.begin(), lines.end(), [&](const SourceLine& sl) {
       return sl.getPath().string().find("workspace") != std::string::npos;
     });

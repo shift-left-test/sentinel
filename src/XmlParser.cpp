@@ -4,7 +4,6 @@
  */
 
 #include <tinyxml2/tinyxml2.h>
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -39,8 +38,6 @@ void XmlParser::addFailed(const std::string& name) {
 void XmlParser::collect(std::vector<std::string>* passed, std::vector<std::string>* failed) {
   passed->insert(passed->end(), mPassed.begin(), mPassed.end());
   failed->insert(failed->end(), mFailed.begin(), mFailed.end());
-  std::sort(passed->begin(), passed->end());
-  std::sort(failed->begin(), failed->end());
 }
 
 void XmlParser::process(const std::string& path, std::vector<std::string>* passed, std::vector<std::string>* failed) {

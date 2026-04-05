@@ -34,10 +34,6 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-HtmlReport::HtmlReport(const MutationSummary& summary) : Report(summary) {
-  initMetadata();
-}
-
 HtmlReport::HtmlReport(const MutationSummary& summary, const Config& config)
     : Report(summary), mConfig(config) {
   initMetadata();

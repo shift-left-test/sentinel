@@ -18,7 +18,6 @@
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -212,9 +211,9 @@ static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
  * Extracted from getSourceLines() so it can be called for each repo in a
  * multi-repo walk without duplicating the commit-traversal logic.
  */
-static void applyDiffScope(git_repository* repo, const std::string& scope, git_diff_options* opts, DiffData* d,
+static void applyDiffScope(git_repository* repo, Scope scope, git_diff_options* opts, DiffData* d,
                            const std::filesystem::path& gitWorkdir) {
-  if (scope == "all") {
+  if (scope == Scope::ALL) {
     getDiffFromTree(repo, nullptr, opts, d);
     return;
   }
@@ -337,12 +336,7 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
   return true;
 }
 
-SourceLines GitRepository::getSourceLines(const std::string& scope) {
-  std::string normalizedScope = string::toLower(scope);
-  if (normalizedScope != "commit" && normalizedScope != "all") {
-    throw InvalidArgumentException(fmt::format("scope '{}' is invalid.", scope));
-  }
-
+SourceLines GitRepository::getSourceLines(Scope scope) {
   // Step 1: find all git repos directly at or below sourceRoot (multi-repo support).
   // In Android-style workspaces there is no top-level .git; each component has its own.
   std::vector<fs::path> repoPaths = collectGitRepos(getSourceRoot(), mSkipDirs);
@@ -403,7 +397,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
     git_diff_options opts = buildOpts(cstrs);
     DiffData d(this, gitWorkdir);
     try {
-      applyDiffScope(static_cast<git_repository*>(repo), normalizedScope, &opts, &d, gitWorkdir);
+      applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
     } catch (const RepositoryException& e) {
       Logger::warn("diff failed for {}: {}", gitWorkdir, e.what());
       continue;
@@ -427,7 +421,7 @@ SourceLines GitRepository::getSourceLines(const std::string& scope) {
         git_diff_options opts = buildOpts(cstrs);
         DiffData d(this, gitWorkdir);
         try {
-          applyDiffScope(static_cast<git_repository*>(repo), normalizedScope, &opts, &d, gitWorkdir);
+          applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
         } catch (const RepositoryException& e) {
           if (repoPaths.empty()) {
             throw;  // Only repo available; propagate so the caller sees the error.

@@ -89,10 +89,10 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
     if (root["test-command"]) cfg->testCmd = root["test-command"].as<std::string>();
     if (root["timeout"]) cfg->timeout = root["timeout"].as<size_t>();
 
-    if (root["scope"]) cfg->scope = root["scope"].as<std::string>();
+    if (root["scope"]) cfg->scope = parseScope(root["scope"].as<std::string>());
     if (root["extension"]) cfg->extensions = toVector<std::string>(root["extension"], "extension");
     if (root["pattern"]) cfg->patterns = toVector<std::string>(root["pattern"], "pattern");
-    if (root["generator"]) cfg->generator = root["generator"].as<std::string>();
+    if (root["generator"]) cfg->generator = parseGenerator(root["generator"].as<std::string>());
     if (root["operator"]) cfg->operators = toVector<std::string>(root["operator"], "operator");
     if (root["coverage"]) {
       auto files = toVector<fs::path>(root["coverage"], "coverage");

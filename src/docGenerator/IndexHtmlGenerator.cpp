@@ -520,12 +520,8 @@ std::string IndexHtmlGenerator::buildConfigHtml() const {
   if (!cfg.testCmd.empty()) {
     addItem("testCmd", cfg.testCmd);
   }
-  if (!cfg.scope.empty()) {
-    addItem("scope", cfg.scope);
-  }
-  if (!cfg.generator.empty()) {
-    addItem("generator", cfg.generator);
-  }
+  addItem("scope", scopeToString(cfg.scope));
+  addItem("generator", generatorToString(cfg.generator));
   if (!cfg.operators.empty()) {
     addItem("operators", string::join(", ", cfg.operators));
   }

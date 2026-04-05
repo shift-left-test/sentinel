@@ -47,7 +47,7 @@ class GitRepository : public Repository {
    *
    * @return SourceLines object
    */
-  SourceLines getSourceLines(const std::string& scope) override;
+  SourceLines getSourceLines(Scope scope) override;
 
   /**
    * @brief Return absolute root path

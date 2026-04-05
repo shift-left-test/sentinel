@@ -366,12 +366,19 @@ R"(<!DOCTYPE html>
 }
 
 std::string SrcHtmlGenerator::escape(const std::string& original) const {
-  std::string rCode = string::replaceAll(original, "&", "&amp;");
-  rCode = string::replaceAll(rCode, "<", "&lt;");
-  rCode = string::replaceAll(rCode, ">", "&gt;");
-  rCode = string::replaceAll(rCode, "\"", "&quot;");
-  rCode = string::replaceAll(rCode, "'", "&apos;");
-  return rCode;
+  std::string result;
+  result.reserve(original.size());
+  for (char c : original) {
+    switch (c) {
+      case '&': result += "&amp;"; break;
+      case '<': result += "&lt;"; break;
+      case '>': result += "&gt;"; break;
+      case '"': result += "&quot;"; break;
+      case '\'': result += "&apos;"; break;
+      default: result += c; break;
+    }
+  }
+  return result;
 }
 
 }  // namespace sentinel
