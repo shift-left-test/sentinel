@@ -259,7 +259,8 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
   try {
     mSourceRoot = fs::canonical(path);
   } catch (const fs::filesystem_error& e) {
-    throw InvalidArgumentException(fmt::format("source_root option error: {}", e.what()));
+    throw InvalidArgumentException(
+        fmt::format("--source-dir: '{}' does not exist or is not accessible.", path.string()));
   }
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),

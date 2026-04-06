@@ -3,12 +3,16 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
 #include "sentinel/YamlConfigWriter.hpp"
 #include "helper/TestTempDir.hpp"
+
+using ::testing::HasSubstr;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -44,7 +48,9 @@ TEST_F(YamlConfigWriterTest, testWriteTemplateContentContainsVersionKey) {
 
 TEST_F(YamlConfigWriterTest, testWriteTemplateThrowsWhenPathIsDirectory) {
   fs::create_directories(mBase / "sentinel.yaml");
-  EXPECT_THROW(YamlConfigWriter::writeTemplate(mBase / "sentinel.yaml"), std::runtime_error);
+  EXPECT_THAT(
+      [&] { YamlConfigWriter::writeTemplate(mBase / "sentinel.yaml"); },
+      ThrowsMessage<std::runtime_error>(HasSubstr("sentinel.yaml")));
 }
 
 TEST_F(YamlConfigWriterTest, testWriteTemplateOverwritesExistingFile) {

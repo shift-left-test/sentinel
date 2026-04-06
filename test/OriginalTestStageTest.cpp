@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <memory>
@@ -17,6 +18,10 @@
 #include "sentinel/stages/OriginalTestStage.hpp"
 
 namespace fs = std::filesystem;
+
+using ::testing::AllOf;
+using ::testing::HasSubstr;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -122,13 +127,15 @@ TEST_F(OriginalTestStageTest, testExplicitTimeoutDoesNotSaveStatus) {
 }
 
 TEST_F(OriginalTestStageTest, testEmptyTestResultsThrows) {
-  // testResultDir exists but has no .xml files — stage must throw
   mConfig.timeout = std::nullopt;
-  // Do NOT call createTestResultFile()
+  mConfig.testCmd = "echo 'test not found' >&2";
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(
+          AllOf(HasSubstr("No test result files found"), HasSubstr("test not found"))));
 }
 
 TEST_F(OriginalTestStageTest, testSuccessfulRunSavesConfig) {
@@ -144,14 +151,25 @@ TEST_F(OriginalTestStageTest, testSuccessfulRunSavesConfig) {
 }
 
 TEST_F(OriginalTestStageTest, testSignalExitThrows) {
-  // When the test command exits with a signal-like code (128+N via sh -c),
-  // the stage must throw instead of saving corrupted baseline results.
   mConfig.testCmd = "sh -c 'kill -SEGV $$' && echo unreachable";
   createTestResultFile();
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(AllOf(HasSubstr("killed by a signal"), HasSubstr("\n"))));
+}
+
+TEST_F(OriginalTestStageTest, testInvalidTestCommandWithNoResultsThrows) {
+  mConfig.timeout = std::nullopt;
+  mConfig.testCmd = "not_existing_cmd_xyz";
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(HasSubstr("test command failed")));
 }
 
 }  // namespace sentinel

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
@@ -17,6 +18,11 @@
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
 namespace fs = std::filesystem;
+
+using ::testing::AllOf;
+using ::testing::HasSubstr;
+using ::testing::Not;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -38,6 +44,13 @@ class GitRepositoryTest : public ::testing::Test {
   fs::path mRepoName;
   std::shared_ptr<GitHarness> mRepo;
 };
+
+TEST_F(GitRepositoryTest, testNonexistentSourceDirThrows) {
+  EXPECT_THAT(
+      [] { GitRepository repo("/nonexistent/path"); },
+      ThrowsMessage<InvalidArgumentException>(
+          AllOf(HasSubstr("--source-dir"), HasSubstr("/nonexistent/path"), Not(HasSubstr("filesystem error")))));
+}
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   // Use a directory that is NOT inside any git repository so that

@@ -21,6 +21,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
+static constexpr std::size_t kLogTailLines = 20;
 static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
 static constexpr double kAutoTimeoutFactor = 1.5;
 
@@ -52,9 +53,14 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
   const double testElapsed = testTimer.toDouble();
 
   if (testProc.isSignaled() || testProc.isSignalExit()) {
-    throw std::runtime_error(fmt::format(
-        "Original test command was killed by a signal. See: {}",
-        testLog.string()));
+    std::string msg = fmt::format(
+        "Original test command was killed by a signal.\n"
+        "       See: {}",
+        testLog.string());
+    if (!isVerbose(*ctx)) {
+      io::appendLogTail(&msg, testLog, kLogTailLines);
+    }
+    throw std::runtime_error(msg);
   }
 
   if (!ctx->config.timeout) {
@@ -65,11 +71,27 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
     ctx->workspace.saveStatus(status);
   }
 
+  bool testFailed = !testProc.isSuccessfulExit();
+
   io::syncFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir());
 
   if (fs::is_empty(ctx->workspace.getOriginalResultsDir())) {
-    throw std::runtime_error(fmt::format("No test result files found in '{}' after running test command. See: {}",
-                                         ctx->config.testResultDir.string(), testLog.string()));
+    std::string msg;
+    if (testFailed) {
+      msg = fmt::format(
+          "Original test command failed with no test results.\n"
+          "       See: {}",
+          testLog.string());
+    } else {
+      msg = fmt::format(
+          "No test result files found in '{}' after running test command.\n"
+          "       See: {}",
+          ctx->config.testResultDir.string(), testLog.string());
+    }
+    if (!isVerbose(*ctx)) {
+      io::appendLogTail(&msg, testLog, kLogTailLines);
+    }
+    throw std::runtime_error(msg);
   }
 
   Logger::info("Original test completed ({})", Timestamper::format(testElapsed));

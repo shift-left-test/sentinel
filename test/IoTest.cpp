@@ -139,4 +139,33 @@ TEST_F(IoTest, testSyncFilesEmptySourceResultsInEmptyDestination) {
   EXPECT_TRUE(fs::is_empty(to));
 }
 
+TEST_F(IoTest, testReadLastLinesReturnsLastNLines) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "line1\nline2\nline3\nline4\nline5\n");
+
+  auto result = io::readLastLines(file, 3);
+  EXPECT_EQ(result, "line3\nline4\nline5");
+}
+
+TEST_F(IoTest, testReadLastLinesFewerLinesThanRequested) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "only\ntwo\n");
+
+  auto result = io::readLastLines(file, 10);
+  EXPECT_EQ(result, "only\ntwo");
+}
+
+TEST_F(IoTest, testReadLastLinesEmptyFile) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "");
+
+  auto result = io::readLastLines(file, 5);
+  EXPECT_EQ(result, "");
+}
+
+TEST_F(IoTest, testReadLastLinesNonexistentFile) {
+  auto result = io::readLastLines("/nonexistent/file.log", 5);
+  EXPECT_EQ(result, "");
+}
+
 }  // namespace sentinel

@@ -49,7 +49,7 @@ int Subprocess::execute() {
   // Open pipe
   int pfd[2];
   if (pipe(static_cast<int*>(pfd)) != 0) {
-    throw std::runtime_error(fmt::format("failed to open pipe (cause: {})", std::strerror(errno)));
+    throw std::runtime_error(fmt::format("Failed to open pipe: {}", std::strerror(errno)));
   }
 
   // Backup below signals' handler temporarily
@@ -188,7 +188,7 @@ int Subprocess::execute() {
     sc.reset();
     close(pfd[0]);
     close(pfd[1]);
-    throw std::runtime_error(fmt::format("failed to fork ({}) (cause: {})", mCmd, std::strerror(errno)));
+    throw std::runtime_error(fmt::format("Failed to fork '{}': {}", mCmd, std::strerror(errno)));
   }
 }
 

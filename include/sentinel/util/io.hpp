@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_UTIL_IO_HPP_
 #define INCLUDE_SENTINEL_UTIL_IO_HPP_
 
+#include <cstddef>
 #include <filesystem>  // NOLINT
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -58,6 +59,27 @@ inline void syncFiles(const std::filesystem::path& from, const std::filesystem::
     }
   }
 }
+
+/**
+ * @brief Read the last N lines from a file.
+ *
+ * @param path File to read.
+ * @param n Maximum number of lines to return.
+ * @return Last n lines joined by newline, or empty string if file is empty or unreadable.
+ */
+std::string readLastLines(const std::filesystem::path& path, std::size_t n);
+
+/**
+ * @brief Append the last N lines of a log file to a message string.
+ *
+ * If the file is empty or unreadable, the message is left unchanged.
+ *
+ * @param msg Message to append to (modified in place).
+ * @param logPath Log file to read from.
+ * @param n Maximum number of lines to append.
+ */
+void appendLogTail(std::string* msg, const std::filesystem::path& logPath,
+                   std::size_t n);
 
 }  // namespace sentinel::io
 

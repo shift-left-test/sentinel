@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -16,6 +17,10 @@
 #include "sentinel/stages/OriginalBuildStage.hpp"
 
 namespace fs = std::filesystem;
+
+using ::testing::AllOf;
+using ::testing::HasSubstr;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -87,22 +92,26 @@ TEST_F(OriginalBuildStageTest, testExecuteSuccessfulBuild) {
 TEST_F(OriginalBuildStageTest, testExecuteFailedBuildThrows) {
   fs::create_directories(mWorkspace->getOriginalDir());
 
-  mConfig.buildCmd = "false";
+  mConfig.buildCmd = "echo 'build error detail' >&2 && false";
   auto stage = std::make_shared<OriginalBuildStage>();
   auto ctx = makeCtx();
 
-  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(
+          AllOf(HasSubstr("Original build failed."), HasSubstr("build error detail"))));
 }
 
 TEST_F(OriginalBuildStageTest, testMissingCompileCommandsThrows) {
   fs::create_directories(mWorkspace->getOriginalDir());
-  // compile_commands.json intentionally not created
 
   mConfig.buildCmd = "true";
   auto stage = std::make_shared<OriginalBuildStage>();
   auto ctx = makeCtx();
 
-  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(AllOf(HasSubstr("compile_commands.json not found"), HasSubstr("\n"))));
 }
 
 }  // namespace sentinel

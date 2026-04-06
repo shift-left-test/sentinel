@@ -4,6 +4,8 @@
  */
 
 #include <fmt/core.h>
+#include <cerrno>
+#include <cstring>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <stdexcept>
@@ -87,7 +89,7 @@ static const char* const kYamlTemplate =
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);
   if (!out) {
-    throw std::runtime_error(fmt::format("Failed to create '{}'", path));
+    throw std::runtime_error(fmt::format("Failed to create '{}': {}", path, std::strerror(errno)));
   }
   out << kYamlTemplate;
   Console::out("Created '{}'", path);

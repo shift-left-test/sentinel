@@ -7,6 +7,8 @@
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
+#include <cstring>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <iterator>
@@ -49,7 +51,9 @@ void Workspace::initialize() {
 void Workspace::saveConfig(const Config& cfg) {
   std::ofstream out(mRoot / "config.yaml");
   if (!out) {
-    throw std::runtime_error(fmt::format("Failed to write workspace config: {}", (mRoot / "config.yaml").string()));
+    throw std::runtime_error(fmt::format(
+        "Failed to write workspace config '{}': {}",
+        (mRoot / "config.yaml").string(), std::strerror(errno)));
   }
   out << cfg;
 }
@@ -130,7 +134,7 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
 
   std::ofstream f(p);
   if (!f) {
-    throw std::runtime_error(fmt::format("Failed to write status.yaml: {}", p.string()));
+    throw std::runtime_error(fmt::format("Failed to write status.yaml '{}': {}", p.string(), std::strerror(errno)));
   }
   f << current;
 }
@@ -141,7 +145,7 @@ WorkspaceStatus Workspace::loadStatus() const {
   if (!fs::exists(p)) return status;
   std::ifstream f(p);
   if (!(f >> status)) {
-    throw std::runtime_error(fmt::format("Failed to read status.yaml: {}", p.string()));
+    throw std::runtime_error(fmt::format("Failed to read status.yaml '{}': {}", p.string(), std::strerror(errno)));
   }
   return status;
 }
@@ -191,7 +195,7 @@ void Workspace::createMutant(int id, const Mutant& m) {
   fs::create_directories(dir);
   std::ofstream out(dir / "mt.cfg");
   if (!out) {
-    throw std::runtime_error(fmt::format("Failed to write mt.cfg for mutant {}", id));
+    throw std::runtime_error(fmt::format("Failed to write mt.cfg for mutant {}: {}", id, std::strerror(errno)));
   }
   out << m;
 }
@@ -203,7 +207,7 @@ bool Workspace::isLocked(int id) const {
 void Workspace::setLock(int id) {
   std::ofstream f(mutantFile(id, "mt.lock"));
   if (!f) {
-    throw std::runtime_error(fmt::format("Failed to create lock for mutant {}", id));
+    throw std::runtime_error(fmt::format("Failed to create lock for mutant {}: {}", id, std::strerror(errno)));
   }
 }
 
@@ -222,14 +226,16 @@ bool Workspace::isComplete() const {
 void Workspace::setComplete() {
   std::ofstream f(getCompleteMarker());
   if (!f) {
-    throw std::runtime_error(fmt::format("Failed to create run.done in {}", mRoot.string()));
+    throw std::runtime_error(fmt::format(
+        "Failed to create run.done in '{}': {}",
+        mRoot.string(), std::strerror(errno)));
   }
 }
 
 void Workspace::setDone(int id, const MutationResult& result) {
   std::ofstream out(mutantFile(id, "mt.done"));
   if (!out) {
-    throw std::runtime_error(fmt::format("Failed to write mt.done for mutant {}", id));
+    throw std::runtime_error(fmt::format("Failed to write mt.done for mutant {}: {}", id, std::strerror(errno)));
   }
   out << result;
 }
@@ -237,7 +243,7 @@ void Workspace::setDone(int id, const MutationResult& result) {
 MutationResult Workspace::getDoneResult(int id) const {
   std::ifstream in(mutantFile(id, "mt.done"));
   if (!in) {
-    throw std::runtime_error(fmt::format("Cannot read mt.done for mutant {}", id));
+    throw std::runtime_error(fmt::format("Failed to read mt.done for mutant {}: {}", id, std::strerror(errno)));
   }
   MutationResult result;
   if (!(in >> result)) {
@@ -287,7 +293,7 @@ MutationResults Workspace::loadResults() const {
     std::ifstream in(donePath);
     if (!in) {
       int id = std::stoi(name);
-      throw std::runtime_error(fmt::format("Cannot read mt.done for mutant {}", id));
+      throw std::runtime_error(fmt::format("Failed to read mt.done for mutant {}: {}", id, std::strerror(errno)));
     }
     MutationResult result;
     if (!(in >> result)) {

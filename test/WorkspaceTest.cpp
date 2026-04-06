@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -21,6 +22,10 @@
 #include "helper/TestTempDir.hpp"
 
 namespace fs = std::filesystem;
+
+using ::testing::AllOf;
+using ::testing::HasSubstr;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -326,10 +331,11 @@ TEST_F(WorkspaceTest, testLoadStatusThrowsOnYamlTypeError) {
 TEST_F(WorkspaceTest, testSaveConfigFailsWhenPathIsDirectory) {
   Workspace ws(mRoot);
   ws.initialize();
-  // Make config.yaml a directory so ofstream cannot open it
   fs::create_directories(mRoot / "config.yaml");
   Config cfg = Config::withDefaults();
-  EXPECT_THROW(ws.saveConfig(cfg), std::runtime_error);
+  EXPECT_THAT(
+      [&] { ws.saveConfig(cfg); },
+      ThrowsMessage<std::runtime_error>(AllOf(HasSubstr("config.yaml"), HasSubstr(":"))));
 }
 
 TEST_F(WorkspaceTest, testSaveStatusFailsWhenRootMissing) {

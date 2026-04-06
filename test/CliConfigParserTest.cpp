@@ -3,11 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
 #include "sentinel/CliConfigParser.hpp"
+
+using ::testing::HasSubstr;
+using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -80,7 +84,9 @@ TEST_F(CliConfigParserTest, testSeedNumericParsed) {
 }
 
 TEST_F(CliConfigParserTest, testSeedNonNumericThrows) {
-  EXPECT_THROW(parse({"--seed", "auto"}), std::invalid_argument);
+  EXPECT_THAT(
+      [this] { parse({"--seed", "auto"}); },
+      ThrowsMessage<std::invalid_argument>(HasSubstr("--seed")));
 }
 
 TEST_F(CliConfigParserTest, testLimitParsed) {
@@ -95,7 +101,9 @@ TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {
 }
 
 TEST_F(CliConfigParserTest, testTimeoutNonNumericThrows) {
-  EXPECT_THROW(parse({"--timeout", "auto"}), std::invalid_argument);
+  EXPECT_THAT(
+      [this] { parse({"--timeout", "auto"}); },
+      ThrowsMessage<std::invalid_argument>(HasSubstr("--timeout")));
 }
 
 TEST_F(CliConfigParserTest, testVerboseParsed) {
