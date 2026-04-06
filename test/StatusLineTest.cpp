@@ -12,6 +12,9 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
 
+using ::testing::HasSubstr;
+using ::testing::Not;
+
 namespace sentinel {
 
 class StatusLineTest : public ::testing::Test {};
@@ -89,9 +92,9 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
 
   std::string text = sl.getStatusText();
 
-  EXPECT_THAT(text, testing::HasSubstr("[50/100]"));
-  EXPECT_THAT(text, testing::HasSubstr("50%"));
-  EXPECT_THAT(text, testing::HasSubstr("\xe2\x9c\x97"));  // CrossMark
+  EXPECT_THAT(text, HasSubstr("[50/100]"));
+  EXPECT_THAT(text, HasSubstr("50%"));
+  EXPECT_THAT(text, HasSubstr("\xe2\x9c\x97"));  // CrossMark
 }
 
 TEST_F(StatusLineTest, testEvaluationPhaseShowsSpinner) {
@@ -103,7 +106,7 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsSpinner) {
   std::string text = sl.getStatusText();
 
   // Spinner charset 15 frame 1 is U+2819, encoded as \xe2\xa0\x99
-  EXPECT_THAT(text, testing::HasSubstr("\xe2\xa0\x99"));
+  EXPECT_THAT(text, HasSubstr("\xe2\xa0\x99"));
 }
 
 TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoSpinner) {
@@ -113,8 +116,8 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoSpinner) {
   std::string text = sl.getStatusText();
 
   // Charset 15 braille frames should not appear
-  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\xa0\x8b")));
-  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\xa0\x99")));
+  EXPECT_THAT(text, Not(HasSubstr("\xe2\xa0\x8b")));
+  EXPECT_THAT(text, Not(HasSubstr("\xe2\xa0\x99")));
 }
 
 TEST_F(StatusLineTest, testEvaluationPhaseShowsGauge) {
@@ -126,7 +129,7 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsGauge) {
   std::string text = sl.getStatusText();
 
   // gauge(0.5) renders full-block chars (U+2588 = \xe2\x96\x88)
-  EXPECT_THAT(text, testing::HasSubstr("\xe2\x96\x88"));
+  EXPECT_THAT(text, HasSubstr("\xe2\x96\x88"));
 }
 
 TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoGauge) {
@@ -136,7 +139,7 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoGauge) {
   std::string text = sl.getStatusText();
 
   // No full-block character (U+2588) should appear without gauge
-  EXPECT_THAT(text, testing::Not(testing::HasSubstr("\xe2\x96\x88")));
+  EXPECT_THAT(text, Not(HasSubstr("\xe2\x96\x88")));
 }
 
 TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
@@ -145,9 +148,9 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseLayout) {
 
   std::string text = sl.getStatusText();
 
-  EXPECT_THAT(text, testing::HasSubstr("BUILD-ORIG"));
-  EXPECT_THAT(text, testing::HasSubstr("[0/0]"));
-  EXPECT_THAT(text, testing::HasSubstr("0%"));
+  EXPECT_THAT(text, HasSubstr("BUILD-ORIG"));
+  EXPECT_THAT(text, HasSubstr("[0/0]"));
+  EXPECT_THAT(text, HasSubstr("0%"));
 }
 
 TEST_F(StatusLineTest, testDryRunPrefix) {
@@ -159,8 +162,8 @@ TEST_F(StatusLineTest, testDryRunPrefix) {
 
   std::string text = sl.getStatusText();
 
-  EXPECT_THAT(text, testing::HasSubstr("[DRY-RUN]"));
-  EXPECT_THAT(text, testing::HasSubstr("EVALUATION"));
+  EXPECT_THAT(text, HasSubstr("[DRY-RUN]"));
+  EXPECT_THAT(text, HasSubstr("EVALUATION"));
 }
 
 TEST_F(StatusLineTest, testRecordResultCountersCorrect) {
@@ -176,7 +179,7 @@ TEST_F(StatusLineTest, testRecordResultCountersCorrect) {
   std::string text = sl.getStatusText();
 
   // score = 2 / (2 + 1) = 66.7%; abnormals excluded from denominator
-  EXPECT_THAT(text, testing::HasSubstr("66.7%"));
+  EXPECT_THAT(text, HasSubstr("66.7%"));
 }
 
 TEST_F(StatusLineTest, testRecordResultDoesNotLogProgress) {
@@ -192,7 +195,7 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogProgress) {
   sl.recordResult(static_cast<int>(MutationState::KILLED));
   std::string output = testing::internal::GetCapturedStderr();
 
-  EXPECT_THAT(output, testing::Not(testing::HasSubstr("Progress:")));
+  EXPECT_THAT(output, Not(HasSubstr("Progress:")));
   Logger::setLevel(Logger::Level::OFF);
 }
 
@@ -208,7 +211,7 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogAtCompletion) {
   sl.recordResult(static_cast<int>(MutationState::KILLED));
   std::string output = testing::internal::GetCapturedStderr();
 
-  EXPECT_THAT(output, testing::Not(testing::HasSubstr("Progress:")));
+  EXPECT_THAT(output, Not(HasSubstr("Progress:")));
   Logger::setLevel(Logger::Level::OFF);
 }
 
@@ -226,7 +229,7 @@ TEST_F(StatusLineTest, testPhaseLabelCoversAllPhases) {
   for (const auto& [phase, label] : phases) {
     StatusLine sl;
     sl.setPhase(phase);
-    EXPECT_THAT(sl.getStatusText(), testing::HasSubstr(label)) << "Missing label for phase: " << label;
+    EXPECT_THAT(sl.getStatusText(), HasSubstr(label)) << "Missing label for phase: " << label;
   }
 }
 
@@ -240,7 +243,7 @@ TEST_F(StatusLineTest, testZeroDenominatorScoreIsZero) {
 
   std::string text = sl.getStatusText();
 
-  EXPECT_THAT(text, testing::HasSubstr("0.0%"));
+  EXPECT_THAT(text, HasSubstr("0.0%"));
 }
 
 TEST_F(StatusLineTest, testBuildProgressStringFormat) {
@@ -253,9 +256,9 @@ TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   std::string text = sl.getStatusText();
 
   // mCurrent == 25 (set by setMutantInfo), mTotal == 50 → [25/50]
-  EXPECT_THAT(text, testing::HasSubstr("[25/50]"));
+  EXPECT_THAT(text, HasSubstr("[25/50]"));
   // pct = 25 * 100 / 50 = 50 → "50%"
-  EXPECT_THAT(text, testing::HasSubstr("50%"));
+  EXPECT_THAT(text, HasSubstr("50%"));
 }
 
 TEST_F(StatusLineTest, testRaiseSigtstpWithIgnoreDoesNotCrash) {
@@ -284,6 +287,98 @@ TEST_F(StatusLineTest, testDisableRestoresSuspendHandlers) {
   struct sigaction after {};
   sigaction(SIGTSTP, nullptr, &after);
   EXPECT_EQ(before.sa_handler, after.sa_handler);
+}
+
+TEST_F(StatusLineTest, testHundredPercentScore) {
+  StatusLine sl;
+  sl.setTotalMutants(5);
+  for (int i = 0; i < 5; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("100.0%"));
+}
+
+TEST_F(StatusLineTest, testAllSurvivedScore) {
+  StatusLine sl;
+  sl.setTotalMutants(3);
+  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("0.0%"));
+}
+
+TEST_F(StatusLineTest, testGenerationPhaseLayout) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::GENERATION);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("GENERATION"));
+  // Non-evaluation phase should not have braille spinner chars
+  EXPECT_THAT(text, Not(HasSubstr("\xe2\xa0\x8b")));
+  EXPECT_THAT(text, Not(HasSubstr("\xe2\xa0\x99")));
+}
+
+TEST_F(StatusLineTest, testDonePhaseLayout) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::DONE);
+  sl.setTotalMutants(10);
+  for (int i = 0; i < 7; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("DONE"));
+  EXPECT_THAT(text, HasSubstr("70.0%"));
+}
+
+TEST_F(StatusLineTest, testCountWidthWithLargeTotal) {
+  StatusLine sl;
+  sl.setTotalMutants(10000);
+  sl.setMutantInfo(1);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("[1/10000]"));
+}
+
+TEST_F(StatusLineTest, testProgressWithZeroTotal) {
+  StatusLine sl;
+  sl.setTotalMutants(0);
+  sl.setMutantInfo(0);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("[0/0]"));
+  EXPECT_THAT(text, HasSubstr("0%"));
+}
+
+TEST_F(StatusLineTest, testDryRunWithNonEvaluationPhase) {
+  StatusLine sl;
+  sl.setDryRun(true);
+  sl.setPhase(StatusLine::Phase::GENERATION);
+
+  std::string text = sl.getStatusText();
+
+  EXPECT_THAT(text, HasSubstr("[DRY-RUN]"));
+  EXPECT_THAT(text, HasSubstr("GENERATION"));
+}
+
+TEST_F(StatusLineTest, testMixedResultsCorrectCounts) {
+  StatusLine sl;
+  sl.setTotalMutants(8);
+  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
+  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
+  sl.recordResult(static_cast<int>(MutationState::RUNTIME_ERROR));
+
+  std::string text = sl.getStatusText();
+
+  // score = 3 / (3 + 2) = 60.0%; abnormals excluded from denominator
+  EXPECT_THAT(text, HasSubstr("60.0%"));
 }
 
 }  // namespace sentinel

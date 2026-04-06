@@ -333,4 +333,64 @@ TEST_F(ConfigTest, testMergeWorkspacesDefaultsToEmpty) {
   EXPECT_TRUE(cfg.mergeWorkspaces.empty());
 }
 
+TEST_F(ConfigTest, testParseScopeValid) {
+  EXPECT_EQ(Scope::ALL, parseScope("all"));
+  EXPECT_EQ(Scope::ALL, parseScope("ALL"));
+  EXPECT_EQ(Scope::ALL, parseScope("All"));
+  EXPECT_EQ(Scope::COMMIT, parseScope("commit"));
+  EXPECT_EQ(Scope::COMMIT, parseScope("COMMIT"));
+}
+
+TEST_F(ConfigTest, testParseScopeInvalid) {
+  EXPECT_THROW(parseScope("invalid"), std::invalid_argument);
+  EXPECT_THROW(parseScope(""), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testParseGeneratorValid) {
+  EXPECT_EQ(Generator::UNIFORM, parseGenerator("uniform"));
+  EXPECT_EQ(Generator::UNIFORM, parseGenerator("UNIFORM"));
+  EXPECT_EQ(Generator::RANDOM, parseGenerator("random"));
+  EXPECT_EQ(Generator::WEIGHTED, parseGenerator("weighted"));
+}
+
+TEST_F(ConfigTest, testParseGeneratorInvalid) {
+  EXPECT_THROW(parseGenerator("invalid"), std::invalid_argument);
+  EXPECT_THROW(parseGenerator(""), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testScopeToString) {
+  EXPECT_EQ("all", scopeToString(Scope::ALL));
+  EXPECT_EQ("commit", scopeToString(Scope::COMMIT));
+}
+
+TEST_F(ConfigTest, testGeneratorToString) {
+  EXPECT_EQ("uniform", generatorToString(Generator::UNIFORM));
+  EXPECT_EQ("random", generatorToString(Generator::RANDOM));
+  EXPECT_EQ("weighted", generatorToString(Generator::WEIGHTED));
+}
+
+TEST_F(ConfigTest, testStreamOperatorWithOutputDir) {
+  Config cfg = Config::withDefaults();
+  cfg.outputDir = "/tmp/output";
+  cfg.timeout = 60;
+
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+
+  EXPECT_NE(std::string::npos, yaml.find("output-dir"));
+  EXPECT_NE(std::string::npos, yaml.find("/tmp/output"));
+  EXPECT_NE(std::string::npos, yaml.find("timeout: 60"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorWithoutOptionals) {
+  Config cfg = Config::withDefaults();
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+
+  EXPECT_EQ(std::string::npos, yaml.find("output-dir"));
+  EXPECT_EQ(std::string::npos, yaml.find("timeout"));
+}
+
 }  // namespace sentinel

@@ -260,4 +260,34 @@ TEST_F(MutantsTest, testStreamOperatorYamlRoundTripEmptyToken) {
   EXPECT_TRUE(equal(original, loaded));
 }
 
+TEST_F(MutantsTest, testStreamOperatorEmptyInputSetsFail) {
+  std::istringstream in("");
+  Mutant m;
+  in >> m;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutantsTest, testStreamOperatorNonMapYamlSetsFail) {
+  std::istringstream in("- list\n- items\n");
+  Mutant m;
+  in >> m;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutantsTest, testStreamOperatorMissingFieldSetsFail) {
+  // YAML map without the required 'token' field
+  std::istringstream in("operator: AOR\npath: /tmp/foo.cpp\nfunction: foo\n"
+                        "first: {line: 1, column: 0}\nlast: {line: 1, column: 5}\n");
+  Mutant m;
+  in >> m;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutantsTest, testStreamOperatorInvalidYamlSetsFail) {
+  std::istringstream in("{{{bad");
+  Mutant m;
+  in >> m;
+  EXPECT_TRUE(in.fail());
+}
+
 }  // namespace sentinel

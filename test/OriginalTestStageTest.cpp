@@ -21,6 +21,7 @@ namespace fs = std::filesystem;
 
 using ::testing::AllOf;
 using ::testing::HasSubstr;
+using ::testing::Not;
 using ::testing::ThrowsMessage;
 
 namespace sentinel {
@@ -165,6 +166,39 @@ TEST_F(OriginalTestStageTest, testInvalidTestCommandWithNoResultsThrows) {
   mConfig.timeout = std::nullopt;
   mConfig.testCmd = "not_existing_cmd_xyz";
 
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(HasSubstr("test command failed")));
+}
+
+TEST_F(OriginalTestStageTest, testVerboseSuccessfulRun) {
+  mConfig.verbose = true;
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+
+  EXPECT_NO_THROW(stage->run(&ctx));
+  EXPECT_TRUE(mWorkspace->hasPreviousRun());
+}
+
+TEST_F(OriginalTestStageTest, testVerboseSignalExitDoesNotAppendLogTail) {
+  mConfig.verbose = true;
+  mConfig.testCmd = "sh -c 'kill -SEGV $$'";
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THAT(
+      [&] { stage->run(&ctx); },
+      ThrowsMessage<std::runtime_error>(
+          AllOf(HasSubstr("killed by a signal"), Not(HasSubstr("test not found")))));
+}
+
+TEST_F(OriginalTestStageTest, testTestFailedWithNoResults) {
+  mConfig.testCmd = "false";
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
   EXPECT_THAT(

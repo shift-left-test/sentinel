@@ -92,4 +92,24 @@ TEST_F(LoggerTest, testSetLevelAffectsAllLogs) {
   EXPECT_STREQ("1\n2\n", testing::internal::GetCapturedStderr().c_str());
 }
 
+TEST_F(LoggerTest, testIsAllowedRespectsWarnLevel) {
+  Logger::setLevel(Logger::Level::WARN);
+  testing::internal::CaptureStderr();
+  Logger::verbose("V");
+  Logger::info("I");
+  Logger::warn("W");
+  Logger::error("E");
+  EXPECT_STREQ("WARN: W\nERROR: E\n", testing::internal::GetCapturedStderr().c_str());
+}
+
+TEST_F(LoggerTest, testErrorLevelOnlyShowsErrors) {
+  Logger::setLevel(Logger::Level::ERROR);
+  testing::internal::CaptureStderr();
+  Logger::verbose("V");
+  Logger::info("I");
+  Logger::warn("W");
+  Logger::error("E");
+  EXPECT_STREQ("ERROR: E\n", testing::internal::GetCapturedStderr().c_str());
+}
+
 }  // namespace sentinel
