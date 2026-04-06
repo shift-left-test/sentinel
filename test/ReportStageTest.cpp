@@ -204,4 +204,52 @@ TEST_F(ReportStageTest, testEmptyOutputDirDoesNotSaveReports) {
   EXPECT_FALSE(fs::exists(mBase / "mutations.xml"));
 }
 
+TEST_F(ReportStageTest, testOutputDirSavesHtmlAndCssFiles) {
+  addResult(1, MutationState::KILLED);
+
+  fs::path outputDir = mBase / "html-reports";
+  Config cfg = makeConfig(outputDir);
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  EXPECT_TRUE(fs::exists(outputDir / "mutations.xml"));
+  EXPECT_TRUE(fs::exists(outputDir / "index.html"));
+  EXPECT_TRUE(fs::exists(outputDir / "style.css"));
+  EXPECT_TRUE(fs::is_directory(outputDir / "srcDir"));
+}
+
+TEST_F(ReportStageTest, testNoMutantsWithOutputDirCreatesMinimalReport) {
+  // RPT-08: 0 mutants + output-dir
+  fs::path outputDir = mBase / "empty-reports";
+  Config cfg = makeConfig(outputDir);
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  EXPECT_TRUE(fs::exists(outputDir / "index.html"));
+  EXPECT_TRUE(fs::exists(outputDir / "style.css"));
+  // No source HTML directory should be generated when there are 0 mutants
+  EXPECT_FALSE(fs::exists(outputDir / "srcDir"));
+}
+
+TEST_F(ReportStageTest, testBuildFailureAndTimeoutDoNotCountAsKilled) {
+  addResult(1, MutationState::KILLED);
+  addResult(2, MutationState::BUILD_FAILURE);
+  addResult(3, MutationState::TIMEOUT);
+  addResult(4, MutationState::SURVIVED);
+
+  Config cfg = makeConfig();
+  Logger::setLevel(Logger::Level::INFO);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  // 1 killed out of 2 valid (killed + survived); BUILD_FAILURE and TIMEOUT are skipped
+  EXPECT_THAT(output, ::testing::HasSubstr("50.0%"));
+}
+
 }  // namespace sentinel

@@ -165,6 +165,30 @@ TEST_F(PartitionedWorkspaceMergerTest,
 }
 
 TEST_F(PartitionedWorkspaceMergerTest,
+       testThrowsWhenSourceMissingCandidateCount) {
+  fs::path target = mBase / "merged";
+  fs::path source = mBase / "no-candidate-count";
+  Workspace ws(source);
+  ws.initialize();
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make";
+  cfg.testCmd = "ctest";
+  cfg.testResultDir = "/tmp/results";
+  ws.saveConfig(cfg);
+
+  WorkspaceStatus status;
+  status.partIndex = 1;
+  status.partCount = 3;
+  status.seed = 12345;
+  status.version = PROGRAM_VERSION;
+  ws.saveStatus(status);
+  ws.setComplete();
+
+  PartitionedWorkspaceMerger merger(target, {source}, false);
+  EXPECT_THROW(merger.merge(), std::runtime_error);
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
        testThrowsWhenSourceMissingSeed) {
   fs::path target = mBase / "merged";
   fs::path source = mBase / "no-seed";

@@ -175,4 +175,16 @@ TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   EXPECT_FALSE(result.getDetected());
 }
 
+TEST_F(EvaluatorTest, testConstructorThrowsForUnsupportedXmlSchema) {
+  auto unsupportedDir = BASE / "UNSUPPORTED_XML_DIR";
+  fs::create_directories(unsupportedDir);
+  // XML file that doesn't match GoogleTest/CTest/QTest schema
+  writeFile(unsupportedDir / "result.xml",
+            "<?xml version=\"1.0\"?>\n"
+            "<custom_report><item name=\"test1\" status=\"ok\"/>"
+            "</custom_report>\n");
+
+  EXPECT_THROW(Evaluator(unsupportedDir, SAMPLE_BASE), InvalidArgumentException);
+}
+
 }  // namespace sentinel

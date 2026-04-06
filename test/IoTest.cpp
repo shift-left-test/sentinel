@@ -104,4 +104,39 @@ TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
   EXPECT_TRUE(fs::exists(to / "new.xml"));
 }
 
+TEST_F(IoTest, testSyncFilesDuplicateNameInSubdirsThrows) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  writeFile(from / "sub1" / "result.xml", "<xml>1</xml>");
+  writeFile(from / "sub2" / "result.xml", "<xml>2</xml>");
+
+  // flat copy: second file with same name should cause filesystem_error
+  EXPECT_THROW(io::syncFiles(from, to), std::filesystem::filesystem_error);
+}
+
+TEST_F(IoTest, testSyncFilesNonXmlOnlyResultsInEmptyDestination) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+  writeFile(from / "result.json", "{}");
+  writeFile(from / "data.txt", "text");
+  writeFile(from / "report.html", "<html/>");
+
+  io::syncFiles(from, to);
+
+  EXPECT_TRUE(fs::is_directory(to));
+  EXPECT_TRUE(fs::is_empty(to));
+}
+
+TEST_F(IoTest, testSyncFilesEmptySourceResultsInEmptyDestination) {
+  auto from = mTestDir / "from";
+  auto to = mTestDir / "to";
+  fs::create_directories(from);
+
+  io::syncFiles(from, to);
+
+  EXPECT_TRUE(fs::is_directory(to));
+  EXPECT_TRUE(fs::is_empty(to));
+}
+
 }  // namespace sentinel
