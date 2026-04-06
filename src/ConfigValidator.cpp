@@ -50,21 +50,17 @@ void ConfigValidator::validate(const Config& config) {
   }
 
   if (!config.operators.empty()) {
-    const auto& validOps = MutationOperatorExpansionMap();
     std::vector<std::string> invalidOps;
     std::copy_if(config.operators.begin(), config.operators.end(),
                  std::back_inserter(invalidOps),
-                 [&validOps](const std::string& op) {
-                   return validOps.find(string::toUpper(op)) == validOps.end();
+                 [](const std::string& op) {
+                   return !isValidOperator(string::toUpper(op));
                  });
     if (!invalidOps.empty()) {
-      std::vector<std::string> validKeys;
-      for (const auto& [key, _] : validOps) {
-        validKeys.push_back(key);
-      }
       throw InvalidArgumentException(
           fmt::format("Unknown --operator: {}. Valid operators: {}",
-                      fmt::join(invalidOps, ", "), fmt::join(validKeys, ", ")));
+                      fmt::join(invalidOps, ", "),
+                      fmt::join(validOperatorNames(), ", ")));
     }
   }
 
