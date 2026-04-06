@@ -19,7 +19,7 @@ set(USE_BUNDLED_ZLIB ON CACHE BOOL "" FORCE)
 set(USE_NTLMCLIENT OFF CACHE BOOL "" FORCE)
 set(SONAME OFF CACHE BOOL "" FORCE)
 set(DEPRECATE_HARD ON CACHE BOOL "" FORCE)
-add_subdirectory(libgit2)
+add_subdirectory(libgit2 EXCLUDE_FROM_ALL)
 target_include_directories(libgit2package SYSTEM PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgit2/include>)
 
