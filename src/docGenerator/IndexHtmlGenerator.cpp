@@ -354,7 +354,7 @@ R"(        <div>
           <div class="bar-track">{}</div>
         </div>
 )",
-        MutationOperatorToExpansion(op), cnt, bars);
+        mutationOperatorToExpansion(op), cnt, bars);
   }
 
   // --- Duration donut ---

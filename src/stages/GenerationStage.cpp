@@ -96,7 +96,7 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("  Operator");
   Console::out("{}", thin);
   for (const auto& [op, count] : groupByOperator) {
-    Console::out(rowFmt1, MutationOperatorToExpansion(op), flen, count, kMutantsCol);
+    Console::out(rowFmt1, mutationOperatorToExpansion(op), flen, count, kMutantsCol);
   }
 
   // Footer

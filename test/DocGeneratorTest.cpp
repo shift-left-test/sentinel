@@ -47,9 +47,9 @@ TEST_F(DocGeneratorTest, testSrcHtmlGeneratorStrProducesValidHTML) {
 
 TEST_F(DocGeneratorTest, testMutationOperatorExpansionUsesReadableSpacing) {
   EXPECT_EQ("AOR (Arithmetic Operator Replacement)",
-            MutationOperatorToExpansion("AOR"));
+            mutationOperatorToExpansion("AOR"));
   EXPECT_EQ("UOI (Unary Operator Insertion)",
-            MutationOperatorToExpansion("UOI"));
+            mutationOperatorToExpansion("UOI"));
 }
 
 }  // namespace sentinel

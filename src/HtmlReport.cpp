@@ -302,7 +302,7 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
         mutatedCode.append(mutatedCodeHead);
         mutatedCode.append(mr->getMutant().getToken());
         mutatedCode.append(mutatedCodeTail);
-        lineExplainVec.emplace_back(count, MutationOperatorToExpansion(mr->getMutant().getOperator()), oriCode,
+        lineExplainVec.emplace_back(count, mutationOperatorToExpansion(mr->getMutant().getOperator()), oriCode,
                                     mutatedCode, mr->getDetected(), mr->getKillingTest());
       }
     }
@@ -314,12 +314,12 @@ void HtmlReport::makeSourceHtml(const std::vector<const MutationResult*>& mrs, c
     for (const auto& mr : *t.second) {
       count += 1;
       shg.pushMutation(t.first, mr->getDetected(), count, mr->getKillingTest(),
-                       MutationOperatorToExpansion(mr->getMutant().getOperator()));
+                       mutationOperatorToExpansion(mr->getMutant().getOperator()));
     }
   }
 
   for (const auto& ts : uniqueMutator) {
-    shg.pushMutator(MutationOperatorToExpansion(ts));
+    shg.pushMutator(mutationOperatorToExpansion(ts));
   }
 
   for (const auto& ts : uniqueKillingTest) {

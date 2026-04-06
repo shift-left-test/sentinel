@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
 
   YAML::Emitter emitter;
   emitter << YAML::BeginMap;
-  emitter << YAML::Key << "state" << YAML::Value << MutationStateToStr(mr.getMutationState());
+  emitter << YAML::Key << "state" << YAML::Value << mutationStateToStr(mr.getMutationState());
   emitter << YAML::Key << "killing-test" << YAML::Value << mr.getKillingTest();
   emitter << YAML::Key << "error-test" << YAML::Value << mr.getErrorTest();
   emitter << YAML::Key << "build-time" << YAML::Value << mr.getBuildSecs();
@@ -100,7 +100,7 @@ std::istream& operator>>(std::istream& in, MutationResult& mr) {
     mr = MutationResult(m,
                         node["killing-test"].as<std::string>(),
                         node["error-test"].as<std::string>(),
-                        StrToMutationState(node["state"].as<std::string>()));
+                        strToMutationState(node["state"].as<std::string>()));
     if (node["build-time"]) {
       mr.setBuildSecs(node["build-time"].as<double>());
     }

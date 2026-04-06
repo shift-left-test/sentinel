@@ -52,11 +52,11 @@ TEST_F(ExceptionTest, testThresholdErrorMessage) {
 class MutationStateTest : public ::testing::Test {};
 
 TEST_F(MutationStateTest, testMutationStateToStrReturnsCorrectStrings) {
-  EXPECT_STREQ("KILLED", MutationStateToStr(MutationState::KILLED));
-  EXPECT_STREQ("SURVIVED", MutationStateToStr(MutationState::SURVIVED));
-  EXPECT_STREQ("RUNTIME_ERROR", MutationStateToStr(MutationState::RUNTIME_ERROR));
-  EXPECT_STREQ("BUILD_FAILURE", MutationStateToStr(MutationState::BUILD_FAILURE));
-  EXPECT_STREQ("TIMEOUT", MutationStateToStr(MutationState::TIMEOUT));
+  EXPECT_STREQ("KILLED", mutationStateToStr(MutationState::KILLED));
+  EXPECT_STREQ("SURVIVED", mutationStateToStr(MutationState::SURVIVED));
+  EXPECT_STREQ("RUNTIME_ERROR", mutationStateToStr(MutationState::RUNTIME_ERROR));
+  EXPECT_STREQ("BUILD_FAILURE", mutationStateToStr(MutationState::BUILD_FAILURE));
+  EXPECT_STREQ("TIMEOUT", mutationStateToStr(MutationState::TIMEOUT));
 }
 
 }  // namespace sentinel

@@ -23,7 +23,7 @@ enum class MutationState : int { KILLED = 0, SURVIVED = 1, RUNTIME_ERROR = 2, BU
  * @return meaning of MutationState
  *
  */
-inline const char* MutationStateToStr(MutationState m) {
+inline const char* mutationStateToStr(MutationState m) {
   switch (m) {
     case MutationState::KILLED:
       return "KILLED";
@@ -47,7 +47,7 @@ inline const char* MutationStateToStr(MutationState m) {
  * @return corresponding MutationState
  * @throws std::invalid_argument if the string is unrecognized
  */
-inline MutationState StrToMutationState(const std::string& s) {
+inline MutationState strToMutationState(const std::string& s) {
   if (s == "KILLED") return MutationState::KILLED;
   if (s == "SURVIVED") return MutationState::SURVIVED;
   if (s == "RUNTIME_ERROR") return MutationState::RUNTIME_ERROR;
@@ -62,7 +62,7 @@ inline MutationState StrToMutationState(const std::string& s) {
  * @param m MutationState
  * @return Utf8Char icon representing the state
  */
-inline Utf8Char MutationStateIcon(MutationState m) {
+inline Utf8Char mutationStateIcon(MutationState m) {
   switch (m) {
     case MutationState::KILLED:
       return Utf8Char::CrossMark;

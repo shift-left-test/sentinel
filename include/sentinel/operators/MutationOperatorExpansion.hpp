@@ -64,7 +64,7 @@ inline const std::vector<std::string>& validOperatorNames() {
  * @return expanded description (e.g. "AOR (Arithmetic Operator Replacement)")
  * @throw std::out_of_range if mo is not a valid operator
  */
-inline std::string MutationOperatorToExpansion(const std::string& mo) {
+inline std::string mutationOperatorToExpansion(const std::string& mo) {
   return detail::operatorExpansionMap().at(mo);
 }
 

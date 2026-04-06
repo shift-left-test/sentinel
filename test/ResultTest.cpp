@@ -373,20 +373,20 @@ TEST_F(ResultTest, testResultWithWrongResultFmt) {
   makeAndTestWrongResultXml(TC4_QT, "name");
 }
 
-TEST_F(ResultTest, MutationStateIconReturnsCorrectIcons) {
-  auto killed = MutationStateIcon(MutationState::KILLED);
+TEST_F(ResultTest, testMutationStateIconReturnsCorrectIcons) {
+  auto killed = mutationStateIcon(MutationState::KILLED);
   EXPECT_STREQ(killed.c_str(), Utf8Char::CrossMark.c_str());
 
-  auto survived = MutationStateIcon(MutationState::SURVIVED);
+  auto survived = mutationStateIcon(MutationState::SURVIVED);
   EXPECT_STREQ(survived.c_str(), Utf8Char::CheckMark.c_str());
 
-  auto buildFailure = MutationStateIcon(MutationState::BUILD_FAILURE);
+  auto buildFailure = mutationStateIcon(MutationState::BUILD_FAILURE);
   EXPECT_STREQ(buildFailure.c_str(), Utf8Char::Warning.c_str());
 
-  auto runtimeError = MutationStateIcon(MutationState::RUNTIME_ERROR);
+  auto runtimeError = mutationStateIcon(MutationState::RUNTIME_ERROR);
   EXPECT_STREQ(runtimeError.c_str(), Utf8Char::Warning.c_str());
 
-  auto timeout = MutationStateIcon(MutationState::TIMEOUT);
+  auto timeout = mutationStateIcon(MutationState::TIMEOUT);
   EXPECT_STREQ(timeout.c_str(), Utf8Char::Warning.c_str());
 }
 
