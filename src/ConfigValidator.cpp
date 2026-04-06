@@ -4,6 +4,8 @@
  */
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
@@ -11,6 +13,8 @@
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/operators/MutationOperatorExpansion.hpp"
+#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -42,6 +46,25 @@ void ConfigValidator::validate(const Config& config) {
       Partition::parse(*config.partition);
     } catch (const std::invalid_argument& e) {
       throw InvalidArgumentException(e.what());
+    }
+  }
+
+  if (!config.operators.empty()) {
+    const auto& validOps = MutationOperatorExpansionMap();
+    std::vector<std::string> invalidOps;
+    std::copy_if(config.operators.begin(), config.operators.end(),
+                 std::back_inserter(invalidOps),
+                 [&validOps](const std::string& op) {
+                   return validOps.find(string::toUpper(op)) == validOps.end();
+                 });
+    if (!invalidOps.empty()) {
+      std::vector<std::string> validKeys;
+      for (const auto& [key, _] : validOps) {
+        validKeys.push_back(key);
+      }
+      throw InvalidArgumentException(
+          fmt::format("Unknown --operator: {}. Valid operators: {}",
+                      fmt::join(invalidOps, ", "), fmt::join(validKeys, ", ")));
     }
   }
 

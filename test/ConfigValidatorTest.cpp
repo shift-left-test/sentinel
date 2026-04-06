@@ -142,6 +142,31 @@ TEST_F(ConfigValidatorTest, testWarningForAbsolutePatternInsideSourceDir) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
+TEST_F(ConfigValidatorTest, testThrowsOnInvalidOperator) {
+  mConfig.operators = {"AAA"};
+  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidatorTest, testThrowsOnMixedValidAndInvalidOperators) {
+  mConfig.operators = {"AOR", "XXX"};
+  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidatorTest, testAcceptsValidOperators) {
+  mConfig.operators = {"AOR", "BOR", "LCR", "ROR", "SDL", "SOR", "UOI"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testAcceptsValidOperatorsCaseInsensitive) {
+  mConfig.operators = {"aor", "Bor"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testEmptyOperatorsIsValid) {
+  mConfig.operators = {};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
 TEST_F(ConfigValidatorTest, testMergeModeSkipsRequiredFieldValidation) {
   Config cfg = Config::withDefaults();
   cfg.mergeWorkspaces = {"/data/part1"};
