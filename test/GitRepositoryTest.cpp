@@ -12,6 +12,7 @@
 #include <vector>
 #include "harness/git-harness/GitHarness.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
@@ -21,7 +22,6 @@ namespace fs = std::filesystem;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::Not;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -45,10 +45,10 @@ class GitRepositoryTest : public ::testing::Test {
 };
 
 TEST_F(GitRepositoryTest, testNonexistentSourceDirThrows) {
-  EXPECT_THAT(
-      [] { GitRepository repo("/nonexistent/path"); },
-      ThrowsMessage<InvalidArgumentException>(
-          AllOf(HasSubstr("--source-dir"), HasSubstr("/nonexistent/path"), Not(HasSubstr("filesystem error")))));
+  EXPECT_THROW_MESSAGE(
+      { GitRepository repo("/nonexistent/path"); },
+      InvalidArgumentException,
+      AllOf(HasSubstr("--source-dir"), HasSubstr("/nonexistent/path"), Not(HasSubstr("filesystem error"))));
 }
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {

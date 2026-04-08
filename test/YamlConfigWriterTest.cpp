@@ -10,9 +10,9 @@
 #include <string>
 #include "sentinel/YamlConfigWriter.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 
 using ::testing::HasSubstr;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 namespace fs = std::filesystem;
@@ -48,9 +48,9 @@ TEST_F(YamlConfigWriterTest, testWriteTemplateContentContainsVersionKey) {
 
 TEST_F(YamlConfigWriterTest, testWriteTemplateThrowsWhenPathIsDirectory) {
   fs::create_directories(mBase / "sentinel.yaml");
-  EXPECT_THAT(
-      [&] { YamlConfigWriter::writeTemplate(mBase / "sentinel.yaml"); },
-      ThrowsMessage<std::runtime_error>(HasSubstr("sentinel.yaml")));
+  EXPECT_THROW_MESSAGE(
+      YamlConfigWriter::writeTemplate(mBase / "sentinel.yaml"),
+      std::runtime_error, HasSubstr("sentinel.yaml"));
 }
 
 TEST_F(YamlConfigWriterTest, testWriteTemplateOverwritesExistingFile) {

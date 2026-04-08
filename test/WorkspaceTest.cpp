@@ -20,12 +20,12 @@
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Workspace.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 
 namespace fs = std::filesystem;
 
 using ::testing::AllOf;
 using ::testing::HasSubstr;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -333,9 +333,9 @@ TEST_F(WorkspaceTest, testSaveConfigFailsWhenPathIsDirectory) {
   ws.initialize();
   fs::create_directories(mRoot / "config.yaml");
   Config cfg = Config::withDefaults();
-  EXPECT_THAT(
-      [&] { ws.saveConfig(cfg); },
-      ThrowsMessage<std::runtime_error>(AllOf(HasSubstr("config.yaml"), HasSubstr(":"))));
+  EXPECT_THROW_MESSAGE(
+      ws.saveConfig(cfg),
+      std::runtime_error, AllOf(HasSubstr("config.yaml"), HasSubstr(":")));
 }
 
 TEST_F(WorkspaceTest, testSaveStatusFailsWhenRootMissing) {

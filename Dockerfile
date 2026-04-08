@@ -22,16 +22,18 @@ RUN apt-get update && \
         gnupg \
         gpg-agent \
         graphviz \
+        libgmock-dev \
+        libgtest-dev \
         libncurses5-dev \
         libzstd-dev \
-        zlib1g-dev \
         locales \
         ninja-build \
         pkg-config \
         python3 \
         python3-pip \
         software-properties-common \
-        wget && \
+        wget \
+        zlib1g-dev && \
     locale-gen en_US.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
 
@@ -52,14 +54,6 @@ RUN python3 -m pip install --no-cache-dir -U pip && \
     python3 -m pip install --no-cache-dir -U \
         cpplint \
         gcovr
-
-# GoogleTest (1.15 for ThrowsMessage support, requires 1.12+)
-RUN wget -qO /tmp/googletest.tar.gz \
-        https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz && \
-    tar -xzf /tmp/googletest.tar.gz -C /tmp && \
-    cmake -S /tmp/googletest-1.15.2 -B /tmp/googletest-build && \
-    cmake --build /tmp/googletest-build --target install && \
-    rm -rf /tmp/googletest*
 
 ENV LANG=en_US.UTF-8
 ENV TZ=Asia/Seoul

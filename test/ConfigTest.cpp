@@ -13,13 +13,13 @@
 #include <vector>
 #include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/YamlConfigParser.hpp"
 
 namespace fs = std::filesystem;
 
 using ::testing::HasSubstr;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -211,17 +211,17 @@ TEST_F(ConfigTest, testYamlMissingVersionThrows) {
 TEST_F(ConfigTest, testYamlNewerVersionSuggestsUpgrade) {
   writeFile("future.yaml", "version: 99\nbuild-command: make\n");
   Config cfg;
-  EXPECT_THAT(
-      [&] { YamlConfigParser::applyTo(&cfg, configPath("future.yaml")); },
-      ThrowsMessage<std::runtime_error>(HasSubstr("upgrade sentinel")));
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("future.yaml")),
+      std::runtime_error, HasSubstr("upgrade sentinel"));
 }
 
 TEST_F(ConfigTest, testYamlOlderVersionSuggestsRegenerate) {
   writeFile("old.yaml", "version: 0\nbuild-command: make\n");
   Config cfg;
-  EXPECT_THAT(
-      [&] { YamlConfigParser::applyTo(&cfg, configPath("old.yaml")); },
-      ThrowsMessage<std::runtime_error>(HasSubstr("sentinel --init")));
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("old.yaml")),
+      std::runtime_error, HasSubstr("sentinel --init"));
 }
 
 TEST_F(ConfigTest, testYamlVersionAsNonIntegerThrows) {

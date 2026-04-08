@@ -10,6 +10,7 @@
 #include <memory>
 #include <stdexcept>
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/PipelineContext.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -19,7 +20,6 @@
 namespace fs = std::filesystem;
 
 using ::testing::HasSubstr;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -130,10 +130,9 @@ TEST_F(OriginalBuildStageTest, testExecuteVerboseModeBuildFailed) {
   auto stage = std::make_shared<OriginalBuildStage>();
   auto ctx = makeCtx();
 
-  EXPECT_THAT(
-      [&]() { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(
-          HasSubstr("Original build failed")));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, HasSubstr("Original build failed"));
 }
 
 }  // namespace sentinel

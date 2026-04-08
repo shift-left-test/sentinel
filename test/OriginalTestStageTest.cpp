@@ -11,6 +11,7 @@
 #include <string>
 #include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/PipelineContext.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -22,7 +23,6 @@ namespace fs = std::filesystem;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::Not;
-using ::testing::ThrowsMessage;
 
 namespace sentinel {
 
@@ -133,10 +133,9 @@ TEST_F(OriginalTestStageTest, testEmptyTestResultsThrows) {
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THAT(
-      [&] { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(
-          AllOf(HasSubstr("No test result files found"), HasSubstr("test not found"))));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, AllOf(HasSubstr("No test result files found"), HasSubstr("test not found")));
 }
 
 TEST_F(OriginalTestStageTest, testSuccessfulRunSavesConfig) {
@@ -157,9 +156,9 @@ TEST_F(OriginalTestStageTest, testSignalExitThrows) {
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THAT(
-      [&] { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(AllOf(HasSubstr("killed by a signal"), HasSubstr("\n"))));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, AllOf(HasSubstr("killed by a signal"), HasSubstr("\n")));
 }
 
 TEST_F(OriginalTestStageTest, testInvalidTestCommandWithNoResultsThrows) {
@@ -168,9 +167,9 @@ TEST_F(OriginalTestStageTest, testInvalidTestCommandWithNoResultsThrows) {
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THAT(
-      [&] { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(HasSubstr("test command failed")));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, HasSubstr("test command failed"));
 }
 
 TEST_F(OriginalTestStageTest, testVerboseSuccessfulRun) {
@@ -191,19 +190,18 @@ TEST_F(OriginalTestStageTest, testVerboseSignalExitDoesNotAppendLogTail) {
 
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THAT(
-      [&] { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(
-          AllOf(HasSubstr("killed by a signal"), Not(HasSubstr("test not found")))));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, AllOf(HasSubstr("killed by a signal"), Not(HasSubstr("test not found"))));
 }
 
 TEST_F(OriginalTestStageTest, testTestFailedWithNoResults) {
   mConfig.testCmd = "false";
   auto stage = std::make_shared<OriginalTestStage>();
   auto ctx = makeCtx();
-  EXPECT_THAT(
-      [&] { stage->run(&ctx); },
-      ThrowsMessage<std::runtime_error>(HasSubstr("test command failed")));
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error, HasSubstr("test command failed"));
 }
 
 }  // namespace sentinel
