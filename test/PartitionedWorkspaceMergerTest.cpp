@@ -46,7 +46,6 @@ class PartitionedWorkspaceMergerTest : public ::testing::Test {
     cfg.buildCmd = "make";
     cfg.testCmd = "ctest";
     cfg.testResultDir = "/tmp/results";
-    cfg.scope = Scope::ALL;
     cfg.generator = Generator::UNIFORM;
     cfg.limit = 0;
     ws.saveConfig(cfg);
@@ -396,7 +395,7 @@ TEST_F(PartitionedWorkspaceMergerTest,
     cfg.buildCmd = "make";
     cfg.testCmd = "ctest";
     cfg.testResultDir = "/tmp/results";
-    cfg.scope = Scope::COMMIT;
+    cfg.from = "HEAD~1";
     Workspace ws(src2);
     ws.saveConfig(cfg);
   }

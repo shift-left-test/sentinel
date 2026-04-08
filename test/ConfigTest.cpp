@@ -57,7 +57,8 @@ TEST_F(ConfigTest, testWithDefaultsSetsAbsolutePaths) {
 
 TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   auto cfg = Config::withDefaults();
-  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_FALSE(cfg.from.has_value());
+  EXPECT_FALSE(cfg.uncommitted);
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
@@ -71,7 +72,7 @@ version: 1
 source-dir: ./src
 output-dir: ./out
 compiledb-dir: ./build
-scope: commit
+from: HEAD~1
 extension:
   - cpp
   - cxx
@@ -96,7 +97,8 @@ operator:
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
   EXPECT_EQ((mTmpDir / "out").lexically_normal(), cfg.outputDir);
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
-  EXPECT_EQ(Scope::COMMIT, cfg.scope);
+  ASSERT_TRUE(cfg.from.has_value());
+  EXPECT_EQ("HEAD~1", *cfg.from);
   EXPECT_EQ(std::vector<std::string>({"cpp", "cxx"}), cfg.extensions);
   EXPECT_EQ(std::vector<std::string>({"src/**", "!test/**"}), cfg.patterns);
   EXPECT_EQ("make", cfg.buildCmd);
@@ -123,7 +125,7 @@ test-result-dir: ./test-results
   EXPECT_EQ("make all", cfg.buildCmd);
   EXPECT_EQ("ctest --verbose", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "test-results").lexically_normal(), cfg.testResultDir);
-  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_FALSE(cfg.from.has_value());
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
 }
@@ -284,7 +286,7 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   Config cfg = Config::withDefaults();
   cfg.buildCmd = "make -j8";
   cfg.testCmd = "ctest";
-  cfg.scope = Scope::ALL;
+  cfg.from = "HEAD~1";
   cfg.generator = Generator::UNIFORM;
   cfg.extensions = {"cpp", "cc"};
   cfg.operators = {"AOR", "ROR"};
@@ -294,7 +296,7 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   std::string yaml = out.str();
   EXPECT_NE(std::string::npos, yaml.find("version: 1"));
   EXPECT_NE(std::string::npos, yaml.find("build-command: make -j8"));
-  EXPECT_NE(std::string::npos, yaml.find("scope: all"));
+  EXPECT_NE(std::string::npos, yaml.find("from: HEAD~1"));
 }
 
 TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
@@ -304,7 +306,7 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.buildCmd = "make";
   original.testCmd = "ctest";
   original.testResultDir = fs::absolute("results");
-  original.scope = Scope::COMMIT;
+  original.from = "main";
   original.generator = Generator::RANDOM;
   original.timeout = 120;
   original.extensions = {"cpp"};
@@ -322,7 +324,8 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   EXPECT_EQ(original.sourceDir, loaded.sourceDir);
   EXPECT_EQ(original.buildCmd, loaded.buildCmd);
   EXPECT_EQ(original.testCmd, loaded.testCmd);
-  EXPECT_EQ(original.scope, loaded.scope);
+  ASSERT_TRUE(loaded.from.has_value());
+  EXPECT_EQ(*original.from, *loaded.from);
   EXPECT_EQ(original.generator, loaded.generator);
   ASSERT_TRUE(loaded.timeout.has_value());
   EXPECT_EQ(*original.timeout, *loaded.timeout);
@@ -331,19 +334,6 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
 TEST_F(ConfigTest, testMergeWorkspacesDefaultsToEmpty) {
   Config cfg = Config::withDefaults();
   EXPECT_TRUE(cfg.mergeWorkspaces.empty());
-}
-
-TEST_F(ConfigTest, testParseScopeValid) {
-  EXPECT_EQ(Scope::ALL, parseScope("all"));
-  EXPECT_EQ(Scope::ALL, parseScope("ALL"));
-  EXPECT_EQ(Scope::ALL, parseScope("All"));
-  EXPECT_EQ(Scope::COMMIT, parseScope("commit"));
-  EXPECT_EQ(Scope::COMMIT, parseScope("COMMIT"));
-}
-
-TEST_F(ConfigTest, testParseScopeInvalid) {
-  EXPECT_THROW(parseScope("invalid"), std::invalid_argument);
-  EXPECT_THROW(parseScope(""), std::invalid_argument);
 }
 
 TEST_F(ConfigTest, testParseGeneratorValid) {
@@ -356,11 +346,6 @@ TEST_F(ConfigTest, testParseGeneratorValid) {
 TEST_F(ConfigTest, testParseGeneratorInvalid) {
   EXPECT_THROW(parseGenerator("invalid"), std::invalid_argument);
   EXPECT_THROW(parseGenerator(""), std::invalid_argument);
-}
-
-TEST_F(ConfigTest, testScopeToString) {
-  EXPECT_EQ("all", scopeToString(Scope::ALL));
-  EXPECT_EQ("commit", scopeToString(Scope::COMMIT));
 }
 
 TEST_F(ConfigTest, testGeneratorToString) {

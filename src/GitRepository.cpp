@@ -10,6 +10,7 @@
 #include <filesystem>  // NOLINT
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -114,39 +115,36 @@ class DiffData {
   fs::path mGitWorkdir;
 };
 
-static void getDiffFromTree(git_repository* repo, git_tree* tree, git_diff_options* opts, DiffData* diffData) {
-  SafeGit2ObjPtr<git_diff, git_diff_free> diff;
-
-  if (git_diff_tree_to_workdir_with_index(diff.getPtr(), static_cast<git_repository*>(repo),
-                                          static_cast<git_tree*>(tree), opts) != 0) {
-    throw RepositoryException("Failed to find diff");
-  }
-
+/**
+ * @brief Iterate a git_diff and collect added lines into DiffData.
+ */
+static void collectAddedLines(git_diff* diff, DiffData* d) {
   if (git_diff_foreach(
-          static_cast<git_diff*>(diff),
-          [](const git_diff_delta*, float, void*) {
-            // each_file_cb
-            return 0;
-          },
-          [](const git_diff_delta*, const git_diff_binary*, void*) {
-            // each_binary_cb
-            return 0;
-          },
-          [](const git_diff_delta*, const git_diff_hunk*, void*) {
-            // each_hunk_cb
-            return 0;
-          },
-          [](const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void* payload) {
-            // each_line_cb
-            auto d = reinterpret_cast<DiffData*>(payload);
+          diff,
+          [](const git_diff_delta*, float, void*) { return 0; },
+          [](const git_diff_delta*, const git_diff_binary*, void*) { return 0; },
+          [](const git_diff_delta*, const git_diff_hunk*, void*) { return 0; },
+          [](const git_diff_delta* delta, const git_diff_hunk*,
+             const git_diff_line* line, void* payload) {
             if (line->origin == '+') {
-              d->addSourceLine(delta->new_file.path, line->new_lineno);
+              reinterpret_cast<DiffData*>(payload)->addSourceLine(
+                  delta->new_file.path, line->new_lineno);
             }
             return 0;
           },
-          diffData) != 0) {
+          d) != 0) {
     throw RepositoryException("Failed to diff iterate");
   }
+}
+
+static void applyDiffAll(git_repository* repo,
+                         git_diff_options* opts, DiffData* d) {
+  SafeGit2ObjPtr<git_diff, git_diff_free> diff;
+  if (git_diff_tree_to_workdir_with_index(
+          diff.getPtr(), repo, nullptr, opts) != 0) {
+    throw RepositoryException("Failed to find diff");
+  }
+  collectAddedLines(static_cast<git_diff*>(diff), d);
 }
 
 /**
@@ -206,50 +204,159 @@ static std::vector<fs::path> collectGitRepos(const std::filesystem::path& dir,
 }
 
 /**
- * @brief Apply diff scope logic ("commit" or "all") to a single open repo.
- *
- * Extracted from getSourceLines() so it can be called for each repo in a
- * multi-repo walk without duplicating the commit-traversal logic.
+ * @brief Diff between two commit trees (for --from: merge-base to HEAD).
  */
-static void applyDiffScope(git_repository* repo, Scope scope, git_diff_options* opts, DiffData* d,
-                           const std::filesystem::path& gitWorkdir) {
-  if (scope == Scope::ALL) {
-    getDiffFromTree(repo, nullptr, opts, d);
-    return;
+static void applyDiffTreeToTree(git_repository* repo,
+                                const std::string& fromRef,
+                                git_diff_options* opts, DiffData* d,
+                                const std::filesystem::path& gitWorkdir) {
+  // Resolve fromRef
+  SafeGit2ObjPtr<git_object, git_object_free> fromObj;
+  if (git_revparse_single(fromObj.getPtr(), repo, fromRef.c_str()) != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to resolve revision '{}' in {}",
+                    fromRef, gitWorkdir));
   }
 
-  // scope == "commit"
-  SafeGit2ObjPtr<git_object, git_object_free> obj;
-  SafeGit2ObjPtr<git_tree, git_tree_free> tree;
-  SafeGit2ObjPtr<git_reference, git_reference_free> ref;
-
-  if (git_reference_lookup(ref.getPtr(), repo, "refs/tags/devtool-base") == 0) {
-    int error_code = git_reference_peel(obj.getPtr(), static_cast<git_reference*>(ref), GIT_OBJECT_COMMIT);
-    if (error_code != 0) {
-      throw RepositoryException(fmt::format("Failed to peel tag: error code {}", error_code));
-    }
-  } else {
-    if (git_revparse_single(obj.getPtr(), repo, "HEAD^{commit}") != 0) {
-      Logger::warn("git_revparse_single failed for HEAD in {}", gitWorkdir);
-    }
+  SafeGit2ObjPtr<git_object, git_object_free> fromPeeled;
+  if (git_object_peel(fromPeeled.getPtr(),
+                      static_cast<git_object*>(fromObj),
+                      GIT_OBJECT_COMMIT) != 0) {
+    throw RepositoryException(
+        fmt::format("Revision '{}' does not point to a commit in {}",
+                    fromRef, gitWorkdir));
   }
 
-  if (!obj.isNull()) {
-    SafeGit2ObjPtr<git_commit, git_commit_free> parent_commit;
-    if (git_commit_parentcount(obj.cast<const git_commit*>()) > 0) {
-      if (git_commit_parent(parent_commit.getPtr(), obj.cast<const git_commit*>(), 0) != 0) {
-        throw RepositoryException("Failed to find parent commit");
+  // Resolve HEAD
+  SafeGit2ObjPtr<git_object, git_object_free> headObj;
+  if (git_revparse_single(headObj.getPtr(), repo, "HEAD") != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to resolve HEAD in {}", gitWorkdir));
+  }
+
+  SafeGit2ObjPtr<git_object, git_object_free> headPeeled;
+  if (git_object_peel(headPeeled.getPtr(),
+                      static_cast<git_object*>(headObj),
+                      GIT_OBJECT_COMMIT) != 0) {
+    throw RepositoryException(
+        fmt::format("HEAD does not point to a commit in {}", gitWorkdir));
+  }
+
+  // Compute merge-base
+  git_oid baseOid;
+  const git_oid* fromOid =
+      git_commit_id(fromPeeled.cast<git_commit*>());
+  const git_oid* headOid =
+      git_commit_id(headPeeled.cast<git_commit*>());
+  if (git_merge_base(&baseOid, repo, headOid, fromOid) != 0) {
+    throw RepositoryException(
+        fmt::format("No common ancestor between HEAD and '{}' in {}",
+                    fromRef, gitWorkdir));
+  }
+
+  // Get base tree
+  SafeGit2ObjPtr<git_commit, git_commit_free> baseCommit;
+  if (git_commit_lookup(baseCommit.getPtr(), repo, &baseOid) != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to lookup merge-base commit in {}",
+                    gitWorkdir));
+  }
+
+  SafeGit2ObjPtr<git_tree, git_tree_free> baseTree;
+  if (git_commit_tree(baseTree.getPtr(),
+                      static_cast<git_commit*>(baseCommit)) != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to get tree for merge-base in {}",
+                    gitWorkdir));
+  }
+
+  // Get HEAD tree
+  SafeGit2ObjPtr<git_tree, git_tree_free> headTree;
+  if (git_commit_tree(headTree.getPtr(),
+                      headPeeled.cast<git_commit*>()) != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to get tree for HEAD in {}", gitWorkdir));
+  }
+
+  // Diff base tree to HEAD tree
+  SafeGit2ObjPtr<git_diff, git_diff_free> diff;
+  if (git_diff_tree_to_tree(
+          diff.getPtr(), repo,
+          static_cast<git_tree*>(baseTree),
+          static_cast<git_tree*>(headTree), opts) != 0) {
+    throw RepositoryException(
+        fmt::format("Failed to diff trees for '{}' in {}",
+                    fromRef, gitWorkdir));
+  }
+
+  collectAddedLines(static_cast<git_diff*>(diff), d);
+}
+
+/**
+ * @brief Diff uncommitted changes: staged (tree-to-index) +
+ *        unstaged (index-to-workdir).
+ *
+ * Includes untracked files but excludes ignored files.
+ */
+static void applyDiffUncommitted(git_repository* repo,
+                                 git_diff_options* opts, DiffData* d) {
+  // Get HEAD tree (may be null for repos with no commits)
+  SafeGit2ObjPtr<git_tree, git_tree_free> headTree;
+  {
+    SafeGit2ObjPtr<git_object, git_object_free> headObj;
+    if (git_revparse_single(headObj.getPtr(), repo, "HEAD") == 0) {
+      SafeGit2ObjPtr<git_object, git_object_free> peeled;
+      if (git_object_peel(peeled.getPtr(),
+                          static_cast<git_object*>(headObj),
+                          GIT_OBJECT_COMMIT) == 0) {
+        git_commit_tree(headTree.getPtr(),
+                        peeled.cast<git_commit*>());
       }
-      if (git_commit_tree(tree.getPtr(), static_cast<git_commit*>(parent_commit)) != 0) {
-        throw RepositoryException("Failed to find parent tree");
-      }
     }
-  } else {
-    Logger::warn("No HEAD commit or devtool tag found in {}", gitWorkdir);
   }
 
-  // tree may be null here (no parent commit) - diff from empty tree = all files.
-  getDiffFromTree(repo, static_cast<git_tree*>(tree), opts, d);
+  // 1. diff_tree_to_index (staged changes)
+  {
+    SafeGit2ObjPtr<git_diff, git_diff_free> diff;
+    if (git_diff_tree_to_index(
+            diff.getPtr(), repo,
+            static_cast<git_tree*>(headTree),
+            nullptr, opts) != 0) {
+      throw RepositoryException("Failed to diff tree to index");
+    }
+    collectAddedLines(static_cast<git_diff*>(diff), d);
+  }
+
+  // 2. diff_index_to_workdir (unstaged + untracked changes)
+  {
+    git_diff_options workdirOpts = *opts;
+    workdirOpts.flags |= GIT_DIFF_INCLUDE_UNTRACKED | GIT_DIFF_SHOW_UNTRACKED_CONTENT;
+    SafeGit2ObjPtr<git_diff, git_diff_free> diff;
+    if (git_diff_index_to_workdir(
+            diff.getPtr(), repo, nullptr, &workdirOpts) != 0) {
+      throw RepositoryException("Failed to diff index to workdir");
+    }
+    collectAddedLines(static_cast<git_diff*>(diff), d);
+  }
+}
+
+/**
+ * @brief Apply the appropriate diff strategy for a single open repo.
+ */
+static void applyDiff(git_repository* repo,
+                      const std::optional<std::string>& from, bool uncommitted,
+                      git_diff_options* opts, DiffData* d,
+                      const std::filesystem::path& gitWorkdir) {
+  if (!from && !uncommitted) {
+    applyDiffAll(repo, opts, d);
+  } else {
+    if (from) {
+      applyDiffTreeToTree(repo, *from, opts, d, gitWorkdir);
+    }
+    if (uncommitted) {
+      applyDiffUncommitted(repo, opts, d);
+    }
+  }
 }
 
 GitRepository::GitRepository(const std::filesystem::path& path, const std::vector<std::string>& extensions,
@@ -337,7 +444,24 @@ bool GitRepository::isTargetPath(const std::filesystem::path& path, bool checkEx
   return true;
 }
 
-SourceLines GitRepository::getSourceLines(Scope scope) {
+void GitRepository::validateRevision(const std::string& rev) const {
+  SafeGit2ObjPtr<git_repository, git_repository_free> repo;
+  if (git_repository_open_ext(repo.getPtr(), mSourceRoot.c_str(), 0, nullptr) != 0) {
+    throw InvalidArgumentException(
+        fmt::format("--from: cannot open git repository at '{}'.", mSourceRoot));
+  }
+
+  SafeGit2ObjPtr<git_object, git_object_free> obj;
+  if (git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo), rev.c_str()) != 0) {
+    throw InvalidArgumentException(
+        fmt::format("--from: revision '{}' cannot be resolved. "
+                    "Verify the revision exists in the repository.",
+                    rev));
+  }
+}
+
+SourceLines GitRepository::getSourceLines(const std::optional<std::string>& from,
+                                          bool uncommitted) {
   // Step 1: find all git repos directly at or below sourceRoot (multi-repo support).
   // In Android-style workspaces there is no top-level .git; each component has its own.
   std::vector<fs::path> repoPaths = collectGitRepos(getSourceRoot(), mSkipDirs);
@@ -398,7 +522,7 @@ SourceLines GitRepository::getSourceLines(Scope scope) {
     git_diff_options opts = buildOpts(cstrs);
     DiffData d(this, gitWorkdir);
     try {
-      applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
+      applyDiff(static_cast<git_repository*>(repo), from, uncommitted, &opts, &d, gitWorkdir);
     } catch (const RepositoryException& e) {
       Logger::warn("diff failed for {}: {}", gitWorkdir, e.what());
       continue;
@@ -422,7 +546,7 @@ SourceLines GitRepository::getSourceLines(Scope scope) {
         git_diff_options opts = buildOpts(cstrs);
         DiffData d(this, gitWorkdir);
         try {
-          applyDiffScope(static_cast<git_repository*>(repo), scope, &opts, &d, gitWorkdir);
+          applyDiff(static_cast<git_repository*>(repo), from, uncommitted, &opts, &d, gitWorkdir);
         } catch (const RepositoryException& e) {
           if (repoPaths.empty()) {
             throw;  // Only repo available; propagate so the caller sees the error.
@@ -437,6 +561,8 @@ SourceLines GitRepository::getSourceLines(Scope scope) {
   }
 
   std::sort(allSourceLines.begin(), allSourceLines.end());
+  allSourceLines.erase(std::unique(allSourceLines.begin(), allSourceLines.end()),
+                       allSourceLines.end());
   return allSourceLines;
 }
 

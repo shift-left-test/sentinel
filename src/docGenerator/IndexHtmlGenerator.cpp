@@ -520,7 +520,17 @@ std::string IndexHtmlGenerator::buildConfigHtml() const {
   if (!cfg.testCmd.empty()) {
     addItem("testCmd", cfg.testCmd);
   }
-  addItem("scope", scopeToString(cfg.scope));
+  std::string fromLabel;
+  if (cfg.from && cfg.uncommitted) {
+    fromLabel = fmt::format("{} + uncommitted", *cfg.from);
+  } else if (cfg.from) {
+    fromLabel = *cfg.from;
+  } else if (cfg.uncommitted) {
+    fromLabel = "uncommitted";
+  } else {
+    fromLabel = "all";
+  }
+  addItem("from", fromLabel);
   addItem("generator", generatorToString(cfg.generator));
   if (!cfg.operators.empty()) {
     addItem("operators", string::join(", ", cfg.operators));

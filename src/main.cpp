@@ -127,6 +127,9 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   // 9. Create stage-specific dependencies
   auto repo = std::make_shared<sentinel::GitRepository>(cfg.sourceDir, cfg.extensions, cfg.patterns);
+  if (cfg.from) {
+    repo->validateRevision(*cfg.from);
+  }
   auto generator = sentinel::MutantGenerator::getInstance(cfg.generator, cfg.compileDbDir);
 
   // 10. Assemble stage chain

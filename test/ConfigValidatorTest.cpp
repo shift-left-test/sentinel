@@ -174,4 +174,34 @@ TEST_F(ConfigValidatorTest, testMergeModeSkipsRequiredFieldValidation) {
   EXPECT_NO_THROW(ConfigValidator::validate(cfg));
 }
 
+TEST_F(ConfigValidatorTest, testFromEmptyStringThrows) {
+  mConfig.from = "";
+  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidatorTest, testFromDoubleDotRangeThrows) {
+  mConfig.from = "HEAD..main";
+  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidatorTest, testFromTripleDotRangeThrows) {
+  mConfig.from = "HEAD...main";
+  EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
+}
+
+TEST_F(ConfigValidatorTest, testFromValidRevisionPasses) {
+  mConfig.from = "HEAD~1";
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testFromNulloptPasses) {
+  mConfig.from = std::nullopt;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testUncommittedAloneIsValid) {
+  mConfig.uncommitted = true;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
 }  // namespace sentinel

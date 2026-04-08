@@ -33,7 +33,9 @@ static constexpr std::size_t kLinesCol = 9;
 static void printGenerationSummary(const Mutants& mutants, std::size_t candidateCount,
                                    const std::map<fs::path, std::size_t>& linesByPath,
                                    const fs::path& sourceDir, Generator generator,
-                                   unsigned seed, std::size_t limit, Scope scope,
+                                   unsigned seed, std::size_t limit,
+                                   const std::optional<std::string>& from,
+                                   bool uncommitted,
                                    const std::string& partition) {
   const std::string thick = Utf8Char::ThickLine * kSummaryWidth;
   const std::string thin = Utf8Char::ThinLine * kSummaryWidth;
@@ -64,9 +66,23 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
   Console::out("{}", thick);
 
   // Summary
-  Console::out("  Scope:      {} ({} file{}, {} lines)",
-               scopeToString(scope), groupByPath.size(),
-               groupByPath.size() == 1 ? "" : "s", candidateCount);
+  if (from && uncommitted) {
+    Console::out("  Target:     changes from {} + uncommitted ({} file{}, {} lines)",
+                 *from, groupByPath.size(),
+                 groupByPath.size() == 1 ? "" : "s", candidateCount);
+  } else if (from) {
+    Console::out("  Target:     changes from {} ({} file{}, {} lines)",
+                 *from, groupByPath.size(),
+                 groupByPath.size() == 1 ? "" : "s", candidateCount);
+  } else if (uncommitted) {
+    Console::out("  Target:     uncommitted changes ({} file{}, {} lines)",
+                 groupByPath.size(),
+                 groupByPath.size() == 1 ? "" : "s", candidateCount);
+  } else {
+    Console::out("  Target:     all sources ({} file{}, {} lines)",
+                 groupByPath.size(),
+                 groupByPath.size() == 1 ? "" : "s", candidateCount);
+  }
   Console::out("  Generator:  {} (seed: {})", generatorToString(generator), seed);
   std::string mutantsLine = fmt::format("{}", mutants.size());
   if (limit > 0) {
@@ -119,7 +135,7 @@ StatusLine::Phase GenerationStage::getPhase() const {
 bool GenerationStage::execute(PipelineContext* ctx) {
   Logger::info("Generating mutants...");
   mRepo->addSkipDir(ctx->workspace.getRoot());
-  SourceLines sourceLines = mRepo->getSourceLines(ctx->config.scope);
+  SourceLines sourceLines = mRepo->getSourceLines(ctx->config.from, ctx->config.uncommitted);
 
   // Verbose: source scan results and config
   if (isVerbose(*ctx)) {
@@ -153,7 +169,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   std::string partition = ctx->config.partition.value_or("");
   auto linesByPath = mGenerator->getLinesByPath();
   printGenerationSummary(mutants, candidateCount, linesByPath, ctx->config.sourceDir, ctx->config.generator, seed,
-                         ctx->config.limit, ctx->config.scope, partition);
+                         ctx->config.limit, ctx->config.from, ctx->config.uncommitted, partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;

@@ -17,25 +17,9 @@
 namespace sentinel {
 
 /**
- * @brief Scope of mutation.
- */
-enum class Scope { ALL, COMMIT };
-
-/**
  * @brief Mutant generation strategy.
  */
 enum class Generator { UNIFORM, RANDOM, WEIGHTED };
-
-/**
- * @brief Convert a string to Scope (case-insensitive).
- * @throw std::invalid_argument if the string is not a valid scope.
- */
-Scope parseScope(const std::string& s);
-
-/**
- * @brief Convert Scope to its string representation.
- */
-std::string scopeToString(Scope scope);
 
 /**
  * @brief Convert a string to Generator (case-insensitive).
@@ -111,8 +95,10 @@ struct Config {
   std::optional<size_t> timeout;
 
   // Mutation options
-  /** @brief Scope of mutation: ALL or COMMIT. */
-  Scope scope = Scope::ALL;
+  /** @brief Diff base revision for --from; nullopt = not specified. */
+  std::optional<std::string> from;
+  /** @brief Include uncommitted changes (staged + unstaged + untracked). */
+  bool uncommitted = false;
   /** @brief File extensions to consider for mutation. */
   std::vector<std::string> extensions = {"cxx", "cpp", "cc", "c", "c++", "cu"};
   /** @brief Glob patterns for files to include. */

@@ -36,7 +36,8 @@ class CliConfigParserTest : public ::testing::Test {
 
 TEST_F(CliConfigParserTest, testDefaultsPreservedWhenNoCli) {
   Config cfg = parse({});
-  EXPECT_EQ(Scope::ALL, cfg.scope);
+  EXPECT_FALSE(cfg.from.has_value());
+  EXPECT_FALSE(cfg.uncommitted);
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
@@ -122,9 +123,33 @@ TEST_F(CliConfigParserTest, testCleanParsed) {
 }
 
 TEST_F(CliConfigParserTest, testCliOverwritesDefaults) {
-  Config cfg = parse({"--scope", "commit", "--generator", "random"});
-  EXPECT_EQ(Scope::COMMIT, cfg.scope);
+  Config cfg = parse({"--from", "HEAD~1", "--generator", "random"});
+  ASSERT_TRUE(cfg.from.has_value());
+  EXPECT_EQ("HEAD~1", *cfg.from);
   EXPECT_EQ(Generator::RANDOM, cfg.generator);
+}
+
+TEST_F(CliConfigParserTest, testFromParsed) {
+  Config cfg = parse({"--from", "main"});
+  ASSERT_TRUE(cfg.from.has_value());
+  EXPECT_EQ("main", *cfg.from);
+}
+
+TEST_F(CliConfigParserTest, testUncommittedParsed) {
+  Config cfg = parse({"--uncommitted"});
+  EXPECT_TRUE(cfg.uncommitted);
+}
+
+TEST_F(CliConfigParserTest, testUncommittedDefaultFalse) {
+  Config cfg = parse({});
+  EXPECT_FALSE(cfg.uncommitted);
+}
+
+TEST_F(CliConfigParserTest, testFromAndUncommittedCombined) {
+  Config cfg = parse({"--from", "HEAD~2", "--uncommitted"});
+  ASSERT_TRUE(cfg.from.has_value());
+  EXPECT_EQ("HEAD~2", *cfg.from);
+  EXPECT_TRUE(cfg.uncommitted);
 }
 
 TEST_F(CliConfigParserTest, testWorkspaceParsedAndAbsolute) {

@@ -78,9 +78,18 @@ Test time limit in seconds. \fB0\fR = no limit.
 Default: 1.5\(mu the measured baseline run time.
 .SS Mutation options
 .TP
-\fB\-s\fR \fISCOPE\fR, \fB\-\-scope\fR=\fISCOPE\fR
-Mutation scope: \fBcommit\fR limits mutation to lines changed in the latest git commit;
-\fBall\fR mutates the entire codebase. Default: \fBall\fR
+\fB\-\-from\fR=\fIREV\fR
+Diff base revision. When specified, only lines changed between the
+merge\-base of \fIREV\fR and HEAD are mutated (committed changes only).
+Accepts any single git revision (e.g., HEAD~1, HEAD~3, main, a tag, or
+a commit SHA). Combine with \fB\-\-uncommitted\fR to also include local
+changes. When omitted (and \fB\-\-uncommitted\fR is also omitted), the
+entire codebase is mutated.
+.TP
+\fB\-\-uncommitted\fR
+Include uncommitted changes (staged, unstaged, and untracked files
+excluding \fB.gitignore\fRd files) in the mutation scope. Can be used
+alone or combined with \fB\-\-from\fR.
 .TP
 \fB\-p\fR \fIPATTERN\fR, \fB\-\-pattern\fR=\fIPATTERN\fR
 Glob pattern to constrain the mutation scope (repeatable). Matched against
@@ -203,8 +212,9 @@ Test result directory (XML files are collected automatically).
 \fBtimeout\fR
 Test time limit in seconds (default: 1.5\(mu original test time).
 .TP
-\fBscope\fR
-Mutation scope: \fBcommit\fR or \fBall\fR.
+\fBfrom\fR
+Diff base revision (e.g., HEAD~1, main, v1.0). Mutates lines changed
+between the merge\-base of this revision and HEAD.
 .TP
 \fBextension\fR
 List of source file extensions to mutate.
@@ -226,7 +236,7 @@ sentinel \\
   --build-command="cmake --build build" \\
   --test-command="ctest --test-dir build" \\
   --test-result-dir=build/test-results \\
-  --scope=commit \\
+  --from=HEAD~1 \\
   --limit=50
 .fi
 .PP

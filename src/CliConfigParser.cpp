@@ -49,8 +49,13 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory", {"test-result-dir"}),
     mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 1.5x original test time)",
              {"timeout"}),
-    mScope(mGroupMutation, "SCOPE", "Mutation scope: 'commit' (changed lines only) or 'all' (entire codebase)",
-           {'s', "scope"}),
+    mFrom(mGroupMutation, "REV",
+          "Diff base revision (e.g., HEAD~1, main, v1.0). "
+          "Mutates only lines changed between the merge-base of REV and HEAD.",
+          {"from"}),
+    mUncommitted(mGroupMutation, "uncommitted",
+                 "Include uncommitted changes (staged + unstaged + untracked) in mutation scope.",
+                 {"uncommitted"}),
     mPatterns(mGroupMutation, "EXPR",
               "Glob patterns to constrain mutation scope; prefix with ! to exclude (repeatable)",
               {'p', "pattern"}),
@@ -86,7 +91,8 @@ void CliConfigParser::applyTo(Config* cfg) {
     cfg->timeout = parseNonNegativeInt(mTimeout.Get(), "--timeout");
   }
 
-  if (mScope) cfg->scope = parseScope(mScope.Get());
+  if (mFrom) cfg->from = mFrom.Get();
+  cfg->uncommitted = mUncommitted;
   if (mExtensions) cfg->extensions = mExtensions.Get();
   if (mPatterns) cfg->patterns = mPatterns.Get();
   if (mGenerator) cfg->generator = parseGenerator(mGenerator.Get());

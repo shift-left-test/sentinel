@@ -33,7 +33,7 @@ Mutation testing evaluates the quality of a test suite by injecting small, delib
 - Identify undertested code paths and guide test improvements
 
 Sentinel makes mutation testing practical for C/C++ projects by:
-- Integrating with git to limit mutations to changed lines (`--scope=commit`)
+- Integrating with git to limit mutations to recent changes (`--from=HEAD~1`, `--uncommitted`)
 - Automatically generating HTML/XML reports
 - Supporting resume after interruption
 
@@ -141,7 +141,7 @@ build-command: cmake -B build && cmake --build build
 compiledb-dir: ./build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
-scope: commit
+from: HEAD~1
 pattern:
   - "!*/third_party/*"
   - "!*/test/*"
@@ -163,7 +163,8 @@ sentinel \
   --build-command="cmake -B build && cmake --build build" \
   --test-command="ctest --test-dir build" \
   --test-result-dir=./build/test-results \
-  --scope=commit \
+  --from=HEAD~1 \
+  --uncommitted \
   --limit=50 \
   --pattern="!*/third_party/*" \
   --pattern="!*/test/*"
@@ -182,7 +183,7 @@ After mutant generation, Sentinel prints a summary of what was generated:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                        Mutant Generation Summary
-  Scope:      all (2 files, 320 lines)
+  Target:     all sources (2 files, 320 lines)
   Generator:  uniform (seed: 3721894056)
   Mutants:    75
 ────────────────────────────────────────────────────────────────────────────────────
@@ -200,7 +201,7 @@ After mutant generation, Sentinel prints a summary of what was generated:
 
 | Field | Description |
 |-------|-------------|
-| **Scope** | Mutation scope, number of target files, and total source lines scanned |
+| **Target** | Diff base and number of target files and total source lines scanned |
 | **Generator** | Mutant selection strategy used and random seed (use with `--seed` to reproduce) |
 | **Mutants** | Number of mutants selected (with limit and partition info if applicable) |
 | **File / Mutants / Lines** | Per-file breakdown of generated mutants and analyzed source lines |
@@ -357,7 +358,8 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-s, --scope=SCOPE` | `commit` (changed lines only) or `all` (entire codebase) | `all` |
+| `--from=REV` | Diff base revision. Mutates lines changed between the merge-base of REV and HEAD (committed changes only). Use with `--uncommitted` to also include local changes. See [Scoping with --from and --uncommitted](#scoping-with---from-and---uncommitted). | entire codebase |
+| `--uncommitted` | Include uncommitted changes (staged + unstaged + untracked) in mutation scope. Can be used alone or combined with `--from`. | disabled |
 | `-p, --pattern=PATTERN` | Glob patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Prefix with `!` to exclude matching files. Absolute paths trigger a pre-run warning. | |
 | `--extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
@@ -373,6 +375,49 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). It is recommended to set `--seed` explicitly so every partition instance generates an identical mutant list; if omitted, a random seed is used and each run may evaluate a different subset. The union of all partition results equals a single non-partitioned run. Mutant paths are stored relative to `--source-dir`, so workspace directories can be collected from multiple machines and resumed on any machine with the same source tree. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
 | `--merge-partition PATH` | Merge a partitioned workspace result into the target workspace (repeatable) | |
 | `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0.0–100.0). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
+
+### Scoping with --from and --uncommitted
+
+By default, sentinel mutates the entire codebase. Use `--from` and `--uncommitted` to narrow the scope to only changed code.
+
+#### How --from works
+
+`--from=REV` computes the merge-base between `REV` and `HEAD`, then diffs that merge-base against `HEAD`. Only **committed** changes in that range are included.
+
+```
+merge-base(REV, HEAD) ──── ... ──── HEAD
+         └── only this range is mutated ──┘
+```
+
+Because `--from` uses the merge-base:
+
+| Command | What it covers | Why |
+|---------|---------------|-----|
+| `--from=HEAD~1` | Last 1 commit | merge-base(HEAD, HEAD~1) = HEAD~1 |
+| `--from=HEAD~3` | Last 3 commits | merge-base(HEAD, HEAD~3) = HEAD~3 |
+| `--from=main` | All commits since branching from main | merge-base(HEAD, main) = branch point |
+| `--from=v1.2.0` | All commits since the tag | merge-base(HEAD, v1.2.0) = tag commit |
+| `--from=HEAD` | Nothing (empty range) | merge-base(HEAD, HEAD) = HEAD itself |
+
+> **Note:** `--from=HEAD` produces an empty diff because the merge-base of HEAD with itself is HEAD — there are no commits between HEAD and HEAD. To include the latest commit, use `--from=HEAD~1`.
+
+#### How --uncommitted works
+
+`--uncommitted` includes all local changes not yet committed:
+- **Staged** changes (`git add`ed)
+- **Unstaged** changes (modified tracked files)
+- **Untracked** files (new files not yet `git add`ed, excluding `.gitignore`d files)
+
+#### Combining both options
+
+| Command | Scope |
+|---------|-------|
+| `sentinel` | Entire codebase |
+| `sentinel --uncommitted` | Staged + unstaged + untracked only |
+| `sentinel --from=HEAD~1` | Last commit only (committed changes) |
+| `sentinel --from=main` | All commits since branching from main |
+| `sentinel --from=HEAD~1 --uncommitted` | Last commit + local changes |
+| `sentinel --from=main --uncommitted` | All commits since main + local changes |
 
 ---
 
@@ -399,7 +444,7 @@ compiledb-dir: ./build
 build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
-scope: commit
+from: HEAD~1
 pattern:
   - "!*/third_party/*"
   - "!*/test/*"
@@ -443,8 +488,10 @@ version: 1
 
 # --- Mutation options ---
 
-## Diff scope: 'commit' (changed lines only) or 'all' (entire codebase) (default: all)
-# scope: all
+## Diff base revision. Mutates lines changed between merge-base(REV, HEAD) and HEAD.
+## Example: HEAD~1 (last commit), main (since branch point), v1.0 (since tag)
+## Combine with --uncommitted to also include staged/unstaged/untracked changes.
+# from: HEAD~1
 
 ## Source file extensions to mutate (default: cxx cpp cc c c++ cu)
 # extension:

@@ -49,6 +49,20 @@ void ConfigValidator::validate(const Config& config) {
     }
   }
 
+  if (config.from) {
+    const auto& rev = *config.from;
+    if (rev.empty()) {
+      throw InvalidArgumentException(
+          "--from: value is empty. Provide a revision (e.g., HEAD~1, main, v1.0).");
+    }
+    if (rev.find("..") != std::string::npos) {
+      throw InvalidArgumentException(
+          fmt::format("--from: range expressions are not supported: '{}'. "
+                      "Provide a single revision (e.g., HEAD~1, main, v1.0).",
+                      rev));
+    }
+  }
+
   if (!config.operators.empty()) {
     std::vector<std::string> invalidOps;
     std::copy_if(config.operators.begin(), config.operators.end(),

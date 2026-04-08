@@ -14,21 +14,6 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Scope parseScope(const std::string& s) {
-  std::string lower = string::toLower(s);
-  if (lower == "all") return Scope::ALL;
-  if (lower == "commit") return Scope::COMMIT;
-  throw std::invalid_argument(fmt::format("Invalid scope: '{}'. Expected 'all' or 'commit'.", s));
-}
-
-std::string scopeToString(Scope scope) {
-  switch (scope) {
-    case Scope::ALL: return "all";
-    case Scope::COMMIT: return "commit";
-  }
-  throw std::invalid_argument("Unknown Scope value");
-}
-
 Generator parseGenerator(const std::string& s) {
   std::string lower = string::toLower(s);
   if (lower == "uniform") return Generator::UNIFORM;
@@ -64,7 +49,9 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
     emitter << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir.string();
   }
   emitter << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir.string();
-  emitter << YAML::Key << "scope" << YAML::Value << scopeToString(cfg.scope);
+  if (cfg.from) {
+    emitter << YAML::Key << "from" << YAML::Value << *cfg.from;
+  }
   emitter << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : cfg.extensions) emitter << e;
   emitter << YAML::EndSeq;

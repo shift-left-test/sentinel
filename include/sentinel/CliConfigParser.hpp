@@ -97,8 +97,10 @@ class CliConfigParser {
   args::ValueFlag<std::string> mTimeout;
 
   // Mutation options
-  /** @brief Command line flag for mutation scope. */
-  args::ValueFlag<std::string> mScope;
+  /** @brief Command line flag for diff base revision. */
+  args::ValueFlag<std::string> mFrom;
+  /** @brief Command line flag for uncommitted changes. */
+  args::Flag mUncommitted;
   /** @brief Command line flag for inclusion patterns. */
   args::ValueFlagList<std::string> mPatterns;
   /** @brief Command line flag for source file extensions. */

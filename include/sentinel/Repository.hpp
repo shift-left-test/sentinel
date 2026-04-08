@@ -7,8 +7,8 @@
 #define INCLUDE_SENTINEL_REPOSITORY_HPP_
 
 #include <memory>
+#include <optional>
 #include <string>
-#include "sentinel/Config.hpp"
 #include "sentinel/SourceLines.hpp"
 #include "sentinel/SourceTree.hpp"
 
@@ -25,11 +25,14 @@ class Repository {
   virtual ~Repository();
 
   /**
-   * @brief Return the diff source lines from repository.
+   * @brief Return source lines for mutation targeting.
    *
+   * @param from base revision for --from; nullopt = not specified
+   * @param uncommitted include uncommitted changes (staged + unstaged + untracked)
    * @return SourceLines object
    */
-  virtual SourceLines getSourceLines(Scope scope) = 0;
+  virtual SourceLines getSourceLines(const std::optional<std::string>& from,
+                                     bool uncommitted) = 0;
 
   /**
    * @brief Return the source tree

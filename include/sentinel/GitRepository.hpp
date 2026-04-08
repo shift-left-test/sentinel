@@ -43,11 +43,22 @@ class GitRepository : public Repository {
 
   std::shared_ptr<SourceTree> getSourceTree() override;
   /**
-   * @brief Return the diff source lines from commit tree.
+   * @brief Return source lines for mutation targeting.
    *
+   * @param from base revision for --from; nullopt = not specified
+   * @param uncommitted include uncommitted changes (staged + unstaged + untracked)
    * @return SourceLines object
    */
-  SourceLines getSourceLines(Scope scope) override;
+  SourceLines getSourceLines(const std::optional<std::string>& from,
+                             bool uncommitted) override;
+
+  /**
+   * @brief Validate that a revision string resolves to a valid git object.
+   *
+   * @param rev revision expression to validate
+   * @throw InvalidArgumentException if the revision cannot be resolved
+   */
+  void validateRevision(const std::string& rev) const;
 
   /**
    * @brief Return absolute root path
