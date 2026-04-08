@@ -9,6 +9,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/Logger.hpp"
@@ -334,6 +335,42 @@ TEST_F(ReportStageTest, testXmlReportSummaryPrinted) {
   testing::internal::GetCapturedStderr();
 
   EXPECT_FALSE(stdoutOutput.empty()) << "xmlReport.printSummary() should produce output";
+}
+
+TEST_F(ReportStageTest, testSeedFromStatusShownInReport) {
+  addResult(1, MutationState::KILLED);
+
+  // Simulate GenerationStage saving a random seed to workspace status
+  WorkspaceStatus status;
+  status.seed = 42u;
+  mWorkspace->saveStatus(status);
+
+  // No --seed on CLI
+  fs::path outputDir = mBase / "seed-reports";
+  Config cfg = makeConfig(outputDir);
+  ASSERT_FALSE(cfg.seed.has_value());
+
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  std::string html = testutil::readFile(outputDir / "index.html");
+  EXPECT_THAT(html, ::testing::HasSubstr("42"));
+}
+
+TEST_F(ReportStageTest, testExplicitSeedShownInReport) {
+  addResult(1, MutationState::KILLED);
+
+  fs::path outputDir = mBase / "explicit-seed-reports";
+  Config cfg = makeConfig(outputDir);
+  cfg.seed = 99u;
+
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  std::string html = testutil::readFile(outputDir / "index.html");
+  EXPECT_THAT(html, ::testing::HasSubstr("99"));
 }
 
 }  // namespace sentinel

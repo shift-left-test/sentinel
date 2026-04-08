@@ -34,13 +34,18 @@ bool ReportStage::execute(PipelineContext* ctx) {
   Logger::info("Generating report...");
   MutationResults results = ctx->workspace.loadResults();
 
-  MutationSummary summary(results, ctx->config.sourceDir);
+  Config reportCfg = ctx->config;
+  if (!reportCfg.seed.has_value()) {
+    reportCfg.seed = ctx->workspace.loadStatus().seed;
+  }
+
+  MutationSummary summary(results, reportCfg.sourceDir);
   XmlReport xmlReport(summary);
   xmlReport.printSummary();
-  if (!ctx->config.outputDir.empty()) {
-    xmlReport.save(ctx->config.outputDir);
-    HtmlReport(summary, ctx->config).save(ctx->config.outputDir);
-    Logger::info("Reports saved to {}", ctx->config.outputDir);
+  if (!reportCfg.outputDir.empty()) {
+    xmlReport.save(reportCfg.outputDir);
+    HtmlReport(summary, reportCfg).save(reportCfg.outputDir);
+    Logger::info("Reports saved to {}", reportCfg.outputDir);
   }
 
   std::optional<double> score;
@@ -50,16 +55,16 @@ bool ReportStage::execute(PipelineContext* ctx) {
   }
 
   std::string scoreStr = score ? fmt::format("{:.1f}%", *score) : "-";
-  if (ctx->config.threshold) {
-    bool passed = !score || *score >= *ctx->config.threshold;
+  if (reportCfg.threshold) {
+    bool passed = !score || *score >= *reportCfg.threshold;
     auto icon = passed ? Utf8Char::CheckMark : Utf8Char::CrossMark;
     std::string msg = fmt::format("Mutation testing complete {} {} {} (threshold: {:.1f}%)",
-                                  Utf8Char::EmDash, scoreStr, icon, *ctx->config.threshold);
+                                  Utf8Char::EmDash, scoreStr, icon, *reportCfg.threshold);
     if (passed) {
       Logger::info("{}", msg);
     } else {
       Logger::error("{}", msg);
-      throw ThresholdError(*score, *ctx->config.threshold);
+      throw ThresholdError(*score, *reportCfg.threshold);
     }
   } else {
     Logger::info("Mutation testing complete {} {}", Utf8Char::EmDash, scoreStr);
