@@ -156,6 +156,7 @@ TEST_F(RandomMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
   EXPECT_FALSE(linesByPath.empty());
 
   for (const auto& [path, count] : linesByPath) {
+    EXPECT_FALSE(path.empty());
     EXPECT_GT(count, 0u);
   }
 

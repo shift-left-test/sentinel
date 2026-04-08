@@ -182,6 +182,7 @@ TEST_F(WeightedMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) 
   // Sum of per-file lines must equal total candidate count
   std::size_t totalLines = 0;
   for (const auto& [path, count] : linesByPath) {
+    EXPECT_FALSE(path.empty());
     EXPECT_GT(count, 0u);
     totalLines += count;
   }

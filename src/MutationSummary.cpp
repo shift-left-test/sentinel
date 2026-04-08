@@ -52,20 +52,22 @@ MutationSummary::MutationSummary(const MutationSummary& other) :
     return;
   }
   const MutationResult* base = &(*other.results.begin());
-  for (const auto& [k, v] : other.groupByPath) {
-    auto& entry = groupByPath[k];
-    entry.total = v.total;
-    entry.detected = v.detected;
-    for (const auto* p : v.results) {
+  // cppcheck-suppress unassignedVariable
+  for (const auto& [path, fileStats] : other.groupByPath) {
+    auto& entry = groupByPath[path];
+    entry.total = fileStats.total;
+    entry.detected = fileStats.detected;
+    for (const auto* p : fileStats.results) {
       entry.results.push_back(&results.at(static_cast<std::size_t>(p - base)));
     }
   }
-  for (const auto& [k, v] : other.groupByDirPath) {
-    auto& entry = groupByDirPath[k];
-    entry.total = v.total;
-    entry.detected = v.detected;
-    entry.fileCount = v.fileCount;
-    for (const auto* p : v.results) {
+  // cppcheck-suppress unassignedVariable
+  for (const auto& [dirPath, dirStats] : other.groupByDirPath) {
+    auto& entry = groupByDirPath[dirPath];
+    entry.total = dirStats.total;
+    entry.detected = dirStats.detected;
+    entry.fileCount = dirStats.fileCount;
+    for (const auto* p : dirStats.results) {
       entry.results.push_back(&results.at(static_cast<std::size_t>(p - base)));
     }
   }

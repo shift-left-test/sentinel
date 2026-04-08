@@ -165,6 +165,31 @@ class MutantGenerator {
                                     std::size_t targetLine, std::vector<const Mutant*>* out);
 
   /**
+   * @brief Select one unique mutant from shuffled candidates.
+   *
+   * Shuffles the candidate list, finds the first mutant not already in
+   * selectedSet, inserts it, and appends it to result.
+   *
+   * @param candidates candidate mutant pointers (shuffled in-place)
+   * @param rng random number generator
+   * @param selectedSet set of already-selected mutants
+   * @param result output vector to append the selected mutant
+   */
+  static void selectUniqueCandidate(std::vector<const Mutant*>* candidates,
+                                    std::mt19937* rng,
+                                    std::set<Mutant>* selectedSet,
+                                    Mutants* result) {
+    std::shuffle(candidates->begin(), candidates->end(), *rng);
+    for (const auto* candidate : *candidates) {
+      // cppcheck-suppress useStlAlgorithm
+      if (selectedSet->insert(*candidate).second) {
+        result->push_back(*candidate);
+        break;
+      }
+    }
+  }
+
+  /**
    * @brief Select one mutant per source line by iterating over a range.
    *
    * Shared logic for Uniform and Weighted generators. The LineExtractor
@@ -211,13 +236,7 @@ class MutantGenerator {
         continue;
       }
 
-      std::shuffle(candidates.begin(), candidates.end(), rng);
-      for (const auto* candidate : candidates) {
-        if (selectedSet.insert(*candidate).second) {
-          result.push_back(*candidate);
-          break;
-        }
-      }
+      selectUniqueCandidate(&candidates, &rng, &selectedSet, &result);
     }
 
     mCandidateCount = candidateLineCount;

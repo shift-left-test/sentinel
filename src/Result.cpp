@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <tinyxml2/tinyxml2.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
@@ -42,29 +43,25 @@ bool Result::checkPassedTCEmpty() const {
 
 MutationState Result::compare(const Result& original, const Result& mutated, std::string* killingTest,
                               std::string* errorTest) {
-  killingTest->clear();
-  errorTest->clear();
   const std::unordered_set<std::string> mutatedPassed(mutated.mPassedTC.begin(), mutated.mPassedTC.end());
   const std::unordered_set<std::string> mutatedFailed(mutated.mFailedTC.begin(), mutated.mFailedTC.end());
+  std::vector<std::string> killingTests;
+  std::vector<std::string> errorTests;
   for (const std::string& tc : original.mPassedTC) {
     if (mutatedPassed.count(tc) == 0) {
       if (mutatedFailed.count(tc) == 0) {
-        if (!errorTest->empty()) {
-          errorTest->append(", ");
-        }
-        errorTest->append(tc);
+        errorTests.push_back(tc);
       } else {
-        if (!killingTest->empty()) {
-          killingTest->append(", ");
-        }
-        killingTest->append(tc);
+        killingTests.push_back(tc);
       }
     }
   }
-  if (!killingTest->empty()) {
+  *killingTest = fmt::format("{}", fmt::join(killingTests, ", "));
+  *errorTest = fmt::format("{}", fmt::join(errorTests, ", "));
+  if (!killingTests.empty()) {
     return MutationState::KILLED;
   }
-  if (!errorTest->empty()) {
+  if (!errorTests.empty()) {
     return MutationState::RUNTIME_ERROR;
   }
   return MutationState::SURVIVED;

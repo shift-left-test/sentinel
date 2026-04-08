@@ -40,13 +40,7 @@ Mutants RandomMutantGenerator::selectMutants(const SourceLines& sourceLines, std
       continue;
     }
     mLinesByPath[canonPath]++;
-    std::shuffle(lineCandidates.begin(), lineCandidates.end(), rng);
-    for (const auto* candidate : lineCandidates) {
-      if (selectedSet.insert(*candidate).second) {
-        candidates.push_back(*candidate);
-        break;
-      }
-    }
+    selectUniqueCandidate(&lineCandidates, &rng, &selectedSet, &candidates);
   }
 
   std::size_t n = candidates.size();
