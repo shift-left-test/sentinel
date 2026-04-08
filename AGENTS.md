@@ -24,10 +24,10 @@ make all -j
 make cppcheck cpplint
 
 # Generate coverage report
-gcovr -s -r . --object-directory .
+gcovr -s -r . -e test -e external
 
 # Measure branch coverage (excluding test directory)
-gcovr . --txt-metric branch -e test
+gcovr -s -r . --txt-metric branch -e test -e external
 
 # Generate Doxygen docs
 make doc
