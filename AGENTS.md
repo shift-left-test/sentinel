@@ -153,6 +153,7 @@ Before starting any code work, always follow these steps:
   - `src/YamlConfigWriter.cpp` — `kYamlTemplate` (the template written by `sentinel --init`)
   - `sample/sentinel.yaml` and `sample/README.md` — only if the sample config or workflow is affected
 - When adding or modifying functionality, always add or update test cases in `test/` to cover the new or changed behavior.
+- Unit tests must be compatible with GoogleTest 1.10. Do not use features introduced in later versions (e.g., `EXPECT_THAT` with `testing::ThrowsMessage`, `testing::WhenDynamicCastTo`, `GTEST_FLAG_SET`, etc.).
 
 ## Code Quality
 
