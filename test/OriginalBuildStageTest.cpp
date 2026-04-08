@@ -9,6 +9,8 @@
 #include <fstream>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 #include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
@@ -133,6 +135,22 @@ TEST_F(OriginalBuildStageTest, testExecuteVerboseModeBuildFailed) {
   EXPECT_THROW_MESSAGE(
       stage->run(&ctx),
       std::runtime_error, HasSubstr("Original build failed"));
+}
+
+TEST_F(OriginalBuildStageTest, testBuildLogContainsOutput) {
+  fs::create_directories(mWorkspace->getOriginalDir());
+  createCompileCommandsJson();
+
+  mConfig.buildCmd = "echo 'build output here'";
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
+
+  EXPECT_NO_THROW(stage->run(&ctx));
+  EXPECT_TRUE(fs::exists(mWorkspace->getOriginalBuildLog()));
+
+  std::string content = testutil::readFile(mWorkspace->getOriginalBuildLog());
+  EXPECT_NE(content.find("build output here"), std::string::npos)
+      << "Build log should contain the build command output";
 }
 
 }  // namespace sentinel

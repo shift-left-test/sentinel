@@ -62,4 +62,26 @@ TEST_F(BORTest, testBORSkipsEquivalentMutantsWithLiteralZeroRHS2) {
   }
 }
 
+TEST_F(BORTest, testBORSkipsEquivalentMutantsWithLiteralZeroLHS) {
+  // Line 127 of sample1.cpp: "  int h = 0 >> x;"
+  // 0 >> x is always 0, so 0 & x, 0 | x, 0 ^ x are all constant/identity — skip.
+  Mutants mutants = generate(127);
+  for (const auto& m : mutants) {
+    if (m.getOperator() == "BOR") {
+      FAIL() << "BOR should skip mutations when LHS is literal 0, but got: "
+             << m.getToken();
+    }
+  }
+}
+
+TEST_F(BORTest, testBORDoesNotTargetShiftOperators) {
+  // Line 128 of sample1.cpp: "  int j = x << 2;"
+  // BOR only targets &, |, ^ — not shift operators (SOR handles those).
+  Mutants mutants = generate(128);
+  for (const auto& m : mutants) {
+    EXPECT_NE(m.getOperator(), "BOR")
+        << "BOR should not target shift operators";
+  }
+}
+
 }  // namespace sentinel

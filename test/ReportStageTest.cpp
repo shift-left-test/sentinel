@@ -252,4 +252,88 @@ TEST_F(ReportStageTest, testBuildFailureAndTimeoutDoNotCountAsKilled) {
   EXPECT_THAT(output, ::testing::HasSubstr("50.0%"));
 }
 
+TEST_F(ReportStageTest, testPassedThresholdShowsCheckMark) {
+  addResult(1, MutationState::KILLED);
+
+  Config cfg = makeConfig(fs::path{}, 50.0);
+  Logger::setLevel(Logger::Level::INFO);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr("100.0%"));
+  EXPECT_THAT(output, ::testing::HasSubstr("threshold: 50.0%"));
+}
+
+TEST_F(ReportStageTest, testFailedThresholdShowsCrossMark) {
+  addResult(1, MutationState::SURVIVED);
+
+  Config cfg = makeConfig(fs::path{}, 50.0);
+  Logger::setLevel(Logger::Level::ERROR);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_THROW(stage->run(&ctx), ThresholdError);
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr("0.0%"));
+  EXPECT_THAT(output, ::testing::HasSubstr("threshold: 50.0%"));
+}
+
+TEST_F(ReportStageTest, testNoThresholdShowsScoreWithoutThreshold) {
+  addResult(1, MutationState::KILLED);
+  addResult(2, MutationState::SURVIVED);
+
+  Config cfg = makeConfig();
+  Logger::setLevel(Logger::Level::INFO);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr("50.0%"));
+  EXPECT_THAT(output, ::testing::Not(::testing::HasSubstr("threshold")));
+}
+
+TEST_F(ReportStageTest, testRuntimeErrorDoesNotCountAsKilled) {
+  addResult(1, MutationState::KILLED);
+  addResult(2, MutationState::RUNTIME_ERROR);
+  addResult(3, MutationState::SURVIVED);
+
+  Config cfg = makeConfig();
+  Logger::setLevel(Logger::Level::INFO);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr("50.0%"));
+}
+
+TEST_F(ReportStageTest, testXmlReportSummaryPrinted) {
+  addResult(1, MutationState::KILLED);
+
+  Config cfg = makeConfig();
+  Logger::setLevel(Logger::Level::INFO);
+
+  // Capture stdout because printSummary() writes there, not stderr.
+  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string stdoutOutput = testing::internal::GetCapturedStdout();
+  testing::internal::GetCapturedStderr();
+
+  EXPECT_FALSE(stdoutOutput.empty()) << "xmlReport.printSummary() should produce output";
+}
+
 }  // namespace sentinel

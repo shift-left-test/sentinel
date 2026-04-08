@@ -13,6 +13,7 @@
 #include "helper/TestTempDir.hpp"
 #include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/PipelineContext.hpp"
 #include "sentinel/StatusLine.hpp"
 #include "sentinel/Workspace.hpp"
@@ -202,6 +203,52 @@ TEST_F(OriginalTestStageTest, testTestFailedWithNoResults) {
   EXPECT_THROW_MESSAGE(
       stage->run(&ctx),
       std::runtime_error, HasSubstr("test command failed"));
+}
+
+TEST_F(OriginalTestStageTest, testAutoTimeoutComputesMinimumFiveSeconds) {
+  mConfig.timeout = std::nullopt;
+  mConfig.testCmd = "true";
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  stage->run(&ctx);
+
+  WorkspaceStatus status = mWorkspace->loadStatus();
+  ASSERT_TRUE(status.originalTime.has_value());
+  // Auto timeout = ceil(elapsed * 1.5) + 5; with elapsed~0, result should be >= 5
+  EXPECT_GE(*status.originalTime, static_cast<std::size_t>(5));
+}
+
+TEST_F(OriginalTestStageTest, testExplicitTimeoutLogMessage) {
+  mConfig.timeout = 42;
+  mConfig.verbose = false;
+  Logger::setLevel(Logger::Level::INFO);
+  createTestResultFile();
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  stage->run(&ctx);
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, HasSubstr("Timeout"));
+  EXPECT_THAT(output, HasSubstr("42s"));
+}
+
+TEST_F(OriginalTestStageTest, testAutoTimeoutLogMessage) {
+  mConfig.timeout = std::nullopt;
+  Logger::setLevel(Logger::Level::INFO);
+  createTestResultFile();
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  stage->run(&ctx);
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, HasSubstr("Timeout"));
+  EXPECT_THAT(output, HasSubstr("auto"));
 }
 
 }  // namespace sentinel

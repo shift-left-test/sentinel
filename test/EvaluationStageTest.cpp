@@ -265,4 +265,96 @@ TEST_F(EvaluationStageFlowTest, testExplicitTimeout) {
   EXPECT_TRUE(mWorkspace->isDone(1));
 }
 
+TEST_F(EvaluationStageFlowTest, testEvaluateMutantSurvived) {
+  createDefaultMutant();
+
+  // The test command copies original results so Evaluator sees matching output — SURVIVED.
+  std::string origResults = (mWorkspace->getOriginalResultsDir() / "results.xml").string();
+  std::string destResults = (mTestResultDir / "results.xml").string();
+  mConfig.testCmd = fmt::format("mkdir -p {} && cp {} {}",
+                                mTestResultDir.string(), origResults, destResults);
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(mWorkspace->isComplete());
+  EXPECT_TRUE(mWorkspace->isDone(1));
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::SURVIVED, result.getMutationState());
+}
+
+TEST_F(EvaluationStageFlowTest, testEvaluateMutantStoresBuildAndTestTime) {
+  createDefaultMutant();
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_GE(result.getBuildSecs(), 0.0);
+  EXPECT_GE(result.getTestSecs(), 0.0);
+}
+
+TEST_F(EvaluationStageFlowTest, testEvaluateMutantRestoresBackup) {
+  createDefaultMutant();
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  // After evaluation, source file should be restored to its original content.
+  std::string content = testutil::readFile(mRepoDir / "foo.cpp");
+  EXPECT_EQ(content, "int foo() { return 1 + 2; }\n");
+}
+
+TEST_F(EvaluationStageFlowTest, testPluralSuffixForMultipleMutants) {
+  // Create 2 mutants to verify plural suffix "s" in log output
+  Mutant m1("AOR", "foo.cpp", "foo", 1, 24, 1, 25, "-");
+  Mutant m2("AOR", "foo.cpp", "foo", 1, 24, 1, 25, "*");
+  mWorkspace->createMutant(1, m1);
+  mWorkspace->createMutant(2, m2);
+
+  mConfig.timeout = 30;
+  Logger::setLevel(Logger::Level::INFO);
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+  std::string stderrOutput = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(stderrOutput, HasSubstr("2 mutants"));
+}
+
+TEST_F(EvaluationStageFlowTest, testSingularSuffixForOneMutant) {
+  createDefaultMutant();
+  mConfig.timeout = 30;
+  Logger::setLevel(Logger::Level::INFO);
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+  std::string stderrOutput = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(stderrOutput, HasSubstr("1 mutant"));
+  EXPECT_THAT(stderrOutput, ::testing::Not(HasSubstr("1 mutants")));
+}
+
 }  // namespace sentinel

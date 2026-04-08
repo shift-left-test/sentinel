@@ -131,4 +131,31 @@ TEST_F(DryRunStageTest, testExecuteReturnsFalseStopsChain) {
   EXPECT_FALSE(next->wasExecuted());
 }
 
+TEST_F(DryRunStageTest, testExecuteSetsStatusLineTotalMutants) {
+  mConfig.dryRun = true;
+
+  auto ws = makeWorkspace();
+  populateMutants(ws.get(), 5);
+
+  auto stage = std::make_shared<DryRunStage>();
+  auto ctx = makeCtx(ws.get());
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  const std::string statusText = mStatusLine.getStatusText();
+  EXPECT_NE(std::string::npos, statusText.find("5")) << "Status text: " << statusText;
+}
+
+TEST_F(DryRunStageTest, testExecuteWithZeroMutants) {
+  mConfig.dryRun = true;
+
+  auto ws = makeWorkspace();
+
+  auto stage = std::make_shared<DryRunStage>();
+  auto ctx = makeCtx(ws.get());
+  EXPECT_NO_THROW(stage->run(&ctx));
+
+  const std::string statusText = mStatusLine.getStatusText();
+  EXPECT_NE(std::string::npos, statusText.find("0")) << "Status text: " << statusText;
+}
+
 }  // namespace sentinel

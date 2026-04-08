@@ -106,4 +106,44 @@ TEST_F(AORTest, testAORSkipsEquivalentMutantsWithLiteralOneRHS) {
   }
 }
 
+TEST_F(AORTest, testAORKeepsAddSubReplacementWithLiteralZeroLHS) {
+  // Line 123: "  int d = 0 * x;"
+  // 0 * x -> 0 + x and 0 - x differ, so + and - should be kept.
+  Mutants mutants = generateAll("AOR", 123);
+  bool hasAdd = false;
+  bool hasSub = false;
+  for (const auto& m : mutants) {
+    if (m.getOperator() != "AOR") continue;
+    if (m.getToken() == "+") hasAdd = true;
+    if (m.getToken() == "-") hasSub = true;
+  }
+  EXPECT_TRUE(hasAdd) << "AOR should keep 0*x -> 0+x";
+  EXPECT_TRUE(hasSub) << "AOR should keep 0*x -> 0-x";
+}
+
+TEST_F(AORTest, testAORKeepsNonEquivalentMutantsWithLiteralOneRHS) {
+  // Line 121 of sample1.cpp: "  int b = x * 1;"
+  // x * 1 <-> x / 1 are equivalent — but +, - and % should be kept.
+  Mutants mutants = generateAll("AOR", 121);
+  bool hasAdd = false;
+  bool hasSub = false;
+  bool hasMod = false;
+  for (const auto& m : mutants) {
+    if (m.getOperator() != "AOR") continue;
+    if (m.getToken() == "+") hasAdd = true;
+    if (m.getToken() == "-") hasSub = true;
+    if (m.getToken() == "%") hasMod = true;
+  }
+  EXPECT_TRUE(hasAdd) << "AOR should keep x*1 -> x+1";
+  EXPECT_TRUE(hasSub) << "AOR should keep x*1 -> x-1";
+  EXPECT_TRUE(hasMod) << "AOR should keep x*1 -> x%1";
+}
+
+TEST_F(AORTest, testAORSkipsPointerArithmeticWithIntArray) {
+  // Line 67 of sample1.cpp: "  return (end - start) / sizeof(int);"
+  // Pointer subtraction — AOR should not generate mutants here.
+  Mutants mutants = generate(67);
+  EXPECT_EQ(mutants.size(), 0u);
+}
+
 }  // namespace sentinel
