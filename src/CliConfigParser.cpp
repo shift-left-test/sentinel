@@ -125,4 +125,36 @@ void CliConfigParser::applyTo(Config* cfg) {
   cfg->clean = mClean;
 }
 
+std::vector<std::string> CliConfigParser::getEffectiveCliOptions() const {
+  std::vector<std::string> opts;
+  if (mSourceDir) opts.push_back("--source-dir");
+  if (mBuildCmd) opts.push_back("--build-command");
+  if (mCompileDbDir) opts.push_back("--compiledb-dir");
+  if (mTestCmd) opts.push_back("--test-command");
+  if (mTestResultDir) opts.push_back("--test-result-dir");
+  if (mTimeout) opts.push_back("--timeout");
+  if (mFrom) opts.push_back("--from");
+  if (mUncommitted) opts.push_back("--uncommitted");
+  if (mPatterns) opts.push_back("--pattern");
+  if (mExtensions) opts.push_back("--extension");
+  if (mGenerator) opts.push_back("--generator");
+  if (mSeed) opts.push_back("--seed");
+  if (mOperators) opts.push_back("--operator");
+  if (mCoverageFiles) opts.push_back("--coverage");
+  if (mLimit) opts.push_back("--limit");
+  if (mPartition) opts.push_back("--partition");
+  return opts;
+}
+
+void CliConfigParser::applyReportOnlyTo(Config* cfg) {
+  namespace fs = std::filesystem;
+  if (mOutputDir) cfg->outputDir = fs::absolute(mOutputDir.Get()).lexically_normal();
+  if (mThreshold) cfg->threshold = mThreshold.Get();
+  cfg->verbose = mVerbose;
+  cfg->force = mForce;
+  cfg->clean = mClean;
+  cfg->dryRun = mDryRun;
+  cfg->init = mInit;
+}
+
 }  // namespace sentinel

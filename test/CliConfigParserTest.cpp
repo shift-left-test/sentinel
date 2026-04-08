@@ -246,4 +246,148 @@ TEST_F(CliConfigParserTest, testMergePartitionDefaultsToEmpty) {
   EXPECT_TRUE(cfg.mergeWorkspaces.empty());
 }
 
+TEST_F(CliConfigParserTest, testApplyReportOnlyToAppliesThreshold) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--threshold", "80.5"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(*cfg.threshold, 80.5);
+}
+
+TEST_F(CliConfigParserTest, testApplyReportOnlyToAppliesOutputDir) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--output-dir", "report"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  EXPECT_TRUE(cfg.outputDir.is_absolute());
+}
+
+TEST_F(CliConfigParserTest, testApplyReportOnlyToAppliesVerbose) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--verbose"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  EXPECT_TRUE(cfg.verbose);
+}
+
+TEST_F(CliConfigParserTest, testApplyReportOnlyToIgnoresFrom) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--from", "HEAD~1", "--threshold", "80"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  EXPECT_FALSE(cfg.from.has_value());
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(*cfg.threshold, 80.0);
+}
+
+TEST_F(CliConfigParserTest, testApplyReportOnlyToIgnoresBuildCommand) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--build-command", "make -j8"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  EXPECT_TRUE(cfg.buildCmd.empty());
+}
+
+TEST_F(CliConfigParserTest, testApplyReportOnlyToIgnoresTimeout) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--timeout", "60"});
+  Config cfg = Config::withDefaults();
+  cliParser.applyReportOnlyTo(&cfg);
+  EXPECT_FALSE(cfg.timeout.has_value());
+}
+
+TEST_F(CliConfigParserTest, testEffectiveCliOptionsEmpty) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{});
+  EXPECT_TRUE(cliParser.getEffectiveCliOptions().empty());
+}
+
+TEST_F(CliConfigParserTest, testEffectiveCliOptionsSingleFlag) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--from", "HEAD~1"});
+  auto opts = cliParser.getEffectiveCliOptions();
+  EXPECT_EQ(opts.size(), 1u);
+  EXPECT_EQ(opts[0], "--from");
+}
+
+TEST_F(CliConfigParserTest, testEffectiveCliOptionsMultipleFlags) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--from", "HEAD~1", "--timeout", "30", "--threshold", "80"});
+  auto opts = cliParser.getEffectiveCliOptions();
+  EXPECT_EQ(opts.size(), 2u);
+  EXPECT_THAT(opts, ::testing::UnorderedElementsAre("--from", "--timeout"));
+}
+
+TEST_F(CliConfigParserTest, testEffectiveCliOptionsExcludesControlFlags) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--verbose", "--clean", "--dry-run", "--from", "main"});
+  auto opts = cliParser.getEffectiveCliOptions();
+  EXPECT_THAT(opts, ::testing::UnorderedElementsAre("--from"));
+}
+
+TEST_F(CliConfigParserTest, testEffectiveCliOptionsUncommitted) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--uncommitted"});
+  auto opts = cliParser.getEffectiveCliOptions();
+  EXPECT_EQ(opts.size(), 1u);
+  EXPECT_EQ(opts[0], "--uncommitted");
+}
+
+TEST_F(CliConfigParserTest, testResumeFlowIgnoresFromButAppliesThreshold) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--from", "HEAD~1", "--threshold", "80"});
+
+  // Simulate resume: start from defaults (as if workspace config was loaded)
+  Config cfg = Config::withDefaults();
+  cfg.from = "HEAD~3";  // pretend workspace had HEAD~3
+
+  cliParser.applyReportOnlyTo(&cfg);
+
+  // --from should NOT be overwritten
+  ASSERT_TRUE(cfg.from.has_value());
+  EXPECT_EQ(*cfg.from, "HEAD~3");
+
+  // --threshold SHOULD be applied
+  ASSERT_TRUE(cfg.threshold.has_value());
+  EXPECT_DOUBLE_EQ(*cfg.threshold, 80.0);
+
+  // --from should appear in ignored list
+  auto ignored = cliParser.getEffectiveCliOptions();
+  EXPECT_THAT(ignored, ::testing::Contains("--from"));
+  EXPECT_THAT(ignored, ::testing::Not(::testing::Contains("--threshold")));
+}
+
+TEST_F(CliConfigParserTest, testResumeFlowNoWarningWhenOnlyReportOptions) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--threshold", "80", "--output-dir", "out", "--verbose"});
+
+  auto ignored = cliParser.getEffectiveCliOptions();
+  EXPECT_TRUE(ignored.empty());
+}
+
+TEST_F(CliConfigParserTest, testResumeFlowWarnsAllNonReportOptions) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--from", "main", "--uncommitted", "--timeout", "60",
+                     "--operator", "AOR", "--threshold", "80"});
+
+  auto ignored = cliParser.getEffectiveCliOptions();
+  EXPECT_THAT(ignored, ::testing::UnorderedElementsAre(
+      "--from", "--uncommitted", "--timeout", "--operator"));
+}
+
 }  // namespace sentinel

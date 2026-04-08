@@ -36,6 +36,28 @@ class CliConfigParser {
    */
   void applyTo(Config* cfg);
 
+  /**
+   * @brief Apply only report-phase and control-flag CLI options onto a Config.
+   *
+   * Used when resuming from an existing workspace: only --output-dir,
+   * --threshold, and --verbose are applied. All other options are ignored
+   * because the workspace already holds the authoritative configuration.
+   *
+   * @param cfg Config to modify in place.
+   */
+  void applyReportOnlyTo(Config* cfg);
+
+  /**
+   * @brief Return the list of CLI option names explicitly set by the user.
+   *
+   * Excludes control flags (--verbose, --clean, --dry-run, --init, --force),
+   * workspace/config selectors (--workspace, --config), report-phase options
+   * (--output-dir, --threshold), and merge mode (--merge-partition).
+   *
+   * @return Vector of option name strings (e.g., "--from", "--timeout").
+   */
+  std::vector<std::string> getEffectiveCliOptions() const;
+
   /** @brief Returns the config file path if --config was specified (empty if not). */
   std::filesystem::path getConfigFile() { return mConfigFile ? mConfigFile.Get() : ""; }
 

@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <csignal>
 #include <filesystem>  // NOLINT
 #include <iostream>
@@ -90,6 +91,13 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   if (alreadyComplete || resuming) {
     sentinel::YamlConfigParser::applyTo(&cfg, workDirPath / "config.yaml");
+    auto ignored = cliParser->getEffectiveCliOptions();
+    if (!ignored.empty()) {
+      sentinel::Logger::warn("The following options have no effect when resuming: {}",
+                             fmt::join(ignored, ", "));
+      sentinel::Logger::warn("Use --clean to start a fresh run with new settings.");
+    }
+    cliParser->applyReportOnlyTo(&cfg);
   } else {
     fs::path configPath = cliParser->getConfigFile();
     if (configPath.empty() && fs::exists("sentinel.yaml")) {
@@ -98,9 +106,8 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     if (!configPath.empty()) {
       sentinel::YamlConfigParser::applyTo(&cfg, configPath);
     }
+    cliParser->applyTo(&cfg);
   }
-
-  cliParser->applyTo(&cfg);
 
   // 6. Configure logger
   if (cfg.verbose) {
