@@ -75,9 +75,9 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     std::string timing = fmt::format("  [{}/{}]",
                                       Timestamper::format(result.getBuildSecs()),
                                       Timestamper::format(result.getTestSecs()));
-    Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),
+    Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{}:{} ({}){}", current, fmt::formatted_size("{}", totalMutants),
                  totalMutants, mutationStateIcon(state), mutationStateToStr(state), m.getOperator(), relPath,
-                 m.getFirst().line, token, timing);
+                 m.getFirst().line, m.getFirst().column, token, timing);
     if (!result.getKillingTest().empty()) {
       static constexpr std::size_t kMaxDisplayedTests = 2;
       auto tests = string::split(result.getKillingTest(), ", ");
