@@ -532,6 +532,9 @@ std::string IndexHtmlGenerator::buildConfigHtml() const {
   }
   addItem("from", fromLabel);
   addItem("generator", generatorToString(cfg.generator));
+  if (cfg.mutantsPerLine != 1) {
+    addItem("mutantsPerLine", cfg.mutantsPerLine == 0 ? "unlimited" : std::to_string(cfg.mutantsPerLine));
+  }
   if (!cfg.operators.empty()) {
     addItem("operators", string::join(", ", cfg.operators));
   }

@@ -35,10 +35,11 @@ class MutationFactory {
    * @param sourceLines lines of the source
    * @param maxMutants maximum number of mutables generated
    * @param randomSeed random seed
+   * @param mutantsPerLine number of mutants to select per source line
    * @return list of mutables
    */
   Mutants generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines, std::size_t maxMutants,
-                   unsigned int randomSeed);
+                   unsigned int randomSeed, std::size_t mutantsPerLine = 1);
 
  private:
   std::shared_ptr<MutantGenerator> mGenerator;

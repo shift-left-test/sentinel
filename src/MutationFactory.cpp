@@ -16,8 +16,8 @@ MutationFactory::MutationFactory(const std::shared_ptr<MutantGenerator>& generat
 }
 
 Mutants MutationFactory::generate(const std::filesystem::path& gitPath, const SourceLines& sourceLines,
-                                  std::size_t maxMutants, unsigned int randomSeed) {
-  auto mutants = mGenerator->generate(sourceLines, maxMutants, randomSeed);
+                                  std::size_t maxMutants, unsigned int randomSeed, std::size_t mutantsPerLine) {
+  auto mutants = mGenerator->generate(sourceLines, maxMutants, randomSeed, mutantsPerLine);
   const auto root = fs::canonical(gitPath);
   std::map<fs::path, fs::path> canonCache;
   for (auto& m : mutants) {

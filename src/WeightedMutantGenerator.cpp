@@ -94,7 +94,8 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
 // selectMutants — depth-ordered selection
 // ---------------------------------------------------------------------------
 Mutants WeightedMutantGenerator::selectMutants(const SourceLines& sourceLines, std::size_t maxMutants,
-                                               unsigned int randomSeed, const CandidateIndex& index) {
+                                               unsigned int randomSeed, const CandidateIndex& index,
+                                               std::size_t mutantsPerLine) {
   auto cmp = [](const std::pair<SourceLine, int>& a, const std::pair<SourceLine, int>& b) {
     return a.second > b.second;
   };
@@ -105,7 +106,8 @@ Mutants WeightedMutantGenerator::selectMutants(const SourceLines& sourceLines, s
   std::sort(sortedDepthMap.begin(), sortedDepthMap.end(), cmp);
 
   return selectFromRange(sortedDepthMap, maxMutants, randomSeed, index,
-                         [](const std::pair<SourceLine, int>& elem) -> const SourceLine& { return elem.first; });
+                         [](const std::pair<SourceLine, int>& elem) -> const SourceLine& { return elem.first; },
+                         mutantsPerLine);
 }
 
 // ---------------------------------------------------------------------------

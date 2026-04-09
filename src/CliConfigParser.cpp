@@ -61,6 +61,8 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
               {'p', "pattern"}),
     mExtensions(mGroupMutation, "EXT", "Source file extensions to mutate", {"extension"}),
     mGenerator(mGroupMutation, "TYPE", "Mutant selection strategy: uniform, random, weighted", {"generator"}),
+    mMutantsPerLine(mGroupMutation, "N", "Maximum number of mutants per source line (0 = unlimited)",
+                    {"mutants-per-line"}),
     mSeed(mGroupMutation, "N", "Random seed for mutant selection (default: random)", {"seed"}),
     mOperators(mGroupMutation, "OP",
                "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI", {"operator"}),
@@ -96,6 +98,7 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mExtensions) cfg->extensions = mExtensions.Get();
   if (mPatterns) cfg->patterns = mPatterns.Get();
   if (mGenerator) cfg->generator = parseGenerator(mGenerator.Get());
+  if (mMutantsPerLine) cfg->mutantsPerLine = mMutantsPerLine.Get();
   if (mOperators) cfg->operators = mOperators.Get();
   if (mCoverageFiles) {
     cfg->coverageFiles.clear();
@@ -138,6 +141,7 @@ std::vector<std::string> CliConfigParser::getEffectiveCliOptions() const {
   if (mPatterns) opts.push_back("--pattern");
   if (mExtensions) opts.push_back("--extension");
   if (mGenerator) opts.push_back("--generator");
+  if (mMutantsPerLine) opts.push_back("--mutants-per-line");
   if (mSeed) opts.push_back("--seed");
   if (mOperators) opts.push_back("--operator");
   if (mCoverageFiles) opts.push_back("--coverage");

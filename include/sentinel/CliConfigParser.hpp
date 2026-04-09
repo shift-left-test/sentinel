@@ -129,6 +129,8 @@ class CliConfigParser {
   args::ValueFlagList<std::string> mExtensions;
   /** @brief Command line flag for mutant generator. */
   args::ValueFlag<std::string> mGenerator;
+  /** @brief Command line flag for mutants per line. */
+  args::ValueFlag<size_t> mMutantsPerLine;
   /** @brief Command line flag for random seed. */
   args::ValueFlag<std::string> mSeed;
   /** @brief Command line flag for mutation operators. */

@@ -25,7 +25,8 @@ class RandomMutantGenerator : public MutantGenerator {
 
  protected:
   Mutants selectMutants(const SourceLines& sourceLines, std::size_t maxMutants,
-                        unsigned int randomSeed, const CandidateIndex& index) override;
+                        unsigned int randomSeed, const CandidateIndex& index,
+                        std::size_t mutantsPerLine) override;
 };
 
 }  // namespace sentinel

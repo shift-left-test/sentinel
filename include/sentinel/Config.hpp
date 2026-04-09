@@ -105,6 +105,8 @@ struct Config {
   std::vector<std::string> patterns;
   /** @brief Mutant generation strategy: UNIFORM, RANDOM, or WEIGHTED. */
   Generator generator = Generator::UNIFORM;
+  /** @brief Maximum number of mutants per source line; 0 = unlimited. */
+  size_t mutantsPerLine = 1;
   /** @brief List of mutation operators to apply (empty = all). */
   std::vector<std::string> operators;
   /** @brief Absolute paths to code coverage information files. */

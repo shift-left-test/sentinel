@@ -65,6 +65,9 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   for (const auto& c : cfg.coverageFiles) emitter << c.string();
   emitter << YAML::EndSeq;
   emitter << YAML::Key << "generator" << YAML::Value << generatorToString(cfg.generator);
+  if (cfg.mutantsPerLine != 1) {
+    emitter << YAML::Key << "mutants-per-line" << YAML::Value << cfg.mutantsPerLine;
+  }
   if (cfg.timeout) {
     emitter << YAML::Key << "timeout" << YAML::Value << *cfg.timeout;
   }

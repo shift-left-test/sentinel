@@ -62,6 +62,7 @@ TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
+  EXPECT_EQ(1u, cfg.mutantsPerLine);
   EXPECT_TRUE(cfg.buildCmd.empty());
   EXPECT_TRUE(cfg.testCmd.empty());
 }
@@ -85,6 +86,7 @@ test-result-dir: ./results
 coverage:
   - coverage.info
 generator: random
+mutants-per-line: 3
 timeout: 30
 operator:
   - AOR
@@ -106,6 +108,7 @@ operator:
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), cfg.testResultDir);
   EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.coverageFiles);
   EXPECT_EQ(Generator::RANDOM, cfg.generator);
+  EXPECT_EQ(3u, cfg.mutantsPerLine);
   ASSERT_TRUE(cfg.timeout.has_value());
   EXPECT_EQ(30u, *cfg.timeout);
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), cfg.operators);
@@ -127,6 +130,7 @@ test-result-dir: ./test-results
   EXPECT_EQ((mTmpDir / "test-results").lexically_normal(), cfg.testResultDir);
   EXPECT_FALSE(cfg.from.has_value());
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
+  EXPECT_EQ(1u, cfg.mutantsPerLine);
   EXPECT_FALSE(cfg.timeout.has_value());
 }
 
@@ -309,6 +313,7 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.from = "main";
   original.generator = Generator::RANDOM;
   original.timeout = 120;
+  original.mutantsPerLine = 5;
   original.extensions = {"cpp"};
   original.operators = {"AOR"};
 
@@ -329,6 +334,7 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   EXPECT_EQ(original.generator, loaded.generator);
   ASSERT_TRUE(loaded.timeout.has_value());
   EXPECT_EQ(*original.timeout, *loaded.timeout);
+  EXPECT_EQ(original.mutantsPerLine, loaded.mutantsPerLine);
 }
 
 TEST_F(ConfigTest, testMergeWorkspacesDefaultsToEmpty) {

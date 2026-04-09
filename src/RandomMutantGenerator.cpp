@@ -20,7 +20,8 @@ RandomMutantGenerator::RandomMutantGenerator(const std::filesystem::path& path) 
 }
 
 Mutants RandomMutantGenerator::selectMutants(const SourceLines& sourceLines, std::size_t maxMutants,
-                                             unsigned int randomSeed, const CandidateIndex& index) {
+                                             unsigned int randomSeed, const CandidateIndex& index,
+                                             std::size_t mutantsPerLine) {
   std::mt19937 rng(randomSeed);
   std::map<fs::path, fs::path> pathCache;
   std::set<Mutant> selectedSet;
@@ -40,7 +41,7 @@ Mutants RandomMutantGenerator::selectMutants(const SourceLines& sourceLines, std
       continue;
     }
     mLinesByPath[canonPath]++;
-    selectUniqueCandidate(&lineCandidates, &rng, &selectedSet, &candidates);
+    selectUniqueCandidates(&lineCandidates, &rng, &selectedSet, &candidates, mutantsPerLine);
   }
 
   std::size_t n = candidates.size();

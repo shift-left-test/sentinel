@@ -52,13 +52,13 @@ std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(Generator generato
 // Template Method: generate()
 // ---------------------------------------------------------------------------
 Mutants MutantGenerator::generate(const SourceLines& sourceLines, std::size_t maxMutants,
-                                  unsigned int randomSeed) {
+                                  unsigned int randomSeed, std::size_t mutantsPerLine) {
   mCandidateCount = 0;
   mLinesByPath.clear();
 
   Mutants allMutants = collectAllMutants(sourceLines);
   CandidateIndex index = buildCandidateIndex(std::move(allMutants));
-  return selectMutants(sourceLines, maxMutants, randomSeed, index);
+  return selectMutants(sourceLines, maxMutants, randomSeed, index, mutantsPerLine);
 }
 
 // ---------------------------------------------------------------------------

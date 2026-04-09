@@ -209,6 +209,38 @@ TEST_F(UniformMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) {
   EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
 }
 
+TEST_F(UniformMutantGeneratorTest, testGenerateWithMutantsPerLineTwo) {
+  UniformMutantGenerator generator{SAMPLE1_DIR};
+  Mutants mutants = generator.generate(mSourceLines, 0, kSeed, 2);
+  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  Mutants baseline = generator1.generate(mSourceLines, 0, kSeed, 1);
+  EXPECT_GT(mutants.size(), baseline.size());
+  EXPECT_LE(mutants.size(), baseline.size() * 2);
+  for (const auto& m : mutants) {
+    EXPECT_TRUE(std::any_of(mAllMutants.begin(), mAllMutants.end(), [&m](const auto& c) { return c == m; }));
+  }
+}
+
+TEST_F(UniformMutantGeneratorTest, testGenerateWithMutantsPerLineUnlimited) {
+  UniformMutantGenerator generator{SAMPLE1_DIR};
+  Mutants mutants = generator.generate(mSourceLines, 0, kSeed, 0);
+  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  Mutants baseline = generator1.generate(mSourceLines, 0, kSeed, 1);
+  EXPECT_GE(mutants.size(), baseline.size());
+  for (const auto& m : mutants) {
+    EXPECT_TRUE(std::any_of(mAllMutants.begin(), mAllMutants.end(), [&m](const auto& c) { return c == m; }));
+  }
+}
+
+TEST_F(UniformMutantGeneratorTest, testGenerateWithMutantsPerLineOneMatchesDefault) {
+  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  Mutants mutants1 = generator1.generate(mSourceLines, 0, kSeed, 1);
+  UniformMutantGenerator generator2{SAMPLE1_DIR};
+  Mutants mutants2 = generator2.generate(mSourceLines, 0, kSeed);
+  EXPECT_EQ(mutants1.size(), mutants2.size());
+  EXPECT_TRUE(std::equal(mutants1.begin(), mutants1.end(), mutants2.begin()));
+}
+
 TEST(MutantGeneratorFactoryTest, parseGeneratorAcceptsCaseInsensitiveInput) {
   EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("UNIFORM"));
   EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("Uniform"));

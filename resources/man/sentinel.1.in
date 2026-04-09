@@ -103,6 +103,9 @@ Default: \fBcxx cpp cc c c++ cu\fR
 \fB\-\-generator\fR=\fITYPE\fR
 Mutant selection strategy: \fBuniform\fR, \fBrandom\fR, or \fBweighted\fR. Default: \fBuniform\fR
 .TP
+\fB\-\-mutants\-per\-line\fR=\fIN\fR
+Maximum number of mutants per source line. \fB0\fR = unlimited. Default: \fB1\fR
+.TP
 \fB\-\-seed\fR=\fIN\fR
 Random seed for mutant selection. Default: random.
 .TP

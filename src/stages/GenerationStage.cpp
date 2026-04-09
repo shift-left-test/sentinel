@@ -34,6 +34,7 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
                                    const std::map<fs::path, std::size_t>& linesByPath,
                                    const fs::path& sourceDir, Generator generator,
                                    unsigned seed, std::size_t limit,
+                                   std::size_t mutantsPerLine,
                                    const std::optional<std::string>& from,
                                    bool uncommitted,
                                    const std::string& partition) {
@@ -84,6 +85,9 @@ static void printGenerationSummary(const Mutants& mutants, std::size_t candidate
                  groupByPath.size() == 1 ? "" : "s", candidateCount);
   }
   Console::out("  Generator:  {} (seed: {})", generatorToString(generator), seed);
+  if (mutantsPerLine != 1) {
+    Console::out("  Per line:   {}", mutantsPerLine == 0 ? "unlimited" : std::to_string(mutantsPerLine));
+  }
   std::string mutantsLine = fmt::format("{}", mutants.size());
   if (limit > 0) {
     mutantsLine += fmt::format(" of {} limit", limit);
@@ -155,7 +159,8 @@ bool GenerationStage::execute(PipelineContext* ctx) {
 
   mGenerator->setOperators(ctx->config.operators);
   MutationFactory factory(mGenerator);
-  auto mutants = factory.generate(ctx->config.sourceDir, sourceLines, ctx->config.limit, seed);
+  auto mutants = factory.generate(ctx->config.sourceDir, sourceLines, ctx->config.limit, seed,
+                                  ctx->config.mutantsPerLine);
   std::size_t candidateCount = mGenerator->getCandidateCount();
 
   if (mutants.size() > static_cast<std::size_t>(Workspace::kMaxMutantCount)) {
@@ -169,7 +174,8 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   std::string partition = ctx->config.partition.value_or("");
   auto linesByPath = mGenerator->getLinesByPath();
   printGenerationSummary(mutants, candidateCount, linesByPath, ctx->config.sourceDir, ctx->config.generator, seed,
-                         ctx->config.limit, ctx->config.from, ctx->config.uncommitted, partition);
+                         ctx->config.limit, ctx->config.mutantsPerLine, ctx->config.from, ctx->config.uncommitted,
+                         partition);
 
   // Apply partition slice
   std::size_t partIdx = 0;

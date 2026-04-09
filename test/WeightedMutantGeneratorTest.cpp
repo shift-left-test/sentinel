@@ -195,4 +195,20 @@ TEST_F(WeightedMutantGeneratorTest, testGetLinesByPathReturnsPerFileLineCounts) 
   EXPECT_NE(linesByPath.find(canon1b), linesByPath.end());
 }
 
+TEST_F(WeightedMutantGeneratorTest, testGenerateWithMutantsPerLineTwo) {
+  WeightedMutantGenerator generator{SAMPLE1_DIR};
+  Mutants mutants = generator.generate(mSourceLines, 0, kSeed, 2);
+  WeightedMutantGenerator generator1{SAMPLE1_DIR};
+  Mutants baseline = generator1.generate(mSourceLines, 0, kSeed, 1);
+  EXPECT_GT(mutants.size(), baseline.size());
+}
+
+TEST_F(WeightedMutantGeneratorTest, testGenerateWithMutantsPerLineUnlimited) {
+  WeightedMutantGenerator generator{SAMPLE1_DIR};
+  Mutants mutants = generator.generate(mSourceLines, 0, kSeed, 0);
+  WeightedMutantGenerator generator1{SAMPLE1_DIR};
+  Mutants baseline = generator1.generate(mSourceLines, 0, kSeed, 1);
+  EXPECT_GE(mutants.size(), baseline.size());
+}
+
 }  // namespace sentinel

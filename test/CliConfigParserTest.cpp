@@ -41,6 +41,7 @@ TEST_F(CliConfigParserTest, testDefaultsPreservedWhenNoCli) {
   EXPECT_EQ(Generator::UNIFORM, cfg.generator);
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
+  EXPECT_EQ(1u, cfg.mutantsPerLine);
   EXPECT_FALSE(cfg.seed.has_value());
   EXPECT_FALSE(cfg.threshold.has_value());
   EXPECT_FALSE(cfg.init);
@@ -93,6 +94,29 @@ TEST_F(CliConfigParserTest, testSeedNonNumericThrows) {
 TEST_F(CliConfigParserTest, testLimitParsed) {
   Config cfg = parse({"--limit", "50"});
   EXPECT_EQ(cfg.limit, 50u);
+}
+
+TEST_F(CliConfigParserTest, testMutantsPerLineParsed) {
+  Config cfg = parse({"--mutants-per-line", "5"});
+  EXPECT_EQ(cfg.mutantsPerLine, 5u);
+}
+
+TEST_F(CliConfigParserTest, testMutantsPerLineDefaultIsOne) {
+  Config cfg = parse({});
+  EXPECT_EQ(cfg.mutantsPerLine, 1u);
+}
+
+TEST_F(CliConfigParserTest, testMutantsPerLineZeroMeansUnlimited) {
+  Config cfg = parse({"--mutants-per-line", "0"});
+  EXPECT_EQ(cfg.mutantsPerLine, 0u);
+}
+
+TEST_F(CliConfigParserTest, testMutantsPerLineAppearsInEffectiveOptions) {
+  args::ArgumentParser parser("test", "");
+  CliConfigParser cliParser(parser);
+  parser.ParseArgs(std::vector<std::string>{"--mutants-per-line", "3"});
+  auto opts = cliParser.getEffectiveCliOptions();
+  EXPECT_THAT(opts, ::testing::Contains("--mutants-per-line"));
 }
 
 TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {

@@ -77,7 +77,8 @@ class MutantGenerator {
   /**
    * @brief Template Method: orchestrates mutant generation pipeline.
    */
-  Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed);
+  Mutants generate(const SourceLines& sourceLines, std::size_t maxMutants, unsigned int randomSeed,
+                   std::size_t mutantsPerLine = 1);
 
   /**
    * @brief Set mutation operators to use. If empty, all operators are used.
@@ -148,10 +149,12 @@ class MutantGenerator {
    * @param maxMutants limit number of generated mutables
    * @param randomSeed random seed
    * @param index pre-built candidate index
+   * @param mutantsPerLine number of mutants to select per source line
    * @return selected mutants
    */
   virtual Mutants selectMutants(const SourceLines& sourceLines, std::size_t maxMutants,
-                                unsigned int randomSeed, const CandidateIndex& index) = 0;
+                                unsigned int randomSeed, const CandidateIndex& index,
+                                std::size_t mutantsPerLine) = 0;
 
   /**
    * @brief Find candidate mutants covering a specific line in a file.
@@ -165,32 +168,38 @@ class MutantGenerator {
                                     std::size_t targetLine, std::vector<const Mutant*>* out);
 
   /**
-   * @brief Select one unique mutant from shuffled candidates.
+   * @brief Select up to maxPerLine unique mutants from shuffled candidates.
    *
-   * Shuffles the candidate list, finds the first mutant not already in
-   * selectedSet, inserts it, and appends it to result.
+   * Shuffles the candidate list, finds mutants not already in selectedSet,
+   * inserts them, and appends them to result.
    *
    * @param candidates candidate mutant pointers (shuffled in-place)
    * @param rng random number generator
    * @param selectedSet set of already-selected mutants
-   * @param result output vector to append the selected mutant
+   * @param result output vector to append selected mutants
+   * @param maxPerLine maximum mutants to select per line (0 = unlimited)
    */
-  static void selectUniqueCandidate(std::vector<const Mutant*>* candidates,
-                                    std::mt19937* rng,
-                                    std::set<Mutant>* selectedSet,
-                                    Mutants* result) {
+  static void selectUniqueCandidates(std::vector<const Mutant*>* candidates,
+                                     std::mt19937* rng,
+                                     std::set<Mutant>* selectedSet,
+                                     Mutants* result,
+                                     std::size_t maxPerLine) {
     std::shuffle(candidates->begin(), candidates->end(), *rng);
+    std::size_t count = 0;
     for (const auto* candidate : *candidates) {
+      if (maxPerLine > 0 && count >= maxPerLine) {
+        break;
+      }
       // cppcheck-suppress useStlAlgorithm
       if (selectedSet->insert(*candidate).second) {
         result->push_back(*candidate);
-        break;
+        ++count;
       }
     }
   }
 
   /**
-   * @brief Select one mutant per source line by iterating over a range.
+   * @brief Select mutants per source line by iterating over a range.
    *
    * Shared logic for Uniform and Weighted generators. The LineExtractor
    * callable converts each element in the range to a const SourceLine&.
@@ -202,12 +211,13 @@ class MutantGenerator {
    * @param randomSeed seed for the random number generator
    * @param index pre-built candidate index
    * @param getLine extracts a SourceLine from each range element
+   * @param mutantsPerLine number of mutants to select per source line
    * @return selected mutants
    */
   template <typename Range, typename LineExtractor>
   Mutants selectFromRange(const Range& range, std::size_t maxMutants,
                           unsigned int randomSeed, const CandidateIndex& index,
-                          LineExtractor getLine) {
+                          LineExtractor getLine, std::size_t mutantsPerLine) {
     std::set<Mutant> selectedSet;
     Mutants result;
     std::mt19937 rng(randomSeed);
@@ -232,11 +242,18 @@ class MutantGenerator {
       candidateLineCount++;
       mLinesByPath[canonPath]++;
 
-      if (maxMutants > 0 && result.size() == maxMutants) {
+      if (maxMutants > 0 && result.size() >= maxMutants) {
         continue;
       }
 
-      selectUniqueCandidate(&candidates, &rng, &selectedSet, &result);
+      std::size_t effectivePerLine = mutantsPerLine;
+      if (maxMutants > 0) {
+        std::size_t remaining = maxMutants - result.size();
+        if (effectivePerLine == 0 || effectivePerLine > remaining) {
+          effectivePerLine = remaining;
+        }
+      }
+      selectUniqueCandidates(&candidates, &rng, &selectedSet, &result, effectivePerLine);
     }
 
     mCandidateCount = candidateLineCount;
