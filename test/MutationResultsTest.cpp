@@ -283,4 +283,56 @@ TEST_F(MutationResultsTest, testStreamOperatorAllStatesRoundTrip) {
   }
 }
 
+TEST_F(MutationResultsTest, testStreamOperatorMissingMutantFieldSetsFail) {
+  static constexpr const char* kYaml =
+      "state: KILLED\n"
+      "killing-test: test1\n"
+      "error-test: \"\"\n"
+      "mutant:\n"
+      "  operator: AOR\n"
+      "  path: foo.cpp\n";
+  std::istringstream in(kYaml);
+  MutationResult mr;
+  in >> mr;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST_F(MutationResultsTest, testCompareDifferentStatesReturnsFalse) {
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr1(m, "t1", "", MutationState::KILLED);
+  MutationResult mr2(m, "t1", "", MutationState::SURVIVED);
+  EXPECT_FALSE(mr1.compare(mr2));
+}
+
+TEST_F(MutationResultsTest, testCompareDifferentKillingTestReturnsFalse) {
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr1(m, "testA", "", MutationState::KILLED);
+  MutationResult mr2(m, "testB", "", MutationState::KILLED);
+  EXPECT_FALSE(mr1.compare(mr2));
+}
+
+TEST_F(MutationResultsTest, testCompareDifferentErrorTestReturnsFalse) {
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MutationResult mr1(m, "", "errA", MutationState::RUNTIME_ERROR);
+  MutationResult mr2(m, "", "errB", MutationState::RUNTIME_ERROR);
+  EXPECT_FALSE(mr1.compare(mr2));
+}
+
+TEST_F(MutationResultsTest, testCompareDifferentMutantsReturnsFalse) {
+  Mutant m1("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  Mutant m2("BOR", TARGET_FILE, "foo", 1, 0, 1, 5, "|");
+  MutationResult mr1(m1, "", "", MutationState::SURVIVED);
+  MutationResult mr2(m2, "", "", MutationState::SURVIVED);
+  EXPECT_FALSE(mr1.compare(mr2));
+}
+
+TEST_F(MutationResultsTest, testEmplaceBackCreatesInPlace) {
+  MutationResults MRs;
+  Mutant m("AOR", TARGET_FILE, "foo", 1, 0, 1, 5, "+");
+  MRs.emplace_back(m, "test", "", MutationState::KILLED);
+  ASSERT_EQ(1u, MRs.size());
+  EXPECT_EQ(MutationState::KILLED, MRs[0].getMutationState());
+  EXPECT_EQ("test", MRs[0].getKillingTest());
+}
+
 }  // namespace sentinel

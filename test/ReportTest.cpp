@@ -4,6 +4,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
@@ -403,6 +404,153 @@ TEST_F(ReportTest, testPrintReportWithDurationAndSkipped) {
   std::string durationSection = out.substr(durationPos);
   EXPECT_FALSE(string::contains(durationSection, "Survived"));
   EXPECT_FALSE(string::contains(durationSection, "Runtime Error"));
+}
+
+TEST_F(ReportTest, testPrintReportOnlyBuildFailures) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_ONLY_BUILD_FAIL";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "", "", MutationState::BUILD_FAILURE);
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::BUILD_FAILURE);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "-%"));
+  EXPECT_TRUE(string::contains(out, "Skipped: 2 build failures"));
+}
+
+TEST_F(ReportTest, testPrintReportOnlyRuntimeErrors) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_ONLY_RT_ERR";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "", "", MutationState::RUNTIME_ERROR);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "Skipped: 1 runtime error"));
+  EXPECT_FALSE(string::contains(out, "build failure"));
+  EXPECT_FALSE(string::contains(out, "timeout"));
+}
+
+TEST_F(ReportTest, testPrintReportOnlyTimeouts) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_ONLY_TIMEOUT";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "", "", MutationState::TIMEOUT);
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::TIMEOUT);
+  Mutant M3("AOR", REL_PATH3, "func", 4, 12, 4, 13, "*");
+  MRs.emplace_back(M3, "", "", MutationState::TIMEOUT);
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  ReportForTest report(MutationSummary(MRPath, SOURCE_DIR));
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(string::contains(out, "Skipped: 3 timeouts"));
+  EXPECT_FALSE(string::contains(out, "build failure"));
+  EXPECT_FALSE(string::contains(out, "runtime error"));
+}
+
+TEST_F(ReportTest, testMutationSummaryCopyConstructorEmptyResults) {
+  MutationResults MRs;
+  MutationSummary original(MRs, SOURCE_DIR);
+  MutationSummary copy(original);
+
+  EXPECT_EQ(0u, copy.totNumberOfMutation);
+  EXPECT_EQ(0u, copy.totNumberOfDetectedMutation);
+  EXPECT_TRUE(copy.groupByPath.empty());
+  EXPECT_TRUE(copy.groupByDirPath.empty());
+}
+
+TEST_F(ReportTest, testMutationSummaryCopyConstructorWithResults) {
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+
+  MutationSummary original(MRs, SOURCE_DIR);
+  MutationSummary copy(original);
+
+  EXPECT_EQ(original.totNumberOfMutation, copy.totNumberOfMutation);
+  EXPECT_EQ(original.totNumberOfDetectedMutation, copy.totNumberOfDetectedMutation);
+  EXPECT_EQ(original.groupByPath.size(), copy.groupByPath.size());
+  EXPECT_EQ(original.groupByDirPath.size(), copy.groupByDirPath.size());
+}
+
+TEST_F(ReportTest, testMutationSummaryAssignmentOperator) {
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+
+  MutationSummary original(MRs, SOURCE_DIR);
+  MutationSummary assigned(MutationResults(), SOURCE_DIR);
+  assigned = original;
+
+  EXPECT_EQ(original.totNumberOfMutation, assigned.totNumberOfMutation);
+  EXPECT_EQ(original.totNumberOfDetectedMutation, assigned.totNumberOfDetectedMutation);
+}
+
+TEST_F(ReportTest, testMutationSummaryAggregatesSkippedStates) {
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "", "", MutationState::BUILD_FAILURE);
+  MRs.back().setBuildSecs(1.0);
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::RUNTIME_ERROR);
+  Mutant M3("AOR", REL_PATH3, "func", 4, 12, 4, 13, "*");
+  MRs.emplace_back(M3, "", "", MutationState::TIMEOUT);
+
+  MutationSummary summary(MRs, SOURCE_DIR);
+  EXPECT_EQ(0u, summary.totNumberOfMutation);
+  EXPECT_EQ(0u, summary.totNumberOfDetectedMutation);
+  EXPECT_EQ(1u, summary.totNumberOfBuildFailure);
+  EXPECT_EQ(1u, summary.totNumberOfRuntimeError);
+  EXPECT_EQ(1u, summary.totNumberOfTimeout);
+  EXPECT_TRUE(summary.groupByPath.empty());
+  EXPECT_TRUE(summary.groupByDirPath.empty());
+}
+
+TEST_F(ReportTest, testMutationSummaryConstructorFromFileThrowsOnDirectory) {
+  auto resultDir = BASE / "result_dir_not_file";
+  fs::create_directories(resultDir);
+  EXPECT_THROW(MutationSummary(resultDir, SOURCE_DIR), InvalidArgumentException);
+}
+
+TEST_F(ReportTest, testMutationSummaryDirGroupFileCount) {
+  MutationResults MRs;
+  Mutant M1("AOR", REL_PATH2, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::KILLED);
+  Mutant M2("AOR", REL_PATH3, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+
+  MutationSummary summary(MRs, SOURCE_DIR);
+  auto it = summary.groupByDirPath.find(REL_PATH2.parent_path());
+  ASSERT_NE(summary.groupByDirPath.end(), it);
+  EXPECT_EQ(2u, it->second.fileCount);
 }
 
 }  // namespace sentinel

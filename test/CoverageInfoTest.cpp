@@ -12,6 +12,8 @@
 #include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
+namespace fs = std::filesystem;
+
 namespace sentinel {
 
 class CoverageInfoTest : public SampleFileGeneratorForTest {};
@@ -33,7 +35,6 @@ TEST_F(CoverageInfoTest, testFailWhenUnknownFileGiven) {
 }
 
 TEST_F(CoverageInfoTest, testMultipleCoverageFilesMergeUnion) {
-  namespace fs = std::filesystem;
   auto dir = SAMPLE_BASE / "multi_cov";
   fs::create_directories(dir);
 
@@ -72,7 +73,6 @@ TEST_F(CoverageInfoTest, testMultipleCoverageFilesMergeUnion) {
 }
 
 TEST_F(CoverageInfoTest, testDaCountZeroIsNotCovered) {
-  namespace fs = std::filesystem;
   auto dir = SAMPLE_BASE / "zero_cov";
   fs::create_directories(dir);
 
@@ -101,7 +101,6 @@ TEST_F(CoverageInfoTest, testCoverReturnsFalseForSourceNotInCoverage) {
 }
 
 TEST_F(CoverageInfoTest, testEmptyCoverageFileProducesNoCoverage) {
-  namespace fs = std::filesystem;
   auto dir = SAMPLE_BASE / "empty_cov";
   fs::create_directories(dir);
 
@@ -114,7 +113,6 @@ TEST_F(CoverageInfoTest, testEmptyCoverageFileProducesNoCoverage) {
 }
 
 TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
-  namespace fs = std::filesystem;
   auto dir = SAMPLE_BASE / "bad_cov";
   fs::create_directories(dir);
 
@@ -129,6 +127,70 @@ TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
   }
 
   EXPECT_THROW(CoverageInfo c({covFile.string()}), std::exception);
+}
+
+TEST_F(CoverageInfoTest, testSfWithoutDaProducesNoCoverage) {
+  auto dir = SAMPLE_BASE / "sf_only_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "sf_only.info";
+  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:" << srcFile << "\n"
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_FALSE(c.cover(srcFile, 1));
+  EXPECT_FALSE(c.cover(srcFile, 33));
+}
+
+TEST_F(CoverageInfoTest, testNonSfNonDaLinesAreIgnored) {
+  auto dir = SAMPLE_BASE / "extra_lines_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "extra.info";
+  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "TN:\n"
+      << "SF:" << srcFile << "\n"
+      << "FN:1,foo\n"
+      << "FNDA:1,foo\n"
+      << "DA:33,5\n"
+      << "LH:1\n"
+      << "LF:1\n"
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
+}
+
+TEST_F(CoverageInfoTest, testMultipleSfEntriesSameFile) {
+  auto dir = SAMPLE_BASE / "dup_sf_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "dup.info";
+  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:" << srcFile << "\n"
+      << "DA:33,1\n"
+      << "end_of_record\n"
+      << "SF:" << srcFile << "\n"
+      << "DA:35,2\n"
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  // Second SF: entry overwrites the first one
+  EXPECT_FALSE(c.cover(srcFile, 33));
+  EXPECT_TRUE(c.cover(srcFile, 35));
 }
 
 }  // namespace sentinel

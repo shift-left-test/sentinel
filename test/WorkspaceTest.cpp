@@ -19,6 +19,7 @@
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Workspace.hpp"
+#include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 #include "helper/ThrowMessageMatcher.hpp"
 
@@ -831,6 +832,64 @@ TEST(WorkspaceStatusTest, testVersionAppearsFirstInYaml) {
   ASSERT_NE(std::string::npos, versionPos);
   ASSERT_NE(std::string::npos, timePos);
   EXPECT_LT(versionPos, timePos);
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorEmptyInputSetsFail) {
+  std::istringstream in("");
+  WorkspaceStatus s;
+  in >> s;
+  EXPECT_TRUE(in.fail());
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorEmptyYamlProducesDefaults) {
+  std::istringstream in("---\n{}");
+  WorkspaceStatus s;
+  in >> s;
+  EXPECT_FALSE(in.fail());
+  EXPECT_FALSE(s.version.has_value());
+  EXPECT_FALSE(s.originalTime.has_value());
+  EXPECT_FALSE(s.seed.has_value());
+  EXPECT_FALSE(s.mergedPartitions.has_value());
+}
+
+TEST_F(WorkspaceTest, testRestoreBackupWhenBackupIsFile) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  auto srcRoot = mBase / "src";
+  fs::create_directories(srcRoot);
+  fs::remove_all(ws.getBackupDir());
+  testutil::writeFile(ws.getBackupDir(), "not a directory");
+
+  EXPECT_NO_THROW(ws.restoreBackup(srcRoot));
+}
+
+TEST_F(WorkspaceTest, testLoadResultsSkipsNonNumericDirectories) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  testutil::writeFile(mRoot / "abc" / "mt.done", "dummy");
+
+  auto results = ws.loadResults();
+  EXPECT_TRUE(results.empty());
+}
+
+TEST_F(WorkspaceTest, testHasMutantsIgnoresNonNumericDirectories) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  testutil::writeFile(mRoot / "backup" / "mt.cfg", "dummy");
+
+  EXPECT_FALSE(ws.hasMutants());
+}
+
+TEST_F(WorkspaceTest, testLoadMutantsIgnoresNonDirectoryEntries) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  testutil::writeFile(mRoot / "00001", "not a directory");
+
+  auto mutants = ws.loadMutants();
+  EXPECT_TRUE(mutants.empty());
 }
 
 }  // namespace sentinel

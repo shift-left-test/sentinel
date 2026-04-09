@@ -384,4 +384,69 @@ TEST_F(ConfigTest, testStreamOperatorWithoutOptionals) {
   EXPECT_EQ(std::string::npos, yaml.find("timeout"));
 }
 
+TEST_F(ConfigTest, testStreamOperatorWithMutantsPerLine) {
+  Config cfg = Config::withDefaults();
+  cfg.mutantsPerLine = 3;
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("mutants-per-line: 3"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorDefaultMutantsPerLineOmitted) {
+  Config cfg = Config::withDefaults();
+  cfg.mutantsPerLine = 1;
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_EQ(std::string::npos, yaml.find("mutants-per-line"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorWithExtensionsAndPatterns) {
+  Config cfg = Config::withDefaults();
+  cfg.extensions = {"cpp", "h"};
+  cfg.patterns = {"src/**", "!test/**"};
+  cfg.operators = {"AOR", "ROR"};
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("cpp"));
+  EXPECT_NE(std::string::npos, yaml.find("src/**"));
+  EXPECT_NE(std::string::npos, yaml.find("AOR"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorWithCoverageFiles) {
+  Config cfg = Config::withDefaults();
+  cfg.coverageFiles = {"/tmp/cov1.info", "/tmp/cov2.info"};
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("/tmp/cov1.info"));
+  EXPECT_NE(std::string::npos, yaml.find("/tmp/cov2.info"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorEmptyFrom) {
+  Config cfg = Config::withDefaults();
+  cfg.from = std::nullopt;
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_EQ(std::string::npos, yaml.find("from:"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorWeightedGenerator) {
+  Config cfg = Config::withDefaults();
+  cfg.generator = Generator::WEIGHTED;
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("generator: weighted"));
+}
+
+TEST_F(ConfigTest, testParseGeneratorMixedCase) {
+  EXPECT_EQ(Generator::UNIFORM, parseGenerator("Uniform"));
+  EXPECT_EQ(Generator::RANDOM, parseGenerator("RANDOM"));
+  EXPECT_EQ(Generator::WEIGHTED, parseGenerator("Weighted"));
+}
+
 }  // namespace sentinel

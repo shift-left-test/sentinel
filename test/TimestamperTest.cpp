@@ -74,4 +74,30 @@ TEST_F(TimestamperTest, testToStringFormatsDiffer) {
   EXPECT_NE(clock, human);
 }
 
+TEST_F(TimestamperTest, testFormatHoursOnly) {
+  EXPECT_EQ("2h 0m", Timestamper::format(7200.0));
+}
+
+TEST_F(TimestamperTest, testFormatMinutesOnly) {
+  EXPECT_EQ("1m 0s", Timestamper::format(60.0));
+}
+
+TEST_F(TimestamperTest, testFormatSubSecond) {
+  EXPECT_EQ("0s", Timestamper::format(0.4));
+}
+
+TEST_F(TimestamperTest, testFormatClockZero) {
+  EXPECT_EQ("00:00:00", Timestamper::format(0.0, Timestamper::Format::Clock));
+}
+
+TEST_F(TimestamperTest, testFormatClockWithHoursMinutesSeconds) {
+  EXPECT_EQ("02:30:45", Timestamper::format(9045.0, Timestamper::Format::Clock));
+}
+
+TEST_F(TimestamperTest, testFormatUnknownFormatReturnsUnknown) {
+  // Cast to create an invalid format value
+  auto unknown = static_cast<Timestamper::Format>(99);
+  EXPECT_EQ("Unknown format", Timestamper::format(10.0, unknown));
+}
+
 }  // namespace sentinel

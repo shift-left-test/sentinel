@@ -290,4 +290,77 @@ TEST_F(MutantsTest, testStreamOperatorInvalidYamlSetsFail) {
   EXPECT_TRUE(in.fail());
 }
 
+TEST_F(MutantsTest, testLessThanByFirstLine) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 2, 1, 1, 1, "+");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testLessThanByFirstColumn) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 1, 2, 1, 1, "+");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testLessThanByLastLine) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 1, 1, 2, 1, "+");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testLessThanByLastColumn) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 1, 1, 1, 2, "+");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testLessThanByToken) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "-");
+  EXPECT_TRUE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testLessThanEqualMutantsReturnFalse) {
+  Mutant m1("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  Mutant m2("AOR", "src/a.cpp", "foo", 1, 1, 1, 1, "+");
+  EXPECT_FALSE(m1 < m2);
+  EXPECT_FALSE(m2 < m1);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentToken) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "-");
+  EXPECT_TRUE(m1 != m2);
+  EXPECT_FALSE(m1 == m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentPath) {
+  Mutant m1("AOR", "a.cpp", "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", "b.cpp", "foo", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentFirstColumn) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 1, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  EXPECT_TRUE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentLastLine) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 1, 2, 5, 4, "+");
+  EXPECT_TRUE(m1 != m2);
+}
+
+TEST_F(MutantsTest, testInequalityOperatorDifferentLastColumn) {
+  Mutant m1("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 4, "+");
+  Mutant m2("AOR", NORMAL_FILENAME, "foo", 1, 2, 3, 8, "+");
+  EXPECT_TRUE(m1 != m2);
+}
+
 }  // namespace sentinel

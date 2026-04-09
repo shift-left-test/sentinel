@@ -184,4 +184,58 @@ TEST_F(XmlReportTest, testMakeXmlReportWhenEmptyMutationResult) {
   EXPECT_EQ(EXPECT_EMPTY_MUT_XML_CONTENT, testutil::readFile(outXMLPath));
 }
 
+TEST_F(XmlReportTest, testMakeXmlReportWithTimeoutMutation) {
+  MutationResults MRs;
+  Mutant M1("AOR", mRelPath1, "func", 4, 5, 6, 7, "+");
+  MRs.emplace_back(M1, "", "", MutationState::TIMEOUT);
+
+  auto MRPath = mMutResultDir / "MutationResultTimeout";
+  MRs.save(MRPath);
+
+  XmlReport xmlreport(MutationSummary(MRPath, mSourceDir));
+  auto outDir = mBase / "OUT_DIR_TIMEOUT";
+  xmlreport.save(outDir);
+
+  auto content = testutil::readFile(outDir / "mutations.xml");
+  EXPECT_NE(std::string::npos, content.find("detected=\"skip\""));
+  // Killing test should be empty for skip mutations
+  EXPECT_NE(std::string::npos, content.find("<killingTest></killingTest>"));
+}
+
+TEST_F(XmlReportTest, testMakeXmlReportMixedStates) {
+  MutationResults MRs;
+  Mutant M1("AOR", mRelPath1, "func", 4, 5, 6, 7, "+");
+  MRs.emplace_back(M1, "testKill", "", MutationState::KILLED);
+
+  Mutant M2("BOR", mRelPath1, "func", 5, 1, 5, 2, "|");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+
+  Mutant M3("SDL", mRelPath2, "func", 1, 1, 1, 10, "");
+  MRs.emplace_back(M3, "", "", MutationState::BUILD_FAILURE);
+
+  Mutant M4("ROR", mRelPath2, "func", 2, 1, 2, 5, "!=");
+  MRs.emplace_back(M4, "", "", MutationState::RUNTIME_ERROR);
+
+  Mutant M5("UOI", mRelPath2, "func", 3, 1, 3, 5, "++");
+  MRs.emplace_back(M5, "", "", MutationState::TIMEOUT);
+
+  auto MRPath = mMutResultDir / "MutationResultMixed";
+  MRs.save(MRPath);
+
+  XmlReport xmlreport(MutationSummary(MRPath, mSourceDir));
+  auto outDir = mBase / "OUT_DIR_MIXED";
+  xmlreport.save(outDir);
+
+  auto content = testutil::readFile(outDir / "mutations.xml");
+  EXPECT_NE(std::string::npos, content.find("detected=\"true\""));
+  EXPECT_NE(std::string::npos, content.find("detected=\"false\""));
+  // BUILD_FAILURE, RUNTIME_ERROR, TIMEOUT all become "skip"
+  auto firstSkip = content.find("detected=\"skip\"");
+  ASSERT_NE(std::string::npos, firstSkip);
+  auto secondSkip = content.find("detected=\"skip\"", firstSkip + 1);
+  ASSERT_NE(std::string::npos, secondSkip);
+  auto thirdSkip = content.find("detected=\"skip\"", secondSkip + 1);
+  ASSERT_NE(std::string::npos, thirdSkip);
+}
+
 }  // namespace sentinel

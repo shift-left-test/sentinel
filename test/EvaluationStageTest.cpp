@@ -357,4 +357,104 @@ TEST_F(EvaluationStageFlowTest, testSingularSuffixForOneMutant) {
   EXPECT_THAT(stderrOutput, ::testing::Not(HasSubstr("1 mutants")));
 }
 
+TEST_F(EvaluationStageFlowTest, testKilledMutantShowsKillingTest) {
+  createDefaultMutant();
+
+  auto failSrc = mBase / "fail_results" / "results.xml";
+  testutil::writeFile(failSrc,
+      "<?xml version=\"1.0\"?>\n"
+      "<testsuites><testsuite name=\"S\" tests=\"1\">"
+      "<testcase name=\"t1\" classname=\"C\" status=\"run\">"
+      "<failure message=\"mismatch\"/>"
+      "</testcase>"
+      "</testsuite></testsuites>\n");
+  mConfig.testCmd = fmt::format("mkdir -p {} && cp {} {}",
+                                mTestResultDir.string(), failSrc.string(),
+                                (mTestResultDir / "results.xml").string());
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_THAT(output, HasSubstr("KILLED"));
+  EXPECT_THAT(output, HasSubstr("C.t1"));
+
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::KILLED, result.getMutationState());
+}
+
+TEST_F(EvaluationStageFlowTest, testMultipleKillingTestsDisplaysWithMoreSuffix) {
+  Mutant m("AOR", "foo.cpp", "foo", 1, 24, 1, 25, "-");
+  mWorkspace->createMutant(1, m);
+
+  testutil::writeFile(mWorkspace->getOriginalResultsDir() / "results.xml",
+      "<?xml version=\"1.0\"?>\n"
+      "<testsuites>"
+      "<testsuite name=\"S\" tests=\"3\">"
+      "<testcase name=\"t1\" classname=\"C1\" status=\"run\"/>"
+      "<testcase name=\"t2\" classname=\"C2\" status=\"run\"/>"
+      "<testcase name=\"t3\" classname=\"C3\" status=\"run\"/>"
+      "</testsuite></testsuites>\n");
+
+  auto failSrc = mBase / "fail3_results" / "results.xml";
+  testutil::writeFile(failSrc,
+      "<?xml version=\"1.0\"?>\n"
+      "<testsuites>"
+      "<testsuite name=\"S\" tests=\"3\">"
+      "<testcase name=\"t1\" classname=\"C1\" status=\"run\">"
+      "<failure message=\"fail1\"/></testcase>"
+      "<testcase name=\"t2\" classname=\"C2\" status=\"run\">"
+      "<failure message=\"fail2\"/></testcase>"
+      "<testcase name=\"t3\" classname=\"C3\" status=\"run\">"
+      "<failure message=\"fail3\"/></testcase>"
+      "</testsuite></testsuites>\n");
+  mConfig.testCmd = fmt::format("mkdir -p {} && cp {} {}",
+                                mTestResultDir.string(), failSrc.string(),
+                                (mTestResultDir / "results.xml").string());
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStdout();
+
+  // With kMaxDisplayedTests = 2, should show first 2 tests and "(+1 more)"
+  EXPECT_THAT(output, HasSubstr("+1 more"));
+}
+
+TEST_F(EvaluationStageFlowTest, testDeleteTokenShowsDeleteLabel) {
+  Mutant m("SDL", "foo.cpp", "foo", 1, 24, 1, 25, "");
+  mWorkspace->createMutant(1, m);
+
+  mConfig.buildCmd = "false";
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_THAT(output, HasSubstr("DELETE"));
+  EXPECT_THAT(output, HasSubstr("BUILD_FAILURE"));
+}
+
+TEST_F(EvaluationStageFlowTest, testAutoTimeoutWithNoOriginalTime) {
+  createDefaultMutant();
+  mConfig.timeout = std::nullopt;
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(mWorkspace->isComplete());
+}
+
 }  // namespace sentinel

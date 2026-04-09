@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel {
@@ -141,6 +142,163 @@ TEST_F(StringTest, testToUpperConvertsLowercaseToUppercase) {
   EXPECT_EQ("HELLO WORLD", string::toUpper("HELLO WORLD"));
   EXPECT_EQ("", string::toUpper(""));
   EXPECT_EQ("ABC123", string::toUpper("abc123"));
+}
+
+TEST_F(StringTest, testStartsWithReturnsFalseWhenNeedleLongerThanHaystack) {
+  EXPECT_FALSE(string::startsWith("Hi", "Hello"));
+  EXPECT_FALSE(string::startsWith("", "x"));
+}
+
+TEST_F(StringTest, testEndsWithReturnsFalseWhenNeedleLongerThanHaystack) {
+  EXPECT_FALSE(string::endsWith("Hi", "Hello"));
+  EXPECT_FALSE(string::endsWith("", "x"));
+}
+
+TEST_F(StringTest, testLtrimWithCustomPredicate) {
+  auto pred = [](unsigned char c) { return c == 'x'; };
+  EXPECT_EQ("hello", string::ltrim("xxxhello", pred));
+  EXPECT_EQ("hello", string::ltrim("hello", pred));
+  EXPECT_EQ("", string::ltrim("xxx", pred));
+  EXPECT_EQ("", string::ltrim("", pred));
+}
+
+TEST_F(StringTest, testRtrimWithCustomPredicate) {
+  auto pred = [](unsigned char c) { return c == 'x'; };
+  EXPECT_EQ("hello", string::rtrim("helloxxx", pred));
+  EXPECT_EQ("hello", string::rtrim("hello", pred));
+  EXPECT_EQ("", string::rtrim("xxx", pred));
+  EXPECT_EQ("", string::rtrim("", pred));
+}
+
+TEST_F(StringTest, testTrimWithCustomPredicate) {
+  auto pred = [](unsigned char c) { return c == '#'; };
+  EXPECT_EQ("hello", string::trim("##hello##", pred));
+  EXPECT_EQ("", string::trim("####", pred));
+}
+
+TEST_F(StringTest, testSplitWithCharDelimiterEdgeCases) {
+  auto empty = string::split("", ' ');
+  EXPECT_TRUE(empty.empty());
+
+  auto noDelim = string::split("abc", ',');
+  ASSERT_EQ(1u, noDelim.size());
+  EXPECT_EQ("abc", noDelim[0]);
+
+  auto twoTokens = string::split("a,b", ',');
+  ASSERT_EQ(2u, twoTokens.size());
+  EXPECT_EQ("a", twoTokens[0]);
+  EXPECT_EQ("b", twoTokens[1]);
+
+  auto middleDelim = string::split("a,,b", ',');
+  ASSERT_EQ(3u, middleDelim.size());
+  EXPECT_EQ("a", middleDelim[0]);
+  EXPECT_EQ("", middleDelim[1]);
+  EXPECT_EQ("b", middleDelim[2]);
+}
+
+TEST_F(StringTest, testSplitByStringDelimiterEdgeCases) {
+  auto noMatch = string::split("hello", "::");
+  ASSERT_EQ(1u, noMatch.size());
+  EXPECT_EQ("hello", noMatch[0]);
+
+  auto startMatch = string::split("::hello", "::");
+  ASSERT_EQ(2u, startMatch.size());
+  EXPECT_EQ("", startMatch[0]);
+  EXPECT_EQ("hello", startMatch[1]);
+
+  auto endMatch = string::split("hello::", "::");
+  ASSERT_EQ(2u, endMatch.size());
+  EXPECT_EQ("hello", endMatch[0]);
+  EXPECT_EQ("", endMatch[1]);
+
+  auto multiMatch = string::split("a::b::c", "::");
+  ASSERT_EQ(3u, multiMatch.size());
+  EXPECT_EQ("a", multiMatch[0]);
+  EXPECT_EQ("b", multiMatch[1]);
+  EXPECT_EQ("c", multiMatch[2]);
+}
+
+TEST_F(StringTest, testJoinWithEmptyVector) {
+  std::vector<std::string> empty;
+  EXPECT_EQ("", string::join(",", empty));
+}
+
+TEST_F(StringTest, testJoinWithSingleElement) {
+  std::vector<std::string> single = {"only"};
+  EXPECT_EQ("only", string::join(",", single));
+}
+
+TEST_F(StringTest, testJoinWithCharDelimiter) {
+  std::vector<std::string> items = {"a", "b", "c"};
+  EXPECT_EQ("a,b,c", string::join(',', items));
+}
+
+TEST_F(StringTest, testJoinVariadicWithCharDelimiter) {
+  EXPECT_EQ("a,b,c", string::join(',', "a", "b", "c"));
+}
+
+TEST_F(StringTest, testReplaceAllWithOldStrEmpty) {
+  EXPECT_EQ("hello", string::replaceAll("hello", "", "x"));
+}
+
+TEST_F(StringTest, testReplaceAllNoMatch) {
+  EXPECT_EQ("hello", string::replaceAll("hello", "xyz", "abc"));
+}
+
+TEST_F(StringTest, testStringToIntValid) {
+  EXPECT_EQ(42, string::stringToInt<int>("42"));
+  EXPECT_EQ(42, string::stringToInt<int>("+42"));
+  EXPECT_EQ(42, string::stringToInt<int>("  42  "));
+  EXPECT_EQ(0, string::stringToInt<int>("0"));
+}
+
+TEST_F(StringTest, testStringToIntThrowsOnEmpty) {
+  EXPECT_THROW(string::stringToInt<int>(""), InvalidArgumentException);
+  EXPECT_THROW(string::stringToInt<int>("   "), InvalidArgumentException);
+}
+
+TEST_F(StringTest, testStringToIntThrowsOnNonNumeric) {
+  EXPECT_THROW(string::stringToInt<int>("abc"), InvalidArgumentException);
+  EXPECT_THROW(string::stringToInt<int>("12abc"), InvalidArgumentException);
+  EXPECT_THROW(string::stringToInt<int>("12.5"), InvalidArgumentException);
+}
+
+TEST_F(StringTest, testStringToIntSizeT) {
+  EXPECT_EQ(100u, string::stringToInt<size_t>("100"));
+  EXPECT_EQ(0u, string::stringToInt<size_t>("0"));
+}
+
+TEST_F(StringTest, testStringToBoolValid) {
+  EXPECT_TRUE(string::stringToBool("true"));
+  EXPECT_FALSE(string::stringToBool("false"));
+}
+
+TEST_F(StringTest, testStringToBoolThrowsOnInvalid) {
+  EXPECT_THROW(string::stringToBool("True"), InvalidArgumentException);
+  EXPECT_THROW(string::stringToBool("FALSE"), InvalidArgumentException);
+  EXPECT_THROW(string::stringToBool("1"), InvalidArgumentException);
+  EXPECT_THROW(string::stringToBool(""), InvalidArgumentException);
+  EXPECT_THROW(string::stringToBool("yes"), InvalidArgumentException);
+}
+
+TEST_F(StringTest, testBoolToString) {
+  EXPECT_STREQ("true", string::boolToString(true));
+  EXPECT_STREQ("false", string::boolToString(false));
+}
+
+TEST_F(StringTest, testTruncateNoTruncationNeeded) {
+  EXPECT_EQ("short", string::truncate("short", 10));
+  EXPECT_EQ("exact", string::truncate("exact", 5));
+}
+
+TEST_F(StringTest, testTruncateWithEllipsis) {
+  EXPECT_EQ("...world", string::truncate("hello world", 8));
+}
+
+TEST_F(StringTest, testTruncateVeryShortMaxLen) {
+  EXPECT_EQ("d", string::truncate("hello world", 1));
+  EXPECT_EQ("ld", string::truncate("hello world", 2));
+  EXPECT_EQ("rld", string::truncate("hello world", 3));
 }
 
 }  // namespace sentinel

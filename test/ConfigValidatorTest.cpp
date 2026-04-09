@@ -204,4 +204,42 @@ TEST_F(ConfigValidatorTest, testUncommittedAloneIsValid) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
+TEST_F(ConfigValidatorTest, testValidPartitionWithSeedPasses) {
+  mConfig.partition = std::string("2/4");
+  mConfig.seed = 42u;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testThresholdJustInsideBoundaryPasses) {
+  mConfig.threshold = 0.001;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+  mConfig.threshold = 99.999;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testNonZeroTimeoutIsValid) {
+  mConfig.timeout = 60u;
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testEmptyPatternIsIgnored) {
+  mConfig.patterns = {""};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testNonNegationPatternEndingWithSlashNoWarning) {
+  mConfig.patterns = {"somedir/"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testRelativePatternIsValid) {
+  mConfig.patterns = {"src/**/*.cpp"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testNegationPatternWithoutSlashNoSlashWarning) {
+  mConfig.patterns = {"!src/**/*.cpp"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
 }  // namespace sentinel
