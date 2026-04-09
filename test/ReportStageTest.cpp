@@ -21,6 +21,7 @@
 #include "sentinel/Workspace.hpp"
 #include "sentinel/exceptions/ThresholdError.hpp"
 #include "sentinel/stages/ReportStage.hpp"
+#include "sentinel/util/Utf8Char.hpp"
 
 namespace fs = std::filesystem;
 
@@ -356,6 +357,50 @@ TEST_F(ReportStageTest, testSeedFromStatusShownInReport) {
 
   std::string html = testutil::readFile(outputDir / "index.html");
   EXPECT_THAT(html, ::testing::HasSubstr("42"));
+}
+
+TEST_F(ReportStageTest, testThresholdExactlyEqualDoesNotThrow) {
+  // 1 killed, 1 survived => score = 50.0%, threshold = 50.0
+  // score == threshold must pass (>= semantics)
+  addResult(1, MutationState::KILLED);
+  addResult(2, MutationState::SURVIVED);
+
+  Config cfg = makeConfig(fs::path{}, 50.0);
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+}
+
+TEST_F(ReportStageTest, testPassedThresholdShowsCheckMarkIcon) {
+  addResult(1, MutationState::KILLED);
+
+  Config cfg = makeConfig(fs::path{}, 50.0);
+  Logger::setLevel(Logger::Level::INFO);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr(Utf8Char::CheckMark.c_str()));
+  EXPECT_THAT(output, ::testing::Not(::testing::HasSubstr(Utf8Char::CrossMark.c_str())));
+}
+
+TEST_F(ReportStageTest, testFailedThresholdShowsCrossMarkIcon) {
+  addResult(1, MutationState::SURVIVED);
+
+  Config cfg = makeConfig(fs::path{}, 50.0);
+  Logger::setLevel(Logger::Level::ERROR);
+
+  testing::internal::CaptureStderr();
+  auto stage = std::make_shared<ReportStage>();
+  auto ctx = makeCtx(&cfg);
+  EXPECT_THROW(stage->run(&ctx), ThresholdError);
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_THAT(output, ::testing::HasSubstr(Utf8Char::CrossMark.c_str()));
+  EXPECT_THAT(output, ::testing::Not(::testing::HasSubstr(Utf8Char::CheckMark.c_str())));
 }
 
 TEST_F(ReportStageTest, testExplicitSeedShownInReport) {

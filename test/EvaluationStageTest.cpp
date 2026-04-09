@@ -423,7 +423,48 @@ TEST_F(EvaluationStageFlowTest, testMultipleKillingTestsDisplaysWithMoreSuffix) 
   std::string output = testing::internal::GetCapturedStdout();
 
   // With kMaxDisplayedTests = 2, should show first 2 tests and "(+1 more)"
+  EXPECT_THAT(output, HasSubstr("C1.t1"));
+  EXPECT_THAT(output, HasSubstr("C2.t2"));
   EXPECT_THAT(output, HasSubstr("+1 more"));
+}
+
+TEST_F(EvaluationStageFlowTest, testExactlyMaxDisplayedTestsShowsNoMoreSuffix) {
+  Mutant m("AOR", "foo.cpp", "foo", 1, 24, 1, 25, "-");
+  mWorkspace->createMutant(1, m);
+
+  testutil::writeFile(mWorkspace->getOriginalResultsDir() / "results.xml",
+      "<?xml version=\"1.0\"?>\n"
+      "<testsuites>"
+      "<testsuite name=\"S\" tests=\"2\">"
+      "<testcase name=\"t1\" classname=\"C1\" status=\"run\"/>"
+      "<testcase name=\"t2\" classname=\"C2\" status=\"run\"/>"
+      "</testsuite></testsuites>\n");
+
+  auto failSrc = mBase / "fail2_results" / "results.xml";
+  testutil::writeFile(failSrc,
+      "<?xml version=\"1.0\"?>\n"
+      "<testsuites>"
+      "<testsuite name=\"S\" tests=\"2\">"
+      "<testcase name=\"t1\" classname=\"C1\" status=\"run\">"
+      "<failure message=\"fail1\"/></testcase>"
+      "<testcase name=\"t2\" classname=\"C2\" status=\"run\">"
+      "<failure message=\"fail2\"/></testcase>"
+      "</testsuite></testsuites>\n");
+  mConfig.testCmd = fmt::format("mkdir -p {} && cp {} {}",
+                                mTestResultDir.string(), failSrc.string(),
+                                (mTestResultDir / "results.xml").string());
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStdout();
+
+  // With exactly kMaxDisplayedTests (2) killing tests, no "+N more" suffix
+  EXPECT_THAT(output, HasSubstr("C1.t1"));
+  EXPECT_THAT(output, HasSubstr("C2.t2"));
+  EXPECT_THAT(output, ::testing::Not(HasSubstr("more")));
 }
 
 TEST_F(EvaluationStageFlowTest, testDeleteTokenShowsDeleteLabel) {

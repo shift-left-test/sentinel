@@ -236,6 +236,22 @@ TEST_F(OriginalTestStageTest, testExplicitTimeoutLogMessage) {
   EXPECT_THAT(output, HasSubstr("42s"));
 }
 
+TEST_F(OriginalTestStageTest, testAutoTimeoutComputesPreciseValue) {
+  // Auto timeout = ceil(elapsed * 1.5) + 5.
+  // With "sleep 1" (elapsed ~1s): ceil(1.0 * 1.5) + 5 = 2 + 5 = 7.
+  mConfig.timeout = std::nullopt;
+  mConfig.testCmd = "sleep 1";
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  stage->run(&ctx);
+
+  WorkspaceStatus status = mWorkspace->loadStatus();
+  ASSERT_TRUE(status.originalTime.has_value());
+  EXPECT_EQ(*status.originalTime, static_cast<std::size_t>(7));
+}
+
 TEST_F(OriginalTestStageTest, testAutoTimeoutLogMessage) {
   mConfig.timeout = std::nullopt;
   Logger::setLevel(Logger::Level::INFO);

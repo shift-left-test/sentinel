@@ -168,4 +168,44 @@ TEST_F(IoTest, testReadLastLinesNonexistentFile) {
   EXPECT_EQ(result, "");
 }
 
+TEST_F(IoTest, testReadLastLinesZeroReturnsEmpty) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "line1\nline2\nline3\n");
+
+  auto result = io::readLastLines(file, 0);
+  EXPECT_EQ(result, "");
+}
+
+TEST_F(IoTest, testReadLastLinesOneReturnsLastLine) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "line1\nline2\nline3\n");
+
+  auto result = io::readLastLines(file, 1);
+  EXPECT_EQ(result, "line3");
+}
+
+TEST_F(IoTest, testAppendLogTailAppendsLastLines) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "line1\nline2\nline3\n");
+
+  std::string msg = "Error occurred";
+  io::appendLogTail(&msg, file, 2);
+  EXPECT_EQ(msg, "Error occurred\n\nline2\nline3");
+}
+
+TEST_F(IoTest, testAppendLogTailDoesNothingForEmptyFile) {
+  auto file = mTestDir / "empty.log";
+  writeFile(file, "");
+
+  std::string msg = "Error occurred";
+  io::appendLogTail(&msg, file, 5);
+  EXPECT_EQ(msg, "Error occurred");
+}
+
+TEST_F(IoTest, testAppendLogTailDoesNothingForNonexistentFile) {
+  std::string msg = "Error occurred";
+  io::appendLogTail(&msg, mTestDir / "nonexistent.log", 5);
+  EXPECT_EQ(msg, "Error occurred");
+}
+
 }  // namespace sentinel
