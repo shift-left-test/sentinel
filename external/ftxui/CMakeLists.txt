@@ -1,8 +1,6 @@
 # Copyright (c) 2026 LG Electronics Inc.
 # SPDX-License-Identifier: MIT
 
-find_package(Threads REQUIRED)
-
 # --- screen ---
 add_library(ftxui-screen STATIC
   src/ftxui/screen/box.cpp
@@ -65,34 +63,3 @@ add_library(ftxui-dom STATIC
 target_include_directories(ftxui-dom SYSTEM PUBLIC include)
 target_include_directories(ftxui-dom PRIVATE src)
 target_link_libraries(ftxui-dom PUBLIC ftxui-screen)
-
-# --- component ---
-add_library(ftxui-component STATIC
-  src/ftxui/component/animation.cpp
-  src/ftxui/component/button.cpp
-  src/ftxui/component/catch_event.cpp
-  src/ftxui/component/checkbox.cpp
-  src/ftxui/component/collapsible.cpp
-  src/ftxui/component/component.cpp
-  src/ftxui/component/component_options.cpp
-  src/ftxui/component/container.cpp
-  src/ftxui/component/dropdown.cpp
-  src/ftxui/component/event.cpp
-  src/ftxui/component/hoverable.cpp
-  src/ftxui/component/input.cpp
-  src/ftxui/component/loop.cpp
-  src/ftxui/component/maybe.cpp
-  src/ftxui/component/menu.cpp
-  src/ftxui/component/modal.cpp
-  src/ftxui/component/radiobox.cpp
-  src/ftxui/component/renderer.cpp
-  src/ftxui/component/resizable_split.cpp
-  src/ftxui/component/screen_interactive.cpp
-  src/ftxui/component/slider.cpp
-  src/ftxui/component/terminal_input_parser.cpp
-  src/ftxui/component/util.cpp
-  src/ftxui/component/window.cpp
-)
-target_include_directories(ftxui-component SYSTEM PUBLIC include)
-target_include_directories(ftxui-component PRIVATE src)
-target_link_libraries(ftxui-component PUBLIC ftxui-dom Threads::Threads)
