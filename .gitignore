@@ -307,3 +307,5 @@ out/
 temp/
 .worktrees/
 docs/
+external/libgit2/cmake/libgit2Config.cmake
+external/libgit2/cmake/libgit2ConfigVersion.cmake
