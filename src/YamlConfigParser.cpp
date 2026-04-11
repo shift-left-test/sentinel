@@ -95,11 +95,11 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
     if (root["generator"]) cfg->generator = parseGenerator(root["generator"].as<std::string>());
     if (root["mutants-per-line"]) cfg->mutantsPerLine = root["mutants-per-line"].as<size_t>();
     if (root["operator"]) cfg->operators = toVector<std::string>(root["operator"], "operator");
-    if (root["coverage"]) {
-      auto files = toVector<fs::path>(root["coverage"], "coverage");
-      cfg->coverageFiles.clear();
+    if (root["lcov-tracefile"]) {
+      auto files = toVector<fs::path>(root["lcov-tracefile"], "lcov-tracefile");
+      cfg->lcovTracefiles.clear();
       for (const auto& f : files) {
-        cfg->coverageFiles.push_back(resolvePath(base, f.string()));
+        cfg->lcovTracefiles.push_back(resolvePath(base, f.string()));
       }
     }
   } catch (const YAML::Exception& e) {

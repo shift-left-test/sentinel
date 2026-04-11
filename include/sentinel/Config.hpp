@@ -109,8 +109,8 @@ struct Config {
   size_t mutantsPerLine = 1;
   /** @brief List of mutation operators to apply (empty = all). */
   std::vector<std::string> operators;
-  /** @brief Absolute paths to code coverage information files. */
-  std::vector<std::filesystem::path> coverageFiles;
+  /** @brief Absolute paths to lcov tracefiles. */
+  std::vector<std::filesystem::path> lcovTracefiles;
 
   // CLI-only run parameters (not read from sentinel.yaml)
   /** @brief Maximum number of mutants to generate; 0 = unlimited (CLI-only). */

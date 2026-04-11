@@ -72,5 +72,5 @@ pattern: ["sample/src", "!*/test/*"]
 
 # --- Advanced options ---
 
-## lcov-format coverage result files; limits mutation to covered lines only (default: none)
-# coverage: []
+## lcov tracefiles; skip evaluation for uncovered mutants (default: none)
+# lcov-tracefile: []

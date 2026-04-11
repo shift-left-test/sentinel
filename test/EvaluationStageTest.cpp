@@ -518,7 +518,7 @@ TEST_F(EvaluationStageFlowTest, testAutoTimeoutWithNoOriginalTime) {
 
 TEST_F(EvaluationStageFlowTest, testUncoveredMutantSkippedAsSurvived) {
   createDefaultMutant();
-  mConfig.coverageFiles = {writeCoverageFile(99)};
+  mConfig.lcovTracefiles = {writeCoverageFile(99)};
   mConfig.buildCmd = "false";
 
   auto stage = std::make_shared<EvaluationStage>(mGitRepo);
@@ -531,12 +531,13 @@ TEST_F(EvaluationStageFlowTest, testUncoveredMutantSkippedAsSurvived) {
   EXPECT_TRUE(mWorkspace->isDone(1));
   auto result = mWorkspace->getDoneResult(1);
   EXPECT_EQ(MutationState::SURVIVED, result.getMutationState());
-  EXPECT_THAT(output, HasSubstr("SURVIVED"));
+  EXPECT_THAT(output, HasSubstr("SURVIVED*"));
+  EXPECT_THAT(output, HasSubstr("[no coverage]"));
 }
 
 TEST_F(EvaluationStageFlowTest, testCoveredMutantIsEvaluated) {
   createDefaultMutant();
-  mConfig.coverageFiles = {writeCoverageFile(1)};
+  mConfig.lcovTracefiles = {writeCoverageFile(1)};
   mConfig.buildCmd = "false";
 
   auto stage = std::make_shared<EvaluationStage>(mGitRepo);
@@ -552,7 +553,7 @@ TEST_F(EvaluationStageFlowTest, testCoveredMutantIsEvaluated) {
 
 TEST_F(EvaluationStageFlowTest, testEmptyCoverageFilesNoFiltering) {
   createDefaultMutant();
-  mConfig.coverageFiles = {};
+  mConfig.lcovTracefiles = {};
   mConfig.buildCmd = "false";
 
   auto stage = std::make_shared<EvaluationStage>(mGitRepo);

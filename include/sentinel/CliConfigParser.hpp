@@ -139,8 +139,8 @@ class CliConfigParser {
   // Advanced options
   /** @brief Command line flag for mutant limit. */
   args::ValueFlag<size_t> mLimit;
-  /** @brief Command line flag for coverage files. */
-  args::ValueFlagList<std::filesystem::path> mCoverageFiles;
+  /** @brief Command line flag for lcov tracefiles. */
+  args::ValueFlagList<std::filesystem::path> mLcovTracefiles;
   /** @brief Command line flag for execution partition. */
   args::ValueFlag<std::string> mPartition;
   /** @brief Command line flag for merge partition workspaces. */

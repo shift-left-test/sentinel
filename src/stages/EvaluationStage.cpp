@@ -58,11 +58,11 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   Evaluator evaluator(ctx->workspace.getOriginalResultsDir(), ctx->config.sourceDir);
 
   std::vector<std::string> covFiles;
-  std::transform(ctx->config.coverageFiles.begin(), ctx->config.coverageFiles.end(),
+  std::transform(ctx->config.lcovTracefiles.begin(), ctx->config.lcovTracefiles.end(),
                  std::back_inserter(covFiles),
                  [](const fs::path& p) { return p.string(); });
   CoverageInfo coverageInfo(covFiles);
-  const bool hasCoverage = !ctx->config.coverageFiles.empty();
+  const bool hasCoverage = !ctx->config.lcovTracefiles.empty();
 
   std::size_t current = 0;
 
@@ -88,15 +88,18 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
         ? evaluator.compare(m, ctx->workspace.getActualDir(), TestExecutionState::UNCOVERED)
         : evaluateMutant(m, id, computedTimeLimit, &evaluator, ctx);
 
+    static constexpr const char* kUncoveredLabel = "SURVIVED*";
+    static constexpr const char* kUncoveredTiming = "  [no coverage]";
     const auto state = result.getMutationState();
     const auto relPath = m.getPath();
     const std::string token = m.getToken().empty()
         ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
-    const std::string timing = uncovered ? "" : fmt::format("  [{}/{}]",
+    const char* label = uncovered ? kUncoveredLabel : mutationStateToStr(state);
+    const std::string timing = uncovered ? kUncoveredTiming : fmt::format("  [{}/{}]",
         Timestamper::format(result.getBuildSecs()), Timestamper::format(result.getTestSecs()));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{}:{} ({}){}", current,
                  fmt::formatted_size("{}", totalMutants), totalMutants,
-                 mutationStateIcon(state), mutationStateToStr(state), m.getOperator(),
+                 mutationStateIcon(state), label, m.getOperator(),
                  relPath, m.getFirst().line, m.getFirst().column, token, timing);
     if (!result.getKillingTest().empty()) {
       static constexpr std::size_t kMaxDisplayedTests = 2;

@@ -118,9 +118,9 @@ Defaults to all operators when omitted.
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR
 Maximum number of mutants to generate. \fB0\fR = unlimited. Default: \fB0\fR
 .TP
-\fB\-\-coverage\fR=\fIFILE\fR
-lcov coverage info file (repeatable). When given, only source lines covered by
-tests are considered for mutation.
+\fB\-\-lcov\-tracefile\fR=\fIFILE\fR
+Skip evaluation for uncovered mutants (repeatable). When given, mutants on
+uncovered lines skip build/test and are marked as survived.
 .TP
 \fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
 Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL
@@ -143,10 +143,10 @@ Fail with exit code 3 if the mutation score is strictly below this percentage (0
 A one-line score summary is always written to stderr at the end of the run.
 If no evaluable mutants exist, the threshold is not applied.
 .SH COVERAGE-GUIDED MUTATION
-The \fB\-\-coverage\fR option accepts an lcov coverage info file and restricts mutation
-to source lines that are actually executed by the test suite.
-This reduces the number of mutants and focuses testing on covered code.
-The option can be repeated to merge multiple coverage files.
+The \fB\-\-lcov\-tracefile\fR option accepts an lcov tracefile and skips build and test
+evaluation for mutants on lines not covered by the test suite.
+This reduces evaluation time while still reporting uncovered mutants as survived.
+The option can be repeated to merge multiple tracefiles.
 .PP
 After running the tests with coverage instrumentation enabled, generate the coverage info
 file with lcov:
@@ -158,7 +158,7 @@ lcov --capture --directory . --output-file coverage.info
 lcov --remove coverage.info '/usr/*' '*/third_party/*' --output-file coverage.info
 .fi
 .PP
-Then pass it to sentinel via \fB\-\-coverage=coverage.info\fR.
+Then pass it to sentinel via \fB\-\-lcov\-tracefile=coverage.info\fR.
 .SH MUTATION OPERATORS
 .TP
 \fBAOR\fR \(em Arithmetic Operator Replacement
@@ -228,8 +228,8 @@ List of paths/patterns to include or exclude (prefix with ! to exclude).
 \fBgenerator\fR / \fBoperator\fR
 Selection strategy and operator list.
 .TP
-\fBcoverage\fR
-List of lcov coverage info files.
+\fBlcov\-tracefile\fR
+List of lcov tracefiles.
 .SH EXAMPLES
 Run mutation testing on a CMake project:
 .PP

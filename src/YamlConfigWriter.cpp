@@ -88,8 +88,8 @@ static const char* const kYamlTemplate =
     "\n"
     "# --- Advanced options ---\n"
     "\n"
-    "## lcov-format coverage result files; limits mutation to covered lines only (default: none)\n"
-    "# coverage: []\n";
+    "## lcov tracefiles; skip evaluation for uncovered mutants (default: none)\n"
+    "# lcov-tracefile: []\n";
 
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);

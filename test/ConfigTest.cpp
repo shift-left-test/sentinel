@@ -83,7 +83,7 @@ pattern:
 build-command: make
 test-command: ctest
 test-result-dir: ./results
-coverage:
+lcov-tracefile:
   - coverage.info
 generator: random
 mutants-per-line: 3
@@ -106,7 +106,7 @@ operator:
   EXPECT_EQ("make", cfg.buildCmd);
   EXPECT_EQ("ctest", cfg.testCmd);
   EXPECT_EQ((mTmpDir / "results").lexically_normal(), cfg.testResultDir);
-  EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.coverageFiles);
+  EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.lcovTracefiles);
   EXPECT_EQ(Generator::RANDOM, cfg.generator);
   EXPECT_EQ(3u, cfg.mutantsPerLine);
   ASSERT_TRUE(cfg.timeout.has_value());
@@ -415,9 +415,9 @@ TEST_F(ConfigTest, testStreamOperatorWithExtensionsAndPatterns) {
   EXPECT_NE(std::string::npos, yaml.find("AOR"));
 }
 
-TEST_F(ConfigTest, testStreamOperatorWithCoverageFiles) {
+TEST_F(ConfigTest, testStreamOperatorWithLcovTracefiles) {
   Config cfg = Config::withDefaults();
-  cfg.coverageFiles = {"/tmp/cov1.info", "/tmp/cov2.info"};
+  cfg.lcovTracefiles = {"/tmp/cov1.info", "/tmp/cov2.info"};
   std::ostringstream out;
   out << cfg;
   std::string yaml = out.str();

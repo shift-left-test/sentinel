@@ -67,8 +67,8 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mOperators(mGroupMutation, "OP",
                "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI", {"operator"}),
     mLimit(mGroupAdvanced, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
-    mCoverageFiles(mGroupAdvanced, "FILE", "lcov coverage info file; limits mutation to covered lines only",
-                   {"coverage"}),
+    mLcovTracefiles(mGroupAdvanced, "FILE", "skip evaluation for uncovered mutants",
+                    {"lcov-tracefile"}),
     mPartition(mGroupAdvanced, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
                {"partition"}),
     mMergePartitions(mGroupAdvanced, "PATH",
@@ -100,10 +100,10 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mGenerator) cfg->generator = parseGenerator(mGenerator.Get());
   if (mMutantsPerLine) cfg->mutantsPerLine = mMutantsPerLine.Get();
   if (mOperators) cfg->operators = mOperators.Get();
-  if (mCoverageFiles) {
-    cfg->coverageFiles.clear();
-    for (const auto& f : mCoverageFiles.Get()) {
-      cfg->coverageFiles.push_back(fs::absolute(f).lexically_normal());
+  if (mLcovTracefiles) {
+    cfg->lcovTracefiles.clear();
+    for (const auto& f : mLcovTracefiles.Get()) {
+      cfg->lcovTracefiles.push_back(fs::absolute(f).lexically_normal());
     }
   }
 
@@ -144,7 +144,7 @@ std::vector<std::string> CliConfigParser::getEffectiveCliOptions() const {
   if (mMutantsPerLine) opts.push_back("--mutants-per-line");
   if (mSeed) opts.push_back("--seed");
   if (mOperators) opts.push_back("--operator");
-  if (mCoverageFiles) opts.push_back("--coverage");
+  if (mLcovTracefiles) opts.push_back("--lcov-tracefile");
   if (mLimit) opts.push_back("--limit");
   if (mPartition) opts.push_back("--partition");
   return opts;
