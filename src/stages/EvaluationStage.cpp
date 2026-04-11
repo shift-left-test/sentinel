@@ -65,7 +65,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
     ctx->workspace.setLock(id);
-    ctx->statusLine.setMutantInfo(id);
+    ctx->statusLine.setMutantInfo(current);
 
     auto result = evaluateMutant(m, id, computedTimeLimit, &evaluator, ctx);
 
