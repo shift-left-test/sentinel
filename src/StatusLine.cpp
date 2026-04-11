@@ -3,10 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fcntl.h>
 #include <fmt/core.h>
+#include <poll.h>
+#include <termios.h>
 #include <unistd.h>
 #include <algorithm>
 #include <csignal>
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <utility>
 #include <ftxui/dom/elements.hpp>
@@ -26,10 +31,13 @@ namespace {
 constexpr int kSpinnerCharset = 15;
 constexpr int kGaugeWidth = 20;
 constexpr int kPhaseLabelWidth = 10;
+constexpr int kDsrBufSize = 32;
+constexpr int kDsrPollTimeoutMs = 5;
 
 StatusLine* sActiveInstance = nullptr;
 struct sigaction sPrevTstp {};
 struct sigaction sPrevCont {};
+struct sigaction sPrevWinch {};
 }  // namespace
 
 namespace detail {
@@ -45,6 +53,12 @@ void handleSigcont(int /*signum*/) {
   if (sActiveInstance != nullptr) {
     signal::setSignalHandler(SIGTSTP, handleSigtstp);
     sActiveInstance->resume();
+  }
+}
+
+void handleSigwinch(int /*signum*/) {
+  if (sActiveInstance != nullptr) {
+    sActiveInstance->mResized = 1;
   }
 }
 }  // namespace detail
@@ -67,30 +81,51 @@ void StatusLine::refreshTermSize() {
   mTermCols = dim.dimx;
 }
 
-void StatusLine::enable() {
-  if (!isatty(STDOUT_FILENO)) {
-    return;
+void StatusLine::openTty() {
+  mTtyFd = open("/dev/tty", O_RDWR | O_NOCTTY);
+}
+
+void StatusLine::closeTty() {
+  if (mTtyFd >= 0) {
+    close(mTtyFd);
+    mTtyFd = -1;
   }
+}
+
+void StatusLine::activate() {
   refreshTermSize();
-  mTimestamper.reset();
   mEnabled = true;
-  installSuspendHandlers();
+  openTty();
   setScrollRegion();
   redraw();
 }
 
-void StatusLine::disable() {
-  if (!mEnabled) {
-    return;
-  }
+void StatusLine::deactivate() {
   // Save cursor → move to status row → clear it → reset scroll region (DECSTBM homes
   // the cursor, so it must come before ESC 8) → restore original cursor position.
   Console::print("\0337\033[{};1H\033[2K", mTermRows);
   clearScrollRegion();
   Console::print("\0338");
   Console::flush();
-  uninstallSuspendHandlers();
+  closeTty();
   mEnabled = false;
+}
+
+void StatusLine::enable() {
+  if (!isatty(STDOUT_FILENO)) {
+    return;
+  }
+  mTimestamper.reset();
+  installSignalHandlers();
+  activate();
+}
+
+void StatusLine::disable() {
+  if (!mEnabled) {
+    return;
+  }
+  deactivate();
+  uninstallSignalHandlers();
 }
 
 void StatusLine::setPhase(Phase phase) {
@@ -132,17 +167,20 @@ void StatusLine::recordResult(int state) {
   }
 }
 
-void StatusLine::installSuspendHandlers() {
+void StatusLine::installSignalHandlers() {
   sActiveInstance = this;
   signal::getSigaction(SIGTSTP, &sPrevTstp);
   signal::getSigaction(SIGCONT, &sPrevCont);
+  signal::getSigaction(SIGWINCH, &sPrevWinch);
   signal::setSignalHandler(SIGTSTP, detail::handleSigtstp);
   signal::setSignalHandler(SIGCONT, detail::handleSigcont);
+  signal::setSignalHandler(SIGWINCH, detail::handleSigwinch);
 }
 
-void StatusLine::uninstallSuspendHandlers() {
+void StatusLine::uninstallSignalHandlers() {
   signal::setSigaction(SIGTSTP, &sPrevTstp);
   signal::setSigaction(SIGCONT, &sPrevCont);
+  signal::setSigaction(SIGWINCH, &sPrevWinch);
   sActiveInstance = nullptr;
 }
 
@@ -150,21 +188,14 @@ void StatusLine::suspend() {
   if (!mEnabled) {
     return;
   }
-  Console::print("\0337\033[{};1H\033[2K", mTermRows);
-  clearScrollRegion();
-  Console::print("\0338");
-  Console::flush();
-  mEnabled = false;
+  deactivate();
 }
 
 void StatusLine::resume() {
   if (!isatty(STDOUT_FILENO)) {
     return;
   }
-  refreshTermSize();
-  mEnabled = true;
-  setScrollRegion();
-  redraw();
+  activate();
 }
 
 void StatusLine::setScrollRegion() {
@@ -178,6 +209,7 @@ void StatusLine::setScrollRegion() {
   // subsequent output flowing naturally from where it was — matching --no-status-line UX.
   Console::print("\n\033[1A\0337\033[1;{}r\0338", mTermRows - 1);
   Console::flush();
+  clampCursorToScrollRegion();
 }
 
 void StatusLine::clearScrollRegion() {
@@ -185,9 +217,87 @@ void StatusLine::clearScrollRegion() {
   Console::print("\033[r");
 }
 
+int StatusLine::queryCursorRow() const {
+  if (mTtyFd < 0) {
+    return -1;
+  }
+
+  termios saved{};
+  if (tcgetattr(mTtyFd, &saved) < 0) {
+    return -1;
+  }
+
+  termios raw = saved;
+  raw.c_lflag &= ~(ICANON | ECHO);
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 0;
+  if (tcsetattr(mTtyFd, TCSANOW, &raw) < 0) {
+    tcsetattr(mTtyFd, TCSANOW, &saved);
+    return -1;
+  }
+
+  static constexpr char kDsr[] = "\033[6n";
+  if (write(mTtyFd, kDsr, sizeof(kDsr) - 1) < 0) {
+    tcsetattr(mTtyFd, TCSANOW, &saved);
+    return -1;
+  }
+
+  // DSR response format: ESC [ row ; col R
+  char buf[kDsrBufSize];
+  int len = 0;
+  struct pollfd pfd = {mTtyFd, POLLIN, 0};
+  if (poll(&pfd, 1, kDsrPollTimeoutMs) > 0) {
+    while (len < static_cast<int>(sizeof(buf)) - 1) {
+      char c;
+      if (read(mTtyFd, &c, 1) != 1) {
+        break;
+      }
+      buf[len++] = c;
+      if (c == 'R') {
+        break;
+      }
+    }
+  }
+  buf[len] = '\0';
+
+  tcsetattr(mTtyFd, TCSANOW, &saved);
+
+  int row = -1;
+  const char* esc = std::strchr(buf, '\033');
+  if (esc != nullptr && std::sscanf(esc, "\033[%d;%*dR", &row) == 1) {
+    return row;
+  }
+  return -1;
+}
+
+void StatusLine::clampCursorToScrollRegion() {
+  if (!mEnabled || !mDsrSupported) {
+    return;
+  }
+  int row = queryCursorRow();
+  if (row < 0) {
+    mDsrSupported = false;
+    return;
+  }
+  if (row >= mTermRows) {
+    Console::print("\033[{}d", mTermRows - 1);
+    Console::flush();
+  }
+}
+
+void StatusLine::handleResize() {
+  Console::print("\0337\033[{};1H\033[2K\0338", mTermRows);
+  refreshTermSize();
+  setScrollRegion();
+}
+
 void StatusLine::redraw() {
   if (!mEnabled) {
     return;
+  }
+  if (mResized) {
+    mResized = 0;
+    handleResize();
   }
   std::string rendered = renderToString(buildElement());
   // Save cursor, jump to status row, clear line, print rendered content, restore cursor

@@ -289,6 +289,19 @@ TEST_F(StatusLineTest, testDisableRestoresSuspendHandlers) {
   EXPECT_EQ(before.sa_handler, after.sa_handler);
 }
 
+TEST_F(StatusLineTest, testDisableRestoresWinchHandler) {
+  StatusLine sl;
+  struct sigaction before {};
+  sigaction(SIGWINCH, nullptr, &before);
+
+  sl.enable();
+  sl.disable();
+
+  struct sigaction after {};
+  sigaction(SIGWINCH, nullptr, &after);
+  EXPECT_EQ(before.sa_handler, after.sa_handler);
+}
+
 TEST_F(StatusLineTest, testHundredPercentScore) {
   StatusLine sl;
   sl.setTotalMutants(5);

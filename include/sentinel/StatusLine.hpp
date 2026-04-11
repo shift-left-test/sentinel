@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_STATUSLINE_HPP_
 #define INCLUDE_SENTINEL_STATUSLINE_HPP_
 
+#include <csignal>
 #include <string>
 #include <ftxui/dom/elements.hpp>
 #include "sentinel/Timestamper.hpp"
@@ -15,6 +16,7 @@ namespace sentinel {
 namespace detail {
 void handleSigtstp(int signum);
 void handleSigcont(int signum);
+void handleSigwinch(int signum);
 }  // namespace detail
 
 /**
@@ -27,6 +29,7 @@ void handleSigcont(int signum);
 class StatusLine {
   friend void detail::handleSigtstp(int);
   friend void detail::handleSigcont(int);
+  friend void detail::handleSigwinch(int);
 
  public:
   /**
@@ -113,9 +116,15 @@ class StatusLine {
   std::string getStatusText() const;
 
  private:
+  void openTty();
+  void closeTty();
+  void activate();
+  void deactivate();
   void refreshTermSize();
   void setScrollRegion();
   void clearScrollRegion();
+  int queryCursorRow() const;
+  void clampCursorToScrollRegion();
   void redraw();
   ftxui::Element buildElement() const;
   ftxui::Element buildSummaryElement() const;
@@ -123,13 +132,17 @@ class StatusLine {
   std::string renderToString(const ftxui::Element& element) const;
   std::string phaseLabel() const;
   int countWidth() const;
-  void installSuspendHandlers();
-  void uninstallSuspendHandlers();
+  void installSignalHandlers();
+  void uninstallSignalHandlers();
   void suspend();
   void resume();
+  void handleResize();
 
   bool mEnabled = false;
   bool mDryRun = false;
+  bool mDsrSupported = true;
+  volatile sig_atomic_t mResized = 0;
+  int mTtyFd = -1;
   static constexpr int kDefaultTermRows = 24;
   static constexpr int kDefaultTermCols = 120;
   int mTermRows = kDefaultTermRows;
