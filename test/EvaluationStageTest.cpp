@@ -6,6 +6,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
+#include <fstream>
 #include <memory>
 #include <string>
 #include "git-harness/GitHarness.hpp"
@@ -160,6 +161,23 @@ class EvaluationStageFlowTest : public ::testing::Test {
   void createDefaultMutant() {
     Mutant m("AOR", "foo.cpp", "foo", 1, 24, 1, 25, "-");
     mWorkspace->createMutant(1, m);
+  }
+
+  /**
+   * @brief Write an lcov coverage file that marks a single line as covered.
+   *
+   * @param coveredLine the line number to mark as covered in foo.cpp
+   * @return the path to the created coverage file
+   */
+  fs::path writeCoverageFile(int coveredLine) {
+    const auto covDir = mBase / "cov";
+    fs::create_directories(covDir);
+    const auto covFile = covDir / "coverage.info";
+    std::ofstream f(covFile);
+    f << "SF:" << fs::canonical(mRepoDir / "foo.cpp").string() << "\n"
+      << "DA:" << coveredLine << ",1\n"
+      << "end_of_record\n";
+    return covFile;
   }
 
   fs::path mBase;
@@ -496,6 +514,56 @@ TEST_F(EvaluationStageFlowTest, testAutoTimeoutWithNoOriginalTime) {
   testing::internal::GetCapturedStdout();
 
   EXPECT_TRUE(mWorkspace->isComplete());
+}
+
+TEST_F(EvaluationStageFlowTest, testUncoveredMutantSkippedAsSurvived) {
+  createDefaultMutant();
+  mConfig.coverageFiles = {writeCoverageFile(99)};
+  mConfig.buildCmd = "false";
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_TRUE(mWorkspace->isDone(1));
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::SURVIVED, result.getMutationState());
+  EXPECT_THAT(output, HasSubstr("SURVIVED"));
+}
+
+TEST_F(EvaluationStageFlowTest, testCoveredMutantIsEvaluated) {
+  createDefaultMutant();
+  mConfig.coverageFiles = {writeCoverageFile(1)};
+  mConfig.buildCmd = "false";
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::BUILD_FAILURE, result.getMutationState());
+}
+
+TEST_F(EvaluationStageFlowTest, testEmptyCoverageFilesNoFiltering) {
+  createDefaultMutant();
+  mConfig.coverageFiles = {};
+  mConfig.buildCmd = "false";
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::BUILD_FAILURE, result.getMutationState());
 }
 
 }  // namespace sentinel
