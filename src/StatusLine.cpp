@@ -9,6 +9,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <algorithm>
+#include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstring>
@@ -18,7 +19,6 @@
 #include <ftxui/dom/node.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <ftxui/screen/terminal.hpp>
-#include "sentinel/Console.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/StatusLine.hpp"
@@ -93,6 +93,25 @@ void StatusLine::closeTty() {
   }
 }
 
+void StatusLine::writeTty(const std::string& data) {
+  if (mTtyFd < 0) {
+    return;
+  }
+  const char* ptr = data.data();
+  size_t remaining = data.size();
+  while (remaining > 0) {
+    ssize_t written = write(mTtyFd, ptr, remaining);
+    if (written < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      break;
+    }
+    ptr += written;
+    remaining -= static_cast<size_t>(written);
+  }
+}
+
 void StatusLine::activate() {
   refreshTermSize();
   mEnabled = true;
@@ -104,10 +123,9 @@ void StatusLine::activate() {
 void StatusLine::deactivate() {
   // Save cursor → move to status row → clear it → reset scroll region (DECSTBM homes
   // the cursor, so it must come before ESC 8) → restore original cursor position.
-  Console::print("\0337\033[{};1H\033[2K", mTermRows);
+  writeTty(fmt::format("\0337\033[{};1H\033[2K", mTermRows));
   clearScrollRegion();
-  Console::print("\0338");
-  Console::flush();
+  writeTty("\0338");
   closeTty();
   mEnabled = false;
 }
@@ -208,14 +226,13 @@ void StatusLine::setScrollRegion() {
   // cursor is already at the bottom). \033[1A moves the cursor back up one row so it
   // stays within the scroll region. Saving and restoring around DECSTBM then keeps
   // subsequent output flowing naturally from where it was — matching --no-status-line UX.
-  Console::print("\n\033[1A\0337\033[1;{}r\0338", mTermRows - 1);
-  Console::flush();
+  writeTty(fmt::format("\n\033[1A\0337\033[1;{}r\0338", mTermRows - 1));
   clampCursorToScrollRegion();
 }
 
 void StatusLine::clearScrollRegion() {
   // Reset scroll region to the full terminal (DECSTBM with no args)
-  Console::print("\033[r");
+  writeTty("\033[r");
 }
 
 int StatusLine::queryCursorRow() const {
@@ -288,13 +305,12 @@ void StatusLine::clampCursorToScrollRegion() {
     return;
   }
   if (row >= mTermRows) {
-    Console::print("\033[{}d", mTermRows - 1);
-    Console::flush();
+    writeTty(fmt::format("\033[{}d", mTermRows - 1));
   }
 }
 
 void StatusLine::handleResize() {
-  Console::print("\0337\033[{};1H\033[2K\0338", mTermRows);
+  writeTty(fmt::format("\0337\033[{};1H\033[2K\0338", mTermRows));
   refreshTermSize();
   setScrollRegion();
 }
@@ -309,8 +325,7 @@ void StatusLine::redraw() {
   }
   std::string rendered = renderToString(buildElement());
   // Save cursor, jump to status row, clear line, print rendered content, restore cursor
-  Console::print("\0337\033[{};1H\033[2K{}\0338", mTermRows, rendered);
-  Console::flush();
+  writeTty(fmt::format("\0337\033[{};1H\033[2K{}\0338", mTermRows, rendered));
 }
 
 std::string StatusLine::phaseLabel() const {

@@ -157,6 +157,10 @@ int Subprocess::execute() {
       consumeOutput(nb);
     }
 
+    if (!mSilent) {
+      Console::flush();
+    }
+
     // Alarm cancel
     alarm(0);
 

@@ -33,7 +33,7 @@ inline void print(const std::string& pattern, Args&&... args) {
  */
 template <typename... Args>
 inline void out(const std::string& pattern, Args&&... args) {
-  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << '\n';
+  std::cout << fmt::format(pattern, std::forward<Args>(args)...) << '\n' << std::flush;
 }
 
 /**

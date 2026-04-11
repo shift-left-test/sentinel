@@ -137,6 +137,8 @@ class StatusLine {
   void suspend();
   void resume();
   void handleResize();
+  /** @brief Write raw data to the TTY file descriptor, retrying on EINTR. */
+  void writeTty(const std::string& data);
 
   bool mEnabled = false;
   bool mDryRun = false;
