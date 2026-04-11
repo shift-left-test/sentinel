@@ -278,13 +278,13 @@ T to(const std::string& s) {
       throw InvalidArgumentException("Can't convert empty string");
     }
     if (str.at(0) == '+') {
-      str = str.replace(0, 1, "");
+      str.erase(0, 1);
     }
     T ret;
     std::stringstream ss(str);
     ss >> ret;
     if (std::to_string(ret) != str) {
-      throw InvalidArgumentException("Can't convert " + str);
+      throw InvalidArgumentException(fmt::format("Can't convert \"{}\"", str));
     }
     return ret;
   } else {
