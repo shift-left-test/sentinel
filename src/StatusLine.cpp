@@ -32,7 +32,8 @@ constexpr int kSpinnerCharset = 15;
 constexpr int kGaugeWidth = 20;
 constexpr int kPhaseLabelWidth = 10;
 constexpr int kDsrBufSize = 32;
-constexpr int kDsrPollTimeoutMs = 5;
+constexpr int kDsrPollTimeoutMs = 50;
+constexpr int kDrainPollTimeoutMs = 30;
 
 StatusLine* sActiveInstance = nullptr;
 struct sigaction sPrevTstp {};
@@ -259,6 +260,13 @@ int StatusLine::queryCursorRow() const {
     }
   }
   buf[len] = '\0';
+
+  // Drain any late-arriving terminal response while ECHO is still off,
+  // preventing stray characters (e.g. CPR response) from being echoed.
+  if (poll(&pfd, 1, kDrainPollTimeoutMs) > 0) {
+    char discard;
+    while (read(mTtyFd, &discard, 1) == 1) {}
+  }
 
   tcsetattr(mTtyFd, TCSANOW, &saved);
 
