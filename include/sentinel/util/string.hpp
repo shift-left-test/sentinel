@@ -14,6 +14,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 
@@ -238,58 +239,57 @@ inline std::string replaceAll(std::string target, const std::string& oldStr, con
 }
 
 /**
- * @brief convert boolean to string
+ * @brief Convert a value to its string representation
  *
  * @param b boolean value
- * @return string value of b
+ * @return "true" or "false"
  */
-inline const char* boolToString(bool b) {
+inline const char* from(bool b) {
   return b ? "true" : "false";
 }
 
 /**
- * @brief convert string to integer
+ * @brief Convert a string to the specified type
  *
- * @param target string
- * @return converted integer value
+ * Supported types:
+ * - bool: accepts "true" or "false" (case-sensitive)
+ * - integral types (int, size_t, etc.): accepts optional leading '+',
+ *   surrounding whitespace is trimmed
+ *
+ * @tparam T target type
+ * @param s input string
+ * @return converted value
+ * @throw InvalidArgumentException on invalid input
  */
 template <typename T>
-T stringToInt(const std::string& s) {
-  std::string str = string::trim(s);
-  if (str.empty()) {
-    throw InvalidArgumentException("Can't convert empty string");
+T to(const std::string& s) {
+  if constexpr (std::is_same_v<T, bool>) {
+    if (s == "true") {
+      return true;
+    }
+    if (s == "false") {
+      return false;
+    }
+    throw InvalidArgumentException(
+        fmt::format("Input must be a boolean value (true or false): \"{}\"", s));
+  } else if constexpr (std::is_integral_v<T>) {
+    std::string str = string::trim(s);
+    if (str.empty()) {
+      throw InvalidArgumentException("Can't convert empty string");
+    }
+    if (str.at(0) == '+') {
+      str = str.replace(0, 1, "");
+    }
+    T ret;
+    std::stringstream ss(str);
+    ss >> ret;
+    if (std::to_string(ret) != str) {
+      throw InvalidArgumentException("Can't convert " + str);
+    }
+    return ret;
+  } else {
+    static_assert(!sizeof(T), "Unsupported type for string::to<T>");
   }
-  if (str.at(0) == '+') {
-    str = str.replace(0, 1, "");
-  }
-  T ret;
-  std::stringstream ss(str);
-  ss >> ret;
-  if (std::to_string(ret) != str) {
-    throw InvalidArgumentException("Can't convert " + str);
-  }
-  return ret;
-}
-
-/**
- * @brief convert string to boolean
- *
- * @param s target string
- * @return boolean value of string
- * @throw InvalidArgumentException
- */
-inline bool stringToBool(const std::string& s) {
-  std::string temp = s;
-  if (temp == "true") {
-    return true;
-  }
-
-  if (temp == "false") {
-    return false;
-  }
-
-  throw InvalidArgumentException(
-      fmt::format("Input must be a boolean value (true or false): \"{}\". temp = {}", s, temp));
 }
 
 /**

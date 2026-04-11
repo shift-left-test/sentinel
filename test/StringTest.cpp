@@ -245,45 +245,45 @@ TEST_F(StringTest, testReplaceAllNoMatch) {
   EXPECT_EQ("hello", string::replaceAll("hello", "xyz", "abc"));
 }
 
-TEST_F(StringTest, testStringToIntValid) {
-  EXPECT_EQ(42, string::stringToInt<int>("42"));
-  EXPECT_EQ(42, string::stringToInt<int>("+42"));
-  EXPECT_EQ(42, string::stringToInt<int>("  42  "));
-  EXPECT_EQ(0, string::stringToInt<int>("0"));
+TEST_F(StringTest, testToIntValid) {
+  EXPECT_EQ(42, string::to<int>("42"));
+  EXPECT_EQ(42, string::to<int>("+42"));
+  EXPECT_EQ(42, string::to<int>("  42  "));
+  EXPECT_EQ(0, string::to<int>("0"));
 }
 
-TEST_F(StringTest, testStringToIntThrowsOnEmpty) {
-  EXPECT_THROW(string::stringToInt<int>(""), InvalidArgumentException);
-  EXPECT_THROW(string::stringToInt<int>("   "), InvalidArgumentException);
+TEST_F(StringTest, testToIntThrowsOnEmpty) {
+  EXPECT_THROW(string::to<int>(""), InvalidArgumentException);
+  EXPECT_THROW(string::to<int>("   "), InvalidArgumentException);
 }
 
-TEST_F(StringTest, testStringToIntThrowsOnNonNumeric) {
-  EXPECT_THROW(string::stringToInt<int>("abc"), InvalidArgumentException);
-  EXPECT_THROW(string::stringToInt<int>("12abc"), InvalidArgumentException);
-  EXPECT_THROW(string::stringToInt<int>("12.5"), InvalidArgumentException);
+TEST_F(StringTest, testToIntThrowsOnNonNumeric) {
+  EXPECT_THROW(string::to<int>("abc"), InvalidArgumentException);
+  EXPECT_THROW(string::to<int>("12abc"), InvalidArgumentException);
+  EXPECT_THROW(string::to<int>("12.5"), InvalidArgumentException);
 }
 
-TEST_F(StringTest, testStringToIntSizeT) {
-  EXPECT_EQ(100u, string::stringToInt<size_t>("100"));
-  EXPECT_EQ(0u, string::stringToInt<size_t>("0"));
+TEST_F(StringTest, testToSizeT) {
+  EXPECT_EQ(100u, string::to<size_t>("100"));
+  EXPECT_EQ(0u, string::to<size_t>("0"));
 }
 
-TEST_F(StringTest, testStringToBoolValid) {
-  EXPECT_TRUE(string::stringToBool("true"));
-  EXPECT_FALSE(string::stringToBool("false"));
+TEST_F(StringTest, testToBoolValid) {
+  EXPECT_TRUE(string::to<bool>("true"));
+  EXPECT_FALSE(string::to<bool>("false"));
 }
 
-TEST_F(StringTest, testStringToBoolThrowsOnInvalid) {
-  EXPECT_THROW(string::stringToBool("True"), InvalidArgumentException);
-  EXPECT_THROW(string::stringToBool("FALSE"), InvalidArgumentException);
-  EXPECT_THROW(string::stringToBool("1"), InvalidArgumentException);
-  EXPECT_THROW(string::stringToBool(""), InvalidArgumentException);
-  EXPECT_THROW(string::stringToBool("yes"), InvalidArgumentException);
+TEST_F(StringTest, testToBoolThrowsOnInvalid) {
+  EXPECT_THROW(string::to<bool>("True"), InvalidArgumentException);
+  EXPECT_THROW(string::to<bool>("FALSE"), InvalidArgumentException);
+  EXPECT_THROW(string::to<bool>("1"), InvalidArgumentException);
+  EXPECT_THROW(string::to<bool>(""), InvalidArgumentException);
+  EXPECT_THROW(string::to<bool>("yes"), InvalidArgumentException);
 }
 
-TEST_F(StringTest, testBoolToString) {
-  EXPECT_STREQ("true", string::boolToString(true));
-  EXPECT_STREQ("false", string::boolToString(false));
+TEST_F(StringTest, testFrom) {
+  EXPECT_STREQ("true", string::from(true));
+  EXPECT_STREQ("false", string::from(false));
 }
 
 TEST_F(StringTest, testTruncateNoTruncationNeeded) {
