@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <chrono>
+#include <cerrno>
 #include <cstring>
 #include <exception>
 #include <filesystem>  // NOLINT
@@ -92,7 +93,7 @@ int Subprocess::execute() {
     Subprocess::timedOut = false;
     Subprocess::pendSig = 0;
 
-    int status;
+    int status = 0;
 
     // If sentinel catch below signals,
     // then send SIGKILL to child process group.
@@ -144,7 +145,8 @@ int Subprocess::execute() {
       }
     };
 
-    while (waitpid(pid, &status, WNOHANG) == 0) {
+    int wret;
+    while ((wret = waitpid(pid, &status, WNOHANG)) == 0 || (wret < 0 && errno == EINTR)) {
       auto nb = read(pfd[0], buffer, kMaxBufSize);
       if (nb > 0) {
         consumeOutput(nb);
