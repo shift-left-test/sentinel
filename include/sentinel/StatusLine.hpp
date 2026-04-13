@@ -77,14 +77,14 @@ class StatusLine {
    *
    * @param total Total number of mutants to process.
    */
-  void setTotalMutants(size_t total);
+  void setTotalMutants(std::size_t total);
 
   /**
    * @brief Update the currently-processed mutant index and redraw.
    *
    * @param current 1-based index of the mutant being processed.
    */
-  void setMutantInfo(size_t current);
+  void setMutantInfo(std::size_t current);
 
   /**
    * @brief Record the result of the last mutant and redraw.
@@ -128,7 +128,7 @@ class StatusLine {
   void redraw();
   ftxui::Element buildElement() const;
   ftxui::Element buildSummaryElement() const;
-  ftxui::Element buildProgressElement(size_t current) const;
+  ftxui::Element buildProgressElement(std::size_t current) const;
   std::string renderToString(const ftxui::Element& element) const;
   std::string phaseLabel() const;
   int countWidth() const;
@@ -150,11 +150,11 @@ class StatusLine {
   int mTermRows = kDefaultTermRows;
   int mTermCols = kDefaultTermCols;
   Phase mPhase = Phase::INIT;
-  size_t mCurrent = 0;
-  size_t mTotal = 0;
-  size_t mKilled = 0;
-  size_t mSurvived = 0;
-  size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
+  std::size_t mCurrent = 0;
+  std::size_t mTotal = 0;
+  std::size_t mKilled = 0;
+  std::size_t mSurvived = 0;
+  std::size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
   Timestamper mTimestamper;
 };
 

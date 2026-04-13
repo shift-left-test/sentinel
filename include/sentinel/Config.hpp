@@ -92,7 +92,7 @@ struct Config {
   /** @brief Absolute path to directory where test results are stored (empty = not set). */
   std::filesystem::path testResultDir;
   /** @brief Time limit for test execution; nullopt = auto (1.5x baseline + 5s), 0 = no limit. */
-  std::optional<size_t> timeout;
+  std::optional<std::size_t> timeout;
 
   // Mutation options
   /** @brief Diff base revision for --from; nullopt = not specified. */
@@ -106,7 +106,7 @@ struct Config {
   /** @brief Mutant generation strategy: UNIFORM, RANDOM, or WEIGHTED. */
   Generator generator = Generator::UNIFORM;
   /** @brief Maximum number of mutants per source line; 0 = unlimited. */
-  size_t mutantsPerLine = 1;
+  std::size_t mutantsPerLine = 1;
   /** @brief List of mutation operators to apply (empty = all). */
   std::vector<std::string> operators;
   /** @brief Absolute paths to lcov tracefiles. */
@@ -114,7 +114,7 @@ struct Config {
 
   // CLI-only run parameters (not read from sentinel.yaml)
   /** @brief Maximum number of mutants to generate; 0 = unlimited (CLI-only). */
-  size_t limit = 0;
+  std::size_t limit = 0;
   /** @brief Random seed for mutant generation (CLI-only). */
   std::optional<unsigned int> seed;
   /** @brief Mutation score threshold for success (CLI-only). */

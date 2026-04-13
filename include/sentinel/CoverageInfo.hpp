@@ -40,13 +40,13 @@ class CoverageInfo {
    * @param line number
    * @return True if line is covered by test cases
    */
-  bool cover(const std::string& filename, size_t line) const;
+  bool cover(const std::string& filename, std::size_t line) const;
 
  private:
   /**
    * @brief map from file name to list of covered lines
    */
-  std::map<std::string, std::vector<size_t>> mData;
+  std::map<std::string, std::vector<std::size_t>> mData;
 };
 
 }  // namespace sentinel

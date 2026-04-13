@@ -130,7 +130,7 @@ class CliConfigParser {
   /** @brief Command line flag for mutant generator. */
   args::ValueFlag<std::string> mGenerator;
   /** @brief Command line flag for mutants per line. */
-  args::ValueFlag<size_t> mMutantsPerLine;
+  args::ValueFlag<std::size_t> mMutantsPerLine;
   /** @brief Command line flag for random seed. */
   args::ValueFlag<unsigned int> mSeed;
   /** @brief Command line flag for mutation operators. */
@@ -138,7 +138,7 @@ class CliConfigParser {
 
   // Advanced options
   /** @brief Command line flag for mutant limit. */
-  args::ValueFlag<size_t> mLimit;
+  args::ValueFlag<std::size_t> mLimit;
   /** @brief Command line flag for lcov tracefiles. */
   args::ValueFlagList<std::filesystem::path> mLcovTracefiles;
   /** @brief Command line flag for execution partition. */
