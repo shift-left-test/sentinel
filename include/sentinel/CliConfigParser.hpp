@@ -116,7 +116,7 @@ class CliConfigParser {
   /** @brief Command line flag for test result directory. */
   args::ValueFlag<std::filesystem::path> mTestResultDir;
   /** @brief Command line flag for test time limit. */
-  args::ValueFlag<std::string> mTimeout;
+  args::ValueFlag<std::size_t> mTimeout;
 
   // Mutation options
   /** @brief Command line flag for diff base revision. */
@@ -132,7 +132,7 @@ class CliConfigParser {
   /** @brief Command line flag for mutants per line. */
   args::ValueFlag<size_t> mMutantsPerLine;
   /** @brief Command line flag for random seed. */
-  args::ValueFlag<std::string> mSeed;
+  args::ValueFlag<unsigned int> mSeed;
   /** @brief Command line flag for mutation operators. */
   args::ValueFlagList<std::string> mOperators;
 

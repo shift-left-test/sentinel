@@ -8,10 +8,7 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include <vector>
-#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/CliConfigParser.hpp"
-
-using ::testing::HasSubstr;
 
 namespace sentinel {
 
@@ -86,9 +83,7 @@ TEST_F(CliConfigParserTest, testSeedNumericParsed) {
 }
 
 TEST_F(CliConfigParserTest, testSeedNonNumericThrows) {
-  EXPECT_THROW_MESSAGE(
-      parse({"--seed", "auto"}),
-      std::invalid_argument, HasSubstr("--seed"));
+  EXPECT_THROW(parse({"--seed", "auto"}), args::ParseError);
 }
 
 TEST_F(CliConfigParserTest, testLimitParsed) {
@@ -126,9 +121,7 @@ TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {
 }
 
 TEST_F(CliConfigParserTest, testTimeoutNonNumericThrows) {
-  EXPECT_THROW_MESSAGE(
-      parse({"--timeout", "auto"}),
-      std::invalid_argument, HasSubstr("--timeout"));
+  EXPECT_THROW(parse({"--timeout", "auto"}), args::ParseError);
 }
 
 TEST_F(CliConfigParserTest, testVerboseParsed) {

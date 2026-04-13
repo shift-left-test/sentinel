@@ -3,25 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fmt/format.h>
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include "sentinel/CliConfigParser.hpp"
 
 namespace sentinel {
-
-static std::size_t parseNonNegativeInt(const std::string& value,
-                                       const std::string& optionName) {
-  try {
-    return std::stoul(value);
-  } catch (...) {
-    throw std::invalid_argument(
-        fmt::format("Option {} received invalid value '{}'. "
-                    "Expected a non-negative integer.",
-                    optionName, value));
-  }
-}
 
 CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mGroupRunCtrl(parser, "Run options:"),
@@ -89,9 +75,7 @@ void CliConfigParser::applyTo(Config* cfg) {
 
   if (mBuildCmd) cfg->buildCmd = mBuildCmd.Get();
   if (mTestCmd) cfg->testCmd = mTestCmd.Get();
-  if (mTimeout) {
-    cfg->timeout = parseNonNegativeInt(mTimeout.Get(), "--timeout");
-  }
+  if (mTimeout) cfg->timeout = mTimeout.Get();
 
   if (mFrom) cfg->from = mFrom.Get();
   cfg->uncommitted = mUncommitted;
@@ -108,10 +92,7 @@ void CliConfigParser::applyTo(Config* cfg) {
   }
 
   if (mLimit) cfg->limit = mLimit.Get();
-  if (mSeed) {
-    cfg->seed = static_cast<unsigned int>(
-        parseNonNegativeInt(mSeed.Get(), "--seed"));
-  }
+  if (mSeed) cfg->seed = mSeed.Get();
   if (mThreshold) cfg->threshold = mThreshold.Get();
   if (mPartition) cfg->partition = mPartition.Get();
   if (mMergePartitions) {
