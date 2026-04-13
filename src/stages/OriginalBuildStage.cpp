@@ -38,8 +38,9 @@ bool OriginalBuildStage::execute(PipelineContext* ctx) {
   if (!buildProc.isSuccessfulExit()) {
     std::string msg = fmt::format("Original build failed.\n       See: {}", buildLog.string());
     if (!isVerbose(*ctx)) {
-      io::appendLogTail(&msg, buildLog, kLogTailLines);
+      io::appendLogTail(&msg, buildLog, kLogTailLines, "build output");
     }
+    msg += fmt::format("\n\n       Build command: {}", ctx->config.buildCmd);
     throw std::runtime_error(msg);
   }
   Logger::info("Original build completed ({})", Timestamper::format(ts.toDouble()));

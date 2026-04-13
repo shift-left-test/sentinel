@@ -21,6 +21,7 @@
 
 namespace fs = std::filesystem;
 
+using ::testing::AllOf;
 using ::testing::HasSubstr;
 
 namespace sentinel {
@@ -151,6 +152,20 @@ TEST_F(OriginalBuildStageTest, testBuildLogContainsOutput) {
   std::string content = testutil::readFile(mWorkspace->getOriginalBuildLog());
   EXPECT_NE(content.find("build output here"), std::string::npos)
       << "Build log should contain the build command output";
+}
+
+TEST_F(OriginalBuildStageTest, testFailedBuildMessageContainsBuildCommand) {
+  fs::create_directories(mWorkspace->getOriginalDir());
+
+  mConfig.buildCmd = "echo 'cmake error output' && false";
+  auto stage = std::make_shared<OriginalBuildStage>();
+  auto ctx = makeCtx();
+
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error,
+      AllOf(HasSubstr("Original build failed"),
+            HasSubstr("Build command: echo 'cmake error output' && false")));
 }
 
 }  // namespace sentinel

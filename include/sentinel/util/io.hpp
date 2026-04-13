@@ -72,14 +72,16 @@ std::string readLastLines(const std::filesystem::path& path, std::size_t n);
 /**
  * @brief Append the last N lines of a log file to a message string.
  *
+ * Lines are wrapped with separator headers and indented for visual clarity.
  * If the file is empty or unreadable, the message is left unchanged.
  *
  * @param msg Message to append to (modified in place).
  * @param logPath Log file to read from.
  * @param n Maximum number of lines to append.
+ * @param label Label for the separator header (default: "output").
  */
 void appendLogTail(std::string* msg, const std::filesystem::path& logPath,
-                   std::size_t n);
+                   std::size_t n, const std::string& label = "output");
 
 }  // namespace sentinel::io
 

@@ -58,8 +58,9 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
         "       See: {}",
         testLog.string());
     if (!isVerbose(*ctx)) {
-      io::appendLogTail(&msg, testLog, kLogTailLines);
+      io::appendLogTail(&msg, testLog, kLogTailLines, "test output");
     }
+    msg += fmt::format("\n\n       Test command: {}", ctx->config.testCmd);
     throw std::runtime_error(msg);
   }
 
@@ -89,8 +90,9 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
           ctx->config.testResultDir.string(), testLog.string());
     }
     if (!isVerbose(*ctx)) {
-      io::appendLogTail(&msg, testLog, kLogTailLines);
+      io::appendLogTail(&msg, testLog, kLogTailLines, "test output");
     }
+    msg += fmt::format("\n\n       Test command: {}", ctx->config.testCmd);
     throw std::runtime_error(msg);
   }
 

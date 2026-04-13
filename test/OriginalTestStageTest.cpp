@@ -267,4 +267,29 @@ TEST_F(OriginalTestStageTest, testAutoTimeoutLogMessage) {
   EXPECT_THAT(output, HasSubstr("auto"));
 }
 
+TEST_F(OriginalTestStageTest, testSignalExitMessageContainsTestCommand) {
+  mConfig.testCmd = "sh -c 'kill -SEGV $$'";
+  createTestResultFile();
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error,
+      AllOf(HasSubstr("killed by a signal"),
+            HasSubstr("Test command: sh -c 'kill -SEGV $$'")));
+}
+
+TEST_F(OriginalTestStageTest, testEmptyResultsMessageContainsTestCommand) {
+  mConfig.testCmd = "echo 'no results' >&2";
+
+  auto stage = std::make_shared<OriginalTestStage>();
+  auto ctx = makeCtx();
+  EXPECT_THROW_MESSAGE(
+      stage->run(&ctx),
+      std::runtime_error,
+      AllOf(HasSubstr("No test result files found"),
+            HasSubstr("Test command: echo 'no results' >&2")));
+}
+
 }  // namespace sentinel

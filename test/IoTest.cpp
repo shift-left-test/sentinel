@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <string>
@@ -14,6 +15,8 @@
 namespace fs = std::filesystem;
 
 namespace sentinel {
+
+using ::testing::HasSubstr;
 
 class IoTest : public ::testing::Test {
  protected:
@@ -184,13 +187,28 @@ TEST_F(IoTest, testReadLastLinesOneReturnsLastLine) {
   EXPECT_EQ(result, "line3");
 }
 
-TEST_F(IoTest, testAppendLogTailAppendsLastLines) {
+TEST_F(IoTest, testAppendLogTailAppendsLastLinesWithSeparators) {
+  auto file = mTestDir / "test.log";
+  writeFile(file, "line1\nline2\nline3\n");
+
+  std::string msg = "Error occurred";
+  io::appendLogTail(&msg, file, 2, "build output");
+  std::string expected =
+      "Error occurred\n\n"
+      "       --- build output (last 2 lines) ---\n"
+      "       line2\n"
+      "       line3\n"
+      "       -----------------------------------";
+  EXPECT_EQ(msg, expected);
+}
+
+TEST_F(IoTest, testAppendLogTailDefaultLabel) {
   auto file = mTestDir / "test.log";
   writeFile(file, "line1\nline2\nline3\n");
 
   std::string msg = "Error occurred";
   io::appendLogTail(&msg, file, 2);
-  EXPECT_EQ(msg, "Error occurred\n\nline2\nline3");
+  EXPECT_THAT(msg, HasSubstr("--- output (last 2 lines) ---"));
 }
 
 TEST_F(IoTest, testAppendLogTailDoesNothingForEmptyFile) {

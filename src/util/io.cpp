@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
 #include <deque>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include "sentinel/util/io.hpp"
@@ -33,10 +35,28 @@ std::string readLastLines(const std::filesystem::path& path, std::size_t n) {
 }
 
 void appendLogTail(std::string* msg, const std::filesystem::path& logPath,
-                   std::size_t n) {
+                   std::size_t n, const std::string& label) {
   std::string tail = readLastLines(logPath, n);
   if (!tail.empty()) {
-    *msg += "\n\n" + tail;
+    static constexpr auto kIndent = "       ";
+    std::string header = fmt::format("--- {} (last {} lines) ---", label, n);
+    std::string footer(header.size(), '-');
+
+    *msg += "\n\n";
+    *msg += kIndent;
+    *msg += header;
+
+    std::istringstream stream(tail);
+    std::string line;
+    while (std::getline(stream, line)) {
+      *msg += '\n';
+      *msg += kIndent;
+      *msg += line;
+    }
+
+    *msg += '\n';
+    *msg += kIndent;
+    *msg += footer;
   }
 }
 
