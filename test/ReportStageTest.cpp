@@ -217,8 +217,8 @@ TEST_F(ReportStageTest, testOutputDirSavesHtmlAndCssFiles) {
 
   EXPECT_TRUE(fs::exists(outputDir / "mutations.xml"));
   EXPECT_TRUE(fs::exists(outputDir / "index.html"));
-  EXPECT_TRUE(fs::exists(outputDir / "style.css"));
-  EXPECT_TRUE(fs::is_directory(outputDir / "srcDir"));
+  EXPECT_FALSE(fs::exists(outputDir / "style.css"));
+  EXPECT_FALSE(fs::is_directory(outputDir / "srcDir"));
 }
 
 TEST_F(ReportStageTest, testNoMutantsWithOutputDirCreatesMinimalReport) {
@@ -230,7 +230,7 @@ TEST_F(ReportStageTest, testNoMutantsWithOutputDirCreatesMinimalReport) {
   EXPECT_NO_THROW(stage->run(&ctx));
 
   EXPECT_TRUE(fs::exists(outputDir / "index.html"));
-  EXPECT_TRUE(fs::exists(outputDir / "style.css"));
+  EXPECT_FALSE(fs::exists(outputDir / "style.css"));
   // No source HTML directory should be generated when there are 0 mutants
   EXPECT_FALSE(fs::exists(outputDir / "srcDir"));
 }

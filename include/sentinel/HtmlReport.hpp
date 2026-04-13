@@ -8,7 +8,6 @@
 
 #include <filesystem>  // NOLINT
 #include <string>
-#include <vector>
 #include "sentinel/Config.hpp"
 #include "sentinel/Report.hpp"
 
@@ -16,6 +15,9 @@ namespace sentinel {
 
 /**
  * @brief HtmlReport class
+ *
+ * Generates a single self-contained HTML file with embedded CSS and JavaScript
+ * that implements a SPA (Single-Page Application) for mutation testing reports.
  */
 class HtmlReport : public Report {
  public:
@@ -33,9 +35,9 @@ class HtmlReport : public Report {
   ~HtmlReport() override;
 
   /**
-   * @brief Save the report in HTML format to @p dirPath.
+   * @brief Save the report as a single index.html to @p dirPath.
    *
-   * @param dirPath Directory to save the HTML files into.
+   * @param dirPath Directory to save the HTML file into.
    * @throw InvalidArgumentException when path is not a directory.
    */
   void save(const std::filesystem::path& dirPath) override;
@@ -47,26 +49,26 @@ class HtmlReport : public Report {
   void initMetadata();
 
   /**
-   * @brief makeIndexHtml
+   * @brief Build the JSON data object containing all mutation report data.
    *
-   * @param totNumberOfMutation
-   * @param totNumberOfDetectedMutation
-   * @param root index or not
-   * @param currentDirPath current key of groupByDirPath (used in non root)
-   * @param outputDir
+   * @return JSON string with version, timestamp, config, summary, dirs, files.
    */
-  void makeIndexHtml(std::size_t totNumberOfMutation, std::size_t totNumberOfDetectedMutation, bool root,
-                     const std::filesystem::path& currentDirPath, const std::filesystem::path& outputDir);
+  std::string buildJsonData() const;
 
   /**
-   * @brief makeSourceHtml
+   * @brief Build the JSON representation of the run configuration.
    *
-   * @param mrs Mutation Results of a source file
-   * @param srcPath
-   * @param outputDir
+   * @return JSON object string with config fields.
    */
-  void makeSourceHtml(const std::vector<const MutationResult*>& mrs, const std::filesystem::path& srcPath,
-                      const std::filesystem::path& outputDir);
+  std::string buildConfigJson() const;
+
+  /**
+   * @brief Escape a string for safe embedding in JSON.
+   *
+   * @param s Input string.
+   * @return JSON-escaped string.
+   */
+  static std::string jsonEscape(const std::string& s);
 
   Config mConfig;             ///< Run configuration
   std::string mTimestamp;     ///< Report generation timestamp

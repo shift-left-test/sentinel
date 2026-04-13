@@ -24,7 +24,7 @@ add_executable(unittest
   ConfigTest.cpp WorkspaceTest.cpp ConsoleTest.cpp SubprocessTest.cpp
   CliConfigParserTest.cpp StatusLineTest.cpp
   TimestamperTest.cpp AORTest.cpp BORTest.cpp LCRTest.cpp RORTest.cpp SDLTest.cpp SORTest.cpp UOITest.cpp
-  DocGeneratorTest.cpp StageTest.cpp ConfigValidatorTest.cpp
+  StageTest.cpp ConfigValidatorTest.cpp
   EvaluationStageTest.cpp DryRunStageTest.cpp ReportStageTest.cpp
   OriginalBuildStageTest.cpp OriginalTestStageTest.cpp
   SignalHandlerTest.cpp YamlConfigWriterTest.cpp
