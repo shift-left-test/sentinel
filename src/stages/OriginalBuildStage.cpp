@@ -44,12 +44,6 @@ bool OriginalBuildStage::execute(PipelineContext* ctx) {
     throw std::runtime_error(msg);
   }
   Logger::info("Original build completed ({})", Timestamper::format(ts.toDouble()));
-  if (!fs::exists(ctx->config.compileDbDir / "compile_commands.json")) {
-    throw std::runtime_error(
-        fmt::format("compile_commands.json not found in '{}'.\n"
-                    "       Hint: add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON to cmake.",
-                    ctx->config.compileDbDir.string()));
-  }
   return true;
 }
 

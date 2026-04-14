@@ -11,6 +11,7 @@
 #include <memory>
 #include <random>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include "sentinel/Console.hpp"
@@ -138,6 +139,15 @@ StatusLine::Phase GenerationStage::getPhase() const {
 
 bool GenerationStage::execute(PipelineContext* ctx) {
   Logger::info("Generating mutants...");
+  if (!fs::exists(ctx->config.compileDbDir / "compile_commands.json")) {
+    throw std::runtime_error(
+        fmt::format("compile_commands.json not found in '{}'.\n"
+                    "       This file is required for Clang to parse source files.\n"
+                    "       Hint: For CMake, add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON.\n"
+                    "             For other build systems, see "
+                    "https://clang.llvm.org/docs/JSONCompilationDatabase.html",
+                    ctx->config.compileDbDir.string()));
+  }
   mRepo->addSkipDir(ctx->workspace.getRoot());
   SourceLines sourceLines = mRepo->getSourceLines(ctx->config.from, ctx->config.uncommitted);
 
@@ -176,6 +186,12 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   printGenerationSummary(mutants, candidateCount, linesByPath, ctx->config.sourceDir, ctx->config.generator, seed,
                          ctx->config.limit, ctx->config.mutantsPerLine, ctx->config.from, ctx->config.uncommitted,
                          partition);
+
+  if (mutants.empty()) {
+    Logger::warn("No mutants generated.\n"
+                 "       Check --source-dir, file extensions (--extension),"
+                 " and scope options (--from, --uncommitted).");
+  }
 
   // Apply partition slice
   std::size_t partIdx = 0;

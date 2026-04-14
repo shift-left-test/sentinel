@@ -49,11 +49,6 @@ class OriginalBuildStageTest : public ::testing::Test {
     fs::remove_all(mBase);
   }
 
-  void createCompileCommandsJson() {
-    std::ofstream f(mCompileDbDir / "compile_commands.json");
-    f << "[]";
-  }
-
   PipelineContext makeCtx() {
     return {mConfig, mStatusLine, *mWorkspace};
   }
@@ -81,7 +76,6 @@ TEST_F(OriginalBuildStageTest, testShouldSkipWhenBuildLogExists) {
 
 TEST_F(OriginalBuildStageTest, testExecuteSuccessfulBuild) {
   fs::create_directories(mWorkspace->getOriginalDir());
-  createCompileCommandsJson();
 
   mConfig.buildCmd = "true";
   auto stage = std::make_shared<OriginalBuildStage>();
@@ -101,20 +95,8 @@ TEST_F(OriginalBuildStageTest, testExecuteFailedBuildThrows) {
   EXPECT_THROW(stage->run(&ctx), std::runtime_error);
 }
 
-TEST_F(OriginalBuildStageTest, testMissingCompileCommandsThrows) {
-  fs::create_directories(mWorkspace->getOriginalDir());
-  // compile_commands.json intentionally not created
-
-  mConfig.buildCmd = "true";
-  auto stage = std::make_shared<OriginalBuildStage>();
-  auto ctx = makeCtx();
-
-  EXPECT_THROW(stage->run(&ctx), std::runtime_error);
-}
-
 TEST_F(OriginalBuildStageTest, testExecuteVerboseModeSuccessfulBuild) {
   fs::create_directories(mWorkspace->getOriginalDir());
-  createCompileCommandsJson();
 
   mConfig.verbose = true;
   mConfig.buildCmd = "true";
@@ -140,7 +122,6 @@ TEST_F(OriginalBuildStageTest, testExecuteVerboseModeBuildFailed) {
 
 TEST_F(OriginalBuildStageTest, testBuildLogContainsOutput) {
   fs::create_directories(mWorkspace->getOriginalDir());
-  createCompileCommandsJson();
 
   mConfig.buildCmd = "echo 'build output here'";
   auto stage = std::make_shared<OriginalBuildStage>();
