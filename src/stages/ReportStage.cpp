@@ -35,8 +35,18 @@ bool ReportStage::execute(PipelineContext* ctx) {
   MutationResults results = ctx->workspace.loadResults();
 
   Config reportCfg = ctx->config;
+  auto status = ctx->workspace.loadStatus();
   if (!reportCfg.seed.has_value()) {
-    reportCfg.seed = ctx->workspace.loadStatus().seed;
+    reportCfg.seed = status.seed;
+  }
+  if (!reportCfg.from.has_value() && status.from.has_value()) {
+    reportCfg.from = status.from;
+  }
+  if (!reportCfg.uncommitted && status.uncommitted.has_value()) {
+    reportCfg.uncommitted = *status.uncommitted;
+  }
+  if (reportCfg.limit == 0 && status.limit.has_value()) {
+    reportCfg.limit = *status.limit;
   }
 
   MutationSummary summary(results, reportCfg.sourceDir);

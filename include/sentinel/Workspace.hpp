@@ -31,6 +31,9 @@ struct WorkspaceStatus {
   std::optional<std::size_t> partCount;  ///< Partition total (0 = no partition)
   std::optional<std::vector<std::size_t>> mergedPartitions;  ///< Collected partition indices (merge mode only)
   std::optional<unsigned int> seed;  ///< Random seed used for mutant generation
+  std::optional<std::string> from;  ///< Diff base revision used for generation
+  std::optional<bool> uncommitted;  ///< Whether uncommitted changes were included
+  std::optional<std::size_t> limit;  ///< Mutant limit used for generation
 };
 
 /**

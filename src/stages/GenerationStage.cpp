@@ -219,6 +219,15 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   status.candidateCount = candidateCount;
   status.partIndex = partIdx;
   status.partCount = partCount;
+  if (ctx->config.from) {
+    status.from = ctx->config.from;
+  }
+  if (ctx->config.uncommitted) {
+    status.uncommitted = ctx->config.uncommitted;
+  }
+  if (ctx->config.limit > 0) {
+    status.limit = ctx->config.limit;
+  }
   ctx->workspace.saveStatus(status);
 
   return true;

@@ -79,6 +79,15 @@ std::ostream& operator<<(std::ostream& out, const WorkspaceStatus& status) {
   if (status.seed.has_value()) {
     emitter << YAML::Key << "seed" << YAML::Value << *status.seed;
   }
+  if (status.from.has_value()) {
+    emitter << YAML::Key << "from" << YAML::Value << *status.from;
+  }
+  if (status.uncommitted.has_value()) {
+    emitter << YAML::Key << "uncommitted" << YAML::Value << *status.uncommitted;
+  }
+  if (status.limit.has_value()) {
+    emitter << YAML::Key << "limit" << YAML::Value << *status.limit;
+  }
   if (status.mergedPartitions.has_value()) {
     emitter << YAML::Key << "merged-partitions" << YAML::Value << YAML::BeginSeq;
     for (auto idx : *status.mergedPartitions) {
@@ -105,6 +114,9 @@ std::istream& operator>>(std::istream& in, WorkspaceStatus& status) {
     if (node["part-index"]) status.partIndex = node["part-index"].as<std::size_t>();
     if (node["part-count"]) status.partCount = node["part-count"].as<std::size_t>();
     if (node["seed"]) status.seed = node["seed"].as<unsigned int>();
+    if (node["from"]) status.from = node["from"].as<std::string>();
+    if (node["uncommitted"]) status.uncommitted = node["uncommitted"].as<bool>();
+    if (node["limit"]) status.limit = node["limit"].as<std::size_t>();
     if (node["merged-partitions"]) {
       const auto& seq = node["merged-partitions"];
       std::vector<std::size_t> parts(seq.size());
@@ -131,6 +143,9 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (status.partCount.has_value()) current.partCount = status.partCount;
   if (status.mergedPartitions.has_value()) current.mergedPartitions = status.mergedPartitions;
   if (status.seed.has_value()) current.seed = status.seed;
+  if (status.from.has_value()) current.from = status.from;
+  if (status.uncommitted.has_value()) current.uncommitted = status.uncommitted;
+  if (status.limit.has_value()) current.limit = status.limit;
 
   std::ofstream f(p);
   if (!f) {

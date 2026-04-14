@@ -215,10 +215,6 @@ Test result directory (XML files are collected automatically).
 \fBtimeout\fR
 Test time limit in seconds (default: 1.5\(mu original test time).
 .TP
-\fBfrom\fR
-Diff base revision (e.g., HEAD~1, main, v1.0). Mutates lines changed
-between the merge\-base of this revision and HEAD.
-.TP
 \fBextension\fR
 List of source file extensions to mutate.
 .TP

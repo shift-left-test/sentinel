@@ -73,7 +73,6 @@ version: 1
 source-dir: ./src
 output-dir: ./out
 compiledb-dir: ./build
-from: HEAD~1
 extension:
   - cpp
   - cxx
@@ -99,8 +98,7 @@ operator:
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
   EXPECT_EQ((mTmpDir / "out").lexically_normal(), cfg.outputDir);
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
-  ASSERT_TRUE(cfg.from.has_value());
-  EXPECT_EQ("HEAD~1", *cfg.from);
+  EXPECT_FALSE(cfg.from.has_value());
   EXPECT_EQ(std::vector<std::string>({"cpp", "cxx"}), cfg.extensions);
   EXPECT_EQ(std::vector<std::string>({"src/**", "!test/**"}), cfg.patterns);
   EXPECT_EQ("make", cfg.buildCmd);
@@ -146,12 +144,13 @@ source-dir: ./src
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
 }
 
-TEST_F(ConfigTest, testYamlIgnoresSeedLimitThresholdPartition) {
+TEST_F(ConfigTest, testYamlIgnoresCliOnlyOptions) {
   writeFile("sentinel.yaml", R"(
 version: 1
 build-command: make
 test-command: ctest
 test-result-dir: ./results
+from: HEAD~1
 seed: 42
 limit: 100
 threshold: 80.0
@@ -161,6 +160,7 @@ partition: 2/4
   Config cfg = Config::withDefaults();
   YamlConfigParser::applyTo(&cfg, configPath("sentinel.yaml"));
 
+  EXPECT_FALSE(cfg.from.has_value());
   EXPECT_FALSE(cfg.seed.has_value());
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_FALSE(cfg.threshold.has_value());
@@ -290,7 +290,6 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   Config cfg = Config::withDefaults();
   cfg.buildCmd = "make -j8";
   cfg.testCmd = "ctest";
-  cfg.from = "HEAD~1";
   cfg.generator = Generator::UNIFORM;
   cfg.extensions = {"cpp", "cc"};
   cfg.operators = {"AOR", "ROR"};
@@ -300,7 +299,7 @@ TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   std::string yaml = out.str();
   EXPECT_NE(std::string::npos, yaml.find("version: 1"));
   EXPECT_NE(std::string::npos, yaml.find("build-command: make -j8"));
-  EXPECT_NE(std::string::npos, yaml.find("from: HEAD~1"));
+  EXPECT_EQ(std::string::npos, yaml.find("from:"));
 }
 
 TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
@@ -310,7 +309,6 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   original.buildCmd = "make";
   original.testCmd = "ctest";
   original.testResultDir = fs::absolute("results");
-  original.from = "main";
   original.generator = Generator::RANDOM;
   original.timeout = 120;
   original.mutantsPerLine = 5;
@@ -329,8 +327,7 @@ TEST_F(ConfigTest, testStreamOperatorRoundTripViaYamlParser) {
   EXPECT_EQ(original.sourceDir, loaded.sourceDir);
   EXPECT_EQ(original.buildCmd, loaded.buildCmd);
   EXPECT_EQ(original.testCmd, loaded.testCmd);
-  ASSERT_TRUE(loaded.from.has_value());
-  EXPECT_EQ(*original.from, *loaded.from);
+  EXPECT_FALSE(loaded.from.has_value());
   EXPECT_EQ(original.generator, loaded.generator);
   ASSERT_TRUE(loaded.timeout.has_value());
   EXPECT_EQ(*original.timeout, *loaded.timeout);
@@ -423,15 +420,6 @@ TEST_F(ConfigTest, testStreamOperatorWithLcovTracefiles) {
   std::string yaml = out.str();
   EXPECT_NE(std::string::npos, yaml.find("/tmp/cov1.info"));
   EXPECT_NE(std::string::npos, yaml.find("/tmp/cov2.info"));
-}
-
-TEST_F(ConfigTest, testStreamOperatorEmptyFrom) {
-  Config cfg = Config::withDefaults();
-  cfg.from = std::nullopt;
-  std::ostringstream out;
-  out << cfg;
-  std::string yaml = out.str();
-  EXPECT_EQ(std::string::npos, yaml.find("from:"));
 }
 
 TEST_F(ConfigTest, testStreamOperatorWeightedGenerator) {

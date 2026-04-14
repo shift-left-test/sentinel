@@ -49,9 +49,6 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
     emitter << YAML::Key << "output-dir" << YAML::Value << cfg.outputDir.string();
   }
   emitter << YAML::Key << "compiledb-dir" << YAML::Value << cfg.compileDbDir.string();
-  if (cfg.from) {
-    emitter << YAML::Key << "from" << YAML::Value << *cfg.from;
-  }
   emitter << YAML::Key << "extension" << YAML::Value << YAML::BeginSeq;
   for (const auto& e : cfg.extensions) emitter << e;
   emitter << YAML::EndSeq;

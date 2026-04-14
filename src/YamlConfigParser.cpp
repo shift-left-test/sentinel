@@ -89,7 +89,6 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
     if (root["test-command"]) cfg->testCmd = root["test-command"].as<std::string>();
     if (root["timeout"]) cfg->timeout = root["timeout"].as<size_t>();
 
-    if (root["from"]) cfg->from = root["from"].as<std::string>();
     if (root["extension"]) cfg->extensions = toVector<std::string>(root["extension"], "extension");
     if (root["pattern"]) cfg->patterns = toVector<std::string>(root["pattern"], "pattern");
     if (root["generator"]) cfg->generator = parseGenerator(root["generator"].as<std::string>());

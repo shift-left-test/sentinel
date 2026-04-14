@@ -392,10 +392,9 @@ TEST_F(PartitionedWorkspaceMergerTest,
 
   {
     Config cfg = Config::withDefaults();
-    cfg.buildCmd = "make";
+    cfg.buildCmd = "cmake --build .";
     cfg.testCmd = "ctest";
     cfg.testResultDir = "/tmp/results";
-    cfg.from = "HEAD~1";
     Workspace ws(src2);
     ws.saveConfig(cfg);
   }

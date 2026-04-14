@@ -439,6 +439,9 @@ TEST_F(WorkspaceTest, testLoadStatusReturnsEmptyWhenFileAbsent) {
   EXPECT_FALSE(loaded.partIndex.has_value());
   EXPECT_FALSE(loaded.partCount.has_value());
   EXPECT_FALSE(loaded.seed.has_value());
+  EXPECT_FALSE(loaded.from.has_value());
+  EXPECT_FALSE(loaded.uncommitted.has_value());
+  EXPECT_FALSE(loaded.limit.has_value());
 }
 
 TEST_F(WorkspaceTest, testSaveStatusAllFields) {
@@ -890,6 +893,71 @@ TEST_F(WorkspaceTest, testLoadMutantsIgnoresNonDirectoryEntries) {
 
   auto mutants = ws.loadMutants();
   EXPECT_TRUE(mutants.empty());
+}
+
+TEST_F(WorkspaceTest, testSaveAndLoadStatusFrom) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.from = "HEAD~1";
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.from.has_value());
+  EXPECT_EQ("HEAD~1", *loaded.from);
+}
+
+TEST_F(WorkspaceTest, testSaveAndLoadStatusUncommitted) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.uncommitted = true;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.uncommitted.has_value());
+  EXPECT_TRUE(*loaded.uncommitted);
+}
+
+TEST_F(WorkspaceTest, testSaveAndLoadStatusLimit) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.limit = 50;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.limit.has_value());
+  EXPECT_EQ(50u, *loaded.limit);
+}
+
+TEST_F(WorkspaceTest, testLoadStatusFromAbsentByDefault) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.originalTime = 10;
+  ws.saveStatus(s);
+  auto loaded = ws.loadStatus();
+  EXPECT_FALSE(loaded.from.has_value());
+  EXPECT_FALSE(loaded.uncommitted.has_value());
+  EXPECT_FALSE(loaded.limit.has_value());
+}
+
+TEST(WorkspaceStatusTest, testStreamOperatorFromUncommittedLimitRoundTrip) {
+  WorkspaceStatus original;
+  original.from = "main";
+  original.uncommitted = true;
+  original.limit = 100;
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+  WorkspaceStatus loaded;
+  in >> loaded;
+
+  ASSERT_TRUE(loaded.from.has_value());
+  EXPECT_EQ("main", *loaded.from);
+  ASSERT_TRUE(loaded.uncommitted.has_value());
+  EXPECT_TRUE(*loaded.uncommitted);
+  ASSERT_TRUE(loaded.limit.has_value());
+  EXPECT_EQ(100u, *loaded.limit);
 }
 
 }  // namespace sentinel

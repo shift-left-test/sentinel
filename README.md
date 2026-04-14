@@ -141,7 +141,6 @@ build-command: cmake -B build && cmake --build build
 compiledb-dir: ./build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
-from: HEAD~1
 pattern:
   - "!*/third_party/*"
   - "!*/test/*"
@@ -445,7 +444,6 @@ compiledb-dir: ./build
 build-command: cmake -B build && cmake --build build
 test-command: ctest --test-dir build
 test-result-dir: ./build/test-results
-from: HEAD~1
 pattern:
   - "!*/third_party/*"
   - "!*/test/*"
@@ -488,11 +486,6 @@ version: 1
 # timeout: 60
 
 # --- Mutation options ---
-
-## Diff base revision. Mutates lines changed between merge-base(REV, HEAD) and HEAD.
-## Example: HEAD~1 (last commit), main (since branch point), v1.0 (since tag)
-## Combine with --uncommitted to also include staged/unstaged/untracked changes.
-# from: HEAD~1
 
 ## Source file extensions to mutate (default: cxx cpp cc c c++ cu)
 # extension:
