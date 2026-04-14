@@ -14,6 +14,7 @@
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/Config.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 namespace fs = std::filesystem;
 
@@ -272,6 +273,21 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidDirPathGiven) {
   EXPECT_NO_THROW(htmlreport.save("unknown"));
   ASSERT_TRUE(fs::exists("unknown"));
   fs::remove_all("unknown");
+}
+
+TEST_F(HtmlReportTest, testSaveFailWhenReadOnlyDir) {
+  MutationResults MRs;
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+
+  auto readonlyDir = BASE / "READONLY_DIR";
+  fs::create_directories(readonlyDir);
+  fs::permissions(readonlyDir, fs::perms::owner_read | fs::perms::owner_exec,
+                  fs::perm_options::replace);
+
+  EXPECT_THROW(htmlreport.save(readonlyDir), IOException);
+
+  fs::permissions(readonlyDir, fs::perms::owner_all,
+                  fs::perm_options::replace);
 }
 
 TEST_F(HtmlReportTest, testSaveFailWhenInvalidSourcePath) {

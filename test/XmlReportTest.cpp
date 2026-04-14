@@ -11,6 +11,7 @@
 #include "sentinel/MutationSummary.hpp"
 #include "sentinel/XmlReport.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 #include "helper/FileTestHelper.hpp"
 #include "helper/TestTempDir.hpp"
 
@@ -170,6 +171,21 @@ TEST_F(XmlReportTest, testSaveFailWhenInvalidDirGiven) {
   EXPECT_NO_THROW(xmlreport.save("unknown"));
   ASSERT_TRUE(fs::exists("unknown"));
   fs::remove_all("unknown");
+}
+
+TEST_F(XmlReportTest, testSaveFailWhenReadOnlyDir) {
+  MutationResults MRs;
+  XmlReport xmlreport(MutationSummary(MRs, mSourceDir));
+
+  auto readonlyDir = mBase / "READONLY_DIR";
+  fs::create_directories(readonlyDir);
+  fs::permissions(readonlyDir, fs::perms::owner_read | fs::perms::owner_exec,
+                  fs::perm_options::replace);
+
+  EXPECT_THROW(xmlreport.save(readonlyDir), IOException);
+
+  fs::permissions(readonlyDir, fs::perms::owner_all,
+                  fs::perm_options::replace);
 }
 
 TEST_F(XmlReportTest, testMakeXmlReportWhenEmptyMutationResult) {

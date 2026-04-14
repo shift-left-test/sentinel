@@ -5,7 +5,9 @@
 
 #include <fmt/core.h>
 #include <array>
+#include <cerrno>
 #include <chrono>
+#include <cstring>
 #include <ctime>
 #include <filesystem>  // NOLINT
 #include <fstream>
@@ -19,6 +21,7 @@
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
 #include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
@@ -367,7 +370,12 @@ void HtmlReport::save(const std::filesystem::path& dirPath) {
 
   std::string jsonData = buildJsonData();
 
-  std::ofstream ofs(dirPath / "index.html", std::ofstream::out);
+  auto htmlPath = dirPath / "index.html";
+  std::ofstream ofs(htmlPath, std::ofstream::out);
+  if (!ofs) {
+    throw IOException(errno, fmt::format("Failed to open '{}': {}",
+                                         htmlPath.string(), std::strerror(errno)));
+  }
   ofs << R"(<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1204,6 +1212,10 @@ route();
 </html>
 )JS";
   ofs.close();
+  if (!ofs) {
+    throw IOException(errno, fmt::format("Failed to write '{}': {}",
+                                         htmlPath.string(), std::strerror(errno)));
+  }
 }
 
 }  // namespace sentinel

@@ -4,11 +4,15 @@
  */
 
 #include <tinyxml2/tinyxml2.h>
+#include <fmt/core.h>
+#include <cerrno>
+#include <cstring>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/XmlReport.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 #include "sentinel/util/io.hpp"
 
 namespace sentinel {
@@ -54,7 +58,10 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
   }
 
   doc->InsertEndChild(pMutations);
-  doc->SaveFile(xmlPath.c_str());
+  if (doc->SaveFile(xmlPath.c_str()) != tinyxml2::XML_SUCCESS) {
+    throw IOException(errno, fmt::format("Failed to write '{}': {}",
+                                         xmlPath.string(), std::strerror(errno)));
+  }
 }
 
 void XmlReport::addChildToParent(tinyxml2::XMLDocument* d, tinyxml2::XMLElement* p, const std::string& childName,
