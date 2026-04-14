@@ -189,7 +189,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
 
   if (mutants.empty()) {
     Logger::warn("No mutants generated.\n"
-                 "       Check --source-dir, file extensions (--extension),"
+                 "      Check --source-dir, file extensions (--extension),"
                  " and scope options (--from, --uncommitted).");
   }
 
