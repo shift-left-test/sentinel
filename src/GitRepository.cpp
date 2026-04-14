@@ -210,24 +210,7 @@ static void applyDiffTreeToTree(git_repository* repo,
                                 const std::string& fromRef,
                                 git_diff_options* opts, DiffData* d,
                                 const std::filesystem::path& gitWorkdir) {
-  // Resolve fromRef
-  SafeGit2ObjPtr<git_object, git_object_free> fromObj;
-  if (git_revparse_single(fromObj.getPtr(), repo, fromRef.c_str()) != 0) {
-    throw RepositoryException(
-        fmt::format("Failed to resolve revision '{}' in {}",
-                    fromRef, gitWorkdir));
-  }
-
-  SafeGit2ObjPtr<git_object, git_object_free> fromPeeled;
-  if (git_object_peel(fromPeeled.getPtr(),
-                      static_cast<git_object*>(fromObj),
-                      GIT_OBJECT_COMMIT) != 0) {
-    throw RepositoryException(
-        fmt::format("Revision '{}' does not point to a commit in {}",
-                    fromRef, gitWorkdir));
-  }
-
-  // Resolve HEAD
+  // Resolve HEAD first (needed for root-commit detection)
   SafeGit2ObjPtr<git_object, git_object_free> headObj;
   if (git_revparse_single(headObj.getPtr(), repo, "HEAD") != 0) {
     throw RepositoryException(
@@ -240,6 +223,46 @@ static void applyDiffTreeToTree(git_repository* repo,
                       GIT_OBJECT_COMMIT) != 0) {
     throw RepositoryException(
         fmt::format("HEAD does not point to a commit in {}", gitWorkdir));
+  }
+
+  // Resolve fromRef — may fail when HEAD is a root commit and fromRef
+  // refers to a non-existent parent (e.g. HEAD^, HEAD~1).  In that case
+  // we fall back to diffing against an empty tree.
+  SafeGit2ObjPtr<git_object, git_object_free> fromObj;
+  bool fromResolved =
+      git_revparse_single(fromObj.getPtr(), repo, fromRef.c_str()) == 0;
+
+  if (!fromResolved) {
+    if (git_commit_parentcount(headPeeled.cast<git_commit*>()) != 0) {
+      throw RepositoryException(
+          fmt::format("Failed to resolve revision '{}' in {}",
+                      fromRef, gitWorkdir));
+    }
+    SafeGit2ObjPtr<git_tree, git_tree_free> headTree;
+    if (git_commit_tree(headTree.getPtr(),
+                        headPeeled.cast<git_commit*>()) != 0) {
+      throw RepositoryException(
+          fmt::format("Failed to get tree for HEAD in {}", gitWorkdir));
+    }
+    SafeGit2ObjPtr<git_diff, git_diff_free> diff;
+    if (git_diff_tree_to_tree(
+            diff.getPtr(), repo, nullptr,
+            static_cast<git_tree*>(headTree), opts) != 0) {
+      throw RepositoryException(
+          fmt::format("Failed to diff trees for '{}' in {}",
+                      fromRef, gitWorkdir));
+    }
+    collectAddedLines(static_cast<git_diff*>(diff), d);
+    return;
+  }
+
+  SafeGit2ObjPtr<git_object, git_object_free> fromPeeled;
+  if (git_object_peel(fromPeeled.getPtr(),
+                      static_cast<git_object*>(fromObj),
+                      GIT_OBJECT_COMMIT) != 0) {
+    throw RepositoryException(
+        fmt::format("Revision '{}' does not point to a commit in {}",
+                    fromRef, gitWorkdir));
   }
 
   // Compute merge-base
@@ -447,12 +470,34 @@ void GitRepository::validateRevision(const std::string& rev) const {
   }
 
   SafeGit2ObjPtr<git_object, git_object_free> obj;
-  if (git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo), rev.c_str()) != 0) {
-    throw InvalidArgumentException(
-        fmt::format("--from: revision '{}' cannot be resolved. "
-                    "Verify the revision exists in the repository.",
-                    rev));
+  if (git_revparse_single(obj.getPtr(), static_cast<git_repository*>(repo), rev.c_str()) == 0) {
+    return;  // Revision resolves — valid.
   }
+
+  // Revision failed to resolve.  Allow it only if HEAD is a root commit
+  // (no parents), since refs like HEAD^ or HEAD~1 are unresolvable in
+  // that case but are handled at diff time via empty-tree fallback.
+  const auto unresolvedMsg = fmt::format(
+      "--from: revision '{}' cannot be resolved. "
+      "Verify the revision exists in the repository.", rev);
+
+  SafeGit2ObjPtr<git_object, git_object_free> headObj;
+  if (git_revparse_single(headObj.getPtr(), static_cast<git_repository*>(repo), "HEAD") != 0) {
+    throw InvalidArgumentException(unresolvedMsg);
+  }
+
+  SafeGit2ObjPtr<git_object, git_object_free> headPeeled;
+  if (git_object_peel(headPeeled.getPtr(),
+                      static_cast<git_object*>(headObj),
+                      GIT_OBJECT_COMMIT) != 0) {
+    throw InvalidArgumentException(unresolvedMsg);
+  }
+
+  if (git_commit_parentcount(headPeeled.cast<git_commit*>()) == 0) {
+    return;  // Root commit — parent refs are expected to fail; allow.
+  }
+
+  throw InvalidArgumentException(unresolvedMsg);
 }
 
 SourceLines GitRepository::getSourceLines(const std::optional<std::string>& from,

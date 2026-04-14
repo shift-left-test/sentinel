@@ -473,9 +473,109 @@ TEST_F(GitRepositoryTest, testValidateRevisionFailsForInvalidRef) {
   mRepo->addFile("temp.cpp", "int main() {}\n");
   mRepo->stageFile({"temp.cpp"});
   mRepo->commit("init");
+  mRepo->addCode("temp.cpp", "int a = 1;\n", 2, 1);
+  mRepo->stageFile({"temp.cpp"});
+  mRepo->commit("second");
 
   GitRepository gitRepo(mRepoName);
   EXPECT_THROW(gitRepo.validateRevision("nonexistent_branch_xyz"), InvalidArgumentException);
+}
+
+TEST_F(GitRepositoryTest, testGetSourceLinesFromParentOnRootCommit) {
+  GitRepository gitRepo(mRepoName);
+  std::string content = "int main() {\n}\n";
+  std::vector<std::string> stageFiles{"temp.cpp"};
+  std::string stageFilename = mRepoName / "temp.cpp";
+
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
+
+  // HEAD^ on root commit: should treat all lines as added (diff vs empty tree)
+  SourceLines sourceLines = gitRepo.getSourceLines(std::string("HEAD^"), false);
+  EXPECT_EQ(sourceLines.size(), 2);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(stageFilename, 1)), 1);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(stageFilename, 2)), 1);
+}
+
+TEST_F(GitRepositoryTest, testValidateRevisionAllowsParentOfRootCommit) {
+  mRepo->addFile("temp.cpp", "int main() {}\n");
+  mRepo->stageFile({"temp.cpp"});
+  mRepo->commit("init");
+
+  GitRepository gitRepo(mRepoName);
+  // HEAD^ cannot be resolved on a root commit, but should not throw
+  EXPECT_NO_THROW(gitRepo.validateRevision("HEAD^"));
+  EXPECT_NO_THROW(gitRepo.validateRevision("HEAD~1"));
+}
+
+TEST_F(GitRepositoryTest, testGetSourceLinesFromParentOnRootCommitWithUncommitted) {
+  GitRepository gitRepo(mRepoName);
+  std::string content = "int main() {\n}\n";
+  std::vector<std::string> stageFiles{"temp.cpp"};
+  std::string stageFilename = mRepoName / "temp.cpp";
+
+  mRepo->addFile(stageFiles[0], content);
+  mRepo->stageFile(stageFiles);
+  mRepo->commit("init");
+
+  // Add untracked file as uncommitted change
+  mRepo->addFile("extra.cpp", "int extra() {\n}\n");
+  std::string extraFilename = mRepoName / "extra.cpp";
+
+  // HEAD^ + uncommitted on root commit: all committed + uncommitted lines
+  SourceLines sourceLines = gitRepo.getSourceLines(std::string("HEAD^"), true);
+  // temp.cpp: 2 lines (from empty tree diff), extra.cpp: 2 lines (uncommitted)
+  EXPECT_EQ(sourceLines.size(), 4);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(stageFilename, 1)), 1);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(stageFilename, 2)), 1);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(extraFilename, 1)), 1);
+  EXPECT_EQ(std::count(sourceLines.begin(), sourceLines.end(),
+                       SourceLine(extraFilename, 2)), 1);
+}
+
+TEST_F(GitRepositoryTest, testGetSourceLinesFromParentOnMixedRootAndNonRootRepos) {
+  fs::path multiRoot = testTempDir("SENTINEL_MULTIREPO_ROOT");
+  fs::remove_all(multiRoot);
+  fs::create_directories(multiRoot);
+
+  // Repo A: root commit only (1 commit)
+  fs::path compA = multiRoot / "comp_a";
+  auto repoA = std::make_shared<GitHarness>(compA);
+  repoA->addFile("a.cpp", "int funcA() {\n    return 1;\n}\n");
+  repoA->stageFile({"a.cpp"});
+  repoA->commit("init A");
+
+  // Repo B: two commits
+  fs::path compB = multiRoot / "comp_b";
+  auto repoB = std::make_shared<GitHarness>(compB);
+  repoB->addFile("b.cpp", "int funcB() {\n    return 2;\n}\n");
+  repoB->stageFile({"b.cpp"});
+  repoB->commit("init B");
+  repoB->addCode("b.cpp", "int extra = 99;\n", 3, 1);
+  repoB->stageFile({"b.cpp"});
+  repoB->commit("add extra");
+
+  GitRepository gitRepo(multiRoot);
+  SourceLines sourceLines = gitRepo.getSourceLines(std::string("HEAD~1"), false);
+
+  // Repo A (root): empty tree -> HEAD = 3 lines (all added)
+  // Repo B (2 commits): HEAD~1 -> HEAD = 1 line (the inserted line 3)
+  EXPECT_EQ(sourceLines.size(), 4u);
+
+  fs::path fileA = fs::canonical(compA / "a.cpp");
+  fs::path fileB = fs::canonical(compB / "b.cpp");
+  EXPECT_EQ(std::count_if(sourceLines.begin(), sourceLines.end(),
+      [&](const SourceLine& sl) { return sl.getPath() == fileA; }), 3);
+  EXPECT_EQ(std::count_if(sourceLines.begin(), sourceLines.end(),
+      [&](const SourceLine& sl) { return sl.getPath() == fileB; }), 1);
+
+  fs::remove_all(multiRoot);
 }
 
 }  // namespace sentinel
