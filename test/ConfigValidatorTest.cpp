@@ -246,6 +246,18 @@ TEST_F(ConfigValidatorTest, testNegationPatternWithoutSlashNoSlashWarning) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
+TEST_F(ConfigValidatorTest, testWarningForNonExistentLcovTracefile) {
+  mConfig.lcovTracefiles = {mBase / "nonexistent.info"};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testNoWarningForExistingLcovTracefile) {
+  fs::path covFile = mBase / "coverage.info";
+  { std::ofstream ofs(covFile); }
+  mConfig.lcovTracefiles = {covFile};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
 TEST_F(ConfigValidatorTest, testThrowsWhenSourceDirDoesNotExist) {
   mConfig.sourceDir = mBase / "nonexistent";
   EXPECT_THROW_MESSAGE(

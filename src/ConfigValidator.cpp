@@ -131,6 +131,12 @@ void ConfigValidator::checkWarnings(const Config& config) {
     }
   }
 
+  for (const auto& f : config.lcovTracefiles) {
+    if (!fs::exists(f)) {
+      warnings.push_back(fmt::format("--lcov-tracefile: '{}' does not exist.", f.string()));
+    }
+  }
+
   for (const auto& w : warnings) {
     Logger::warn("{}", w);
   }
