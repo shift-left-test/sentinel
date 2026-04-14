@@ -64,6 +64,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
       if (mergeCfg.verbose) {
         sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
       }
+      sentinel::Logger::info("Merging partitions into '{}'...", workDirPath);
       sentinel::PartitionedWorkspaceMerger merger(
           workDirPath, mergeCfg.mergeWorkspaces, mergeCfg.force);
       merger.merge();
@@ -126,6 +127,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   // 8. Initialize workspace for fresh runs
   if (!alreadyComplete && !resuming) {
+    sentinel::Logger::info("Initializing workspace '{}'...", workDirPath);
     ws->initialize();
     sentinel::WorkspaceStatus versionStatus;
     versionStatus.version = PROGRAM_VERSION;
