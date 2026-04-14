@@ -65,6 +65,14 @@ TEST_F(IoTest, testEnsureDirectoryExistsThrowsWhenPathIsAFile) {
   EXPECT_THROW(io::ensureDirectoryExists(filePath), InvalidArgumentException);
 }
 
+TEST_F(IoTest, testEnsureDirectoryExistsThrowsOnPermissionDenied) {
+  fs::create_directories(mTestDir);
+  fs::permissions(mTestDir, fs::perms::none);
+  auto nested = mTestDir / "sub";
+  EXPECT_THROW(io::ensureDirectoryExists(nested), InvalidArgumentException);
+  fs::permissions(mTestDir, fs::perms::all);
+}
+
 TEST_F(IoTest, testSyncFilesCopiesXmlOnly) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";

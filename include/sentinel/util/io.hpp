@@ -29,15 +29,14 @@ inline bool isXmlFile(const std::filesystem::path& p) {
  * @brief Ensure the given path is a directory, creating it if it does not exist.
  *
  * @param dirPath path to ensure as a directory
- * @throw InvalidArgumentException if the path exists but is not a directory
+ * @throw InvalidArgumentException if directory creation fails
  */
 inline void ensureDirectoryExists(const std::filesystem::path& dirPath) {
-  try {
-    if (!std::filesystem::create_directories(dirPath) && !std::filesystem::is_directory(dirPath)) {
-      throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath));
-    }
-  } catch (const std::filesystem::filesystem_error&) {
-    throw InvalidArgumentException(fmt::format("'{}' is not a directory", dirPath));
+  std::error_code ec;
+  std::filesystem::create_directories(dirPath, ec);
+  if (ec) {
+    throw InvalidArgumentException(fmt::format(
+        "Failed to create directory '{}': {}", dirPath, ec.message()));
   }
 }
 
