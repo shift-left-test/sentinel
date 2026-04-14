@@ -363,12 +363,7 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
                              const std::vector<std::string>& patterns) {
   git_libgit2_init();
 
-  try {
-    mSourceRoot = fs::canonical(path);
-  } catch (const fs::filesystem_error& e) {
-    throw InvalidArgumentException(
-        fmt::format("--source-dir: '{}' does not exist or is not accessible.", path.string()));
-  }
+  mSourceRoot = fs::canonical(path);
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),
                    [](auto extension) -> std::string {

@@ -5,15 +5,19 @@
 
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
+#include <fstream>
 #include <string>
 #include <vector>
 #include "sentinel/Config.hpp"
 #include "sentinel/ConfigValidator.hpp"
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "helper/TestTempDir.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 
 namespace sentinel {
 namespace fs = std::filesystem;
+
+using ::testing::HasSubstr;
 
 class ConfigValidatorTest : public ::testing::Test {
  protected:
@@ -240,6 +244,36 @@ TEST_F(ConfigValidatorTest, testRelativePatternIsValid) {
 TEST_F(ConfigValidatorTest, testNegationPatternWithoutSlashNoSlashWarning) {
   mConfig.patterns = {"!src/**/*.cpp"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
+TEST_F(ConfigValidatorTest, testThrowsWhenSourceDirDoesNotExist) {
+  mConfig.sourceDir = mBase / "nonexistent";
+  EXPECT_THROW_MESSAGE(
+      ConfigValidator::validate(mConfig),
+      InvalidArgumentException,
+      HasSubstr("--source-dir"));
+}
+
+TEST_F(ConfigValidatorTest, testThrowsWhenSourceDirIsNotADirectory) {
+  fs::path filePath = mBase / "regular-file";
+  { std::ofstream ofs(filePath); }
+  mConfig.sourceDir = filePath;
+  EXPECT_THROW_MESSAGE(
+      ConfigValidator::validate(mConfig),
+      InvalidArgumentException,
+      HasSubstr("--source-dir"));
+}
+
+TEST_F(ConfigValidatorTest, testThrowsWhenSourceDirIsNotReadable) {
+  fs::path noReadDir = mBase / "noperm";
+  fs::create_directory(noReadDir);
+  fs::permissions(noReadDir, fs::perms::none);
+  mConfig.sourceDir = noReadDir;
+  EXPECT_THROW_MESSAGE(
+      ConfigValidator::validate(mConfig),
+      InvalidArgumentException,
+      HasSubstr("--source-dir"));
+  fs::permissions(noReadDir, fs::perms::all);
 }
 
 }  // namespace sentinel

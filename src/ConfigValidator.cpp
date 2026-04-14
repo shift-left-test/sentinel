@@ -36,6 +36,14 @@ void ConfigValidator::validate(const Config& config) {
     throw InvalidArgumentException("Option --test-result-dir is required.");
   }
 
+  // Catches nonexistent path, non-directory, and permission errors in one call.
+  std::error_code ec;
+  fs::directory_iterator(config.sourceDir, ec);
+  if (ec) {
+    throw InvalidArgumentException(
+        fmt::format("--source-dir: '{}': {}", config.sourceDir.string(), ec.message()));
+  }
+
   if (config.threshold && (*config.threshold < 0.0 || *config.threshold > 100.0)) {
     throw InvalidArgumentException(
         fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].", *config.threshold));
