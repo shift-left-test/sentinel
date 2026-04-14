@@ -114,11 +114,12 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   if (cfg.verbose) {
     sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
   }
+
+  sentinel::ConfigValidator::validate(cfg);
+
   if ((cfg.dryRun || cfg.clean) && ws->hasPreviousRun()) {
     sentinel::Logger::warn("Workspace '{}' exists and will be cleared.", workDirPath);
   }
-
-  sentinel::ConfigValidator::validate(cfg);
 
   // 7. Create StatusLine
   auto statusLine = std::make_shared<sentinel::StatusLine>();
