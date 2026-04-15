@@ -5,14 +5,10 @@
 
 #include <fcntl.h>
 #include <fmt/core.h>
-#include <poll.h>
-#include <termios.h>
 #include <unistd.h>
 #include <algorithm>
 #include <cerrno>
 #include <csignal>
-#include <cstdio>
-#include <cstring>
 #include <string>
 #include <utility>
 #include <ftxui/dom/elements.hpp>
@@ -31,9 +27,6 @@ namespace {
 constexpr int kSpinnerCharset = 15;
 constexpr int kGaugeWidth = 20;
 constexpr int kPhaseLabelWidth = 10;
-constexpr int kDsrBufSize = 32;
-constexpr int kDsrPollTimeoutMs = 50;
-constexpr int kDrainPollTimeoutMs = 30;
 
 StatusLine* sActiveInstance = nullptr;
 struct sigaction sPrevTstp {};
@@ -83,7 +76,7 @@ void StatusLine::refreshTermSize() {
 }
 
 void StatusLine::openTty() {
-  mTtyFd = open("/dev/tty", O_RDWR | O_NOCTTY);
+  mTtyFd = open("/dev/tty", O_RDWR | O_NOCTTY | O_CLOEXEC);
 }
 
 void StatusLine::closeTty() {
@@ -227,86 +220,11 @@ void StatusLine::setScrollRegion() {
   // stays within the scroll region. Saving and restoring around DECSTBM then keeps
   // subsequent output flowing naturally from where it was — matching --no-status-line UX.
   writeTty(fmt::format("\n\033[1A\0337\033[1;{}r\0338", mTermRows - 1));
-  clampCursorToScrollRegion();
 }
 
 void StatusLine::clearScrollRegion() {
   // Reset scroll region to the full terminal (DECSTBM with no args)
   writeTty("\033[r");
-}
-
-int StatusLine::queryCursorRow() const {
-  if (mTtyFd < 0) {
-    return -1;
-  }
-
-  termios saved{};
-  if (tcgetattr(mTtyFd, &saved) < 0) {
-    return -1;
-  }
-
-  termios raw = saved;
-  raw.c_lflag &= ~(ICANON | ECHO);
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 0;
-  if (tcsetattr(mTtyFd, TCSANOW, &raw) < 0) {
-    tcsetattr(mTtyFd, TCSANOW, &saved);
-    return -1;
-  }
-
-  static constexpr char kDsr[] = "\033[6n";
-  if (write(mTtyFd, kDsr, sizeof(kDsr) - 1) < 0) {
-    tcsetattr(mTtyFd, TCSANOW, &saved);
-    return -1;
-  }
-
-  // DSR response format: ESC [ row ; col R
-  char buf[kDsrBufSize];
-  int len = 0;
-  struct pollfd pfd = {mTtyFd, POLLIN, 0};
-  if (poll(&pfd, 1, kDsrPollTimeoutMs) > 0) {
-    while (len < static_cast<int>(sizeof(buf)) - 1) {
-      char c;
-      if (read(mTtyFd, &c, 1) != 1) {
-        break;
-      }
-      buf[len++] = c;
-      if (c == 'R') {
-        break;
-      }
-    }
-  }
-  buf[len] = '\0';
-
-  // Drain any late-arriving terminal response while ECHO is still off,
-  // preventing stray characters (e.g. CPR response) from being echoed.
-  if (poll(&pfd, 1, kDrainPollTimeoutMs) > 0) {
-    char discard;
-    while (read(mTtyFd, &discard, 1) == 1) {}
-  }
-
-  tcsetattr(mTtyFd, TCSANOW, &saved);
-
-  int row = -1;
-  const char* esc = std::strchr(buf, '\033');
-  if (esc != nullptr && std::sscanf(esc, "\033[%d;%*dR", &row) == 1) {
-    return row;
-  }
-  return -1;
-}
-
-void StatusLine::clampCursorToScrollRegion() {
-  if (!mEnabled || !mDsrSupported) {
-    return;
-  }
-  int row = queryCursorRow();
-  if (row < 0) {
-    mDsrSupported = false;
-    return;
-  }
-  if (row >= mTermRows) {
-    writeTty(fmt::format("\033[{}d", mTermRows - 1));
-  }
 }
 
 void StatusLine::handleResize() {

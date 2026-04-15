@@ -150,4 +150,15 @@ TEST_F(SubprocessTest, testExecuteNonSilentWithLogFile) {
   EXPECT_TRUE(fs::exists(logPath));
 }
 
+TEST_F(SubprocessTest, testChildHasNoControllingTerminal) {
+  // Verify child cannot open /dev/tty after setsid().
+  auto logPath = mBase / "tty.log";
+  Subprocess sp("sh -c '(: >/dev/tty) 2>/dev/null && echo HAS_TTY || echo NO_TTY'",
+                0, logPath, true);
+  sp.execute();
+  EXPECT_TRUE(sp.isSuccessfulExit());
+  std::string content = testutil::readFile(logPath);
+  EXPECT_NE(content.find("NO_TTY"), std::string::npos);
+}
+
 }  // namespace sentinel

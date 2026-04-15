@@ -73,10 +73,9 @@ int Subprocess::execute() {
     dup2(pfd[1], STDERR_FILENO);
     close(pfd[1]);
 
-    // When timeout occurs during test cmd, Sentinel send SIGTERM
-    // to child process' group members. For that, child process must be
-    // process group leader.
-    ::setpgid(0, 0);
+    // Detach from the controlling terminal so child processes cannot
+    // send ANSI queries whose responses leak onto the parent's display.
+    ::setsid();
 
     // New process inherits SIG_IGN, so we need to restore signal handler.
     signal::setMultipleSignalHandlers(usingSignals, SIG_DFL);

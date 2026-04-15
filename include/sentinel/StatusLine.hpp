@@ -123,8 +123,6 @@ class StatusLine {
   void refreshTermSize();
   void setScrollRegion();
   void clearScrollRegion();
-  int queryCursorRow() const;
-  void clampCursorToScrollRegion();
   void redraw();
   ftxui::Element buildElement() const;
   ftxui::Element buildSummaryElement() const;
@@ -142,7 +140,6 @@ class StatusLine {
 
   bool mEnabled = false;
   bool mDryRun = false;
-  bool mDsrSupported = true;
   volatile sig_atomic_t mResized = 0;
   int mTtyFd = -1;
   static constexpr int kDefaultTermRows = 24;
