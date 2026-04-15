@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <sstream>
 #include <string>
 #include "helper/SentinelReportTestBase.hpp"
 #include "sentinel/MutationResult.hpp"
@@ -360,6 +361,66 @@ TEST_F(ReportTest, testPrintReportWithPartialTimingShowsDurationCount) {
   std::string out = testing::internal::GetCapturedStdout();
 
   EXPECT_TRUE(string::contains(out, "Duration (1/2 mutants):"));
+}
+
+TEST_F(ReportTest, testPrintReportWithLargeCountAlignsDurationAndStateRows) {
+  auto MUT_RESULT_DIR = BASE / "MUT_RESULT_DIR_LARGE_COUNT";
+  fs::create_directories(MUT_RESULT_DIR);
+
+  MutationResults MRs;
+
+  Mutant M1("AOR", REL_PATH1, "func", 2, 12, 2, 13, "+");
+  MRs.emplace_back(M1, "testA", "", MutationState::SURVIVED);
+  MRs.back().setBuildSecs(1.5);
+  MRs.back().setTestSecs(2.0);
+
+  Mutant M2("AOR", REL_PATH2, "func", 3, 12, 3, 13, "-");
+  MRs.emplace_back(M2, "", "", MutationState::SURVIVED);
+  // No timing set — makes this a partial-timing scenario
+
+  auto MRPath = MUT_RESULT_DIR / "MutationResult";
+  MRs.save(MRPath);
+
+  MutationSummary summary(MRPath, SOURCE_DIR);
+
+  // Inflate counts to simulate 5-digit mutant numbers (e.g., 3385/10376)
+  summary.timedMutantCount = 3385;
+  summary.totNumberOfMutation = 10376;
+
+  ReportForTest report(summary);
+  testing::internal::CaptureStdout();
+  report.printSummary();
+  std::string out = testing::internal::GetCapturedStdout();
+
+  // Find the Duration header line and the first state row beneath it.
+  std::string durationLine;
+  std::string stateLine;
+  std::istringstream stream(out);
+  std::string line;
+  while (std::getline(stream, line)) {
+    if (durationLine.empty()) {
+      if (line.find("Duration (") != std::string::npos) {
+        durationLine = line;
+      }
+    } else if (string::startsWith(line, "    ") &&
+               line.find('%') != std::string::npos) {
+      stateLine = line;
+      break;
+    }
+  }
+
+  ASSERT_FALSE(durationLine.empty()) << "Duration header line not found in output";
+  ASSERT_FALSE(stateLine.empty()) << "Survived state row not found in output";
+
+  // The '%' character must appear at the same column in both lines
+  std::size_t durationPctPos = durationLine.find('%');
+  std::size_t statePctPos = stateLine.find('%');
+  ASSERT_NE(durationPctPos, std::string::npos) << "No '%' in duration line: " << durationLine;
+  ASSERT_NE(statePctPos, std::string::npos) << "No '%' in state line: " << stateLine;
+  EXPECT_EQ(durationPctPos, statePctPos)
+      << "Duration header and state row '%' are misaligned\n"
+      << "  Duration line: " << durationLine << "\n"
+      << "  State line:    " << stateLine;
 }
 
 TEST_F(ReportTest, testPrintReportWithDurationAndSkipped) {

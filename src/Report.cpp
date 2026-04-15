@@ -116,17 +116,18 @@ void Report::printSummary() const {
                                mSummary.totNumberOfRuntimeError + mSummary.totNumberOfTimeout;
     double totalTimeSecs = mSummary.totalBuildSecs + mSummary.totalTestSecs;
 
-    // State rows have a 27-char prefix ("    " + 17-char label + 3-char pct + "%  ").
+    // State rows have a 40-char prefix ("    " + 30-char label + 3-char pct + "%  ").
     // A 10-char time field accommodates values like "10h 30m".
-    static constexpr std::size_t kTimeEndCol = 37;
-    static constexpr std::size_t kStatePrefixLen = 27;  // 4 + 17 + 3 + 3
+    static constexpr std::size_t kTimeEndCol = 50;
+    static constexpr std::size_t kStatePrefixLen = 40;  // 4 + 30 + 3 + 3
     static constexpr std::size_t kStateTimeWidth = kTimeEndCol - kStatePrefixLen;
 
-    // Header line — align "100%" with per-state "XX%" column
+    // Header line — align "100%" with per-state "XX%" column.
+    // Max prefix "  Duration (99999/99999 mutants):" is 34 chars; kPctCol = 34.
     std::string prefix = (mSummary.timedMutantCount < totalMutants)
         ? fmt::format("  Duration ({}/{} mutants):", mSummary.timedMutantCount, totalMutants)
         : std::string("  Duration:");
-    static constexpr std::size_t kPctCol = 21;  // column where pct digits start (4 + 17)
+    static constexpr std::size_t kPctCol = 34;  // column where pct digits start (4 + 30)
     std::size_t padLen = prefix.size() < kPctCol ? kPctCol - prefix.size() : 1;
     Console::out("{}{}100%  {:>{}s}  [{}/{}]",
                  prefix, std::string(padLen, ' '),
@@ -151,7 +152,7 @@ void Report::printSummary() const {
     for (const auto& [state, timing] : timedStates) {
       double stateTotal = timing.buildSecs + timing.testSecs;
       double pct = std::round((stateTotal / totalTimeSecs) * 100.0);
-      Console::out("    {:<17s}{:>3.0f}%  {:>{}s}  [{}/{}]",
+      Console::out("    {:<30s}{:>3.0f}%  {:>{}s}  [{}/{}]",
                    stateToLabel(state), pct,
                    Timestamper::format(stateTotal), kStateTimeWidth,
                    Timestamper::format(timing.buildSecs),
