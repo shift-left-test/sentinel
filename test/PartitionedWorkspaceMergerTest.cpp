@@ -627,4 +627,41 @@ TEST_F(PartitionedWorkspaceMergerTest,
   }
 }
 
+TEST_F(PartitionedWorkspaceMergerTest,
+       testLogsPerSourceProgressDuringMerge) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 3);
+  fs::path src2 = createPartitionWorkspace(2, 3);
+  fs::path src3 = createPartitionWorkspace(3, 3);
+  addMutant(src1, 1, MutationState::KILLED);
+  addMutant(src2, 2, MutationState::SURVIVED);
+  addMutant(src3, 3, MutationState::KILLED);
+
+  testing::internal::CaptureStderr();
+  PartitionedWorkspaceMerger merger(target, {src1, src2, src3}, false);
+  merger.merge();
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_NE(output.find("[1/3]"), std::string::npos);
+  EXPECT_NE(output.find("[2/3]"), std::string::npos);
+  EXPECT_NE(output.find("[3/3]"), std::string::npos);
+  EXPECT_NE(output.find("partition 1"), std::string::npos);
+  EXPECT_NE(output.find("partition 2"), std::string::npos);
+  EXPECT_NE(output.find("partition 3"), std::string::npos);
+}
+
+TEST_F(PartitionedWorkspaceMergerTest,
+       testNoProgressLogForSingleSource) {
+  fs::path target = mBase / "merged";
+  fs::path src1 = createPartitionWorkspace(1, 2);
+  addMutant(src1, 1, MutationState::KILLED);
+
+  testing::internal::CaptureStderr();
+  PartitionedWorkspaceMerger merger(target, {src1}, false);
+  merger.merge();
+  std::string output = testing::internal::GetCapturedStderr();
+
+  EXPECT_EQ(output.find("[1/1]"), std::string::npos);
+}
+
 }  // namespace sentinel

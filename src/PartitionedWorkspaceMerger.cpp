@@ -44,7 +44,16 @@ void PartitionedWorkspaceMerger::merge() {
   prepareTargetWorkspace();
 
   bool baselineCopied = fs::exists(mTargetDir / "config.yaml");
+  const bool showProgress = mSourceDirs.size() > 1;
+  std::size_t current = 0;
   for (const auto& source : mSourceDirs) {
+    ++current;
+    if (showProgress) {
+      const auto& status = mStatusCache.at(source);
+      Logger::info("Merging [{}/{}] partition {} from '{}'...",
+                   current, mSourceDirs.size(),
+                   *status.partIndex, source.string());
+    }
     if (!baselineCopied) {
       copyBaseline(source);
       baselineCopied = true;
