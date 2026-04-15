@@ -132,7 +132,6 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
       loadConfigWithoutExcludedFields(mSourceDirs[0]);
 
   std::set<std::size_t> seenIndices;
-  seenIndices.insert(*firstStatus.partIndex);
 
   // Check against already-merged partitions in target workspace
   if (fs::exists(mTargetDir / "status.yaml")) {
@@ -177,6 +176,12 @@ void PartitionedWorkspaceMerger::validateCompatibility() const {
                       mSourceDirs[0].string(),
                       *firstStatus.version));
     }
+  }
+
+  if (!seenIndices.insert(*firstStatus.partIndex).second) {
+    throw std::runtime_error(
+        fmt::format("Duplicate part-index {} from '{}'.",
+                    *firstStatus.partIndex, mSourceDirs[0].string()));
   }
 
   for (std::size_t i = 1; i < mSourceDirs.size(); ++i) {

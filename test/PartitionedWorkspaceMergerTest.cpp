@@ -272,6 +272,7 @@ TEST_F(PartitionedWorkspaceMergerTest,
   {
     Workspace ws(src2dir);
     WorkspaceStatus s;
+    s.version = PROGRAM_VERSION;
     s.partIndex = 2;
     s.partCount = 4;
     s.candidateCount = 100;
