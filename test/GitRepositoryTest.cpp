@@ -578,4 +578,15 @@ TEST_F(GitRepositoryTest, testGetSourceLinesFromParentOnMixedRootAndNonRootRepos
   fs::remove_all(multiRoot);
 }
 
+TEST_F(GitRepositoryTest, testGetSourceTreeReturnsCachedInstance) {
+  mRepo->addFile("main.cpp", "int main() {}\n");
+  mRepo->stageFile({"main.cpp"});
+  mRepo->commit("init");
+
+  GitRepository gitRepo(mRepoName);
+  auto tree1 = gitRepo.getSourceTree();
+  auto tree2 = gitRepo.getSourceTree();
+  EXPECT_EQ(tree1.get(), tree2.get());
+}
+
 }  // namespace sentinel

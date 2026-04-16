@@ -607,7 +607,10 @@ SourceLines GitRepository::getSourceLines(const std::optional<std::string>& from
 }
 
 std::shared_ptr<SourceTree> GitRepository::getSourceTree() {
-  return std::make_shared<GitSourceTree>(getSourceRoot());
+  if (!mSourceTree) {
+    mSourceTree = std::make_shared<GitSourceTree>(getSourceRoot());
+  }
+  return mSourceTree;
 }
 
 }  // namespace sentinel

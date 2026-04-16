@@ -96,6 +96,7 @@ class GitRepository : public Repository {
   std::vector<std::string> mPatterns;
   std::vector<std::string> mExcludes;
   std::vector<std::filesystem::path> mSkipDirs;
+  std::shared_ptr<SourceTree> mSourceTree;
 };
 
 }  // namespace sentinel

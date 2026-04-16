@@ -20,7 +20,7 @@ class CoverageInfoTest : public SampleFileGeneratorForTest {};
 
 TEST_F(CoverageInfoTest, testCoverWorks) {
   std::string filename = SAMPLECOVERAGE_PATH.string();
-  std::string targetfile = SAMPLE1_PATH.string();
+  std::string targetfile = fs::canonical(SAMPLE1_PATH).string();
   CoverageInfo c{std::vector<std::string>(1, filename)};
   EXPECT_FALSE(c.cover("unknown_file", 123));  // nonexist file
   EXPECT_FALSE(c.cover(targetfile, 39));  // uncovered line
@@ -39,13 +39,13 @@ TEST_F(CoverageInfoTest, testMultipleCoverageFilesMergeUnion) {
   fs::create_directories(dir);
 
   // Create a second source file for the second coverage file
-  auto srcFile1 = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile1 = fs::canonical(SAMPLE1_PATH).string();
   auto srcFile2Path = SAMPLE1_DIR / "other.cpp";
   {
     std::ofstream f(srcFile2Path);
     f << "int other() { return 0; }\n";
   }
-  auto srcFile2 = fs::absolute(srcFile2Path).string();
+  auto srcFile2 = fs::canonical(srcFile2Path).string();
 
   auto covA = dir / "a.info";
   auto covB = dir / "b.info";
@@ -77,7 +77,7 @@ TEST_F(CoverageInfoTest, testDaCountZeroIsNotCovered) {
   fs::create_directories(dir);
 
   auto covFile = dir / "zero.info";
-  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
 
   {
     std::ofstream f(covFile);
@@ -108,8 +108,8 @@ TEST_F(CoverageInfoTest, testEmptyCoverageFileProducesNoCoverage) {
   { std::ofstream f(covFile); }  // empty file
 
   CoverageInfo c({covFile.string()});
-  EXPECT_FALSE(c.cover(SAMPLE1_PATH.string(), 33));
-  EXPECT_FALSE(c.cover(SAMPLE1_PATH.string(), 35));
+  EXPECT_FALSE(c.cover(fs::canonical(SAMPLE1_PATH).string(), 33));
+  EXPECT_FALSE(c.cover(fs::canonical(SAMPLE1_PATH).string(), 35));
 }
 
 TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
@@ -117,7 +117,7 @@ TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
   fs::create_directories(dir);
 
   auto covFile = dir / "bad.info";
-  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
 
   {
     std::ofstream f(covFile);
@@ -134,7 +134,7 @@ TEST_F(CoverageInfoTest, testSfWithoutDaProducesNoCoverage) {
   fs::create_directories(dir);
 
   auto covFile = dir / "sf_only.info";
-  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
 
   {
     std::ofstream f(covFile);
@@ -152,7 +152,7 @@ TEST_F(CoverageInfoTest, testNonSfNonDaLinesAreIgnored) {
   fs::create_directories(dir);
 
   auto covFile = dir / "extra.info";
-  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
 
   {
     std::ofstream f(covFile);
@@ -175,7 +175,7 @@ TEST_F(CoverageInfoTest, testMultipleSfEntriesSameFile) {
   fs::create_directories(dir);
 
   auto covFile = dir / "dup.info";
-  auto srcFile = fs::absolute(SAMPLE1_PATH).string();
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
 
   {
     std::ofstream f(covFile);
@@ -188,9 +188,27 @@ TEST_F(CoverageInfoTest, testMultipleSfEntriesSameFile) {
   }
 
   CoverageInfo c({covFile.string()});
-  // Second SF: entry overwrites the first one
-  EXPECT_FALSE(c.cover(srcFile, 33));
+  // Duplicate SF entries are merged
+  EXPECT_TRUE(c.cover(srcFile, 33));
   EXPECT_TRUE(c.cover(srcFile, 35));
+}
+
+TEST_F(CoverageInfoTest, testCoverMatchesCanonicalPath) {
+  auto dir = SAMPLE_BASE / "canonical_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "cov.info";
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:" << srcFile << "\n"
+      << "DA:33,1\n"
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
 }
 
 }  // namespace sentinel

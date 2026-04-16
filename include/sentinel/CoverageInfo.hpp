@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "sentinel/SourceLine.hpp"
 
@@ -36,7 +37,7 @@ class CoverageInfo {
   /**
    * @brief Check if a code line is covered by test cases
    *
-   * @param filename source code filename
+   * @param filename canonical absolute path of the source file
    * @param line number
    * @return True if line is covered by test cases
    */
@@ -44,9 +45,9 @@ class CoverageInfo {
 
  private:
   /**
-   * @brief map from file name to list of covered lines
+   * @brief map from file name to set of covered lines
    */
-  std::map<std::string, std::vector<std::size_t>> mData;
+  std::map<std::string, std::unordered_set<std::size_t>> mData;
 };
 
 }  // namespace sentinel

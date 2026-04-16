@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <algorithm>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <string>
@@ -30,8 +29,7 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
     while (std::getline(coverageFile, line)) {
       if (string::startsWith(line, "SF")) {
         std::vector<std::string> v = string::split(line, ':');
-        fs::path p = fs::absolute(fs::path(v[1]));
-        mData[p.string()] = std::vector<size_t>();
+        fs::path p = fs::canonical(fs::path(v[1]));
         currentFile = p.string();
       }
 
@@ -39,7 +37,7 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
         std::vector<std::string> v1 = string::split(line, ':');
         std::vector<std::string> v2 = string::split(v1[1], ',');
         if (v2[1] != "0") {
-          mData[currentFile].push_back(string::to<size_t>(v2[0]));
+          mData[currentFile].insert(string::to<size_t>(v2[0]));
         }
       }
     }
@@ -47,11 +45,11 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
 }
 
 bool CoverageInfo::cover(const std::string& filename, size_t line) const {
-  auto it = mData.find(fs::absolute(fs::path(filename)).string());
+  auto it = mData.find(filename);
   if (it == mData.end()) {
     return false;
   }
-  return std::find(it->second.begin(), it->second.end(), line) != it->second.end();
+  return it->second.count(line) != 0;
 }
 
 }  // namespace sentinel
