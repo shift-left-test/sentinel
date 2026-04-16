@@ -131,19 +131,17 @@ bool WeightedMutantGenerator::DepthAwareASTVisitor::VisitStmt(clang::Stmt* s) {
   std::size_t endLineNum = 0;
   resolveExpansionLineRange(s, &mSrcMgr, mContext->getLangOpts(),
                             &startLineNum, &endLineNum);
-  bool containTargetLine =
-      std::any_of(mTargetLines.begin(), mTargetLines.end(),
-                  [startLineNum, endLineNum, s, this](const SourceLine& line) {
-        std::size_t lineNum = line.getLineNumber();
-        bool ret = lineNum >= startLineNum && lineNum <= endLineNum;
-        if (ret) {
-          int temp = getDepth(s);
-          if ((*mDepthMap)[line] < temp) {
-            (*mDepthMap)[line] = temp;
-          }
-        }
-        return ret;
-      });
+  bool containTargetLine = false;
+  for (const auto& line : mTargetLines) {
+    std::size_t lineNum = line.getLineNumber();
+    if (lineNum >= startLineNum && lineNum <= endLineNum) {
+      containTargetLine = true;
+      int depth = getDepth(s);
+      if ((*mDepthMap)[line] < depth) {
+        (*mDepthMap)[line] = depth;
+      }
+    }
+  }
 
   if (containTargetLine) {
     for (const auto& m : mMutationOperators) {
