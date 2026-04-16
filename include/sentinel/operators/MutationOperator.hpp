@@ -73,7 +73,7 @@ class MutationOperator {
    * @param s target AST node.
    * @return code string representing s
    */
-  std::string convertStmtToString(const clang::Stmt* s);
+  std::string convertStmtToString(const clang::Stmt* s) const;
 
   /**
    * @brief Return the parent AST node of given node.
@@ -81,7 +81,7 @@ class MutationOperator {
    * @param s target AST node
    * @return parent ast node of s
    */
-  const clang::Stmt* getParentStmt(const clang::Stmt* s);
+  const clang::Stmt* getParentStmt(const clang::Stmt* s) const;
 
   /**
    * @brief Return type object of the given AST expression node.
@@ -89,7 +89,7 @@ class MutationOperator {
    * @param e target AST node
    * @return type object of e
    */
-  const clang::Type* getExprType(clang::Expr* e);
+  const clang::Type* getExprType(clang::Expr* e) const;
 
   /**
    * @brief Return True if AST node represents dereference reference expression.
@@ -97,7 +97,7 @@ class MutationOperator {
    * @param s target AST node
    * @return True/False
    */
-  bool isDeclRefExpr(clang::Stmt* s);
+  bool isDeclRefExpr(clang::Stmt* s) const;
 
   /**
    * @brief Return True if AST node represents pointer dereference expression.
@@ -105,7 +105,7 @@ class MutationOperator {
    * @param s target AST node
    * @return True/False
    */
-  bool isPointerDereferenceExpr(clang::Stmt* s);
+  bool isPointerDereferenceExpr(clang::Stmt* s) const;
 
   /**
    * @brief Return the qualified name of the function surrounding this ast node.
@@ -113,7 +113,7 @@ class MutationOperator {
    * @param s target AST node
    * @return function qualified name
    */
-  std::string getContainingFunctionQualifiedName(clang::Stmt* s);
+  std::string getContainingFunctionQualifiedName(clang::Stmt* s) const;
 
   /**
    * @brief Return True if the given source code range is valid for
@@ -127,7 +127,7 @@ class MutationOperator {
    * @param endLoc end location of source range
    * @return True if range is valid
    */
-  bool isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc);
+  bool isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc) const;
 
  protected:
   /**
@@ -156,7 +156,7 @@ class MutationOperator {
    * @param s target AST node
    * @return True if s is part of a loop condition
    */
-  bool isLoopCondition(const clang::Stmt* s);
+  bool isLoopCondition(const clang::Stmt* s) const;
 
   /**
    * @brief Extract the integer value from an expression if it is an
@@ -167,7 +167,7 @@ class MutationOperator {
    * @param value receives the integer value when the function returns true
    * @return True if e is an integer or boolean literal
    */
-  bool getIntegerLiteralValue(const clang::Expr* e, int64_t* value);
+  bool getIntegerLiteralValue(const clang::Expr* e, int64_t* value) const;
 
   /**
    * @brief name of mutation operator

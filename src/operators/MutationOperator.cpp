@@ -32,7 +32,7 @@ namespace sentinel {
 
 MutationOperator::~MutationOperator() = default;
 
-std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
+std::string MutationOperator::convertStmtToString(const clang::Stmt* s) const {
   clang::SourceLocation walkLoc = s->getBeginLoc();
   clang::SourceLocation endLoc =
       clang::Lexer::getLocForEndOfToken(s->getEndLoc(), 0, mContext->getSourceManager(), mContext->getLangOpts());
@@ -46,7 +46,7 @@ std::string MutationOperator::convertStmtToString(const clang::Stmt* s) {
   return ret;
 }
 
-const clang::Stmt* MutationOperator::getParentStmt(const clang::Stmt* s) {
+const clang::Stmt* MutationOperator::getParentStmt(const clang::Stmt* s) const {
   const auto parent = mContext->getParents(*s);
   if (parent.empty()) {
     return nullptr;
@@ -55,11 +55,11 @@ const clang::Stmt* MutationOperator::getParentStmt(const clang::Stmt* s) {
   return parent[0].get<clang::Stmt>();
 }
 
-const clang::Type* MutationOperator::getExprType(clang::Expr* e) {
+const clang::Type* MutationOperator::getExprType(clang::Expr* e) const {
   return e->getType().getCanonicalType().getTypePtr();
 }
 
-bool MutationOperator::isDeclRefExpr(clang::Stmt* s) {
+bool MutationOperator::isDeclRefExpr(clang::Stmt* s) const {
   if (auto dre = clang::dyn_cast<clang::DeclRefExpr>(s)) {
     auto type = getExprType(dre);
     if (type->isEnumeralType()) {
@@ -71,7 +71,7 @@ bool MutationOperator::isDeclRefExpr(clang::Stmt* s) {
   return false;
 }
 
-bool MutationOperator::isPointerDereferenceExpr(clang::Stmt* s) {
+bool MutationOperator::isPointerDereferenceExpr(clang::Stmt* s) const {
   if (auto uo = clang::dyn_cast<clang::UnaryOperator>(s)) {
     return (uo->getOpcode() == clang::UO_Deref);
   }
@@ -79,7 +79,7 @@ bool MutationOperator::isPointerDereferenceExpr(clang::Stmt* s) {
   return false;
 }
 
-std::string MutationOperator::getContainingFunctionQualifiedName(clang::Stmt* s) {
+std::string MutationOperator::getContainingFunctionQualifiedName(clang::Stmt* s) const {
   const clang::Stmt* stmt = s;
   const clang::Decl* decl = nullptr;
   auto parents = mContext->getParents(*s);
@@ -118,7 +118,7 @@ std::string MutationOperator::getContainingFunctionQualifiedName(clang::Stmt* s)
   return "";
 }
 
-bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc) {
+bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc, clang::SourceLocation* endLoc) const {
   if (startLoc->isInvalid() || endLoc->isInvalid()) {
     return false;
   }
@@ -135,7 +135,7 @@ bool MutationOperator::isValidMutantSourceRange(clang::SourceLocation* startLoc,
   return true;
 }
 
-bool MutationOperator::isLoopCondition(const clang::Stmt* s) {
+bool MutationOperator::isLoopCondition(const clang::Stmt* s) const {
   const clang::Stmt* child = s;
   const clang::Stmt* parent = getParentStmt(s);
 
@@ -161,7 +161,7 @@ bool MutationOperator::isLoopCondition(const clang::Stmt* s) {
   return false;
 }
 
-bool MutationOperator::getIntegerLiteralValue(const clang::Expr* e, int64_t* value) {
+bool MutationOperator::getIntegerLiteralValue(const clang::Expr* e, int64_t* value) const {
   const clang::Expr* stripped = e->IgnoreImpCasts();
 
   if (auto il = clang::dyn_cast<clang::IntegerLiteral>(stripped)) {

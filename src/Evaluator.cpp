@@ -16,7 +16,7 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-Evaluator::Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath) :
+Evaluator::Evaluator(const std::filesystem::path& expectedResultDir) :
     mExpectedResult(expectedResultDir.string()) {
   if (mExpectedResult.checkPassedTCEmpty()) {
     throw InvalidArgumentException(fmt::format("No passed TC in Expected Result({0})", expectedResultDir.string()));

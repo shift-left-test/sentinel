@@ -27,11 +27,10 @@ class Evaluator {
    * @brief Default constructor
    *
    * @param expectedResultDir Directory Path of Expected Result
-   * @param sourcePath Directory Path of Source
    * @throw InvalidArgumentException
    *        when expected result doesn't have passed test case
    */
-  explicit Evaluator(const std::filesystem::path& expectedResultDir, const std::filesystem::path& sourcePath);
+  explicit Evaluator(const std::filesystem::path& expectedResultDir);
   Evaluator(const Evaluator&) = delete;
   Evaluator& operator=(const Evaluator&) = delete;
 

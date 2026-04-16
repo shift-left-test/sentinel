@@ -55,7 +55,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   } else {
     computedTimeLimit = *ctx->config.timeout;
   }
-  Evaluator evaluator(ctx->workspace.getOriginalResultsDir(), ctx->config.sourceDir);
+  Evaluator evaluator(ctx->workspace.getOriginalResultsDir());
 
   std::vector<std::string> covFiles;
   std::transform(ctx->config.lcovTracefiles.begin(), ctx->config.lcovTracefiles.end(),

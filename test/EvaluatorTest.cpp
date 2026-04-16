@@ -106,40 +106,40 @@ class EvaluatorTest : public SampleFileGeneratorForTest {
 };
 
 TEST_F(EvaluatorTest, testConstructorSucceedsWithValidExpectedResult) {
-  EXPECT_NO_THROW(Evaluator(ORI_DIR, SAMPLE_BASE));
+  EXPECT_NO_THROW((Evaluator(ORI_DIR)));
 }
 
 TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
   auto emptyPath = BASE / "EMPTY_DIR";
   fs::create_directories(emptyPath);
-  EXPECT_THROW(Evaluator(emptyPath, SAMPLE_BASE), InvalidArgumentException);
+  EXPECT_THROW((Evaluator(emptyPath)), InvalidArgumentException);
 
-  EXPECT_THROW(Evaluator(ORI_DIR_FAIL, SAMPLE_BASE), InvalidArgumentException);
+  EXPECT_THROW((Evaluator(ORI_DIR_FAIL)), InvalidArgumentException);
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto result = mEvaluator.compare(*mutable1, MUT_DIR, TestExecutionState::SUCCESS);
   EXPECT_TRUE(result.getDetected());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithUncoveredMutation) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::UNCOVERED);
   EXPECT_FALSE(result.getDetected());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
@@ -148,7 +148,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
@@ -157,7 +157,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
@@ -167,7 +167,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
-  Evaluator mEvaluator(ORI_DIR, SAMPLE_BASE);
+  Evaluator mEvaluator(ORI_DIR);
 
   auto emptyPath = OUT_DIR / "emptyDir";
   fs::create_directories(emptyPath);
@@ -184,7 +184,7 @@ TEST_F(EvaluatorTest, testConstructorThrowsForUnsupportedXmlSchema) {
             "<custom_report><item name=\"test1\" status=\"ok\"/>"
             "</custom_report>\n");
 
-  EXPECT_THROW(Evaluator(unsupportedDir, SAMPLE_BASE), InvalidArgumentException);
+  EXPECT_THROW((Evaluator(unsupportedDir)), InvalidArgumentException);
 }
 
 }  // namespace sentinel
