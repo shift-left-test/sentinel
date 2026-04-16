@@ -54,7 +54,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   // 2. Determine workspace path early
   fs::path workDirPath = cliParser->getWorkDir().empty()
-      ? fs::absolute(".sentinel") : cliParser->getWorkDir();
+      ? fs::absolute(".sentinel_workspace") : cliParser->getWorkDir();
 
   // 3. Handle --merge-partition (merge mode)
   {

@@ -1,6 +1,6 @@
 build/
 Testing/
-.sentinel/
+.sentinel_workspace/
 sentinel_output/
 src/calc
 test/CalculatorTest

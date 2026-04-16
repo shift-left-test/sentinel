@@ -35,7 +35,7 @@ std::string generatorToString(Generator gen) {
 Config Config::withDefaults() {
   Config cfg;
   cfg.sourceDir = fs::absolute(".").lexically_normal();
-  cfg.workDir = fs::absolute(".sentinel").lexically_normal();
+  cfg.workDir = fs::absolute(".sentinel_workspace").lexically_normal();
   cfg.compileDbDir = fs::absolute(".").lexically_normal();
   return cfg;
 }

@@ -216,9 +216,9 @@ Evaluating 75 mutants...
            ← CalculatorTest.AddOverflow, CalculatorTest.AddNegative
   [  2/75] ✓ SURVIVED      ROR  src/foo.cpp:58:12 (<)  [1s/1s]
   [  3/75] ⚠ BUILD_FAILURE SDL  src/bar.cpp:15:3 (DELETE)  [0s/0s]
-           ↪ .sentinel/mutants/3/build.log
+           ↪ .sentinel_workspace/mutants/3/build.log
   [  4/75] ⚠ TIMEOUT       AOR  src/bar.cpp:27:8 (-)  [1s/10s]
-           ↪ .sentinel/mutants/4/test.log
+           ↪ .sentinel_workspace/mutants/4/test.log
 ```
 
 Each line contains:
@@ -329,7 +329,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--config=PATH` | YAML config file path. When the config is in a different directory, sentinel changes to that location before running; a pre-run warning is shown. | `sentinel.yaml` (auto-detected) |
-| `--workspace=PATH` | Directory for all run artifacts | `./.sentinel` |
+| `--workspace=PATH` | Directory for all run artifacts | `./.sentinel_workspace` |
 | `-c, --clean` | Clear workspace and start a fresh run instead of resuming | |
 | `-o, --output-dir=PATH` | Directory to write HTML/XML reports | |
 | `-n, --dry-run` | Build, test, and generate mutants, then exit without evaluating any mutant. The workspace is preserved so that the next `sentinel` invocation (without `--dry-run`) resumes directly at the evaluation phase. | |

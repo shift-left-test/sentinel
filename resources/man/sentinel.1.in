@@ -28,7 +28,7 @@ When omitted, \fBsentinel.yaml\fR in the current directory is used
 automatically if it exists.
 .TP
 \fB\-\-workspace\fR=\fIPATH\fR
-Directory for all run artifacts. Default: \fB./.sentinel\fR
+Directory for all run artifacts. Default: \fB./.sentinel_workspace\fR
 .TP
 \fB\-c\fR, \fB\-\-clean\fR
 Clear the workspace and start a fresh run.
