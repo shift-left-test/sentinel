@@ -31,7 +31,9 @@
 # Styhead: 19.0 (19.1.0)
 # Walnascar: 20.0 (20.1.2)
 # Whinlatter: 21.0 (21.1.1)
+# Wrynose: 22.0 (22.1.0)
 set(llvm_config_names llvm-config
+                      llvm-config-22.0 llvm-config220 llvm-config-22
                       llvm-config-21.0 llvm-config210 llvm-config-21
                       llvm-config-20.0 llvm-config200 llvm-config-20
                       llvm-config-19.0 llvm-config190 llvm-config-19
@@ -129,6 +131,8 @@ FIND_AND_ADD_CLANG_LIB(clangDriver)
 FIND_AND_ADD_CLANG_LIB(clangAPINotes)
 FIND_AND_ADD_CLANG_LIB(clangBasic)
 FIND_AND_ADD_CLANG_LIB(clangSupport)
+FIND_AND_ADD_CLANG_LIB(clangOptions)                 # LLVM 22+: hosts getDriverOptTable(), parseMRecipOption(), etc.
+FIND_AND_ADD_CLANG_LIB(clangAnalysisLifetimeSafety)  # LLVM 22+: hosts clang::lifetimes::*
 
 if (NOT CLANG_LIBS)
   message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
