@@ -41,8 +41,10 @@ inline void ensureDirectoryExists(const std::filesystem::path& dirPath) {
 }
 
 /**
- * @brief Synchronize @p to with XML files from @p from.
- *        Replaces the entire contents of @p to with matching files.
+ * @brief Synchronize @p to with XML files from @p from, preserving relative paths.
+ *        Replaces the entire contents of @p to with matching files, mirroring
+ *        the source subdirectory layout so that files with the same name in
+ *        different subdirectories do not collide.
  *
  * @param from Source directory to sync from.
  * @param to   Destination directory (cleared and replaced).
@@ -53,7 +55,10 @@ inline void syncFiles(const std::filesystem::path& from, const std::filesystem::
   if (std::filesystem::is_directory(from)) {
     for (const auto& dirent : std::filesystem::recursive_directory_iterator(from)) {
       if (dirent.is_regular_file() && isXmlFile(dirent.path())) {
-        std::filesystem::copy(dirent.path(), to);
+        const std::filesystem::path rel = std::filesystem::relative(dirent.path(), from);
+        const std::filesystem::path dest = to / rel;
+        std::filesystem::create_directories(dest.parent_path());
+        std::filesystem::copy(dirent.path(), dest);
       }
     }
   }

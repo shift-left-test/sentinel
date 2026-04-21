@@ -115,14 +115,16 @@ TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
   EXPECT_TRUE(fs::exists(to / "new.xml"));
 }
 
-TEST_F(IoTest, testSyncFilesDuplicateNameInSubdirsThrows) {
+TEST_F(IoTest, testSyncFilesPreservesSubdirectoryLayout) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   writeFile(from / "sub1" / "result.xml", "<xml>1</xml>");
   writeFile(from / "sub2" / "result.xml", "<xml>2</xml>");
 
-  // flat copy: second file with same name should cause filesystem_error
-  EXPECT_THROW(io::syncFiles(from, to), std::filesystem::filesystem_error);
+  io::syncFiles(from, to);
+
+  EXPECT_TRUE(fs::exists(to / "sub1" / "result.xml"));
+  EXPECT_TRUE(fs::exists(to / "sub2" / "result.xml"));
 }
 
 TEST_F(IoTest, testSyncFilesNonXmlOnlyResultsInEmptyDestination) {
