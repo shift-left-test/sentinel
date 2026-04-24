@@ -103,6 +103,7 @@ class UniformMutantGeneratorTest : public SampleFileGeneratorForTest {
   SourceLines mSourceLines;
   std::string mTargetFile1;
   std::string mTargetFile2;
+  // cppcheck-suppress unusedStructMember
   static constexpr unsigned kSeed = 1234;
 };
 

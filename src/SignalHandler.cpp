@@ -29,7 +29,7 @@ void SignalHandler::add(const std::vector<int>& signals, std::function<void()> c
 }
 
 void SignalHandler::dispatch(int signum) {
-  for (auto& cb : sCallbacks) {
+  for (const auto& cb : sCallbacks) {
     cb();
   }
   Console::flush();

@@ -209,7 +209,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   }
 
   int id = static_cast<int>(partStart) + 1;
-  for (auto& m : mutants) {
+  for (const auto& m : mutants) {
     ctx->workspace.createMutant(id, m);
     id++;
   }

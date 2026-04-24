@@ -30,8 +30,11 @@ void Stage::run(PipelineContext* ctx) {
       throw;
     }
   }
-  if (mNext) mNext->run(ctx);
-  else ctx->statusLine.disable();
+  if (mNext) {
+    mNext->run(ctx);
+  } else {
+    ctx->statusLine.disable();
+  }
 }
 
 }  // namespace sentinel

@@ -13,6 +13,7 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <set>
 #include <vector>
 #include <string>

@@ -108,7 +108,7 @@ class MutationResult {
  private:
   std::string mKillingTest;
   std::string mErrorTest;
-  MutationState mState;
+  MutationState mState = MutationState::SURVIVED;
   Mutant mMutant;
   double mBuildSecs = 0.0;
   double mTestSecs = 0.0;

@@ -588,19 +588,30 @@ The test runner must be configured to write results to the directory specified b
 
 ## Development
 
-To build with tests and static analysis enabled:
+Run the full CI build locally:
 
 ```bash
-cmake -DCMAKE_TESTING_ENABLED=ON .
-make all -j
-./test/unittest
+./build.sh
 ```
 
-This enables:
-- Static analysis (`cppcheck`, `cpplint`, `lwyu`)
-- Unit tests
-- Code coverage
+This runs the same pipeline Jenkins CI uses:
+- `cmake -DCMAKE_TESTING_ENABLED=ON .`
+- Static analysis (`cppcheck`, `cpplint`)
 - Doxygen documentation
+- Build (`make -j`)
+- Unit tests (`ctest --output-on-failure -j$(nproc)`)
+- Code coverage report (`gcovr`)
+- Debian package (`make package`)
+
+### Measure coverage only
+
+After running tests, generate a coverage summary with:
+
+```bash
+gcovr -s -r . --object-directory .
+```
+
+Coverage filters and gcov parse-error handling are configured in `gcovr.cfg`.
 
 ---
 

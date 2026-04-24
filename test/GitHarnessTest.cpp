@@ -86,7 +86,7 @@ TEST_F(GitHarnessTest, testInitWorks) {
 // Action: initiate a git repo twice
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testInitFailWhenDirAlreadyExists) {
-  EXPECT_THROW(std::unique_ptr<GitHarness> test_repo = std::make_unique<GitHarness>(mRepoName), std::runtime_error);
+  EXPECT_THROW(std::make_unique<GitHarness>(mRepoName), std::runtime_error);
 }
 
 // Action: create new folder in git repo
@@ -127,8 +127,10 @@ TEST_F(GitHarnessTest, testAddFileFailWhenFileExisted) {
 // Action: call addFile with invalid path
 // Expected Output: assertion errors
 TEST_F(GitHarnessTest, testAddFileFailWhenInvalidPathGiven) {
-  std::string content = "int main() {}";
-  EXPECT_THROW({ mRepo->addFile("unexisted/temp.cpp", content); }, std::runtime_error);
+  EXPECT_THROW({
+    std::string content = "int main() {}";
+    mRepo->addFile("unexisted/temp.cpp", content);
+  }, std::runtime_error);
 }
 
 // Action: add content to file
@@ -176,8 +178,10 @@ TEST_F(GitHarnessTest, testAddCodeFailWhenPositionOutOfBound) {
 // Action: add code to nonexistent file
 // Expected Output: assertion error
 TEST_F(GitHarnessTest, testAddCodeFailWhenFileNotExists) {
-  std::string content = "content";
-  EXPECT_THROW({ mRepo->addCode("temp.cpp", content); }, std::runtime_error);
+  EXPECT_THROW({
+    std::string content = "content";
+    mRepo->addCode("temp.cpp", content);
+  }, std::runtime_error);
 }
 
 // Action: delete code lines within file length
@@ -336,7 +340,6 @@ TEST_F(GitHarnessTest, testAddTagLightweightFailWhenCommitAlreadyTagged) {
   target_files.emplace_back("temp2.cpp");
   mRepo->addFile("temp2.cpp", initial_content).stageFile(target_files).commit(message);
   target_oid = mRepo->getLatestCommitId();
-  std::string error_msg = "Unable to create lightweight tag";
   EXPECT_THROW(mRepo->addTagLightweight(tag_name, target_oid), IOException);
 }
 

@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_UTIL_IO_HPP_
 #define INCLUDE_SENTINEL_UTIL_IO_HPP_
 
+#include <algorithm>
 #include <cstddef>
 #include <filesystem>  // NOLINT
 #include <string>

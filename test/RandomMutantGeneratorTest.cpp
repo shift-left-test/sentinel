@@ -80,6 +80,7 @@ class RandomMutantGeneratorTest : public SampleFileGeneratorForTest {
   Mutants mAllMutants;
   SourceLines mSourceLines;
   std::string mTargetFile1;
+  // cppcheck-suppress unusedStructMember
   static constexpr unsigned kSeed = 1234;
 };
 

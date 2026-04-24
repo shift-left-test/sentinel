@@ -85,8 +85,6 @@ TEST_F(GitRepositoryTest, testNegationPatterns) {
 
 TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
   GitRepository gitRepo(mRepoName);
-  std::string content = "int main() {\n}\n";
-  std::vector<std::string> stageFiles{"temp.cpp"};
 
   // No commits, no files — nullopt returns empty (no tree to diff against)
   {
@@ -95,6 +93,8 @@ TEST_F(GitRepositoryTest, testGetSourceLinesWithNoCommit) {
   }
   // Add file and stage — nullopt returns all lines from worktree
   {
+    std::string content = "int main() {\n}\n";
+    std::vector<std::string> stageFiles{"temp.cpp"};
     mRepo->addFile(stageFiles[0], content);
     mRepo->stageFile(stageFiles);
     SourceLines sourceLines = gitRepo.getSourceLines(std::nullopt, false);

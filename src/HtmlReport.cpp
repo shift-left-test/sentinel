@@ -1216,6 +1216,6 @@ route();
     throw IOException(errno, fmt::format("Failed to write '{}': {}",
                                          htmlPath.string(), std::strerror(errno)));
   }
-}
+}  // NOLINT(readability/fn_size)
 
 }  // namespace sentinel

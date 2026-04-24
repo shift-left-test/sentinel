@@ -112,8 +112,10 @@ TEST_F(EvaluatorTest, testConstructorSucceedsWithValidExpectedResult) {
 TEST_F(EvaluatorTest, testConstructorFailWhenNoPassedTCInGivenResult) {
   auto emptyPath = BASE / "EMPTY_DIR";
   fs::create_directories(emptyPath);
+  // cppcheck-suppress unusedScopedObject
   EXPECT_THROW((Evaluator(emptyPath)), InvalidArgumentException);
 
+  // cppcheck-suppress unusedScopedObject
   EXPECT_THROW((Evaluator(ORI_DIR_FAIL)), InvalidArgumentException);
 }
 
@@ -184,6 +186,7 @@ TEST_F(EvaluatorTest, testConstructorThrowsForUnsupportedXmlSchema) {
             "<custom_report><item name=\"test1\" status=\"ok\"/>"
             "</custom_report>\n");
 
+  // cppcheck-suppress unusedScopedObject
   EXPECT_THROW((Evaluator(unsupportedDir)), InvalidArgumentException);
 }
 
