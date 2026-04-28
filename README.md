@@ -3,7 +3,7 @@
 **Sentinel** is a mutation testing tool based on LLVM/Clang for C/C++ projects.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.4.8-blue.svg)](CMakeLists.txt)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CMakeLists.txt)
 
 ---
 
@@ -58,7 +58,7 @@ Inside the Docker container:
 
 ```bash
 cd /workspace && cmake . && make all -j && make package
-sudo apt-get install ./sentinel-0.4.8-amd64.deb
+sudo apt-get install ./sentinel-1.0.0-amd64.deb
 ```
 
 ### 3. Try it on the sample project
@@ -116,7 +116,7 @@ cd sentinel
 cmake .
 make all -j
 make package
-sudo apt-get install ./sentinel-0.4.8-amd64.deb
+sudo apt-get install ./sentinel-1.0.0-amd64.deb
 ```
 
 ---

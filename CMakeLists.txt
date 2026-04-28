@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-project(sentinel VERSION 0.4.8)
+project(sentinel VERSION 1.0.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
