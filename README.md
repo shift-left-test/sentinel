@@ -58,8 +58,12 @@ Inside the Docker container:
 
 ```bash
 cd /workspace && cmake . && make all -j && make package
-sudo apt-get install ./sentinel-1.0.0-amd64.deb
+sudo apt-get install ./sentinel_1.0.0-1~ubuntu20.04+llvm14_amd64.deb
 ```
+
+The exact deb filename varies with the Ubuntu release and LLVM major version
+used at build time. Use a glob (e.g. `./sentinel_*.deb`) if you do not want
+to spell it out.
 
 ### 3. Try it on the sample project
 
@@ -116,8 +120,13 @@ cd sentinel
 cmake .
 make all -j
 make package
-sudo apt-get install ./sentinel-1.0.0-amd64.deb
+sudo apt-get install ./sentinel_*.deb
 ```
+
+The generated deb encodes the Ubuntu release and LLVM major version in its
+filename (e.g. `sentinel_1.0.0-1~ubuntu20.04+llvm14_amd64.deb`) and declares
+a runtime dependency on the matching `clang-N` package, which `apt` will
+install automatically.
 
 ---
 

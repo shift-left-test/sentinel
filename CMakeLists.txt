@@ -104,7 +104,49 @@ else()
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
 endif()
 
+# Encode the build environment in the package metadata so that deb files built
+# against different Ubuntu releases or LLVM major versions are uniquely named
+# and have well-formed Version/Depends fields.
+set(SENTINEL_DISTRO_TAG "")
+if(EXISTS "/etc/os-release")
+  file(READ "/etc/os-release" _sentinel_osrel)
+  if(_sentinel_osrel MATCHES "ID=([a-zA-Z]+)")
+    set(_sentinel_distro_id "${CMAKE_MATCH_1}")
+  endif()
+  if(_sentinel_osrel MATCHES "VERSION_ID=\"?([0-9.]+)\"?")
+    set(_sentinel_distro_ver "${CMAKE_MATCH_1}")
+  endif()
+  if(_sentinel_distro_id AND _sentinel_distro_ver)
+    set(SENTINEL_DISTRO_TAG "${_sentinel_distro_id}${_sentinel_distro_ver}")
+  endif()
+  unset(_sentinel_osrel)
+  unset(_sentinel_distro_id)
+  unset(_sentinel_distro_ver)
+endif()
+
+execute_process(
+  COMMAND ${LLVM_CONFIG_EXECUTABLE} --version
+  OUTPUT_VARIABLE _sentinel_llvm_version
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(_sentinel_llvm_version MATCHES "^([0-9]+)")
+  set(SENTINEL_LLVM_MAJOR "${CMAKE_MATCH_1}")
+else()
+  message(FATAL_ERROR
+    "Cannot determine LLVM major version from '${_sentinel_llvm_version}'")
+endif()
+unset(_sentinel_llvm_version)
+
+if(SENTINEL_DISTRO_TAG)
+  set(CPACK_DEBIAN_PACKAGE_RELEASE
+    "1~${SENTINEL_DISTRO_TAG}+llvm${SENTINEL_LLVM_MAJOR}")
+else()
+  set(CPACK_DEBIAN_PACKAGE_RELEASE "1+llvm${SENTINEL_LLVM_MAJOR}")
+endif()
+
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "clang-${SENTINEL_LLVM_MAJOR}")
+
 set(CPACK_PACKAGE_FILE_NAME
-  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+  "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 
 include(CPack)

@@ -143,6 +143,19 @@ Before starting any code work, always follow these steps:
 - **Do not create commits** — Never create git commits automatically. Leave staging and committing to the user.
 - **Commit message style** — When asked to commit, write a single-line message that briefly describes the change. No body, no bullet points.
 
+## Packaging
+
+- The Debian package filename and the deb's internal `Version:` field encode
+  the build environment so multiple variants of the same upstream release can
+  coexist without colliding:
+  `sentinel_<version>-1~<distroID><distroVer>+llvm<llvmMajor>_<arch>.deb`
+  (e.g. `sentinel_1.0.0-1~ubuntu20.04+llvm14_amd64.deb`).
+- The distro tag is read from `/etc/os-release`; the LLVM major comes from
+  `llvm-config --version`. The package declares `Depends: clang-<llvmMajor>`
+  so the matching toolchain (and its builtin headers) is pulled in by `apt`.
+- When the packaging convention changes, update both `CMakeLists.txt`
+  (CPack block) and the `README.md` install snippets together.
+
 ## Verification
 
 - After completing code changes, run `./build.sh` to verify the full build (build + doc + test + static analysis + coverage + package).
