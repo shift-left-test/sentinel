@@ -713,11 +713,12 @@ function h(s) {
 }
 
 function formatDuration(secs) {
-  if (secs < 60) return Math.round(secs) + 's';
-  var m = Math.floor(secs / 60);
-  var s = Math.floor(secs) % 60;
-  if (s === 0) return m + 'm';
-  return m + 'm ' + s + 's';
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = Math.floor(secs % 60);
+  if (h > 0) return h + 'h ' + m + 'm';
+  if (m > 0) return m + 'm ' + s + 's';
+  return s + 's';
 }
 
 function covClass(cov) { return cov >= 70 ? 'c-hi' : cov >= 40 ? 'c-mid' : 'c-lo'; }
