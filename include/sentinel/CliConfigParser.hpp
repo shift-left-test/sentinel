@@ -141,6 +141,8 @@ class CliConfigParser {
   args::ValueFlag<std::size_t> mLimit;
   /** @brief Command line flag for lcov tracefiles. */
   args::ValueFlagList<std::filesystem::path> mLcovTracefiles;
+  /** @brief Command line flag to restrict mutant generation to lcov-covered lines. */
+  args::Flag mRestrict;
   /** @brief Command line flag for execution partition. */
   args::ValueFlag<std::string> mPartition;
   /** @brief Command line flag for merge partition workspaces. */

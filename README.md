@@ -372,6 +372,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `-l, --limit=N` | Maximum number of mutants to generate; `0` = unlimited | `0` |
 | `--lcov-tracefile=FILE` | skip evaluation for uncovered mutants (repeatable) | |
+| `--restrict` | Restrict mutant generation to lines covered by `--lcov-tracefile`. Without this flag, uncovered lines still produce mutants but their evaluation is skipped (kept in the report as SURVIVED\*). Requires `--lcov-tracefile`. | disabled |
 | `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). It is recommended to set `--seed` explicitly so every partition instance generates an identical mutant list; if omitted, a random seed is used and each run may evaluate a different subset. The union of all partition results equals a single non-partitioned run. Mutant paths are stored relative to `--source-dir`, so workspace directories can be collected from multiple machines and resumed on any machine with the same source tree. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
 | `--merge-partition PATH` | Merge a partitioned workspace result into the target workspace (repeatable) | |
 | `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0.0–100.0). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
@@ -520,6 +521,11 @@ version: 1
 
 ## lcov tracefiles; skip evaluation for uncovered mutants (default: none)
 # lcov-tracefile: []
+
+## When true, restrict mutant generation to lines covered by lcov-tracefile.
+## Without this, uncovered mutants are kept in the report as SURVIVED*
+## and only their evaluation is skipped. Requires lcov-tracefile to be set.
+# restrict: false
 ```
 
 ---
@@ -544,6 +550,14 @@ sentinel --lcov-tracefile=coverage.info ...
 ```
 
 The `--lcov-tracefile` option can be repeated to merge multiple tracefiles.
+
+Add `--restrict` to also skip mutant generation for uncovered lines:
+
+```bash
+sentinel --lcov-tracefile=coverage.info --restrict ...
+```
+
+This excludes uncovered lines from the report entirely instead of keeping them as SURVIVED\*. Use this when uncovered noise (e.g., code that is built into the repo but excluded from the current build configuration) is dragging down the mutation score.
 
 ---
 

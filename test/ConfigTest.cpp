@@ -65,6 +65,7 @@ TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   EXPECT_EQ(1u, cfg.mutantsPerLine);
   EXPECT_TRUE(cfg.buildCmd.empty());
   EXPECT_TRUE(cfg.testCmd.empty());
+  EXPECT_FALSE(cfg.restrictGeneration);
 }
 
 TEST_F(ConfigTest, testYamlApplyOverwritesFields) {
@@ -84,6 +85,7 @@ test-command: ctest
 test-result-dir: ./results
 lcov-tracefile:
   - coverage.info
+restrict: true
 generator: random
 mutants-per-line: 3
 timeout: 30
@@ -95,6 +97,7 @@ operator:
   Config cfg = Config::withDefaults();
   YamlConfigParser::applyTo(&cfg, configPath("sentinel.yaml"));
 
+  EXPECT_TRUE(cfg.restrictGeneration);
   EXPECT_EQ((mTmpDir / "src").lexically_normal(), cfg.sourceDir);
   EXPECT_EQ((mTmpDir / "out").lexically_normal(), cfg.outputDir);
   EXPECT_EQ((mTmpDir / "build").lexically_normal(), cfg.compileDbDir);
@@ -420,6 +423,23 @@ TEST_F(ConfigTest, testStreamOperatorWithLcovTracefiles) {
   std::string yaml = out.str();
   EXPECT_NE(std::string::npos, yaml.find("/tmp/cov1.info"));
   EXPECT_NE(std::string::npos, yaml.find("/tmp/cov2.info"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorEmitsRestrictWhenEnabled) {
+  Config cfg = Config::withDefaults();
+  cfg.restrictGeneration = true;
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_NE(std::string::npos, yaml.find("restrict"));
+}
+
+TEST_F(ConfigTest, testStreamOperatorOmitsRestrictByDefault) {
+  Config cfg = Config::withDefaults();
+  std::ostringstream out;
+  out << cfg;
+  std::string yaml = out.str();
+  EXPECT_EQ(std::string::npos, yaml.find("restrict"));
 }
 
 TEST_F(ConfigTest, testStreamOperatorWeightedGenerator) {

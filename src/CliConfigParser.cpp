@@ -55,6 +55,10 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mLimit(mGroupAdvanced, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
     mLcovTracefiles(mGroupAdvanced, "FILE", "skip evaluation for uncovered mutants",
                     {"lcov-tracefile"}),
+    mRestrict(mGroupAdvanced, "restrict",
+              "Restrict mutant generation to lines covered by --lcov-tracefile "
+              "(otherwise uncovered mutants are kept in the report as SURVIVED*).",
+              {"restrict"}),
     mPartition(mGroupAdvanced, "N/TOTAL", "Evaluate only the N-th slice of the full mutant list out of TOTAL",
                {"partition"}),
     mMergePartitions(mGroupAdvanced, "PATH",
@@ -90,6 +94,7 @@ void CliConfigParser::applyTo(Config* cfg) {
       cfg->lcovTracefiles.push_back(fs::absolute(f).lexically_normal());
     }
   }
+  if (mRestrict) cfg->restrictGeneration = true;
 
   if (mLimit) cfg->limit = mLimit.Get();
   if (mSeed) cfg->seed = mSeed.Get();
@@ -126,6 +131,7 @@ std::vector<std::string> CliConfigParser::getEffectiveCliOptions() const {
   if (mSeed) opts.push_back("--seed");
   if (mOperators) opts.push_back("--operator");
   if (mLcovTracefiles) opts.push_back("--lcov-tracefile");
+  if (mRestrict) opts.push_back("--restrict");
   if (mLimit) opts.push_back("--limit");
   if (mPartition) opts.push_back("--partition");
   return opts;

@@ -14,7 +14,9 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 #include "sentinel/Console.hpp"
+#include "sentinel/CoverageInfo.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/operators/MutationOperatorExpansion.hpp"
@@ -150,6 +152,36 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   }
   mRepo->addSkipDir(ctx->workspace.getRoot());
   SourceLines sourceLines = mRepo->getSourceLines(ctx->config.from, ctx->config.uncommitted);
+
+  if (ctx->config.restrictGeneration && !ctx->config.lcovTracefiles.empty()) {
+    std::vector<std::string> covFiles;
+    covFiles.reserve(ctx->config.lcovTracefiles.size());
+    std::transform(ctx->config.lcovTracefiles.begin(), ctx->config.lcovTracefiles.end(),
+                   std::back_inserter(covFiles),
+                   [](const fs::path& p) { return p.string(); });
+    CoverageInfo coverageInfo(covFiles);
+
+    const std::size_t before = sourceLines.size();
+    SourceLines filtered;
+    filtered.reserve(sourceLines.size());
+    std::map<fs::path, fs::path> canonCache;
+    for (const auto& sl : sourceLines) {
+      auto [it, inserted] = canonCache.emplace(sl.getPath(), fs::path{});
+      if (inserted) {
+        std::error_code ec;
+        it->second = fs::canonical(sl.getPath(), ec);
+        if (ec) {
+          it->second = sl.getPath();
+        }
+      }
+      if (coverageInfo.cover(it->second.string(), sl.getLineNumber())) {
+        filtered.push_back(sl);
+      }
+    }
+    sourceLines.swap(filtered);
+    Logger::info("--restrict: kept {} of {} candidate lines based on lcov coverage.",
+                 sourceLines.size(), before);
+  }
 
   // Verbose: source scan results and config
   if (isVerbose(*ctx)) {

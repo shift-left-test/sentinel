@@ -258,6 +258,23 @@ TEST_F(ConfigValidatorTest, testNoWarningForExistingLcovTracefile) {
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }
 
+TEST_F(ConfigValidatorTest, testRestrictRequiresLcovTracefile) {
+  mConfig.restrictGeneration = true;
+  mConfig.lcovTracefiles.clear();
+  EXPECT_THROW_MESSAGE(
+      ConfigValidator::validate(mConfig),
+      InvalidArgumentException,
+      HasSubstr("--restrict requires --lcov-tracefile"));
+}
+
+TEST_F(ConfigValidatorTest, testRestrictWithLcovTracefilePasses) {
+  fs::path covFile = mBase / "coverage.info";
+  { std::ofstream ofs(covFile); }
+  mConfig.restrictGeneration = true;
+  mConfig.lcovTracefiles = {covFile};
+  EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
+}
+
 TEST_F(ConfigValidatorTest, testThrowsWhenSourceDirDoesNotExist) {
   mConfig.sourceDir = mBase / "nonexistent";
   EXPECT_THROW_MESSAGE(

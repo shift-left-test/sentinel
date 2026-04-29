@@ -202,6 +202,16 @@ TEST_F(CliConfigParserTest, testLcovTracefileParsed) {
   EXPECT_EQ(cfg.lcovTracefiles.size(), 2u);
 }
 
+TEST_F(CliConfigParserTest, testRestrictDefaultsFalse) {
+  Config cfg = parse({});
+  EXPECT_FALSE(cfg.restrictGeneration);
+}
+
+TEST_F(CliConfigParserTest, testRestrictParsed) {
+  Config cfg = parse({"--restrict"});
+  EXPECT_TRUE(cfg.restrictGeneration);
+}
+
 TEST_F(CliConfigParserTest, testSourceDirParsedAndAbsolute) {
   Config cfg = parse({"--source-dir", "src"});
   EXPECT_TRUE(cfg.sourceDir.is_absolute());

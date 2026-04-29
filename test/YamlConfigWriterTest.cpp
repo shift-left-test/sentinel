@@ -53,6 +53,13 @@ TEST_F(YamlConfigWriterTest, testWriteTemplateThrowsWhenPathIsDirectory) {
       std::runtime_error, HasSubstr("sentinel.yaml"));
 }
 
+TEST_F(YamlConfigWriterTest, testWriteTemplateContainsRestrictKey) {
+  YamlConfigWriter::writeTemplate("sentinel.yaml");
+  std::ifstream f("sentinel.yaml");
+  std::string content((std::istreambuf_iterator<char>(f)), {});
+  EXPECT_NE(content.find("restrict"), std::string::npos);
+}
+
 TEST_F(YamlConfigWriterTest, testWriteTemplateOverwritesExistingFile) {
   {
     std::ofstream f("sentinel.yaml");

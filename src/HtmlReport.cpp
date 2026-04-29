@@ -4,6 +4,7 @@
  */
 
 #include <fmt/core.h>
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <chrono>
@@ -30,6 +31,11 @@
 namespace sentinel {
 
 namespace fs = std::filesystem;
+
+namespace {
+constexpr const char* kLcovModeRestrict = "restrict generation";
+constexpr const char* kLcovModeSkipUncovered = "skip uncovered evaluation";
+}  // namespace
 
 HtmlReport::HtmlReport(const MutationSummary& summary, const Config& config)
     : Report(summary), mConfig(config) {
@@ -137,6 +143,17 @@ std::string HtmlReport::buildConfigJson() const {
   }
   if (mConfig.partition.has_value()) {
     addStr("partition", mConfig.partition.value(), comma);
+  }
+  if (!mConfig.lcovTracefiles.empty()) {
+    std::vector<std::string> paths;
+    paths.reserve(mConfig.lcovTracefiles.size());
+    std::transform(mConfig.lcovTracefiles.begin(), mConfig.lcovTracefiles.end(),
+                   std::back_inserter(paths),
+                   [](const std::filesystem::path& p) { return p.string(); });
+    addStr("lcovTracefiles", string::join(", ", paths), comma);
+    addStr("lcovMode",
+           mConfig.restrictGeneration ? kLcovModeRestrict : kLcovModeSkipUncovered,
+           comma);
   }
 
   o << "}";

@@ -84,7 +84,12 @@ static const char* const kYamlTemplate =
     "# --- Advanced options ---\n"
     "\n"
     "## lcov tracefiles; skip evaluation for uncovered mutants (default: none)\n"
-    "# lcov-tracefile: []\n";
+    "# lcov-tracefile: []\n"
+    "\n"
+    "## When true, restrict mutant generation to lines covered by lcov-tracefile.\n"
+    "## Without this, uncovered mutants are kept in the report as SURVIVED*\n"
+    "## and only their evaluation is skipped. Requires lcov-tracefile to be set.\n"
+    "# restrict: false\n";
 
 void YamlConfigWriter::writeTemplate(const std::filesystem::path& path) {
   std::ofstream out(path);

@@ -122,6 +122,12 @@ Maximum number of mutants to generate. \fB0\fR = unlimited. Default: \fB0\fR
 Skip evaluation for uncovered mutants (repeatable). When given, mutants on
 uncovered lines skip build/test and are marked as survived.
 .TP
+\fB\-\-restrict\fR
+Restrict mutant generation to lines covered by \fB\-\-lcov\-tracefile\fR.
+Without this flag, uncovered lines still produce mutants but their evaluation
+is skipped (kept in the report as SURVIVED*). Requires \fB\-\-lcov\-tracefile\fR
+to be set.
+.TP
 \fB\-\-partition\fR=\fIN\fR/\fITOTAL\fR
 Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL
 partitions (1-based, e.g., \fB\-\-partition=2/5\fR).
@@ -159,6 +165,11 @@ lcov --remove coverage.info '/usr/*' '*/third_party/*' --output-file coverage.in
 .fi
 .PP
 Then pass it to sentinel via \fB\-\-lcov\-tracefile=coverage.info\fR.
+.PP
+Add \fB\-\-restrict\fR to also skip mutant generation for uncovered lines.
+This excludes uncovered lines from the report entirely instead of keeping them
+as SURVIVED*; it is useful when uncovered noise is dragging down the mutation
+score for code that is not actually built or executed.
 .SH MUTATION OPERATORS
 .TP
 \fBAOR\fR \(em Arithmetic Operator Replacement
@@ -226,6 +237,10 @@ Selection strategy and operator list.
 .TP
 \fBlcov\-tracefile\fR
 List of lcov tracefiles.
+.TP
+\fBrestrict\fR
+When true, skip generating mutants for uncovered lines (requires
+\fBlcov\-tracefile\fR).
 .SH EXAMPLES
 Run mutation testing on a CMake project:
 .PP

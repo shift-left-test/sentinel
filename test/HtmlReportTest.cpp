@@ -213,6 +213,47 @@ TEST_F(HtmlReportTest, testJsonContainsConfigFields) {
   expectContains(content, "\"threshold\":\"80%\"");
 }
 
+TEST_F(HtmlReportTest, testJsonContainsLcovTracefileWhenSet) {
+  auto OUT_DIR = BASE / "OUT_DIR_LCOV";
+  auto MRs = buildStandardMRs();
+
+  Config cfg{};
+  cfg.lcovTracefiles = {"/tmp/coverage.info"};
+
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), cfg);
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "lcovTracefiles");
+  expectContains(content, "skip uncovered evaluation");
+}
+
+TEST_F(HtmlReportTest, testJsonContainsRestrictMode) {
+  auto OUT_DIR = BASE / "OUT_DIR_RESTRICT";
+  auto MRs = buildStandardMRs();
+
+  Config cfg{};
+  cfg.lcovTracefiles = {"/tmp/coverage.info"};
+  cfg.restrictGeneration = true;
+
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), cfg);
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "restrict generation");
+}
+
+TEST_F(HtmlReportTest, testJsonOmitsLcovWhenNotSet) {
+  auto OUT_DIR = BASE / "OUT_DIR_NOLCOV";
+  auto MRs = buildStandardMRs();
+
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  EXPECT_EQ(content.find("lcovTracefiles"), std::string::npos);
+}
+
 TEST_F(HtmlReportTest, testJsonContainsOperatorBreakdown) {
   auto OUT_DIR = BASE / "OUT_DIR_OPERATOR";
   auto MRs = buildStandardMRs();

@@ -71,6 +71,11 @@ void ConfigValidator::validate(const Config& config) {
     }
   }
 
+  if (config.restrictGeneration && config.lcovTracefiles.empty()) {
+    throw InvalidArgumentException(
+        "--restrict requires --lcov-tracefile to be set.");
+  }
+
   if (!config.operators.empty()) {
     std::vector<std::string> invalidOps;
     std::copy_if(config.operators.begin(), config.operators.end(),

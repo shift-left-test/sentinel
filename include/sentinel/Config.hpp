@@ -111,6 +111,13 @@ struct Config {
   std::vector<std::string> operators;
   /** @brief Absolute paths to lcov tracefiles. */
   std::vector<std::filesystem::path> lcovTracefiles;
+  /**
+   * @brief When true, skip generating mutants for lines not covered by lcovTracefiles.
+   *
+   * Without this flag, uncovered lines still produce mutants but their evaluation
+   * is skipped (kept in the report as SURVIVED*). Requires lcovTracefiles to be set.
+   */
+  bool restrictGeneration = false;
 
   // CLI-only run parameters (not read from sentinel.yaml)
   /** @brief Maximum number of mutants to generate; 0 = unlimited (CLI-only). */

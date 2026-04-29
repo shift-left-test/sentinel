@@ -61,6 +61,9 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   emitter << YAML::Key << "lcov-tracefile" << YAML::Value << YAML::BeginSeq;
   for (const auto& c : cfg.lcovTracefiles) emitter << c.string();
   emitter << YAML::EndSeq;
+  if (cfg.restrictGeneration) {
+    emitter << YAML::Key << "restrict" << YAML::Value << true;
+  }
   emitter << YAML::Key << "generator" << YAML::Value << generatorToString(cfg.generator);
   if (cfg.mutantsPerLine != 1) {
     emitter << YAML::Key << "mutants-per-line" << YAML::Value << cfg.mutantsPerLine;

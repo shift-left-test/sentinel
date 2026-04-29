@@ -101,6 +101,7 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
         cfg->lcovTracefiles.push_back(resolvePath(base, f.string()));
       }
     }
+    if (root["restrict"]) cfg->restrictGeneration = root["restrict"].as<bool>();
   } catch (const YAML::Exception& e) {
     throw std::runtime_error(fmt::format("Config file '{}': {}", path, e.what()));
   }
