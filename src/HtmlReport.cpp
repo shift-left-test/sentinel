@@ -1064,7 +1064,7 @@ function renderRoot() {
     out += '<button class="cfg-btn" aria-expanded="false" onclick="this.setAttribute(\'aria-expanded\',' +
       'this.getAttribute(\'aria-expanded\')===\'true\'?\'false\':\'true\');' +
       'this.nextElementSibling.classList.toggle(\'open\')">' +
-      '<span>Run Configuration</span><span class="cfg-btn__arr">&#9660;</span></button>' +
+      '<span>Configuration</span><span class="cfg-btn__arr">&#9660;</span></button>' +
       '<div class="cfg-body"><div class="cfg-grid">' + items + '</div></div>';
   }
 
