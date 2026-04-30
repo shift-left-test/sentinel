@@ -550,7 +550,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   width: 14px; height: 14px;
   font-family: inherit; font-size: .82rem; line-height: 1;
   color: var(--text-muted); background: transparent; border: 0;
-  cursor: help;
+  cursor: default;
 }
 .legend-info:hover { color: var(--accent); }
 .legend-info:focus-visible {
@@ -558,11 +558,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   border-radius: 50%;
 }
 .legend-tip {
-  position: absolute; top: calc(100% + 6px); left: 50%;
-  transform: translateX(-50%);
+  position: absolute; top: 50%; left: calc(100% + 8px);
+  transform: translateY(-50%);
   background: var(--bg-white); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 8px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-radius: var(--radius); padding: 10px 14px;
+  box-shadow: 0 8px 30px rgba(0,32,48,.14);
   z-index: 10; display: none; white-space: nowrap;
 }
 .legend-tip.show { display: block; }
