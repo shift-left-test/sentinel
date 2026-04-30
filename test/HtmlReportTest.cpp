@@ -537,9 +537,9 @@ TEST_F(HtmlReportTest, testLegendSubItemHasInfoTooltipMarkup) {
   expectContains(content, "class=\"legend-info\"");
   expectContains(content, "role=\"tooltip\"");
   expectContains(content, "class=\"legend-tip\"");
-  // ⓘ 글리프(U+24D8)와 cursor: help 어포던스.
+  // ⓘ 글리프(U+24D8)와 cursor: default 어포던스.
   expectContains(content, "&#9432;");
-  expectContains(content, "cursor: help");
+  expectContains(content, "cursor: default");
 }
 
 TEST_F(HtmlReportTest, testLegendSubLineHasPercentFormat) {
