@@ -543,19 +543,34 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 }
 .legend-i .legend-lbl { min-width: 70px; }
 .legend-i .n { font-weight: 700; min-width: 24px; text-align: right; }
-.legend-i--multi { flex-wrap: wrap; row-gap: 1px; cursor: pointer; outline: none; }
-.legend-i--multi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-.legend-chev {
-  display: inline-block; margin-left: 4px; font-size: .7rem;
-  color: var(--text-muted); transition: transform .15s ease;
-  transform: rotate(90deg);
+.legend-info-wrap { position: relative; display: inline-flex; }
+.legend-info {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 6px; padding: 0;
+  width: 14px; height: 14px;
+  font-family: inherit; font-size: .82rem; line-height: 1;
+  color: var(--text-muted); background: transparent; border: 0;
+  cursor: help;
 }
-.legend-i--multi.collapsed .legend-chev { transform: rotate(0deg); }
-.legend-i--multi.collapsed .legend-sub { display: none; }
+.legend-info:hover { color: var(--accent); }
+.legend-info:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+  border-radius: 50%;
+}
+.legend-tip {
+  position: absolute; top: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 10; display: none; white-space: nowrap;
+}
+.legend-tip.show { display: block; }
 .legend-sub {
-  width: 100%; padding-left: 18px; font-weight: 400;
+  display: block; font-weight: 400;
   font-size: .78rem; color: var(--text-muted);
 }
+.legend-sub + .legend-sub { margin-top: 3px; }
 
 /* bar chart */
 .bars { display: flex; flex-direction: column; gap: 12px; }
@@ -859,12 +874,14 @@ function legendItemSub(color, label, value, subLines) {
   for (var i = 0; i < subLines.length; i++) {
     subs += '<span class="legend-sub">' + subLines[i] + '</span>';
   }
-  return '<div class="legend-i legend-i--multi collapsed"' +
-    ' role="button" tabindex="0" aria-expanded="false">' +
+  return '<div class="legend-i">' +
     '<span class="legend-dot" style="background:' + color + '"></span>' +
     '<span class="legend-lbl">' + h(label) + '</span>' +
     '<span class="n">' + h(value) + '</span>' +
-    '<span class="legend-chev" aria-hidden="true">&#9656;</span>' + subs + '</div>';
+    '<span class="legend-info-wrap">' +
+    '<button type="button" class="legend-info" aria-label="' + h(label) + ' details">' +
+    '&#9432;</button>' +
+    '<span class="legend-tip" role="tooltip">' + subs + '</span></span></div>';
 }
 
 function pctOf(part, total) {
@@ -896,19 +913,21 @@ function skippedLegendItem(to, bf, re) {
   return legendItemSub('#94a0b0', 'Skipped', skipped, subs);
 }
 
-function bindLegendToggles() {
-  document.querySelectorAll('.legend-i--multi').forEach(function(el) {
-    function toggle() {
-      var collapsed = el.classList.toggle('collapsed');
-      el.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    }
-    el.addEventListener('click', toggle);
-    el.addEventListener('keydown', function(ev) {
-      if (ev.key === 'Enter' || ev.key === ' ') {
-        ev.preventDefault();
-        toggle();
-      }
+function bindLegendInfo() {
+  document.querySelectorAll('.legend-info').forEach(function(btn) {
+    var tip = btn.parentNode.querySelector('.legend-tip');
+    if (!tip) return;
+    function show() { tip.classList.add('show'); }
+    function hide() { tip.classList.remove('show'); }
+    btn.addEventListener('mouseenter', show);
+    btn.addEventListener('mouseleave', hide);
+    btn.addEventListener('focus', show);
+    btn.addEventListener('blur', hide);
+    btn.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') { hide(); btn.blur(); }
     });
+    tip.addEventListener('mouseenter', show);
+    tip.addEventListener('mouseleave', hide);
   });
 }
 
@@ -1409,7 +1428,7 @@ function route() {
   }
   app.innerHTML = html;
   initPopups();
-  bindLegendToggles();
+  bindLegendInfo();
 }
 
 window.addEventListener('hashchange', route);

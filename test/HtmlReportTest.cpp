@@ -526,22 +526,20 @@ TEST_F(HtmlReportTest, testStatusChipsHelperEmittedInJs) {
   expectContains(content, ".chip--surv");
 }
 
-TEST_F(HtmlReportTest, testLegendSubItemHasCollapsibleMarkup) {
-  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_COLLAPSIBLE";
+TEST_F(HtmlReportTest, testLegendSubItemHasInfoTooltipMarkup) {
+  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_TOOLTIP";
   auto MRs = buildStandardMRs();
   HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // legendItemSub은 행에 collapsed 클래스와 ARIA 속성을 부여한다.
-  expectContains(content, "legend-i--multi collapsed");
-  expectContains(content, "aria-expanded=\"false\"");
-  expectContains(content, "role=\"button\"");
-  expectContains(content, "tabindex=\"0\"");
-  // 카운트 우측의 셰브론 마커.
-  expectContains(content, "legend-chev");
-  // 접힘 시 sub-line을 숨기는 CSS 규칙.
-  expectContains(content, ".legend-i--multi.collapsed .legend-sub");
+  // legendItemSub은 카운트 우측에 ⓘ 트리거 버튼과 툴팁 컨테이너를 둔다.
+  expectContains(content, "class=\"legend-info\"");
+  expectContains(content, "role=\"tooltip\"");
+  expectContains(content, "class=\"legend-tip\"");
+  // ⓘ 글리프(U+24D8)와 cursor: help 어포던스.
+  expectContains(content, "&#9432;");
+  expectContains(content, "cursor: help");
 }
 
 TEST_F(HtmlReportTest, testLegendSubLineHasPercentFormat) {
@@ -556,17 +554,18 @@ TEST_F(HtmlReportTest, testLegendSubLineHasPercentFormat) {
   expectContains(content, "%)");
 }
 
-TEST_F(HtmlReportTest, testLegendToggleHandlerInstalled) {
-  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_TOGGLE";
+TEST_F(HtmlReportTest, testLegendInfoHandlerInstalled) {
+  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_INFO";
   auto MRs = buildStandardMRs();
   HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // 클릭/키보드 토글을 위해 핸들러가 설치되어 있어야 한다.
-  expectContains(content, "function bindLegendToggles");
-  expectContains(content, "addEventListener('click'");
-  expectContains(content, "addEventListener('keydown'");
+  // hover/focus/Esc 트리거 핸들러가 설치되어 있어야 한다.
+  expectContains(content, "function bindLegendInfo");
+  expectContains(content, "addEventListener('mouseenter'");
+  expectContains(content, "addEventListener('focus'");
+  expectContains(content, "ev.key === 'Escape'");
 }
 
 TEST_F(HtmlReportTest, testSkippedStatesInJson) {
