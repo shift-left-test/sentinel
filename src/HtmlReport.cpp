@@ -1265,6 +1265,7 @@ function renderFile(filePath) {
   filePath = decodeURIComponent(filePath);
   var fd = D.files[filePath];
   if (!fd) return '<div class="wrap"><p>File not found.</p></div>';
+  var encodedPath = encodeURIComponent(filePath);
 
   var muts = fd.mutations;
   var fileKilled = 0, fileSurvived = 0, fileTimeout = 0, fileBF = 0, fileRE = 0;
@@ -1397,7 +1398,8 @@ function renderFile(filePath) {
       var sm2 = slMuts[slmi];
       var tDisp2 = sm2.killingTest || 'none';
       var stHtml = statusChips(sm2.state, sm2.uncovered);
-      out += '<div class="ment"><a class="ment__ln" href="#line-' + sln + '">:' + sln + '</a>' +
+      out += '<div class="ment"><a class="ment__ln" href="#/file/' +
+          encodedPath + '/L' + sln + '">:' + sln + '</a>' +
         '<span class="ment__op">' + h(sm2.opFull) + '</span>' +
         '<span class="ment__kl">' + h(tDisp2) + '</span>' +
         stHtml + '</div>';
@@ -1486,21 +1488,40 @@ function initPopups() {
   });
 }
 
+var currentFilePath = null;
 function route() {
   var hash = location.hash || '#/';
   var html;
+  var targetLine = 0;
+  var newFilePath = null;
   if (hash === '#/' || hash === '#' || hash === '') {
     html = renderRoot();
   } else if (hash.indexOf('#/dir/') === 0) {
     html = renderDir(hash.substring(6));
   } else if (hash.indexOf('#/file/') === 0) {
-    html = renderFile(hash.substring(7));
+    var rest = hash.substring(7);
+    var lineMatch = rest.match(/\/L(\d+)$/);
+    if (lineMatch) {
+      targetLine = parseInt(lineMatch[1], 10);
+      rest = rest.substring(0, rest.length - lineMatch[0].length);
+    }
+    newFilePath = rest;
+    if (rest !== currentFilePath) {
+      html = renderFile(rest);
+    }
   } else {
     html = renderRoot();
   }
-  app.innerHTML = html;
-  initPopups();
-  bindLegendInfo();
+  if (html !== undefined) {
+    app.innerHTML = html;
+    initPopups();
+    bindLegendInfo();
+  }
+  currentFilePath = newFilePath;
+  if (targetLine > 0) {
+    var el = document.getElementById('line-' + targetLine);
+    if (el) el.scrollIntoView({ block: 'center' });
+  }
 }
 
 window.addEventListener('hashchange', route);
