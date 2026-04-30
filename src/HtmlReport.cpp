@@ -644,6 +644,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   padding: 10px 14px; text-align: left;
   background: var(--bg-muted); border-bottom: 1px solid var(--border);
 }
+.dtbl th.sortable { cursor: pointer; user-select: none; }
+.dtbl th.sortable:hover { background: var(--border-light); color: var(--text-sec); }
+.dtbl th .sort-arr {
+  display: inline-block; margin-left: 4px; font-size: .7em;
+  color: var(--accent); min-width: 8px;
+}
 .dtbl td {
   padding: 10px 14px; font-size: .86rem; color: var(--text);
   border-bottom: 1px solid var(--border-light); vertical-align: middle;
@@ -803,6 +809,53 @@ function covClass(cov) { return cov >= 70 ? 'c-hi' : cov >= 40 ? 'c-mid' : 'c-lo
 function fillClass(cov) { return cov >= 70 ? 'f-hi' : cov >= 40 ? 'f-mid' : 'f-lo'; }
 
 function nav(hash) { location.hash = hash; }
+
+// { route: string, sort: { col, dir } } — reset on route change.
+var __currentSort = null;
+
+function getSort(routeKey) {
+  var s = (__currentSort && __currentSort.route === routeKey)
+    ? __currentSort.sort : { col: 'name', dir: 'asc' };
+  __currentSort = { route: routeKey, sort: s };
+  return s;
+}
+
+function setSort(col) {
+  if (!__currentSort) return;
+  var cur = __currentSort.sort;
+  var dir = (cur.col === col && cur.dir === 'asc') ? 'desc' : 'asc';
+  __currentSort.sort = { col: col, dir: dir };
+  route();
+}
+
+function sortRows(rows, sort) {
+  if (rows.length === 0) return rows;
+  var col = sort.col;
+  var asc = sort.dir === 'asc' ? 1 : -1;
+  if (typeof rows[0][col] === 'string') {
+    var lcKey = col + '__lc';
+    for (var i = 0; i < rows.length; i++) rows[i][lcKey] = rows[i][col].toLowerCase();
+    rows.sort(function(a, b) { return asc * a[lcKey].localeCompare(b[lcKey]); });
+  } else {
+    rows.sort(function(a, b) { return asc * (a[col] - b[col]); });
+  }
+  return rows;
+}
+
+function sortTh(label, key, sort, extraStyle) {
+  var arr = '';
+  if (sort.col === key) arr = sort.dir === 'asc' ? '\u25B2' : '\u25BC';
+  var styleAttr = extraStyle ? ' style="' + extraStyle + '"' : '';
+  return '<th class="sortable"' + styleAttr +
+    ' onclick="setSort(\'' + key + '\')">' + label +
+    '<span class="sort-arr">' + arr + '</span></th>';
+}
+
+function covCell(score, detected, total) {
+  return '<div class="cov-cell"><span class="cov-pct ' + covClass(score) + '">' + score + '%</span>' +
+    '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(score) + '" style="width:' + score + '%"></div></div>' +
+    '<span class="cov-ratio">' + detected + '/' + total + '</span></div>';
+}
 
 function formatSkippedDetail(to, bf, re) {
   var parts = [];
@@ -1095,9 +1148,8 @@ function renderRoot() {
   // Directory table
   var dirs = D.dirs;
   var dirKeys = Object.keys(dirs);
-  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
-    '<table class="dtbl"><thead><tr><th>Name</th><th style="width:70px;text-align:center">Files</th>' +
-    '<th style="width:300px">Mutation Score</th></tr></thead><tbody>';
+  var sort = getSort('project');
+  var rows = [];
   var totFiles = 0, totDetected = 0, totTotal = 0;
   for (var di = 0; di < dirKeys.length; di++) {
     var dk = dirKeys[di];
@@ -1107,18 +1159,29 @@ function renderRoot() {
     totFiles += dd.fileCount;
     totDetected += dd.detected;
     totTotal += dd.total;
-    out += '<tr><td><a onclick="nav(\'#/dir/' + encodeURIComponent(dk) + '\')">' + h(dn) + '</a></td>' +
-      '<td style="text-align:center">' + dd.fileCount + '</td>' +
-      '<td><div class="cov-cell"><span class="cov-pct ' + covClass(ds) + '">' + ds + '%</span>' +
-      '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(ds) + '" style="width:' + ds + '%"></div></div>' +
-      '<span class="cov-ratio">' + dd.detected + '/' + dd.total + '</span></div></td></tr>';
+    rows.push({
+      name: dn, files: dd.fileCount, score: ds,
+      detected: dd.detected, total: dd.total, key: dk
+    });
+  }
+  rows = sortRows(rows, sort);
+  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
+    '<table class="dtbl"><thead><tr>' +
+    sortTh('Name', 'name', sort, '') +
+    sortTh('Files', 'files', sort, 'width:70px;text-align:center') +
+    sortTh('Mutation Score', 'score', sort, 'width:300px') +
+    '</tr></thead><tbody>';
+  for (var ri = 0; ri < rows.length; ri++) {
+    var r = rows[ri];
+    out += '<tr><td><a onclick="nav(\'#/dir/' + encodeURIComponent(r.key) + '\')">' + h(r.name) + '</a></td>' +
+      '<td style="text-align:center">' + r.files + '</td>' +
+      '<td>' + covCell(r.score, r.detected, r.total) + '</td></tr>';
   }
   var totScore = totTotal > 0 ? Math.floor(100 * totDetected / totTotal) : 0;
   out += '</tbody><tfoot><tr><td>Total</td>' +
     '<td style="text-align:center">' + totFiles + '</td>' +
-    '<td><div class="cov-cell"><span class="cov-pct ' + covClass(totScore) + '">' + totScore + '%</span>' +
-    '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(totScore) + '" style="width:' + totScore + '%"></div></div>' +
-    '<span class="cov-ratio">' + totDetected + '/' + totTotal + '</span></div></td></tr></tfoot></table></section>';
+    '<td>' + covCell(totScore, totDetected, totTotal) +
+    '</td></tr></tfoot></table></section>';
 
   out += '<footer class="ftr">Report generated by <a href="https://github.com/shift-left-test/sentinel">' +
     'Sentinel</a> v' + h(D.version) + '</footer></div>';
@@ -1159,11 +1222,10 @@ function renderDir(dirPath) {
     dd.survivedUncovered || 0);
 
   // File table
-  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
-    '<table class="dtbl"><thead><tr><th>Name</th><th style="width:300px">Mutation Score</th></tr></thead><tbody>';
-
   var files = D.files;
   var fKeys = Object.keys(files);
+  var fSort = getSort('dir:' + dirPath);
+  var fRows = [];
   var fTotFiles = 0, fTotDetected = 0, fTotTotal = 0;
   for (var fi = 0; fi < fKeys.length; fi++) {
     var fp = fKeys[fi];
@@ -1173,16 +1235,26 @@ function renderDir(dirPath) {
     fTotFiles++;
     fTotDetected += fd.detected;
     fTotTotal += fd.total;
-    out += '<tr><td><a onclick="nav(\'#/file/' + encodeURIComponent(fp) + '\')">' + h(fileName(fp)) + '</a></td>' +
-      '<td><div class="cov-cell"><span class="cov-pct ' + covClass(fs) + '">' + fs + '%</span>' +
-      '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(fs) + '" style="width:' + fs + '%"></div></div>' +
-      '<span class="cov-ratio">' + fd.detected + '/' + fd.total + '</span></div></td></tr>';
+    fRows.push({
+      name: fileName(fp), score: fs,
+      detected: fd.detected, total: fd.total, key: fp
+    });
+  }
+  fRows = sortRows(fRows, fSort);
+  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
+    '<table class="dtbl"><thead><tr>' +
+    sortTh('Name', 'name', fSort, '') +
+    sortTh('Mutation Score', 'score', fSort, 'width:300px') +
+    '</tr></thead><tbody>';
+  for (var fri = 0; fri < fRows.length; fri++) {
+    var fr = fRows[fri];
+    out += '<tr><td><a onclick="nav(\'#/file/' + encodeURIComponent(fr.key) + '\')">' + h(fr.name) + '</a></td>' +
+      '<td>' + covCell(fr.score, fr.detected, fr.total) + '</td></tr>';
   }
   var fTotScore = fTotTotal > 0 ? Math.floor(100 * fTotDetected / fTotTotal) : 0;
   out += '</tbody><tfoot><tr><td>Total (' + fTotFiles + ' files)</td>' +
-    '<td><div class="cov-cell"><span class="cov-pct ' + covClass(fTotScore) + '">' + fTotScore + '%</span>' +
-    '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(fTotScore) + '" style="width:' + fTotScore + '%"></div></div>' +
-    '<span class="cov-ratio">' + fTotDetected + '/' + fTotTotal + '</span></div></td></tr></tfoot></table></section>';
+    '<td>' + covCell(fTotScore, fTotDetected, fTotTotal) +
+    '</td></tr></tfoot></table></section>';
 
   out += '<footer class="ftr">Report generated by <a href="https://github.com/shift-left-test/sentinel">' +
     'Sentinel</a></footer></div>';
@@ -1433,6 +1505,7 @@ function route() {
 
 window.addEventListener('hashchange', route);
 window.nav = nav;
+window.setSort = setSort;
 route();
 })();
 </script>

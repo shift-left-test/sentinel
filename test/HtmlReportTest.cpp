@@ -568,6 +568,22 @@ TEST_F(HtmlReportTest, testLegendInfoHandlerInstalled) {
   expectContains(content, "ev.key === 'Escape'");
 }
 
+TEST_F(HtmlReportTest, testBreakdownTableHasSortableHeaders) {
+  auto OUT_DIR = BASE / "OUT_DIR_SORTABLE";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "function sortRows(");
+  expectContains(content, "function sortTh(");
+  expectContains(content, "function setSort(");
+  expectContains(content, "function getSort(");
+  expectContains(content, "window.setSort = setSort");
+  expectContains(content, "th.sortable");
+  expectContains(content, "sort-arr");
+}
+
 TEST_F(HtmlReportTest, testSkippedStatesInJson) {
   auto OUT_DIR = BASE / "OUT_DIR_SKIPPED";
   auto MRs = buildStandardMRs();
