@@ -105,6 +105,22 @@ class MutationResult {
    */
   bool getDetected() const;
 
+  /**
+   * @brief Return true if the mutant was skipped by lcov coverage
+   *        (no test was executed; classified as SURVIVED purely because
+   *        the line is not covered by the test suite).
+   *
+   * @return true if uncovered (lcov-skipped)
+   */
+  bool isUncovered() const;
+
+  /**
+   * @brief Set the uncovered flag.
+   *
+   * @param uncovered true if the mutant is uncovered (lcov-skipped)
+   */
+  void setUncovered(bool uncovered);
+
  private:
   std::string mKillingTest;
   std::string mErrorTest;
@@ -112,6 +128,7 @@ class MutationResult {
   Mutant mMutant;
   double mBuildSecs = 0.0;
   double mTestSecs = 0.0;
+  bool mUncovered = false;
 };
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr);

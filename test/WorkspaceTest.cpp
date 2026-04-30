@@ -160,6 +160,21 @@ TEST_F(WorkspaceTest, testDoneLifecycle) {
   EXPECT_EQ("TestSuite.TestCase", loaded.getKillingTest());
 }
 
+TEST_F(WorkspaceTest, testSetDoneAndGetDoneResultPreservesUncoveredFlag) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 1, "+");
+  ws.createMutant(7, m);
+
+  MutationResult result(m, "", "", MutationState::SURVIVED);
+  result.setUncovered(true);
+  ws.setDone(7, result);
+
+  MutationResult loaded = ws.getDoneResult(7);
+  EXPECT_TRUE(loaded.isUncovered());
+  EXPECT_EQ(MutationState::SURVIVED, loaded.getMutationState());
+}
+
 TEST_F(WorkspaceTest, testRelativePathRoundTrip) {
   Workspace ws(mRoot);
   ws.initialize();

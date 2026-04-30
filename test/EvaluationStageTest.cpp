@@ -535,6 +535,25 @@ TEST_F(EvaluationStageFlowTest, testUncoveredMutantSkippedAsSurvived) {
   EXPECT_THAT(output, HasSubstr("[no coverage]"));
 }
 
+TEST_F(EvaluationStageFlowTest, testUncoveredMutantSetsUncoveredFlagOnResult) {
+  // Regression: SURVIVED* label is derived from result.isUncovered() (single source),
+  // and the persisted MutationResult retains the uncovered flag.
+  createDefaultMutant();
+  mConfig.lcovTracefiles = {writeCoverageFile(99)};
+  mConfig.buildCmd = "false";
+
+  auto stage = std::make_shared<EvaluationStage>(mGitRepo);
+  auto ctx = makeCtx();
+
+  testing::internal::CaptureStdout();
+  EXPECT_NO_THROW(stage->run(&ctx));
+  testing::internal::GetCapturedStdout();
+
+  auto result = mWorkspace->getDoneResult(1);
+  EXPECT_EQ(MutationState::SURVIVED, result.getMutationState());
+  EXPECT_TRUE(result.isUncovered());
+}
+
 TEST_F(EvaluationStageFlowTest, testCoveredMutantIsEvaluated) {
   createDefaultMutant();
   mConfig.lcovTracefiles = {writeCoverageFile(1)};

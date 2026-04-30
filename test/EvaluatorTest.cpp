@@ -124,6 +124,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithKilledMutation) {
 
   auto result = mEvaluator.compare(*mutable1, MUT_DIR, TestExecutionState::SUCCESS);
   EXPECT_TRUE(result.getDetected());
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
@@ -131,13 +132,16 @@ TEST_F(EvaluatorTest, testEvaluatorWithSurvivedMutation) {
 
   auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithUncoveredMutation) {
   Evaluator mEvaluator(ORI_DIR);
 
   auto result = mEvaluator.compare(*mutable2, MUT_DIR_SURVIVED, TestExecutionState::UNCOVERED);
+  EXPECT_EQ(result.getMutationState(), MutationState::SURVIVED);
   EXPECT_FALSE(result.getDetected());
+  EXPECT_TRUE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
@@ -147,6 +151,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithBuildFailure) {
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::BUILD_FAILURE);
   EXPECT_FALSE(result.getDetected());
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
@@ -156,6 +161,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeError) {
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::SUCCESS);
   EXPECT_FALSE(result.getDetected());
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
@@ -166,6 +172,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithRuntimeErrorState) {
   auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::RUNTIME_ERROR);
   EXPECT_FALSE(result.getDetected());
   EXPECT_EQ(result.getMutationState(), MutationState::RUNTIME_ERROR);
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
@@ -175,6 +182,7 @@ TEST_F(EvaluatorTest, testEvaluatorWithTimeout) {
   fs::create_directories(emptyPath);
   auto result = mEvaluator.compare(*mutable2, emptyPath, TestExecutionState::TIMEOUT);
   EXPECT_FALSE(result.getDetected());
+  EXPECT_FALSE(result.isUncovered());
 }
 
 TEST_F(EvaluatorTest, testConstructorThrowsForUnsupportedXmlSchema) {

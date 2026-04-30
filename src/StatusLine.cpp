@@ -160,13 +160,16 @@ void StatusLine::setDryRun(bool dryRun) {
   redraw();
 }
 
-void StatusLine::recordResult(int state) {
-  switch (static_cast<MutationState>(state)) {
+void StatusLine::recordResult(MutationState state, bool uncovered) {
+  switch (state) {
     case MutationState::KILLED:
       mKilled++;
       break;
     case MutationState::SURVIVED:
       mSurvived++;
+      if (uncovered) {
+        mUncovered++;
+      }
       break;
     case MutationState::RUNTIME_ERROR:
     case MutationState::BUILD_FAILURE:
@@ -273,9 +276,14 @@ ftxui::Element StatusLine::buildSummaryElement() const {
       : 0.0;
   std::string scoreStr = fmt::format("{:.1f}%", score);
   int w = countWidth();
+  // Uncovered가 발생했을 때만 Survived 옆에 (uncov) 토큰을 표시 — 0일 때는
+  // 공백 패딩 없이 바로 다음 토큰이 붙도록 한다.
+  std::string uncovToken = mUncovered > 0
+      ? fmt::format("({:>{}})", mUncovered, w)
+      : std::string{};
   return ftxui::hbox({
       ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::CrossMark, mKilled, w)),
-      ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::CheckMark, mSurvived, w)),
+      ftxui::text(fmt::format("{}{:>{}}{} ", Utf8Char::CheckMark, mSurvived, w, uncovToken)),
       ftxui::text(fmt::format("{}{:>{}} ", Utf8Char::Warning, mAbnormal, w)),
       ftxui::separatorLight(),
       ftxui::text(fmt::format(" {:>6} ", scoreStr)),

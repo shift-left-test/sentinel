@@ -53,9 +53,18 @@ void MutationResult::setTestSecs(double secs) {
   mTestSecs = secs;
 }
 
+bool MutationResult::isUncovered() const {
+  return mUncovered;
+}
+
+void MutationResult::setUncovered(bool uncovered) {
+  mUncovered = uncovered;
+}
+
 bool MutationResult::compare(const MutationResult& other) const {
   return mMutant == other.mMutant && mKillingTest == other.mKillingTest && mErrorTest == other.mErrorTest &&
-         mState == other.mState && mBuildSecs == other.mBuildSecs && mTestSecs == other.mTestSecs;
+         mState == other.mState && mBuildSecs == other.mBuildSecs && mTestSecs == other.mTestSecs &&
+         mUncovered == other.mUncovered;
 }
 
 std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
@@ -69,6 +78,7 @@ std::ostream& operator<<(std::ostream& out, const MutationResult& mr) {
   emitter << YAML::Key << "error-test" << YAML::Value << mr.getErrorTest();
   emitter << YAML::Key << "build-time" << YAML::Value << mr.getBuildSecs();
   emitter << YAML::Key << "test-time" << YAML::Value << mr.getTestSecs();
+  emitter << YAML::Key << "uncovered" << YAML::Value << mr.isUncovered();
   emitter << YAML::Key << "mutant" << YAML::Value << YAML::Load(mutantYaml.str());
   emitter << YAML::EndMap;
   out << emitter.c_str();
@@ -106,6 +116,9 @@ std::istream& operator>>(std::istream& in, MutationResult& mr) {
     }
     if (node["test-time"]) {
       mr.setTestSecs(node["test-time"].as<double>());
+    }
+    if (node["uncovered"]) {
+      mr.setUncovered(node["uncovered"].as<bool>());
     }
   } catch (const YAML::Exception&) {
     in.setstate(std::ios::failbit);

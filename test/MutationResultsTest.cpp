@@ -335,4 +335,46 @@ TEST_F(MutationResultsTest, testEmplaceBackCreatesInPlace) {
   EXPECT_EQ("test", MRs[0].getKillingTest());
 }
 
+TEST_F(MutationResultsTest, uncoveredFlagDefaultIsFalse) {
+  MutationResult result;
+  EXPECT_FALSE(result.isUncovered());
+}
+
+TEST_F(MutationResultsTest, uncoveredFlagPersistsThroughSerialization) {
+  Mutant m("AOR", TARGET_FILE, "sumOfEvenPositiveNumber", 4, 5, 6, 7, "+");
+  MutationResult original(m, "", "", MutationState::SURVIVED);
+  original.setUncovered(true);
+
+  std::ostringstream out;
+  out << original;
+  std::istringstream in(out.str());
+
+  MutationResult restored;
+  in >> restored;
+
+  EXPECT_TRUE(restored.isUncovered());
+  EXPECT_EQ(restored.getMutationState(), MutationState::SURVIVED);
+}
+
+TEST_F(MutationResultsTest, uncoveredFlagAbsentInLegacyFormatReadsAsFalse) {
+  static constexpr const char* kLegacyYaml =
+      "state: SURVIVED\n"
+      "killing-test: \"\"\n"
+      "error-test: \"\"\n"
+      "build-time: 0\n"
+      "test-time: 0\n"
+      "mutant:\n"
+      "  operator: AOR\n"
+      "  path: foo.cpp\n"
+      "  function: f\n"
+      "  first: {line: 1, column: 1}\n"
+      "  last: {line: 1, column: 2}\n"
+      "  token: \"+\"\n";
+  std::istringstream in(kLegacyYaml);
+  MutationResult result;
+  in >> result;
+  EXPECT_FALSE(in.fail());
+  EXPECT_FALSE(result.isUncovered());
+}
+
 }  // namespace sentinel

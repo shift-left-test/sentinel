@@ -380,7 +380,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-l, --limit=N` | Maximum number of mutants to generate; `0` = unlimited | `0` |
-| `--lcov-tracefile=FILE` | skip evaluation for uncovered mutants (repeatable) | |
+| `--lcov-tracefile=FILE` | skip evaluation for uncovered mutants (repeatable). The reports and status line show the uncovered subset of SURVIVED separately. | |
 | `--restrict` | Restrict mutant generation to lines covered by `--lcov-tracefile`. Without this flag, uncovered lines still produce mutants but their evaluation is skipped (kept in the report as SURVIVED\*). Requires `--lcov-tracefile`. | disabled |
 | `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). It is recommended to set `--seed` explicitly so every partition instance generates an identical mutant list; if omitted, a random seed is used and each run may evaluate a different subset. The union of all partition results equals a single non-partitioned run. Mutant paths are stored relative to `--source-dir`, so workspace directories can be collected from multiple machines and resumed on any machine with the same source tree. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
 | `--merge-partition PATH` | Merge a partitioned workspace result into the target workspace (repeatable) | |
@@ -541,7 +541,7 @@ version: 1
 
 ## Coverage-Guided Mutation
 
-The `--lcov-tracefile` option accepts an lcov tracefile and skips build and test evaluation for mutants on lines not covered by the test suite. This reduces evaluation time while still reporting uncovered mutants as survived.
+The `--lcov-tracefile` option accepts an lcov tracefile and skips build and test evaluation for mutants on lines not covered by the test suite. This reduces evaluation time while still reporting uncovered mutants as survived. The HTML report shows the uncovered count next to the Survived card, donut, and By Operator bar; the XML report marks each entry with an `uncovered="true"` attribute; and the StatusLine summary shows the uncovered subset in parentheses next to the ✓ counter.
 
 After running the tests with coverage instrumentation enabled, generate the coverage info file with lcov:
 

@@ -49,7 +49,11 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
     }
   }
 
-  return {mut, killingTC, errorTC, state};
+  MutationResult result(mut, killingTC, errorTC, state);
+  if (testState == TestExecutionState::UNCOVERED) {
+    result.setUncovered(true);
+  }
+  return result;
 }
 
 }  // namespace sentinel

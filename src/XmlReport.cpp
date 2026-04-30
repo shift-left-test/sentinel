@@ -46,6 +46,10 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
       pMutation->SetAttribute("detected", r.getDetected());
     }
 
+    if (state == MutationState::SURVIVED && r.isUncovered()) {
+      pMutation->SetAttribute("uncovered", "true");
+    }
+
     addChildToParent(doc.get(), pMutation, "sourceFile", r.getMutant().getPath().filename().string());
     addChildToParent(doc.get(), pMutation, "sourceFilePath", r.getMutant().getPath().string());
     addChildToParent(doc.get(), pMutation, "mutatedClass", r.getMutant().getClass());

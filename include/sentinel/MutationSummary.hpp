@@ -30,6 +30,7 @@ struct MutationSummary {
     std::vector<const MutationResult*> results;  ///< All mutation results in the directory
     std::size_t total = 0;   ///< Total number of mutations
     std::size_t detected = 0;  ///< Number of detected (killed) mutations
+    std::size_t survivedUncovered = 0;  ///< Subset of survived that were lcov-skipped
     std::size_t fileCount = 0;  ///< Number of distinct source files
   };
 
@@ -50,6 +51,7 @@ struct MutationSummary {
 
   std::size_t totNumberOfMutation = 0;  ///< Total evaluated mutations (excl. skipped)
   std::size_t totNumberOfDetectedMutation = 0;  ///< Total killed mutations
+  std::size_t totNumberOfSurvivedUncovered = 0;  ///< Subset of survived that were lcov-skipped
   std::size_t totNumberOfBuildFailure = 0;  ///< Total build failures
   std::size_t totNumberOfRuntimeError = 0;  ///< Total runtime errors
   std::size_t totNumberOfTimeout = 0;  ///< Total timeouts

@@ -70,7 +70,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     ++current;
     if (ctx->workspace.isDone(id)) {
       auto doneResult = ctx->workspace.getDoneResult(id);
-      ctx->statusLine.recordResult(static_cast<int>(doneResult.getMutationState()));
+      ctx->statusLine.recordResult(doneResult.getMutationState(), doneResult.isUncovered());
       continue;
     }
     // isLocked: treat as incomplete — fall through to re-evaluate
@@ -94,8 +94,11 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
     const auto relPath = m.getPath();
     const std::string token = m.getToken().empty()
         ? "DELETE" : fmt::format("{} {}", Utf8Char::ArrowRight, m.getToken());
-    const char* label = uncovered ? kUncoveredLabel : mutationStateToStr(state);
-    const std::string timing = uncovered ? kUncoveredTiming : fmt::format("  [{}/{}]",
+    // Single source of truth: derive label/timing from the result's metadata,
+    // not the local `uncovered` flag (which only gates evaluator dispatch above).
+    const bool isUncov = result.isUncovered();
+    const char* label = isUncov ? kUncoveredLabel : mutationStateToStr(state);
+    const std::string timing = isUncov ? kUncoveredTiming : fmt::format("  [{}/{}]",
         Timestamper::format(result.getBuildSecs()), Timestamper::format(result.getTestSecs()));
     Console::out("  [{:>{}}/{}] {} {:<13} {}  {}:{}:{} ({}){}", current,
                  fmt::formatted_size("{}", totalMutants), totalMutants,
@@ -121,7 +124,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
 
     ctx->workspace.clearLock(id);
     ctx->workspace.setDone(id, result);
-    ctx->statusLine.recordResult(static_cast<int>(result.getMutationState()));
+    ctx->statusLine.recordResult(result.getMutationState(), result.isUncovered());
   }
 
   ctx->workspace.setComplete();

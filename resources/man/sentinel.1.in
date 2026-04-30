@@ -121,6 +121,9 @@ Maximum number of mutants to generate. \fB0\fR = unlimited. Default: \fB0\fR
 \fB\-\-lcov\-tracefile\fR=\fIFILE\fR
 Skip evaluation for uncovered mutants (repeatable). When given, mutants on
 uncovered lines skip build/test and are marked as survived.
+The HTML and XML reports separately display the number of uncovered mutants
+(a subset of SURVIVED), and the StatusLine shows the count in parentheses
+next to the SURVIVED counter.
 .TP
 \fB\-\-restrict\fR
 Restrict mutant generation to lines covered by \fB\-\-lcov\-tracefile\fR.

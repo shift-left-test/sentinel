@@ -9,6 +9,7 @@
 #include <csignal>
 #include <string>
 #include <ftxui/dom/elements.hpp>
+#include "sentinel/MutationState.hpp"
 #include "sentinel/Timestamper.hpp"
 
 namespace sentinel {
@@ -89,10 +90,11 @@ class StatusLine {
   /**
    * @brief Record the result of the last mutant and redraw.
    *
-   * @param state MutationState cast to int (KILLED=0, SURVIVED=1, RUNTIME_ERROR=2,
-   *              BUILD_FAILURE=3, TIMEOUT=4).
+   * @param state    MutationState of the result.
+   * @param uncovered true if the mutant was lcov-skipped (subset of SURVIVED).
+   *                  Counted in mUncovered separately to display the SURVIVED breakdown.
    */
-  void recordResult(int state);
+  void recordResult(MutationState state, bool uncovered);
 
   /**
    * @brief Set dry-run mode indicator and redraw.
@@ -152,6 +154,7 @@ class StatusLine {
   std::size_t mKilled = 0;
   std::size_t mSurvived = 0;
   std::size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
+  std::size_t mUncovered = 0;  ///< Subset of mSurvived that were lcov-skipped.
   Timestamper mTimestamper;
 };
 

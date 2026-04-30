@@ -179,10 +179,12 @@ std::string HtmlReport::buildJsonData() const {
   o << "\"totalTestSecs\":" << fmt::format("{:.2f}", mSummary.totalTestSecs)
     << ",";
 
-  // byOperator
+  o << "\"survivedUncovered\":" << mSummary.totNumberOfSurvivedUncovered << ",";
+
+  // byOperator: [killed, survived, skipped, uncovered]
   const std::vector<std::string> kOperatorOrder =
       {"AOR", "BOR", "LCR", "ROR", "SDL", "SOR", "UOI"};
-  std::map<std::string, std::array<std::size_t, 3>> opMap;
+  std::map<std::string, std::array<std::size_t, 4>> opMap;
   for (const auto& mr : mSummary.results) {
     const auto& op = mr.getMutant().getOperator();
     auto state = mr.getMutationState();
@@ -190,6 +192,9 @@ std::string HtmlReport::buildJsonData() const {
       opMap[op][0]++;
     } else if (state == MutationState::SURVIVED) {
       opMap[op][1]++;
+      if (mr.isUncovered()) {
+        opMap[op][3]++;
+      }
     } else {
       opMap[op][2]++;
     }
@@ -206,7 +211,7 @@ std::string HtmlReport::buildJsonData() const {
     }
     firstOp = false;
     o << "\"" << op << "\":[" << it->second[0] << "," << it->second[1] << ","
-      << it->second[2] << "]";
+      << it->second[2] << "," << it->second[3] << "]";
   }
   o << "},";
 
@@ -266,7 +271,8 @@ std::string HtmlReport::buildJsonData() const {
     o << "\"fileCount\":" << dirStats.fileCount << ",";
     o << "\"timeouts\":" << dirTimeout << ",";
     o << "\"buildFailures\":" << dirBuildFailure << ",";
-    o << "\"runtimeErrors\":" << dirRuntimeError;
+    o << "\"runtimeErrors\":" << dirRuntimeError << ",";
+    o << "\"survivedUncovered\":" << dirStats.survivedUncovered;
     o << "}";
   }
   o << "},";
@@ -367,6 +373,7 @@ std::string HtmlReport::buildJsonData() const {
       o << "\"token\":\"" << jsonEscape(mutant.getToken()) << "\",";
       o << "\"state\":\"" << mutationStateToStr(mr->getMutationState())
         << "\",";
+      o << "\"uncovered\":" << (mr->isUncovered() ? "true" : "false") << ",";
       o << "\"killingTest\":\"" << jsonEscape(mr->getKillingTest()) << "\",";
       o << "\"oriCode\":\"" << jsonEscape(oriCode) << "\",";
       o << "\"mutCode\":\"" << jsonEscape(mutCode) << "\"";
@@ -518,7 +525,37 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .legend { display: flex; flex-direction: column; gap: 10px; }
 .legend-i { display: flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--text); }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.legend-i .n { font-weight: 700; margin-left: auto; min-width: 24px; text-align: right; }
+.legend-dot--inline {
+  display: inline-block; width: 9px; height: 9px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin: 0 5px 1px 1px;
+  background-color: #d44030;
+}
+.legend-dot--inline-uncov {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0,0,0,0.20) 0,
+    rgba(0,0,0,0.20) 1px,
+    transparent 1px,
+    transparent 2.5px
+  );
+}
+.legend-i .legend-lbl { min-width: 70px; }
+.legend-i .n { font-weight: 700; min-width: 24px; text-align: right; }
+.legend-i--multi { flex-wrap: wrap; row-gap: 1px; cursor: pointer; outline: none; }
+.legend-i--multi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.legend-chev {
+  display: inline-block; margin-left: 4px; font-size: .7rem;
+  color: var(--text-muted); transition: transform .15s ease;
+  transform: rotate(90deg);
+}
+.legend-i--multi.collapsed .legend-chev { transform: rotate(0deg); }
+.legend-i--multi.collapsed .legend-sub { display: none; }
+.legend-sub {
+  width: 100%; padding-left: 18px; font-weight: 400;
+  font-size: .78rem; color: var(--text-muted);
+}
 
 /* bar chart */
 .bars { display: flex; flex-direction: column; gap: 12px; }
@@ -528,6 +565,17 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .bar-track { height: 7px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; display: flex; }
 .bar-k { height: 100%; background: var(--green); }
 .bar-s { height: 100%; background: var(--red); }
+.bar-u {
+  height: 100%;
+  background-color: var(--red);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0,0,0,0.15) 0,
+    rgba(0,0,0,0.15) 1.5px,
+    transparent 1.5px,
+    transparent 4.5px
+  );
+}
 .bar-x { height: 100%; background: var(--skip); }
 .bar-build { height: 100%; background: #036098; }
 .bar-test  { height: 100%; background: #48b0e0; }
@@ -670,6 +718,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   font-size: .72rem; font-weight: 700; text-transform: uppercase;
   padding: 2px 8px; border-radius: 8px; justify-self: end;
 }
+.chips { display: inline-flex; gap: 5px; align-items: center; justify-self: end; }
+.chip {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 8px; letter-spacing: .03em;
+}
+.chip--killed { background: var(--green-bg); color: var(--green); }
+.chip--surv { background: var(--red-bg); color: var(--red); }
+.chip--uncov {
+  background: #f2dad2; color: #a04220; border: 1px solid #e6b8a0;
+}
 
 .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .tag {
@@ -734,7 +792,11 @@ function formatSkippedDetail(to, bf, re) {
   return parts.join(' \u00b7 ');
 }
 
-function buildCards(score, killed, survived, skipped, valid, skippedDetail) {
+function buildCards(score, killed, survived, skipped, valid, skippedDetail, survUncov) {
+  var survSub = 'Not detected';
+  if (survUncov > 0) {
+    survSub += ' \u00b7 ' + survUncov + ' uncovered';
+  }
   return '<section class="cards cards--4">' +
     '<div class="card card--score"><div class="card__lbl">Mutation Score</div>' +
     '<div class="card__val">' + score + '%</div>' +
@@ -743,7 +805,7 @@ function buildCards(score, killed, survived, skipped, valid, skippedDetail) {
     '<div class="card card--killed"><div class="card__lbl">Killed</div>' +
     '<div class="card__val">' + killed + '</div><div class="card__sub">Detected by tests</div></div>' +
     '<div class="card card--surv"><div class="card__lbl">Survived</div>' +
-    '<div class="card__val">' + survived + '</div><div class="card__sub">Not detected</div></div>' +
+    '<div class="card__val">' + survived + '</div><div class="card__sub">' + survSub + '</div></div>' +
     '<div class="card card--skip"><div class="card__lbl">Skipped</div>' +
     '<div class="card__val">' + skipped + '</div>' +
     '<div class="card__sub">' + (skippedDetail || '') + '</div></div></section>';
@@ -752,6 +814,14 @@ function buildCards(score, killed, survived, skipped, valid, skippedDetail) {
 function donutSvg(segments, centerText, centerLabel) {
   var R = 54, C = 2 * Math.PI * R;
   var s = '<svg class="donut-svg" viewBox="0 0 140 140">' +
+    '<defs>' +
+      '<pattern id="hatch-uncov" patternUnits="userSpaceOnUse"' +
+      ' width="6" height="6" patternTransform="rotate(-45)">' +
+      '<rect width="6" height="6" fill="#d44030"/>' +
+      '<line x1="0" y1="0" x2="0" y2="6"' +
+      ' stroke="rgba(0,0,0,0.15)" stroke-width="2.4"/>' +
+      '</pattern>' +
+    '</defs>' +
     '<circle cx="70" cy="70" r="54" fill="none" stroke="#e8ecf1" stroke-width="15"/>';
   var offset = C / 4;
   for (var i = 0; i < segments.length; i++) {
@@ -772,7 +842,69 @@ function donutSvg(segments, centerText, centerLabel) {
 
 function legendItem(color, label, value) {
   return '<div class="legend-i"><span class="legend-dot" style="background:' + color +
-    '"></span>' + h(label) + '<span class="n">' + h(value) + '</span></div>';
+    '"></span><span class="legend-lbl">' + h(label) + '</span>' +
+    '<span class="n">' + h(value) + '</span></div>';
+}
+
+function legendItemSub(color, label, value, subLines) {
+  if (subLines.length === 0) {
+    return legendItem(color, label, value);
+  }
+  var subs = '';
+  for (var i = 0; i < subLines.length; i++) {
+    subs += '<span class="legend-sub">' + subLines[i] + '</span>';
+  }
+  return '<div class="legend-i legend-i--multi collapsed"' +
+    ' role="button" tabindex="0" aria-expanded="false">' +
+    '<span class="legend-dot" style="background:' + color + '"></span>' +
+    '<span class="legend-lbl">' + h(label) + '</span>' +
+    '<span class="n">' + h(value) + '</span>' +
+    '<span class="legend-chev" aria-hidden="true">&#9656;</span>' + subs + '</div>';
+}
+
+function pctOf(part, total) {
+  if (total === 0) return 0;
+  return Math.round((part / total) * 100);
+}
+
+function survivedLegendItem(survived, uncov) {
+  if (uncov === 0) {
+    return legendItem('#d44030', 'Survived', survived);
+  }
+  var covered = survived - uncov;
+  var subs = [
+    '<span class="legend-dot--inline"></span>' + covered +
+      ' covered (' + pctOf(covered, survived) + '%)',
+    '<span class="legend-dot--inline legend-dot--inline-uncov"></span>' + uncov +
+      ' uncovered (' + pctOf(uncov, survived) + '%)'
+  ];
+  return legendItemSub('#d44030', 'Survived', survived, subs);
+}
+
+function skippedLegendItem(to, bf, re) {
+  var skipped = to + bf + re;
+  if (skipped === 0) return '';
+  var subs = [];
+  if (to > 0) subs.push(to + ' timeout (' + pctOf(to, skipped) + '%)');
+  if (bf > 0) subs.push(bf + ' build failure (' + pctOf(bf, skipped) + '%)');
+  if (re > 0) subs.push(re + ' runtime error (' + pctOf(re, skipped) + '%)');
+  return legendItemSub('#94a0b0', 'Skipped', skipped, subs);
+}
+
+function bindLegendToggles() {
+  document.querySelectorAll('.legend-i--multi').forEach(function(el) {
+    function toggle() {
+      var collapsed = el.classList.toggle('collapsed');
+      el.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    el.addEventListener('click', toggle);
+    el.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        toggle();
+      }
+    });
+  });
 }
 
 function barRow(name, cntHtml, barSegments) {
@@ -784,6 +916,20 @@ function barRow(name, cntHtml, barSegments) {
   return '<div><div class="bar-hdr"><span class="bar-name">' + h(name) +
     '</span><span class="bar-cnt">' + cntHtml + '</span></div>' +
     '<div class="bar-track">' + bars + '</div></div>';
+}
+
+function statusChips(state, isUncov) {
+  if (state === 'KILLED') {
+    return '<span class="chips"><span class="chip chip--killed">Killed</span></span>';
+  }
+  if (state === 'SURVIVED') {
+    var s = '<span class="chips"><span class="chip chip--surv">Survived</span>';
+    if (isUncov) {
+      s += '<span class="chip chip--uncov">Uncovered</span>';
+    }
+    return s + '</span>';
+  }
+  return '<span class="ment__st b-s">' + state.replace('_', ' ') + '</span>';
 }
 
 var opOrder = ['AOR','BOR','LCR','ROR','SDL','SOR','UOI'];
@@ -822,34 +968,49 @@ function renderRoot() {
     '<h1>Mutation Testing Report</h1></div><div class="hdr__right">' +
     '<span class="badge">Generated: ' + h(D.timestamp) + '</span></div></header>';
 
-  out += buildCards(score, killed, survived, skipped, sm.totalMutations, skippedDetail);
+  out += buildCards(score, killed, survived, skipped, sm.totalMutations, skippedDetail,
+    sm.survivedUncovered || 0);
 
   // Panels row
   // Left: mutants donut + operator bars
+  var survUncov = sm.survivedUncovered || 0;
+  var coveredSurv = survived - survUncov;
   var mutSegs = [];
   if (total > 0) {
     mutSegs.push({frac: killed / total, color: '#0f8a5f'});
-    mutSegs.push({frac: survived / total, color: '#d44030'});
+    if (coveredSurv > 0) {
+      mutSegs.push({frac: coveredSurv / total, color: '#d44030'});
+    }
+    if (survUncov > 0) {
+      mutSegs.push({frac: survUncov / total, color: 'url(#hatch-uncov)'});
+    }
     mutSegs.push({frac: skipped / total, color: '#94a0b0'});
   }
-  var mutLegend = legendItem('#0f8a5f','Killed',killed) + legendItem('#d44030','Survived',survived);
-  if (sm.timeouts > 0) mutLegend += legendItem('#94a0b0','Timeout',sm.timeouts);
-  if (sm.buildFailures > 0) mutLegend += legendItem('#94a0b0','Build Failure',sm.buildFailures);
-  if (sm.runtimeErrors > 0) mutLegend += legendItem('#94a0b0','Runtime Error',sm.runtimeErrors);
+  var mutLegend = legendItem('#0f8a5f','Killed',killed) +
+                  survivedLegendItem(survived, survUncov) +
+                  skippedLegendItem(sm.timeouts, sm.buildFailures, sm.runtimeErrors);
 
   var opBars = '';
   for (var oi = 0; oi < opOrder.length; oi++) {
     var op = opOrder[oi];
     var d = sm.byOperator[op];
     if (!d) continue;
-    var ok = d[0], os = d[1], ox = d[2], ot = ok + os + ox;
+    var ok = d[0], os = d[1], ox = d[2], ou = d[3] || 0;
+    var ot = ok + os + ox;
     if (ot === 0) continue;
+    var opCoveredSurv = os - ou;
     var cnt = ok + ' killed';
-    if (os > 0) cnt += ' \u00b7 ' + os + ' survived';
+    if (os > 0) {
+      cnt += ' \u00b7 ' + os + ' survived';
+      if (ou > 0) {
+        cnt += ' (' + ou + ' uncovered)';
+      }
+    }
     if (ox > 0) cnt += ' \u00b7 ' + ox + ' skipped';
     var segs = [];
     if (ok > 0) segs.push({cls:'bar-k', pct: 100*ok/ot});
-    if (os > 0) segs.push({cls:'bar-s', pct: 100*os/ot});
+    if (opCoveredSurv > 0) segs.push({cls:'bar-s', pct: 100*opCoveredSurv/ot});
+    if (ou > 0) segs.push({cls:'bar-u', pct: 100*ou/ot});
     if (ox > 0) segs.push({cls:'bar-x', pct: 100*ox/ot});
     opBars += barRow(opNames[op] || op, cnt, segs);
   }
@@ -961,7 +1122,8 @@ function renderDir(dirPath) {
     '<span class="crumb__sep">/</span>' +
     '<span style="color:var(--text)">' + h(displayName) + '</span></nav>';
 
-  out += buildCards(score, killed, survived, skipped, total, skippedDetail);
+  out += buildCards(score, killed, survived, skipped, total, skippedDetail,
+    dd.survivedUncovered || 0);
 
   // File table
   out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
@@ -993,6 +1155,7 @@ function renderFile(filePath) {
 
   var muts = fd.mutations;
   var fileKilled = 0, fileSurvived = 0, fileTimeout = 0, fileBF = 0, fileRE = 0;
+  var fileUncov = 0;
   var uniqueTests = {}, uniqueOps = {};
   var groupByLine = {};
 
@@ -1000,7 +1163,10 @@ function renderFile(filePath) {
     var m = muts[mi];
     switch (m.state) {
       case 'KILLED': fileKilled++; break;
-      case 'SURVIVED': fileSurvived++; break;
+      case 'SURVIVED':
+        fileSurvived++;
+        if (m.uncovered) fileUncov++;
+        break;
       case 'TIMEOUT': fileTimeout++; break;
       case 'BUILD_FAILURE': fileBF++; break;
       case 'RUNTIME_ERROR': fileRE++; break;
@@ -1038,6 +1204,10 @@ function renderFile(filePath) {
 
   // Cards
   var skSub = fileSkipped > 0 && skippedDetail ? skippedDetail : fileSkipped > 0 ? fileSkipped + ' skipped' : 'None';
+  var fileSurvSub = 'Not detected';
+  if (fileUncov > 0) {
+    fileSurvSub += ' \u00b7 ' + fileUncov + ' uncovered';
+  }
   out += '<section class="cards cards--4">' +
     '<div class="card card--score"><div class="card__lbl">Mutation Score</div>' +
     '<div class="card__val">' + score + '%</div>' +
@@ -1046,7 +1216,7 @@ function renderFile(filePath) {
     '<div class="card card--killed"><div class="card__lbl">Killed</div>' +
     '<div class="card__val">' + fileKilled + '</div><div class="card__sub">Detected by tests</div></div>' +
     '<div class="card card--surv"><div class="card__lbl">Survived</div>' +
-    '<div class="card__val">' + fileSurvived + '</div><div class="card__sub">Not detected</div></div>' +
+    '<div class="card__val">' + fileSurvived + '</div><div class="card__sub">' + fileSurvSub + '</div></div>' +
     '<div class="card card--skip"><div class="card__lbl">Skipped</div>' +
     '<div class="card__val">' + fileSkipped + '</div><div class="card__sub">' + skSub + '</div></div></section>';
 
@@ -1112,14 +1282,12 @@ function renderFile(filePath) {
     var slMuts = groupByLine[sln];
     for (var slmi = 0; slmi < slMuts.length; slmi++) {
       var sm2 = slMuts[slmi];
-      var isK2 = sm2.state === 'KILLED';
-      var bCls2 = isK2 ? 'b-k' : 'b-s';
-      var bTxt2 = isK2 ? 'Killed' : 'Survived';
       var tDisp2 = sm2.killingTest || 'none';
+      var stHtml = statusChips(sm2.state, sm2.uncovered);
       out += '<div class="ment"><a class="ment__ln" href="#line-' + sln + '">:' + sln + '</a>' +
         '<span class="ment__op">' + h(sm2.opFull) + '</span>' +
         '<span class="ment__kl">' + h(tDisp2) + '</span>' +
-        '<span class="ment__st ' + bCls2 + '">' + bTxt2 + '</span></div>';
+        stHtml + '</div>';
     }
   }
   out += '</div></section>';
@@ -1219,6 +1387,7 @@ function route() {
   }
   app.innerHTML = html;
   initPopups();
+  bindLegendToggles();
 }
 
 window.addEventListener('hashchange', route);

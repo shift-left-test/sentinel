@@ -41,6 +41,7 @@ MutationSummary::MutationSummary(const MutationSummary& other) :
     sourcePath(other.sourcePath),
     totNumberOfMutation(other.totNumberOfMutation),
     totNumberOfDetectedMutation(other.totNumberOfDetectedMutation),
+    totNumberOfSurvivedUncovered(other.totNumberOfSurvivedUncovered),
     totNumberOfBuildFailure(other.totNumberOfBuildFailure),
     totNumberOfRuntimeError(other.totNumberOfRuntimeError),
     totNumberOfTimeout(other.totNumberOfTimeout),
@@ -66,6 +67,7 @@ MutationSummary::MutationSummary(const MutationSummary& other) :
     auto& entry = groupByDirPath[dirPath];
     entry.total = dirStats.total;
     entry.detected = dirStats.detected;
+    entry.survivedUncovered = dirStats.survivedUncovered;
     entry.fileCount = dirStats.fileCount;
     for (const auto* p : dirStats.results) {
       entry.results.push_back(&results.at(static_cast<std::size_t>(p - base)));
@@ -80,6 +82,7 @@ MutationSummary& MutationSummary::operator=(MutationSummary other) {
   std::swap(groupByPath, other.groupByPath);
   std::swap(totNumberOfMutation, other.totNumberOfMutation);
   std::swap(totNumberOfDetectedMutation, other.totNumberOfDetectedMutation);
+  std::swap(totNumberOfSurvivedUncovered, other.totNumberOfSurvivedUncovered);
   std::swap(totNumberOfBuildFailure, other.totNumberOfBuildFailure);
   std::swap(totNumberOfRuntimeError, other.totNumberOfRuntimeError);
   std::swap(totNumberOfTimeout, other.totNumberOfTimeout);
@@ -136,6 +139,9 @@ void MutationSummary::aggregate() {
       dirStats.detected++;
       fileStats.detected++;
       totNumberOfDetectedMutation++;
+    } else if (currentState == MutationState::SURVIVED && mr.isUncovered()) {
+      dirStats.survivedUncovered++;
+      totNumberOfSurvivedUncovered++;
     }
   }
 

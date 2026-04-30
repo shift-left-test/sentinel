@@ -116,6 +116,13 @@ int minus(int a, int b){
 
     return MRs;
   }
+
+  MutationResults buildMRsWithUncovered() {
+    auto MRs = buildStandardMRs();
+    // 첫 번째 SURVIVED (M1, AOR @ REL_PATH1)을 uncovered로 표시
+    MRs[0].setUncovered(true);
+    return MRs;
+  }
 };
 
 TEST_F(HtmlReportTest, testSaveCreatesSingleIndexHtml) {
@@ -262,7 +269,7 @@ TEST_F(HtmlReportTest, testJsonContainsOperatorBreakdown) {
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
   expectContains(content, "\"byOperator\":");
-  expectContains(content, "\"AOR\":[1,2,3]");
+  expectContains(content, "\"AOR\":[1,2,3,0]");
 }
 
 TEST_F(HtmlReportTest, testSpaJavascriptEmbedded) {
@@ -373,6 +380,193 @@ TEST_F(HtmlReportTest, testSaveFailWhenInvalidLineNumber) {
 
   HtmlReport htmlreport2(MutationSummary(MRs2, SOURCE_DIR), Config{});
   EXPECT_THROW(htmlreport2.save(OUT_DIR2), InvalidArgumentException);
+}
+
+TEST_F(HtmlReportTest, testJsonContainsSurvivedUncoveredCount) {
+  auto OUT_DIR = BASE / "OUT_DIR_SURV_UNCOV";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "\"survivedUncovered\":1");
+}
+
+TEST_F(HtmlReportTest, testJsonByOperatorIncludesUncoveredCount) {
+  auto OUT_DIR = BASE / "OUT_DIR_BYOP_UNCOV";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // AOR: 1 killed, 2 survived, 3 skipped, 1 uncovered
+  expectContains(content, "\"AOR\":[1,2,3,1]");
+}
+
+TEST_F(HtmlReportTest, testJsonByOperatorZeroUncoveredArrayHasFourSlots) {
+  auto OUT_DIR = BASE / "OUT_DIR_BYOP_NOUNCOV";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // AOR: 1 killed, 2 survived, 3 skipped, 0 uncovered
+  expectContains(content, "\"AOR\":[1,2,3,0]");
+  expectContains(content, "\"survivedUncovered\":0");
+}
+
+TEST_F(HtmlReportTest, testSurvivedCardSubLineShowsUncoveredCount) {
+  auto OUT_DIR = BASE / "OUT_DIR_CARD_UNCOV";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "Not detected");
+  expectContains(content, "uncovered");
+}
+
+TEST_F(HtmlReportTest, testSurvivedCardSubLineOmitsUncoveredWhenZero) {
+  auto OUT_DIR = BASE / "OUT_DIR_CARD_NOUNCOV";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "Not detected");
+  // sub-line의 정적 'uncovered' 토큰은 없어야 함
+  // (lcovMode=skip uncovered evaluation 등 config 영향 없음)
+  // 참고: JS 코드에 ' uncovered' 리터럴은 들어가지만 HTML 출력 시점에는 동적.
+  // 여기서는 ' uncovered' 단어가 출력에 들어가지 않음을 확인하기보다
+  // 'survivedUncovered":0'을 통한 간접 확인.
+  expectContains(content, "\"survivedUncovered\":0");
+}
+
+TEST_F(HtmlReportTest, testMutantsDonutDefinesHatchPattern) {
+  auto OUT_DIR = BASE / "OUT_DIR_DONUT_HATCH";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "hatch-uncov");
+  expectContains(content, "patternUnits");
+  expectContains(content, "url(#hatch-uncov)");
+}
+
+TEST_F(HtmlReportTest, testMutantsLegendShowsUncoveredSubset) {
+  auto OUT_DIR = BASE / "OUT_DIR_DONUT_LEGEND";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "legend-dot--inline");
+  expectContains(content, "uncovered");
+}
+
+TEST_F(HtmlReportTest, testOperatorBarShowsUncoveredCountInParens) {
+  auto OUT_DIR = BASE / "OUT_DIR_OPBAR_UNCOV";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // op cnt 텍스트는 JS 빌더 안에 리터럴로 박혀 있음. 핵심 토큰 검증.
+  expectContains(content, "survived");
+  expectContains(content, "uncovered)");
+  expectContains(content, "(");
+  // bar-u CSS 클래스도 정의되어 있어야 함
+  expectContains(content, ".bar-u");
+}
+
+TEST_F(HtmlReportTest, testOperatorBarHasHatchPatternCss) {
+  auto OUT_DIR = BASE / "OUT_DIR_OPBAR_HATCH";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, ".bar-u");
+  expectContains(content, "repeating-linear-gradient");
+}
+
+TEST_F(HtmlReportTest, testMutationListRowHasUncoveredChip) {
+  auto OUT_DIR = BASE / "OUT_DIR_FILE_CHIP_UNCOV";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "chip--uncov");
+  expectContains(content, "Uncovered");
+}
+
+TEST_F(HtmlReportTest, testMutationsJsonContainsUncoveredField) {
+  auto OUT_DIR = BASE / "OUT_DIR_MUT_UNCOV_FIELD";
+  auto MRs = buildMRsWithUncovered();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "\"uncovered\":true");
+  expectContains(content, "\"uncovered\":false");
+}
+
+TEST_F(HtmlReportTest, testStatusChipsHelperEmittedInJs) {
+  auto OUT_DIR = BASE / "OUT_DIR_STATUS_CHIPS";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // statusChips 헬퍼 함수가 JS에 삽입되어 있음
+  expectContains(content, "function statusChips(");
+  // chip--surv CSS 클래스도 정의됨
+  expectContains(content, ".chip--surv");
+}
+
+TEST_F(HtmlReportTest, testLegendSubItemHasCollapsibleMarkup) {
+  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_COLLAPSIBLE";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // legendItemSub은 행에 collapsed 클래스와 ARIA 속성을 부여한다.
+  expectContains(content, "legend-i--multi collapsed");
+  expectContains(content, "aria-expanded=\"false\"");
+  expectContains(content, "role=\"button\"");
+  expectContains(content, "tabindex=\"0\"");
+  // 카운트 우측의 셰브론 마커.
+  expectContains(content, "legend-chev");
+  // 접힘 시 sub-line을 숨기는 CSS 규칙.
+  expectContains(content, ".legend-i--multi.collapsed .legend-sub");
+}
+
+TEST_F(HtmlReportTest, testLegendSubLineHasPercentFormat) {
+  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_PERCENT";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // sub-line 텍스트에 부모 카운트 기준 퍼센트(예: " (40%)")가 포함된다.
+  expectContains(content, "Math.round");
+  expectContains(content, "%)");
+}
+
+TEST_F(HtmlReportTest, testLegendToggleHandlerInstalled) {
+  auto OUT_DIR = BASE / "OUT_DIR_LEGEND_TOGGLE";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // 클릭/키보드 토글을 위해 핸들러가 설치되어 있어야 한다.
+  expectContains(content, "function bindLegendToggles");
+  expectContains(content, "addEventListener('click'");
+  expectContains(content, "addEventListener('keydown'");
 }
 
 TEST_F(HtmlReportTest, testSkippedStatesInJson) {

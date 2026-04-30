@@ -218,6 +218,43 @@ TEST_F(XmlReportTest, testMakeXmlReportWithTimeoutMutation) {
   EXPECT_NE(std::string::npos, content.find("<killingTest></killingTest>"));
 }
 
+TEST_F(XmlReportTest, UncoveredMutantHasUncoveredAttribute) {
+  MutationResults MRs;
+  Mutant M1("AOR", mRelPath1, "func", 4, 5, 6, 7, "+");
+  MutationResult MR1(M1, "", "", MutationState::SURVIVED);
+  MR1.setUncovered(true);
+  MRs.push_back(MR1);
+
+  auto MRPath = mMutResultDir / "MutationResultUncovered";
+  MRs.save(MRPath);
+
+  XmlReport xmlreport(MutationSummary(MRPath, mSourceDir));
+  auto outDir = mBase / "OUT_DIR_UNCOVERED";
+  xmlreport.save(outDir);
+
+  auto content = testutil::readFile(outDir / "mutations.xml");
+  EXPECT_NE(std::string::npos, content.find("uncovered=\"true\""));
+}
+
+TEST_F(XmlReportTest, CoveredSurvivedMutantHasNoUncoveredAttribute) {
+  MutationResults MRs;
+  Mutant M1("AOR", mRelPath1, "func", 4, 5, 6, 7, "+");
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
+
+  Mutant M2("BOR", mRelPath2, "func", 1, 2, 3, 4, "|");
+  MRs.emplace_back(M2, "testAddBit", "", MutationState::KILLED);
+
+  auto MRPath = mMutResultDir / "MutationResultCoveredSurvived";
+  MRs.save(MRPath);
+
+  XmlReport xmlreport(MutationSummary(MRPath, mSourceDir));
+  auto outDir = mBase / "OUT_DIR_COVERED_SURV";
+  xmlreport.save(outDir);
+
+  auto content = testutil::readFile(outDir / "mutations.xml");
+  EXPECT_EQ(std::string::npos, content.find("uncovered"));
+}
+
 TEST_F(XmlReportTest, testMakeXmlReportMixedStates) {
   MutationResults MRs;
   Mutant M1("AOR", mRelPath1, "func", 4, 5, 6, 7, "+");

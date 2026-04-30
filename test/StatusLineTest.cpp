@@ -56,15 +56,12 @@ TEST_F(StatusLineTest, testSetMutantInfoDoesNotCrash) {
 
 TEST_F(StatusLineTest, testRecordResultDoesNotCrash) {
   StatusLine sl;
-  for (int state = 0; state <= 4; ++state) {
-    EXPECT_NO_THROW(sl.recordResult(state));
-  }
-}
-
-TEST_F(StatusLineTest, testRecordResultInvalidStateDoesNotCrash) {
-  StatusLine sl;
-  EXPECT_NO_THROW(sl.recordResult(-1));
-  EXPECT_NO_THROW(sl.recordResult(99));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::KILLED, false));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::SURVIVED, false));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::SURVIVED, true));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::RUNTIME_ERROR, false));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::BUILD_FAILURE, false));
+  EXPECT_NO_THROW(sl.recordResult(MutationState::TIMEOUT, false));
 }
 
 TEST_F(StatusLineTest, testSetDryRunDoesNotCrash) {
@@ -87,8 +84,8 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
   sl.setPhase(StatusLine::Phase::EVALUATION);
   sl.setTotalMutants(100);
   sl.setMutantInfo(50);
-  for (int i = 0; i < 40; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 10; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  for (int i = 0; i < 40; ++i) sl.recordResult(MutationState::KILLED, false);
+  for (int i = 0; i < 10; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
 
@@ -169,12 +166,12 @@ TEST_F(StatusLineTest, testDryRunPrefix) {
 TEST_F(StatusLineTest, testRecordResultCountersCorrect) {
   StatusLine sl;
   sl.setTotalMutants(100);
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
-  sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-  sl.recordResult(static_cast<int>(MutationState::RUNTIME_ERROR));
+  sl.recordResult(MutationState::KILLED, false);
+  sl.recordResult(MutationState::KILLED, false);
+  sl.recordResult(MutationState::SURVIVED, false);
+  sl.recordResult(MutationState::BUILD_FAILURE, false);
+  sl.recordResult(MutationState::TIMEOUT, false);
+  sl.recordResult(MutationState::RUNTIME_ERROR, false);
 
   std::string text = sl.getStatusText();
 
@@ -188,11 +185,11 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogProgress) {
   sl.setTotalMutants(100);
 
   for (int i = 0; i < 9; ++i) {
-    sl.recordResult(static_cast<int>(MutationState::KILLED));
+    sl.recordResult(MutationState::KILLED, false);
   }
 
   testing::internal::CaptureStderr();
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
+  sl.recordResult(MutationState::KILLED, false);
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, Not(HasSubstr("Progress:")));
@@ -204,11 +201,11 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogAtCompletion) {
   StatusLine sl;
   sl.setTotalMutants(3);
 
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
+  sl.recordResult(MutationState::KILLED, false);
+  sl.recordResult(MutationState::KILLED, false);
 
   testing::internal::CaptureStderr();
-  sl.recordResult(static_cast<int>(MutationState::KILLED));
+  sl.recordResult(MutationState::KILLED, false);
   std::string output = testing::internal::GetCapturedStderr();
 
   EXPECT_THAT(output, Not(HasSubstr("Progress:")));
@@ -237,9 +234,9 @@ TEST_F(StatusLineTest, testZeroDenominatorScoreIsZero) {
   StatusLine sl;
   sl.setTotalMutants(3);
   // Record only abnormal results — denominator (killed+survived) stays 0
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-  sl.recordResult(static_cast<int>(MutationState::RUNTIME_ERROR));
+  sl.recordResult(MutationState::BUILD_FAILURE, false);
+  sl.recordResult(MutationState::TIMEOUT, false);
+  sl.recordResult(MutationState::RUNTIME_ERROR, false);
 
   std::string text = sl.getStatusText();
 
@@ -250,8 +247,8 @@ TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   StatusLine sl;
   sl.setTotalMutants(50);
   sl.setMutantInfo(25);
-  for (int i = 0; i < 20; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 5; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  for (int i = 0; i < 20; ++i) sl.recordResult(MutationState::KILLED, false);
+  for (int i = 0; i < 5; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
 
@@ -305,7 +302,7 @@ TEST_F(StatusLineTest, testDisableRestoresWinchHandler) {
 TEST_F(StatusLineTest, testHundredPercentScore) {
   StatusLine sl;
   sl.setTotalMutants(5);
-  for (int i = 0; i < 5; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
+  for (int i = 0; i < 5; ++i) sl.recordResult(MutationState::KILLED, false);
 
   std::string text = sl.getStatusText();
 
@@ -315,7 +312,7 @@ TEST_F(StatusLineTest, testHundredPercentScore) {
 TEST_F(StatusLineTest, testAllSurvivedScore) {
   StatusLine sl;
   sl.setTotalMutants(3);
-  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
 
@@ -338,8 +335,8 @@ TEST_F(StatusLineTest, testDonePhaseLayout) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::DONE);
   sl.setTotalMutants(10);
-  for (int i = 0; i < 7; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
+  for (int i = 0; i < 7; ++i) sl.recordResult(MutationState::KILLED, false);
+  for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
 
@@ -382,16 +379,51 @@ TEST_F(StatusLineTest, testDryRunWithNonEvaluationPhase) {
 TEST_F(StatusLineTest, testMixedResultsCorrectCounts) {
   StatusLine sl;
   sl.setTotalMutants(8);
-  for (int i = 0; i < 3; ++i) sl.recordResult(static_cast<int>(MutationState::KILLED));
-  for (int i = 0; i < 2; ++i) sl.recordResult(static_cast<int>(MutationState::SURVIVED));
-  sl.recordResult(static_cast<int>(MutationState::BUILD_FAILURE));
-  sl.recordResult(static_cast<int>(MutationState::TIMEOUT));
-  sl.recordResult(static_cast<int>(MutationState::RUNTIME_ERROR));
+  for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::KILLED, false);
+  for (int i = 0; i < 2; ++i) sl.recordResult(MutationState::SURVIVED, false);
+  sl.recordResult(MutationState::BUILD_FAILURE, false);
+  sl.recordResult(MutationState::TIMEOUT, false);
+  sl.recordResult(MutationState::RUNTIME_ERROR, false);
 
   std::string text = sl.getStatusText();
 
   // score = 3 / (3 + 2) = 60.0%; abnormals excluded from denominator
   EXPECT_THAT(text, HasSubstr("60.0%"));
+}
+
+TEST_F(StatusLineTest, testRecordResultAcceptsUncoveredFlag) {
+  StatusLine sl;
+  sl.setTotalMutants(10);
+  sl.recordResult(MutationState::SURVIVED, true);
+  sl.recordResult(MutationState::SURVIVED, false);
+  sl.recordResult(MutationState::KILLED, false);
+  // Compile-only signature check — runtime checks covered by other tests.
+  SUCCEED();
+}
+
+TEST_F(StatusLineTest, testSummaryShowsUncoveredInParentheses) {
+  StatusLine sl;
+  sl.setTotalMutants(10);
+  for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::KILLED, false);
+  sl.recordResult(MutationState::SURVIVED, false);
+  sl.recordResult(MutationState::SURVIVED, true);
+  sl.recordResult(MutationState::SURVIVED, true);
+
+  std::string text = sl.getStatusText();
+  // killed = 3, survived = 3, uncovered subset = 2 — rendered as "( 2)" (right-aligned
+  // to countWidth, which is at least 2).
+  EXPECT_THAT(text, HasSubstr("( 2)"));
+}
+
+TEST_F(StatusLineTest, testSummaryWithoutUncoveredHasNoUncoveredToken) {
+  StatusLine sl;
+  sl.setTotalMutants(10);
+  sl.recordResult(MutationState::SURVIVED, false);
+  std::string text = sl.getStatusText();
+  // No uncovered subset → no "(N)" token next to the survived counter.
+  // (Progress element always prints "(P%)", so we check for digit-only patterns only.)
+  EXPECT_THAT(text, Not(HasSubstr("(0)")));
+  EXPECT_THAT(text, Not(HasSubstr("(1)")));
 }
 
 }  // namespace sentinel
