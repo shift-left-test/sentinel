@@ -44,7 +44,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   auto indexedMutants = ctx->workspace.loadMutants();
   std::size_t totalMutants = indexedMutants.size();
   Logger::info("Evaluating {} mutant{}...", totalMutants, totalMutants == 1 ? "" : "s");
-  ctx->statusLine.setTotalMutants(totalMutants);
+  ctx->statusLine.setProgressTotal(totalMutants);
 
   // Determine timeout
   const bool isAutoTimeout = !ctx->config.timeout.has_value();
@@ -82,7 +82,7 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
       uncovered = !coverageInfo.cover(absPath.string(), m.getFirst().line);
     }
 
-    ctx->statusLine.setMutantInfo(current);
+    ctx->statusLine.setProgressCurrent(current);
 
     MutationResult result = uncovered
         ? evaluator.compare(m, ctx->workspace.getActualDir(), TestExecutionState::UNCOVERED)

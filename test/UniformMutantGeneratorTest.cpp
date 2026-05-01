@@ -5,10 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/MutantGenerator.hpp"
@@ -258,6 +260,30 @@ TEST(MutantGeneratorFactoryTest, getInstanceReturnsCorrectType) {
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::UNIFORM, tmpDir));
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::RANDOM, tmpDir));
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::WEIGHTED, tmpDir));
+}
+
+TEST_F(UniformMutantGeneratorTest, testProgressCallbackInvokedPerFile) {
+  UniformMutantGenerator generator(SAMPLE1_DIR);
+  generator.setOperators({"AOR"});
+
+  std::vector<std::pair<std::size_t, std::size_t>> calls;
+  generator.setProgressCallback(
+      [&calls](std::size_t done, std::size_t total) {
+        calls.emplace_back(done, total);
+      });
+
+  generator.generate(mSourceLines, /*maxMutants=*/0, /*randomSeed=*/42);
+
+  // Two unique source files in mSourceLines (mTargetFile1, mTargetFile2).
+  ASSERT_FALSE(calls.empty());
+  EXPECT_EQ(calls.front().first, 0u);
+  EXPECT_EQ(calls.front().second, 2u);
+  EXPECT_EQ(calls.back().first, 2u);
+  EXPECT_EQ(calls.back().second, 2u);
+  for (const auto& [done, total] : calls) {
+    EXPECT_EQ(total, 2u);
+    EXPECT_LE(done, total);
+  }
 }
 
 TEST_F(UniformMutantGeneratorTest, testMissingDirectoryDoesNotAbort) {

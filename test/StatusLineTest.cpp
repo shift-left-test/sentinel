@@ -45,13 +45,13 @@ TEST_F(StatusLineTest, testSetPhaseDoesNotCrash) {
 
 TEST_F(StatusLineTest, testSetTotalMutantsDoesNotCrash) {
   StatusLine sl;
-  EXPECT_NO_THROW(sl.setTotalMutants(0));
-  EXPECT_NO_THROW(sl.setTotalMutants(100));
+  EXPECT_NO_THROW(sl.setProgressTotal(0));
+  EXPECT_NO_THROW(sl.setProgressTotal(100));
 }
 
 TEST_F(StatusLineTest, testSetMutantInfoDoesNotCrash) {
   StatusLine sl;
-  EXPECT_NO_THROW(sl.setMutantInfo(1));
+  EXPECT_NO_THROW(sl.setProgressCurrent(1));
 }
 
 TEST_F(StatusLineTest, testRecordResultDoesNotCrash) {
@@ -82,8 +82,8 @@ TEST_F(StatusLineTest, testDestructorCallsDisable) {
 TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::EVALUATION);
-  sl.setTotalMutants(100);
-  sl.setMutantInfo(50);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(50);
   for (int i = 0; i < 40; ++i) sl.recordResult(MutationState::KILLED, false);
   for (int i = 0; i < 10; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
@@ -97,8 +97,8 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsProgress) {
 TEST_F(StatusLineTest, testEvaluationPhaseShowsSpinner) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::EVALUATION);
-  sl.setTotalMutants(100);
-  sl.setMutantInfo(1);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(1);
 
   std::string text = sl.getStatusText();
 
@@ -106,9 +106,22 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsSpinner) {
   EXPECT_THAT(text, HasSubstr("\xe2\xa0\x99"));
 }
 
-TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoSpinner) {
+TEST_F(StatusLineTest, testGenerationPhaseShowsSpinner) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::GENERATION);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(1);
+
+  std::string text = sl.getStatusText();
+
+  // Spinner charset 15 frame 1 is U+2819, encoded as \xe2\xa0\x99
+  EXPECT_THAT(text, HasSubstr("\xe2\xa0\x99"));
+}
+
+TEST_F(StatusLineTest, testSpinnerHiddenWhenTotalIsZero) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+  // Default mTotal == 0 — spinner must not render
 
   std::string text = sl.getStatusText();
 
@@ -120,8 +133,8 @@ TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoSpinner) {
 TEST_F(StatusLineTest, testEvaluationPhaseShowsGauge) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::EVALUATION);
-  sl.setTotalMutants(100);
-  sl.setMutantInfo(50);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(50);
 
   std::string text = sl.getStatusText();
 
@@ -129,13 +142,25 @@ TEST_F(StatusLineTest, testEvaluationPhaseShowsGauge) {
   EXPECT_THAT(text, HasSubstr("\xe2\x96\x88"));
 }
 
-TEST_F(StatusLineTest, testNonEvaluationPhaseHasNoGauge) {
+TEST_F(StatusLineTest, testGenerationPhaseShowsGauge) {
   StatusLine sl;
-  sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+  sl.setPhase(StatusLine::Phase::GENERATION);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(50);
 
   std::string text = sl.getStatusText();
 
-  // No full-block character (U+2588) should appear without gauge
+  // gauge(0.5) renders full-block chars (U+2588 = \xe2\x96\x88)
+  EXPECT_THAT(text, HasSubstr("\xe2\x96\x88"));
+}
+
+TEST_F(StatusLineTest, testGaugeHiddenWhenTotalIsZero) {
+  StatusLine sl;
+  sl.setPhase(StatusLine::Phase::BUILD_ORIG);
+  // Default mTotal == 0 — gauge must not render
+  std::string text = sl.getStatusText();
+
+  // No full-block character (U+2588) should appear without a positive total
   EXPECT_THAT(text, Not(HasSubstr("\xe2\x96\x88")));
 }
 
@@ -154,8 +179,8 @@ TEST_F(StatusLineTest, testDryRunPrefix) {
   StatusLine sl;
   sl.setDryRun(true);
   sl.setPhase(StatusLine::Phase::EVALUATION);
-  sl.setTotalMutants(100);
-  sl.setMutantInfo(50);
+  sl.setProgressTotal(100);
+  sl.setProgressCurrent(50);
 
   std::string text = sl.getStatusText();
 
@@ -165,7 +190,7 @@ TEST_F(StatusLineTest, testDryRunPrefix) {
 
 TEST_F(StatusLineTest, testRecordResultCountersCorrect) {
   StatusLine sl;
-  sl.setTotalMutants(100);
+  sl.setProgressTotal(100);
   sl.recordResult(MutationState::KILLED, false);
   sl.recordResult(MutationState::KILLED, false);
   sl.recordResult(MutationState::SURVIVED, false);
@@ -182,7 +207,7 @@ TEST_F(StatusLineTest, testRecordResultCountersCorrect) {
 TEST_F(StatusLineTest, testRecordResultDoesNotLogProgress) {
   Logger::setLevel(Logger::Level::INFO);
   StatusLine sl;
-  sl.setTotalMutants(100);
+  sl.setProgressTotal(100);
 
   for (int i = 0; i < 9; ++i) {
     sl.recordResult(MutationState::KILLED, false);
@@ -199,7 +224,7 @@ TEST_F(StatusLineTest, testRecordResultDoesNotLogProgress) {
 TEST_F(StatusLineTest, testRecordResultDoesNotLogAtCompletion) {
   Logger::setLevel(Logger::Level::INFO);
   StatusLine sl;
-  sl.setTotalMutants(3);
+  sl.setProgressTotal(3);
 
   sl.recordResult(MutationState::KILLED, false);
   sl.recordResult(MutationState::KILLED, false);
@@ -232,7 +257,7 @@ TEST_F(StatusLineTest, testPhaseLabelCoversAllPhases) {
 
 TEST_F(StatusLineTest, testZeroDenominatorScoreIsZero) {
   StatusLine sl;
-  sl.setTotalMutants(3);
+  sl.setProgressTotal(3);
   // Record only abnormal results — denominator (killed+survived) stays 0
   sl.recordResult(MutationState::BUILD_FAILURE, false);
   sl.recordResult(MutationState::TIMEOUT, false);
@@ -245,14 +270,14 @@ TEST_F(StatusLineTest, testZeroDenominatorScoreIsZero) {
 
 TEST_F(StatusLineTest, testBuildProgressStringFormat) {
   StatusLine sl;
-  sl.setTotalMutants(50);
-  sl.setMutantInfo(25);
+  sl.setProgressTotal(50);
+  sl.setProgressCurrent(25);
   for (int i = 0; i < 20; ++i) sl.recordResult(MutationState::KILLED, false);
   for (int i = 0; i < 5; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
 
-  // mCurrent == 25 (set by setMutantInfo), mTotal == 50 → [25/50]
+  // mCurrent == 25 (set by setProgressCurrent), mTotal == 50 → [25/50]
   EXPECT_THAT(text, HasSubstr("[25/50]"));
   // pct = 25 * 100 / 50 = 50 → "50%"
   EXPECT_THAT(text, HasSubstr("50%"));
@@ -301,7 +326,7 @@ TEST_F(StatusLineTest, testDisableRestoresWinchHandler) {
 
 TEST_F(StatusLineTest, testHundredPercentScore) {
   StatusLine sl;
-  sl.setTotalMutants(5);
+  sl.setProgressTotal(5);
   for (int i = 0; i < 5; ++i) sl.recordResult(MutationState::KILLED, false);
 
   std::string text = sl.getStatusText();
@@ -311,7 +336,7 @@ TEST_F(StatusLineTest, testHundredPercentScore) {
 
 TEST_F(StatusLineTest, testAllSurvivedScore) {
   StatusLine sl;
-  sl.setTotalMutants(3);
+  sl.setProgressTotal(3);
   for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
   std::string text = sl.getStatusText();
@@ -334,7 +359,7 @@ TEST_F(StatusLineTest, testGenerationPhaseLayout) {
 TEST_F(StatusLineTest, testDonePhaseLayout) {
   StatusLine sl;
   sl.setPhase(StatusLine::Phase::DONE);
-  sl.setTotalMutants(10);
+  sl.setProgressTotal(10);
   for (int i = 0; i < 7; ++i) sl.recordResult(MutationState::KILLED, false);
   for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::SURVIVED, false);
 
@@ -346,8 +371,8 @@ TEST_F(StatusLineTest, testDonePhaseLayout) {
 
 TEST_F(StatusLineTest, testCountWidthWithLargeTotal) {
   StatusLine sl;
-  sl.setTotalMutants(10000);
-  sl.setMutantInfo(1);
+  sl.setProgressTotal(10000);
+  sl.setProgressCurrent(1);
 
   std::string text = sl.getStatusText();
 
@@ -356,8 +381,8 @@ TEST_F(StatusLineTest, testCountWidthWithLargeTotal) {
 
 TEST_F(StatusLineTest, testProgressWithZeroTotal) {
   StatusLine sl;
-  sl.setTotalMutants(0);
-  sl.setMutantInfo(0);
+  sl.setProgressTotal(0);
+  sl.setProgressCurrent(0);
 
   std::string text = sl.getStatusText();
 
@@ -378,7 +403,7 @@ TEST_F(StatusLineTest, testDryRunWithNonEvaluationPhase) {
 
 TEST_F(StatusLineTest, testMixedResultsCorrectCounts) {
   StatusLine sl;
-  sl.setTotalMutants(8);
+  sl.setProgressTotal(8);
   for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::KILLED, false);
   for (int i = 0; i < 2; ++i) sl.recordResult(MutationState::SURVIVED, false);
   sl.recordResult(MutationState::BUILD_FAILURE, false);
@@ -393,7 +418,7 @@ TEST_F(StatusLineTest, testMixedResultsCorrectCounts) {
 
 TEST_F(StatusLineTest, testRecordResultAcceptsUncoveredFlag) {
   StatusLine sl;
-  sl.setTotalMutants(10);
+  sl.setProgressTotal(10);
   sl.recordResult(MutationState::SURVIVED, true);
   sl.recordResult(MutationState::SURVIVED, false);
   sl.recordResult(MutationState::KILLED, false);
@@ -403,7 +428,7 @@ TEST_F(StatusLineTest, testRecordResultAcceptsUncoveredFlag) {
 
 TEST_F(StatusLineTest, testSummaryShowsUncoveredInParentheses) {
   StatusLine sl;
-  sl.setTotalMutants(10);
+  sl.setProgressTotal(10);
   for (int i = 0; i < 3; ++i) sl.recordResult(MutationState::KILLED, false);
   sl.recordResult(MutationState::SURVIVED, false);
   sl.recordResult(MutationState::SURVIVED, true);
@@ -417,7 +442,7 @@ TEST_F(StatusLineTest, testSummaryShowsUncoveredInParentheses) {
 
 TEST_F(StatusLineTest, testSummaryWithoutUncoveredHasNoUncoveredToken) {
   StatusLine sl;
-  sl.setTotalMutants(10);
+  sl.setProgressTotal(10);
   sl.recordResult(MutationState::SURVIVED, false);
   std::string text = sl.getStatusText();
   // No uncovered subset → no "(N)" token next to the survived counter.

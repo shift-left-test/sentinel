@@ -212,4 +212,25 @@ TEST_F(WeightedMutantGeneratorTest, testGenerateWithMutantsPerLineUnlimited) {
   EXPECT_GE(mutants.size(), baseline.size());
 }
 
+TEST_F(WeightedMutantGeneratorTest, testProgressCallbackInvokedPerFile) {
+  WeightedMutantGenerator generator(SAMPLE1_DIR);
+  generator.setOperators({"AOR"});
+
+  std::size_t lastDone = 0;
+  std::size_t lastTotal = 0;
+  std::size_t callCount = 0;
+  generator.setProgressCallback(
+      [&](std::size_t done, std::size_t total) {
+        lastDone = done;
+        lastTotal = total;
+        ++callCount;
+      });
+
+  generator.generate(mSourceLines, /*maxMutants=*/0, /*randomSeed=*/42);
+
+  EXPECT_GE(callCount, 1u);
+  EXPECT_EQ(lastDone, lastTotal);
+  EXPECT_GT(lastTotal, 0u);
+}
+
 }  // namespace sentinel

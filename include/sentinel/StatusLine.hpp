@@ -74,18 +74,22 @@ class StatusLine {
   void setPhase(Phase phase);
 
   /**
-   * @brief Set the total mutant count and redraw.
+   * @brief Set the total number of progress steps (units of work) and redraw.
    *
-   * @param total Total number of mutants to process.
+   * Used by stages that report incremental progress. The unit varies by
+   * phase (files during GENERATION, mutants during EVALUATION); the
+   * StatusLine itself is unit-agnostic.
+   *
+   * @param total Total number of progress steps.
    */
-  void setTotalMutants(std::size_t total);
+  void setProgressTotal(std::size_t total);
 
   /**
-   * @brief Update the currently-processed mutant index and redraw.
+   * @brief Update the currently-completed progress step count and redraw.
    *
-   * @param current 1-based index of the mutant being processed.
+   * @param current 1-based count of completed steps.
    */
-  void setMutantInfo(std::size_t current);
+  void setProgressCurrent(std::size_t current);
 
   /**
    * @brief Record the result of the last mutant and redraw.

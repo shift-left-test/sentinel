@@ -17,7 +17,7 @@ StatusLine::Phase DryRunStage::getPhase() const {
 }
 
 bool DryRunStage::execute(PipelineContext* ctx) {
-  ctx->statusLine.setTotalMutants(ctx->workspace.loadMutants().size());
+  ctx->statusLine.setProgressTotal(ctx->workspace.loadMutants().size());
   Logger::info("Evaluation skipped (dry run).");
   return false;
 }

@@ -87,6 +87,10 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
     targetLines[filename].push_back(sourceLine.getLineNumber());
   }
 
+  const std::size_t totalFiles = targetLines.size();
+  std::size_t doneFiles = 0;
+  notifyProgress(doneFiles, totalFiles);
+
   unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
   auto* db = compileDb.get();
 
@@ -110,6 +114,8 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
       auto localMutables = fut.get();
       mutables.insert(mutables.end(), std::make_move_iterator(localMutables.begin()),
                       std::make_move_iterator(localMutables.end()));
+      ++doneFiles;
+      notifyProgress(doneFiles, totalFiles);
     }
   }
 

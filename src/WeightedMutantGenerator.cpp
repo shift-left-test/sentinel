@@ -55,6 +55,10 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
     targetLines[filename].push_back(sourceLine);
   }
 
+  const std::size_t totalFiles = targetLines.size();
+  std::size_t doneFiles = 0;
+  notifyProgress(doneFiles, totalFiles);
+
   using FileResult = std::pair<Mutants, DepthMap>;
   unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
   auto* db = compileDb.get();
@@ -84,6 +88,8 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
       mutables.insert(mutables.end(), std::make_move_iterator(result.first.begin()),
                       std::make_move_iterator(result.first.end()));
       depthMap.insert(result.second.begin(), result.second.end());
+      ++doneFiles;
+      notifyProgress(doneFiles, totalFiles);
     }
   }
 

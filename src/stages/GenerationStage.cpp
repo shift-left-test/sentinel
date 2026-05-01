@@ -200,6 +200,11 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   std::shuffle(sourceLines.begin(), sourceLines.end(), std::mt19937(seed));
 
   mGenerator->setOperators(ctx->config.operators);
+  mGenerator->setProgressCallback(
+      [ctx](std::size_t done, std::size_t total) {
+        ctx->statusLine.setProgressTotal(total);
+        ctx->statusLine.setProgressCurrent(done);
+      });
   MutationFactory factory(mGenerator);
   auto mutants = factory.generate(ctx->config.sourceDir, sourceLines, ctx->config.limit, seed,
                                   ctx->config.mutantsPerLine);

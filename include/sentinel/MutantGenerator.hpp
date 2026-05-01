@@ -13,11 +13,13 @@
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
+#include <functional>
 #include <map>
 #include <memory>
 #include <random>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include "sentinel/Config.hpp"
 #include "sentinel/Mutants.hpp"
@@ -117,6 +119,26 @@ class MutantGenerator {
     return mLinesByPath;
   }
 
+  /**
+   * @brief Progress callback signature used by the generator while parsing
+   *        source files. Invoked from the main thread only.
+   *
+   * @param done  Number of source files whose AST traversal has finished.
+   * @param total Total number of source files to be processed.
+   */
+  using ProgressCallback = std::function<void(std::size_t done, std::size_t total)>;
+
+  /**
+   * @brief Install a progress callback that is invoked once with
+   *        (0, total) before parsing begins and again after each
+   *        completed source file. Called from the main thread only.
+   *
+   * @param callback callable matching ProgressCallback; pass nullptr to disable.
+   */
+  void setProgressCallback(ProgressCallback callback) {
+    mProgressCallback = std::move(callback);
+  }
+
  protected:
   /**
    * @brief Constructor with compilation database path.
@@ -124,6 +146,21 @@ class MutantGenerator {
    * @param dbPath path to the directory containing compile_commands.json
    */
   explicit MutantGenerator(const std::filesystem::path& dbPath) : mDbPath(dbPath) {}
+
+  /**
+   * @brief Invoke the registered progress callback (no-op when unset).
+   *
+   * Intended to be called from the main thread only by collectAllMutants
+   * implementations after each completed source file.
+   *
+   * @param done  Number of source files whose AST traversal has finished.
+   * @param total Total number of source files to be processed.
+   */
+  void notifyProgress(std::size_t done, std::size_t total) const {
+    if (mProgressCallback) {
+      mProgressCallback(done, total);
+    }
+  }
 
   /**
    * @brief Collect all mutant candidates via Clang AST traversal.
@@ -268,6 +305,8 @@ class MutantGenerator {
   std::size_t mCandidateCount = 0;
   /// @brief Mutable line count per file from the last generate() call.
   std::map<std::filesystem::path, std::size_t> mLinesByPath;
+  /// @brief Optional progress callback (no-op when unset).
+  ProgressCallback mProgressCallback;
 
   /**
    * @brief SentinelASTVisitor — shared AST visitor for mutant collection.

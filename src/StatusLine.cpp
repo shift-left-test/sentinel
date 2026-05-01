@@ -145,12 +145,18 @@ void StatusLine::setPhase(Phase phase) {
   redraw();
 }
 
-void StatusLine::setTotalMutants(size_t total) {
+void StatusLine::setProgressTotal(size_t total) {
+  if (mTotal == total) {
+    return;
+  }
   mTotal = total;
   redraw();
 }
 
-void StatusLine::setMutantInfo(size_t current) {
+void StatusLine::setProgressCurrent(size_t current) {
+  if (mCurrent == current) {
+    return;
+  }
   mCurrent = current;
   redraw();
 }
@@ -300,7 +306,7 @@ ftxui::Element StatusLine::buildProgressElement(size_t current) const {
   size_t pct = mTotal > 0 ? current * 100 / mTotal : 0;
   ftxui::Elements elements;
   elements.push_back(ftxui::text(fmt::format("[{}/{}] ({}%) ", current, mTotal, pct)));
-  if (mPhase == Phase::EVALUATION && mTotal > 0) {
+  if (mTotal > 0) {
     float progress = static_cast<float>(current) / static_cast<float>(mTotal);
     elements.push_back(
         ftxui::gauge(progress) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, kGaugeWidth));
@@ -317,7 +323,7 @@ ftxui::Element StatusLine::buildElement() const {
   if (mDryRun) {
     elements.push_back(ftxui::text(" [DRY-RUN]"));
   }
-  if (mPhase == Phase::EVALUATION) {
+  if (mTotal > 0) {
     elements.push_back(ftxui::text(" "));
     elements.push_back(ftxui::spinner(kSpinnerCharset, mCurrent));
   }
