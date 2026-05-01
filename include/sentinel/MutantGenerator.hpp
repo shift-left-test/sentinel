@@ -92,6 +92,15 @@ class MutantGenerator {
   }
 
   /**
+   * @brief Set the maximum number of Clang parsers running in parallel.
+   *
+   * @param n Concurrency cap; 0 means use std::thread::hardware_concurrency().
+   */
+  void setParallelParsers(std::size_t n) {
+    mParallelParsers = n;
+  }
+
+  /**
    * @brief Return a new mutant generator instance based on the specified options
    *
    * @param generator name
@@ -297,10 +306,23 @@ class MutantGenerator {
     return result;
   }
 
+  /**
+   * @brief Resolve the effective parser concurrency for AST traversal.
+   *
+   * Returns mParallelParsers when set to a non-zero value; otherwise returns
+   * std::thread::hardware_concurrency() (fallback to 1 when the runtime
+   * cannot determine the core count).
+   *
+   * @return Number of Clang parser workers to run in parallel (>= 1).
+   */
+  unsigned int parserConcurrency() const;
+
   /// @brief Path to the directory containing compile_commands.json.
   std::filesystem::path mDbPath;
   /// @brief Selected mutation operator names; empty means all operators.
   std::vector<std::string> mSelectedOperators;
+  /// @brief Maximum Clang parsers running in parallel; 0 = auto.
+  std::size_t mParallelParsers = 0;
   /// @brief Total candidate count from the last generate() call.
   std::size_t mCandidateCount = 0;
   /// @brief Mutable line count per file from the last generate() call.

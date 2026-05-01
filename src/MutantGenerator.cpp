@@ -39,6 +39,16 @@ namespace fs = std::filesystem;
 MutantGenerator::~MutantGenerator() = default;
 
 // ---------------------------------------------------------------------------
+// parserConcurrency — resolve effective parallel parser count
+// ---------------------------------------------------------------------------
+unsigned int MutantGenerator::parserConcurrency() const {
+  if (mParallelParsers > 0) {
+    return static_cast<unsigned int>(mParallelParsers);
+  }
+  return std::max(1u, std::thread::hardware_concurrency());
+}
+
+// ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
 std::shared_ptr<MutantGenerator> MutantGenerator::getInstance(Generator generator,
@@ -91,7 +101,7 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   std::size_t doneFiles = 0;
   notifyProgress(doneFiles, totalFiles);
 
-  unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
+  unsigned int maxThreads = parserConcurrency();
   auto* db = compileDb.get();
 
   auto fileIt = targetLines.begin();

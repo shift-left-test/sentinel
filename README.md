@@ -374,6 +374,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--mutants-per-line=N` | Maximum number of mutants per source line; `0` = unlimited | `1` |
 | `--seed=N` | Random seed for mutant selection | random |
 | `--operator=OP` | Mutation operators to apply (repeatable; defaults to all) | all |
+| `--parallel-parsers=N` | Maximum number of Clang parsers running in parallel during mutant generation; `0` = auto (number of CPU cores). Lower this to reduce peak memory usage. | `0` |
 
 #### Advanced options
 
@@ -515,6 +516,10 @@ version: 1
 ##   random   - randomly sampled from all possible mutants
 ##   weighted - samples more mutants from complex code
 # generator: uniform
+
+## Maximum number of Clang parsers running in parallel during mutant generation
+## (default: 0 = auto, number of CPU cores). Lower this to reduce peak memory usage.
+# parallel-parsers: 0
 
 ## Mutation operators to use; omit to use all operators (default: all)
 # operator:

@@ -135,6 +135,8 @@ class CliConfigParser {
   args::ValueFlag<unsigned int> mSeed;
   /** @brief Command line flag for mutation operators. */
   args::ValueFlagList<std::string> mOperators;
+  /** @brief Command line flag for the maximum number of Clang parsers running in parallel. */
+  args::ValueFlag<std::size_t> mParallelParsers;
 
   // Advanced options
   /** @brief Command line flag for mutant limit. */

@@ -17,7 +17,6 @@
 #include <memory>
 #include <new>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 #include "sentinel/Mutants.hpp"
@@ -60,7 +59,7 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
   notifyProgress(doneFiles, totalFiles);
 
   using FileResult = std::pair<Mutants, DepthMap>;
-  unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
+  unsigned int maxThreads = parserConcurrency();
   auto* db = compileDb.get();
 
   auto fileIt = targetLines.begin();

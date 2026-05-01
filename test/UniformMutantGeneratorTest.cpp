@@ -245,6 +245,15 @@ TEST_F(UniformMutantGeneratorTest, testGenerateWithMutantsPerLineOneMatchesDefau
   EXPECT_TRUE(std::equal(mutants1.begin(), mutants1.end(), mutants2.begin()));
 }
 
+TEST_F(UniformMutantGeneratorTest, testGenerateWithParallelParsersOneMatchesAuto) {
+  UniformMutantGenerator generator1{SAMPLE1_DIR};
+  generator1.setParallelParsers(1);
+  Mutants serial = generator1.generate(mSourceLines, 0, kSeed);
+  UniformMutantGenerator generator2{SAMPLE1_DIR};
+  Mutants parallelAuto = generator2.generate(mSourceLines, 0, kSeed);
+  EXPECT_EQ(serial.size(), parallelAuto.size());
+}
+
 TEST(MutantGeneratorFactoryTest, parseGeneratorAcceptsCaseInsensitiveInput) {
   EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("UNIFORM"));
   EXPECT_EQ(sentinel::Generator::UNIFORM, sentinel::parseGenerator("Uniform"));

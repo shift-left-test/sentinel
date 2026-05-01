@@ -94,6 +94,7 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
     if (root["generator"]) cfg->generator = parseGenerator(root["generator"].as<std::string>());
     if (root["mutants-per-line"]) cfg->mutantsPerLine = root["mutants-per-line"].as<size_t>();
     if (root["operator"]) cfg->operators = toVector<std::string>(root["operator"], "operator");
+    if (root["parallel-parsers"]) cfg->parallelParsers = root["parallel-parsers"].as<size_t>();
     if (root["lcov-tracefile"]) {
       auto files = toVector<fs::path>(root["lcov-tracefile"], "lcov-tracefile");
       cfg->lcovTracefiles.clear();

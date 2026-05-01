@@ -113,6 +113,12 @@ Random seed for mutant selection. Default: random.
 Mutation operator to apply (repeatable). Valid values:
 \fBAOR\fR, \fBBOR\fR, \fBLCR\fR, \fBROR\fR, \fBSDL\fR, \fBSOR\fR, \fBUOI\fR.
 Defaults to all operators when omitted.
+.TP
+\fB\-\-parallel\-parsers\fR=\fIN\fR
+Maximum number of Clang parsers running in parallel during mutant generation.
+\fB0\fR = auto (number of CPU cores). Lower this to reduce peak memory usage
+when many translation units would otherwise exhaust available RAM.
+Default: \fB0\fR
 .SS Advanced options
 .TP
 \fB\-l\fR \fIN\fR, \fB\-\-limit\fR=\fIN\fR

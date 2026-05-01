@@ -200,6 +200,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   std::shuffle(sourceLines.begin(), sourceLines.end(), std::mt19937(seed));
 
   mGenerator->setOperators(ctx->config.operators);
+  mGenerator->setParallelParsers(ctx->config.parallelParsers);
   mGenerator->setProgressCallback(
       [ctx](std::size_t done, std::size_t total) {
         ctx->statusLine.setProgressTotal(total);
