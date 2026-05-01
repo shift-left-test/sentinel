@@ -376,6 +376,38 @@ class MutantGenerator {
   static std::unique_ptr<clang::tooling::FrontendActionFactory> createActionFactory(
       Mutants* mutables, const std::vector<std::size_t>& targetLines,
       const std::vector<std::string>& selectedOps);
+
+  /**
+   * @brief Run a single Clang frontend action against one source file.
+   *
+   * Replaces the previous use of clang::tooling::ClangTool::run(), which
+   * calls process-wide chdir() per compile command and is therefore not
+   * thread-safe. This helper instead constructs a clang::tooling::
+   * ToolInvocation per compile command, injecting the
+   * "-working-directory=<dir>" flag so that the compiler instance
+   * resolves relative paths via FileSystemOptions::WorkingDir without
+   * mutating process state. Safe to call concurrently from multiple
+   * threads.
+   *
+   * @param db Compilation database (read-only, may be shared across threads).
+   * @param filename Source file to analyze.
+   * @param actionFactory Factory whose create() yields the FrontendAction.
+   */
+  static void runClangToolForFile(const clang::tooling::CompilationDatabase& db,
+                                  const std::filesystem::path& filename,
+                                  clang::tooling::FrontendActionFactory* actionFactory);
+
+  /**
+   * @brief Throw a std::runtime_error reporting out-of-memory while generating
+   *        mutants for the given source file.
+   *
+   * Shared between MutantGenerator::collectAllMutants and
+   * WeightedMutantGenerator::collectAllMutants worker lambdas so the message
+   * stays in one place.
+   *
+   * @param filename Source file whose mutant generation ran out of memory.
+   */
+  [[noreturn]] static void rethrowAsOomError(const std::filesystem::path& filename);
 };
 
 }  // namespace sentinel

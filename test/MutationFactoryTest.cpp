@@ -32,4 +32,24 @@ TEST_F(MutationFactoryTest, testGenerateWorks) {
   }
 }
 
+TEST_F(MutationFactoryTest, testParallelGenerationDoesNotRaceOnChdir) {
+  // Re-running mutation generation many times exercises the per-file
+  // std::async path. Before fixing the chdir race, this could intermittently
+  // abort with "LLVM ERROR: Cannot chdir into ..." or heap corruption
+  // (free(): corrupted unsorted chunks).
+  SourceLines sourceLines;
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 41));
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 58));
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 59));
+  sourceLines.push_back(SourceLine(SAMPLE1B_PATH, 28));
+  sourceLines.push_back(SourceLine(SAMPLE1B_PATH, 29));
+
+  for (int iteration = 0; iteration < 5; ++iteration) {
+    auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
+    MutationFactory factory(generator);
+    Mutants selected = factory.generate(SAMPLE1_DIR, sourceLines, 100, 1234);
+    EXPECT_GT(selected.size(), 0u);
+  }
+}
+
 }  // namespace sentinel

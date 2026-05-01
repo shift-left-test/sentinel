@@ -16,6 +16,7 @@
 #include "sentinel/GitRepository.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutantGenerator.hpp"
+#include "sentinel/OomHandler.hpp"
 #include "sentinel/PartitionedWorkspaceMerger.hpp"
 #include "sentinel/PipelineContext.hpp"
 #include "sentinel/SignalHandler.hpp"
@@ -156,6 +157,8 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
   sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(cfg.sourceDir); });
   sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
+
+  sentinel::installOomHandlers();
 
   // 12. Create pipeline context and run
   sentinel::PipelineContext ctx{cfg, *statusLine, *ws};

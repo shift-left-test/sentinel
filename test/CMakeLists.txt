@@ -27,7 +27,7 @@ add_executable(unittest
   StageTest.cpp ConfigValidatorTest.cpp
   EvaluationStageTest.cpp DryRunStageTest.cpp ReportStageTest.cpp
   OriginalBuildStageTest.cpp OriginalTestStageTest.cpp
-  SignalHandlerTest.cpp YamlConfigWriterTest.cpp
+  SignalHandlerTest.cpp OomHandlerTest.cpp YamlConfigWriterTest.cpp
   FormatterTest.cpp
   Utf8CharTest.cpp
   PartitionedWorkspaceMergerTest.cpp

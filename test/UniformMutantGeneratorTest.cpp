@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
+#include <memory>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -257,6 +258,33 @@ TEST(MutantGeneratorFactoryTest, getInstanceReturnsCorrectType) {
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::UNIFORM, tmpDir));
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::RANDOM, tmpDir));
   EXPECT_NE(nullptr, sentinel::MutantGenerator::getInstance(sentinel::Generator::WEIGHTED, tmpDir));
+}
+
+TEST_F(UniformMutantGeneratorTest, testMissingDirectoryDoesNotAbort) {
+  // Overwrite compile_commands.json so one entry's "directory" points at a
+  // path that does not exist. Before the chdir-race fix, this aborted the
+  // process via llvm::report_fatal_error("Cannot chdir into ...").
+  std::string brokenJson = fmt::format(R"json([
+{{
+  "directory": "{0}/nonexistent_dir",
+  "command": "/usr/bin/c++ -o out.o -c {0}/sample1.cpp",
+  "file": "{0}/sample1.cpp"
+}},
+{{
+  "directory": "{0}",
+  "command": "/usr/bin/c++ -o out2.o -c {0}/sample1b.cpp",
+  "file": "{0}/sample1b.cpp"
+}}
+])json", SAMPLE1_DIR.string());
+  writeFile(SAMPLECOMCOMJSON_PATH, brokenJson);
+
+  SourceLines onlyValid;
+  onlyValid.push_back(SourceLine(SAMPLE1B_PATH, 28));
+
+  auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
+  ASSERT_NO_FATAL_FAILURE({
+    (void)generator->generate(onlyValid, 10, 1234);
+  });
 }
 
 }  // namespace sentinel

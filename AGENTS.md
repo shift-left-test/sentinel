@@ -100,6 +100,32 @@ To add a new operator: add header in `include/sentinel/operators/`, implementati
 | `Evaluator` | Compares actual vs expected test results to determine mutation outcome |
 | `GoogleTestXmlParser`, `QTestXmlParser`, `CTestXmlParser` | Parse JUnit-style XML test reports |
 
+### Threading Model
+
+`MutantGenerator` and its subclasses run per-file Clang frontend actions
+concurrently via `std::async`. Each worker calls
+`MutantGenerator::runClangToolForFile()`, which constructs a private
+`clang::FileManager` and `clang::tooling::ToolInvocation` per compile
+command and injects `-working-directory=<dir>` so the compiler instance
+resolves relative paths through `FileSystemOptions::WorkingDir` rather
+than process-global `chdir()`. **Do not** revert to
+`clang::tooling::ClangTool::run()` for the parallel paths — that API
+calls `chdir()` per compile command, which is not thread-safe and causes
+heap corruption (`free(): corrupted unsorted chunks`) and
+`llvm::report_fatal_error("Cannot chdir into ...")` aborts under load.
+
+`OomHandler` (`installOomHandlers()` in `main.cpp`) routes LLVM-detected
+OOM and other unrecoverable LLVM errors through a deterministic exit
+path: a first-writer atomic flag prevents the multi-thread race that
+glibc reports as `free(): corrupted unsorted chunks`, the loser threads
+park on `pause()` to stop allocating, the winner emits a fixed `ERROR:`
+message via `write(2)`, raises `SIGUSR1` so `SignalHandler` runs the
+backup-restore / status-line cleanup callbacks, and finally calls
+`_exit(137)` to terminate before C++ static destructors race with the
+still-running worker threads. **Do not** use `Logger`, `Console`, `fmt`,
+or any allocating call inside the OOM handler — they would re-enter the
+allocator and re-trigger the same failure.
+
 ### Git Integration
 
 - `GitRepository` (wraps libgit2) — used for `--scope=commit` to get the diff of changed lines

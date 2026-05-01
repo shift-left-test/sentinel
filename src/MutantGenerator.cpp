@@ -3,16 +3,23 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <clang/Basic/FileManager.h>
+#include <clang/Basic/FileSystemOptions.h>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Frontend/PCHContainerOperations.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <fmt/core.h>
+#include <llvm/ADT/IntrusiveRefCntPtr.h>
+#include <llvm/Support/VirtualFileSystem.h>
 #include <algorithm>
-#include <exception>
 #include <filesystem>  // NOLINT
 #include <future>
 #include <iterator>
 #include <map>
 #include <memory>
+#include <new>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <utility>
@@ -81,7 +88,6 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   }
 
   unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency());
-  auto savedCwd = fs::current_path();
   auto* db = compileDb.get();
 
   auto fileIt = targetLines.begin();
@@ -90,12 +96,14 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
     for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
       futures.push_back(
           std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
-            Mutants localMutables;
-            clang::tooling::ClangTool tool(*db, filename.string());
-            tool.setDiagnosticConsumer(new clang::IgnoringDiagConsumer());
-            tool.appendArgumentsAdjuster(clang::tooling::getInsertArgumentAdjuster("-ferror-limit=0"));
-            tool.run(createActionFactory(&localMutables, lines, mSelectedOperators).get());
-            return localMutables;
+            try {
+              Mutants localMutables;
+              auto factory = createActionFactory(&localMutables, lines, mSelectedOperators);
+              runClangToolForFile(*db, filename, factory.get());
+              return localMutables;
+            } catch (const std::bad_alloc&) {
+              rethrowAsOomError(filename);
+            }
           }));
     }
     for (auto& fut : futures) {
@@ -104,9 +112,51 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
                       std::make_move_iterator(localMutables.end()));
     }
   }
-  fs::current_path(savedCwd);
 
   return mutables;
+}
+
+// ---------------------------------------------------------------------------
+// rethrowAsOomError — single source of truth for the worker OOM message
+// ---------------------------------------------------------------------------
+void MutantGenerator::rethrowAsOomError(const std::filesystem::path& filename) {
+  throw std::runtime_error(
+      fmt::format("out of memory while generating mutants for '{}'", filename.string()));
+}
+
+// ---------------------------------------------------------------------------
+// runClangToolForFile — chdir-free per-file frontend invocation
+// ---------------------------------------------------------------------------
+void MutantGenerator::runClangToolForFile(const clang::tooling::CompilationDatabase& db,
+                                          const std::filesystem::path& filename,
+                                          clang::tooling::FrontendActionFactory* actionFactory) {
+  auto compileCmds = db.getCompileCommands(filename.string());
+  if (compileCmds.empty()) {
+    return;
+  }
+
+  auto pchOps = std::make_shared<clang::PCHContainerOperations>();
+  for (auto& cmd : compileCmds) {
+    std::vector<std::string> args = cmd.CommandLine;
+    if (args.empty()) {
+      continue;
+    }
+    args.insert(args.begin() + 1, "-working-directory=" + cmd.Directory);
+    args.push_back("-ferror-limit=0");
+
+    // createPhysicalFileSystem() yields a per-instance VFS with its own
+    // working directory, independent of process CWD. getRealFileSystem() is
+    // documented "thread-hostile" because it routes setCurrentWorkingDirectory
+    // through process-wide chdir(), which races across worker threads.
+    llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs(llvm::vfs::createPhysicalFileSystem().release());
+    llvm::IntrusiveRefCntPtr<clang::FileManager> files(
+        new clang::FileManager(clang::FileSystemOptions{cmd.Directory}, vfs));
+
+    clang::IgnoringDiagConsumer diagConsumer;
+    clang::tooling::ToolInvocation invocation(args, actionFactory, files.get(), pchOps);
+    invocation.setDiagnosticConsumer(&diagConsumer);
+    invocation.run();
+  }
 }
 
 // ---------------------------------------------------------------------------
