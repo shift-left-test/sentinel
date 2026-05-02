@@ -114,29 +114,6 @@ TEST_F(CliConfigParserTest, testMutantsPerLineAppearsInEffectiveOptions) {
   EXPECT_THAT(opts, ::testing::Contains("--mutants-per-line"));
 }
 
-TEST_F(CliConfigParserTest, testParallelParsersParsed) {
-  Config cfg = parse({"--parallel-parsers", "4"});
-  EXPECT_EQ(cfg.parallelParsers, 4u);
-}
-
-TEST_F(CliConfigParserTest, testParallelParsersDefaultIsZero) {
-  Config cfg = parse({});
-  EXPECT_EQ(cfg.parallelParsers, 0u);
-}
-
-TEST_F(CliConfigParserTest, testParallelParsersZeroMeansAuto) {
-  Config cfg = parse({"--parallel-parsers", "0"});
-  EXPECT_EQ(cfg.parallelParsers, 0u);
-}
-
-TEST_F(CliConfigParserTest, testParallelParsersAppearsInEffectiveOptions) {
-  args::ArgumentParser parser("test", "");
-  CliConfigParser cliParser(parser);
-  parser.ParseArgs(std::vector<std::string>{"--parallel-parsers", "2"});
-  auto opts = cliParser.getEffectiveCliOptions();
-  EXPECT_THAT(opts, ::testing::Contains("--parallel-parsers"));
-}
-
 TEST_F(CliConfigParserTest, testTimeoutNumericParsed) {
   Config cfg = parse({"--timeout", "30"});
   ASSERT_TRUE(cfg.timeout.has_value());

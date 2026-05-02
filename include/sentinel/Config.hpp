@@ -109,14 +109,6 @@ struct Config {
   std::size_t mutantsPerLine = 1;
   /** @brief List of mutation operators to apply (empty = all). */
   std::vector<std::string> operators;
-  /**
-   * @brief Maximum number of Clang parsers running in parallel during mutant generation;
-   *        0 = auto (number of CPU cores).
-   *
-   * Lower this to reduce peak memory usage when Clang AST parsing of many translation
-   * units would otherwise exhaust available RAM.
-   */
-  std::size_t parallelParsers = 0;
   /** @brief Absolute paths to lcov tracefiles. */
   std::vector<std::filesystem::path> lcovTracefiles;
   /**

@@ -11,7 +11,6 @@
 #include <clang/Tooling/Tooling.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
-#include <future>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -38,17 +37,9 @@ WeightedMutantGenerator::WeightedMutantGenerator(const std::filesystem::path& pa
 Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   Mutants mutables;
   mDepthMap.clear();
-  std::string errorMsg;
-  std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
-
-  if (compileDb == nullptr) {
-    throw IOException(EINVAL, errorMsg);
-  }
+  auto compileDb = loadCompilationDatabase();
 
   std::map<fs::path, SourceLines> targetLines;
-  DepthMap depthMap;
-
   for (const auto& sourceLine : sourceLines) {
     fs::path filename = sourceLine.getPath();
     targetLines[filename].push_back(sourceLine);
@@ -58,41 +49,20 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
   std::size_t doneFiles = 0;
   notifyProgress(doneFiles, totalFiles);
 
-  using FileResult = std::pair<Mutants, DepthMap>;
-  unsigned int maxThreads = parserConcurrency();
-  auto* db = compileDb.get();
-
-  auto fileIt = targetLines.begin();
-  while (fileIt != targetLines.end()) {
-    std::vector<std::future<FileResult>> futures;
-    for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      DepthMap localDm;
-      for (const auto& sl : fileIt->second) {
-        localDm[sl] = -1;
-      }
-      futures.push_back(std::async(std::launch::async, [db, filename = fileIt->first, fileLines = fileIt->second,
-                                                        ldm = std::move(localDm), this]() mutable {
-        try {
-          Mutants localMutables;
-          auto factory = createDepthAwareActionFactory(&localMutables, fileLines, &ldm, mSelectedOperators);
-          runClangToolForFile(*db, filename, factory.get());
-          return std::make_pair(std::move(localMutables), std::move(ldm));
-        } catch (const std::bad_alloc&) {
-          rethrowAsOomError(filename);
-        }
-      }));
+  for (const auto& [filename, fileLines] : targetLines) {
+    for (const auto& sl : fileLines) {
+      mDepthMap[sl] = -1;
     }
-    for (auto& fut : futures) {
-      auto result = fut.get();
-      mutables.insert(mutables.end(), std::make_move_iterator(result.first.begin()),
-                      std::make_move_iterator(result.first.end()));
-      depthMap.insert(result.second.begin(), result.second.end());
-      ++doneFiles;
-      notifyProgress(doneFiles, totalFiles);
+    try {
+      auto factory = createDepthAwareActionFactory(&mutables, fileLines, &mDepthMap, mSelectedOperators);
+      runClangToolForFile(*compileDb, filename, factory.get());
+    } catch (const std::bad_alloc&) {
+      rethrowAsOomError(filename);
     }
+    ++doneFiles;
+    notifyProgress(doneFiles, totalFiles);
   }
 
-  mDepthMap = std::move(depthMap);
   return mutables;
 }
 

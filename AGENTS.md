@@ -100,31 +100,33 @@ To add a new operator: add header in `include/sentinel/operators/`, implementati
 | `Evaluator` | Compares actual vs expected test results to determine mutation outcome |
 | `GoogleTestXmlParser`, `QTestXmlParser`, `CTestXmlParser` | Parse JUnit-style XML test reports |
 
-### Threading Model
+### Parsing Model
 
-`MutantGenerator` and its subclasses run per-file Clang frontend actions
-concurrently via `std::async`. Each worker calls
-`MutantGenerator::runClangToolForFile()`, which constructs a private
-`clang::FileManager` and `clang::tooling::ToolInvocation` per compile
-command and injects `-working-directory=<dir>` so the compiler instance
-resolves relative paths through `FileSystemOptions::WorkingDir` rather
-than process-global `chdir()`. **Do not** revert to
-`clang::tooling::ClangTool::run()` for the parallel paths — that API
-calls `chdir()` per compile command, which is not thread-safe and causes
-heap corruption (`free(): corrupted unsorted chunks`) and
-`llvm::report_fatal_error("Cannot chdir into ...")` aborts under load.
+`MutantGenerator` and its subclasses parse one source file at a time in
+the main thread. LLVM/Clang's library-level thread safety is not strong
+enough to safely run multiple `ToolInvocation` instances within a single
+process (e.g. `clang::HeaderSearch::LookupFile` and other `cl::opt` /
+`ManagedStatic`-backed paths share process-global state); instead of
+working around that, sentinel keeps parsing single-threaded and lets
+users run multiple sentinel processes (one per partition) for
+concurrency. **Do not** reintroduce `std::async` / threading around the
+per-file Clang frontend invocation.
+
+`MutantGenerator::runClangToolForFile()` builds a `clang::tooling::ToolInvocation`
+per compile command and passes `-working-directory=<dir>` so the compiler resolves
+relative paths through `FileSystemOptions::WorkingDir`. **Do not** revert to
+`clang::tooling::ClangTool::run()` — that API calls `chdir()` per compile command
+and aborts via `llvm::report_fatal_error("Cannot chdir into ...")` if the
+directory does not exist, which kills the whole sentinel process.
 
 `OomHandler` (`installOomHandlers()` in `main.cpp`) routes LLVM-detected
 OOM and other unrecoverable LLVM errors through a deterministic exit
-path: a first-writer atomic flag prevents the multi-thread race that
-glibc reports as `free(): corrupted unsorted chunks`, the loser threads
-park on `pause()` to stop allocating, the winner emits a fixed `ERROR:`
-message via `write(2)`, raises `SIGUSR1` so `SignalHandler` runs the
-backup-restore / status-line cleanup callbacks, and finally calls
-`_exit(137)` to terminate before C++ static destructors race with the
-still-running worker threads. **Do not** use `Logger`, `Console`, `fmt`,
-or any allocating call inside the OOM handler — they would re-enter the
-allocator and re-trigger the same failure.
+path: it emits a fixed `ERROR:` message via `write(2)`, raises
+`SIGUSR1` so `SignalHandler` runs the backup-restore / status-line
+cleanup callbacks, and then calls `_exit(137)`. **Do not** use
+`Logger`, `Console`, `fmt`, or any allocating call inside the OOM
+handler — they would re-enter the allocator and re-trigger the same
+failure.
 
 ### Git Integration
 

@@ -92,15 +92,6 @@ class MutantGenerator {
   }
 
   /**
-   * @brief Set the maximum number of Clang parsers running in parallel.
-   *
-   * @param n Concurrency cap; 0 means use std::thread::hardware_concurrency().
-   */
-  void setParallelParsers(std::size_t n) {
-    mParallelParsers = n;
-  }
-
-  /**
    * @brief Return a new mutant generator instance based on the specified options
    *
    * @param generator name
@@ -129,8 +120,7 @@ class MutantGenerator {
   }
 
   /**
-   * @brief Progress callback signature used by the generator while parsing
-   *        source files. Invoked from the main thread only.
+   * @brief Progress callback signature used by the generator while parsing source files.
    *
    * @param done  Number of source files whose AST traversal has finished.
    * @param total Total number of source files to be processed.
@@ -138,9 +128,8 @@ class MutantGenerator {
   using ProgressCallback = std::function<void(std::size_t done, std::size_t total)>;
 
   /**
-   * @brief Install a progress callback that is invoked once with
-   *        (0, total) before parsing begins and again after each
-   *        completed source file. Called from the main thread only.
+   * @brief Install a progress callback that is invoked once with (0, total) before
+   *        parsing begins and again after each completed source file.
    *
    * @param callback callable matching ProgressCallback; pass nullptr to disable.
    */
@@ -158,9 +147,6 @@ class MutantGenerator {
 
   /**
    * @brief Invoke the registered progress callback (no-op when unset).
-   *
-   * Intended to be called from the main thread only by collectAllMutants
-   * implementations after each completed source file.
    *
    * @param done  Number of source files whose AST traversal has finished.
    * @param total Total number of source files to be processed.
@@ -306,23 +292,10 @@ class MutantGenerator {
     return result;
   }
 
-  /**
-   * @brief Resolve the effective parser concurrency for AST traversal.
-   *
-   * Returns mParallelParsers when set to a non-zero value; otherwise returns
-   * std::thread::hardware_concurrency() (fallback to 1 when the runtime
-   * cannot determine the core count).
-   *
-   * @return Number of Clang parser workers to run in parallel (>= 1).
-   */
-  unsigned int parserConcurrency() const;
-
   /// @brief Path to the directory containing compile_commands.json.
   std::filesystem::path mDbPath;
   /// @brief Selected mutation operator names; empty means all operators.
   std::vector<std::string> mSelectedOperators;
-  /// @brief Maximum Clang parsers running in parallel; 0 = auto.
-  std::size_t mParallelParsers = 0;
   /// @brief Total candidate count from the last generate() call.
   std::size_t mCandidateCount = 0;
   /// @brief Mutable line count per file from the last generate() call.
@@ -439,18 +412,23 @@ class MutantGenerator {
       const std::vector<std::string>& selectedOps);
 
   /**
+   * @brief Load the compilation database from mDbPath.
+   *
+   * @return owned compilation database
+   * @throws IOException when the database cannot be loaded.
+   */
+  std::unique_ptr<clang::tooling::CompilationDatabase> loadCompilationDatabase() const;
+
+  /**
    * @brief Run a single Clang frontend action against one source file.
    *
-   * Replaces the previous use of clang::tooling::ClangTool::run(), which
-   * calls process-wide chdir() per compile command and is therefore not
-   * thread-safe. This helper instead constructs a clang::tooling::
-   * ToolInvocation per compile command, injecting the
-   * "-working-directory=<dir>" flag so that the compiler instance
-   * resolves relative paths via FileSystemOptions::WorkingDir without
-   * mutating process state. Safe to call concurrently from multiple
-   * threads.
+   * Used in place of clang::tooling::ClangTool::run() so a missing compile-command
+   * directory does not abort the process via llvm::report_fatal_error("Cannot
+   * chdir into ..."). Builds a clang::tooling::ToolInvocation per compile
+   * command and passes "-working-directory=<dir>" so relative paths resolve via
+   * FileSystemOptions::WorkingDir instead of through chdir().
    *
-   * @param db Compilation database (read-only, may be shared across threads).
+   * @param db Compilation database.
    * @param filename Source file to analyze.
    * @param actionFactory Factory whose create() yields the FrontendAction.
    */
@@ -461,10 +439,6 @@ class MutantGenerator {
   /**
    * @brief Throw a std::runtime_error reporting out-of-memory while generating
    *        mutants for the given source file.
-   *
-   * Shared between MutantGenerator::collectAllMutants and
-   * WeightedMutantGenerator::collectAllMutants worker lambdas so the message
-   * stays in one place.
    *
    * @param filename Source file whose mutant generation ran out of memory.
    */

@@ -14,14 +14,11 @@
 #include <llvm/Support/VirtualFileSystem.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
-#include <future>
-#include <iterator>
 #include <map>
 #include <memory>
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 #include "sentinel/MutantGenerator.hpp"
@@ -37,16 +34,6 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 MutantGenerator::~MutantGenerator() = default;
-
-// ---------------------------------------------------------------------------
-// parserConcurrency — resolve effective parallel parser count
-// ---------------------------------------------------------------------------
-unsigned int MutantGenerator::parserConcurrency() const {
-  if (mParallelParsers > 0) {
-    return static_cast<unsigned int>(mParallelParsers);
-  }
-  return std::max(1u, std::thread::hardware_concurrency());
-}
 
 // ---------------------------------------------------------------------------
 // Factory
@@ -79,17 +66,24 @@ Mutants MutantGenerator::generate(const SourceLines& sourceLines, std::size_t ma
 }
 
 // ---------------------------------------------------------------------------
+// loadCompilationDatabase — single source of truth for DB loading
+// ---------------------------------------------------------------------------
+std::unique_ptr<clang::tooling::CompilationDatabase>
+MutantGenerator::loadCompilationDatabase() const {
+  std::string errorMsg;
+  auto compileDb = clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
+  if (compileDb == nullptr) {
+    throw IOException(EINVAL, errorMsg);
+  }
+  return compileDb;
+}
+
+// ---------------------------------------------------------------------------
 // collectAllMutants — default implementation using shared AST visitor
 // ---------------------------------------------------------------------------
 Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   Mutants mutables;
-  std::string errorMsg;
-  std::unique_ptr<clang::tooling::CompilationDatabase> compileDb =
-      clang::tooling::CompilationDatabase::loadFromDirectory(mDbPath.string(), errorMsg);
-
-  if (compileDb == nullptr) {
-    throw IOException(EINVAL, errorMsg);
-  }
+  auto compileDb = loadCompilationDatabase();
 
   std::map<fs::path, std::vector<std::size_t>> targetLines;
   for (const auto& sourceLine : sourceLines) {
@@ -101,39 +95,22 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   std::size_t doneFiles = 0;
   notifyProgress(doneFiles, totalFiles);
 
-  unsigned int maxThreads = parserConcurrency();
-  auto* db = compileDb.get();
-
-  auto fileIt = targetLines.begin();
-  while (fileIt != targetLines.end()) {
-    std::vector<std::future<Mutants>> futures;
-    for (unsigned int i = 0; i < maxThreads && fileIt != targetLines.end(); ++i, ++fileIt) {
-      futures.push_back(
-          std::async(std::launch::async, [db, filename = fileIt->first, lines = fileIt->second, this]() {
-            try {
-              Mutants localMutables;
-              auto factory = createActionFactory(&localMutables, lines, mSelectedOperators);
-              runClangToolForFile(*db, filename, factory.get());
-              return localMutables;
-            } catch (const std::bad_alloc&) {
-              rethrowAsOomError(filename);
-            }
-          }));
+  for (const auto& [filename, lines] : targetLines) {
+    try {
+      auto factory = createActionFactory(&mutables, lines, mSelectedOperators);
+      runClangToolForFile(*compileDb, filename, factory.get());
+    } catch (const std::bad_alloc&) {
+      rethrowAsOomError(filename);
     }
-    for (auto& fut : futures) {
-      auto localMutables = fut.get();
-      mutables.insert(mutables.end(), std::make_move_iterator(localMutables.begin()),
-                      std::make_move_iterator(localMutables.end()));
-      ++doneFiles;
-      notifyProgress(doneFiles, totalFiles);
-    }
+    ++doneFiles;
+    notifyProgress(doneFiles, totalFiles);
   }
 
   return mutables;
 }
 
 // ---------------------------------------------------------------------------
-// rethrowAsOomError — single source of truth for the worker OOM message
+// rethrowAsOomError — single source of truth for the OOM error message
 // ---------------------------------------------------------------------------
 void MutantGenerator::rethrowAsOomError(const std::filesystem::path& filename) {
   throw std::runtime_error(
@@ -160,10 +137,6 @@ void MutantGenerator::runClangToolForFile(const clang::tooling::CompilationDatab
     args.insert(args.begin() + 1, "-working-directory=" + cmd.Directory);
     args.push_back("-ferror-limit=0");
 
-    // createPhysicalFileSystem() yields a per-instance VFS with its own
-    // working directory, independent of process CWD. getRealFileSystem() is
-    // documented "thread-hostile" because it routes setCurrentWorkingDirectory
-    // through process-wide chdir(), which races across worker threads.
     llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs(llvm::vfs::createPhysicalFileSystem().release());
     llvm::IntrusiveRefCntPtr<clang::FileManager> files(
         new clang::FileManager(clang::FileSystemOptions{cmd.Directory}, vfs));

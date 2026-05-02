@@ -32,11 +32,10 @@ TEST_F(MutationFactoryTest, testGenerateWorks) {
   }
 }
 
-TEST_F(MutationFactoryTest, testParallelGenerationDoesNotRaceOnChdir) {
-  // Re-running mutation generation many times exercises the per-file
-  // std::async path. Before fixing the chdir race, this could intermittently
-  // abort with "LLVM ERROR: Cannot chdir into ..." or heap corruption
-  // (free(): corrupted unsorted chunks).
+TEST_F(MutationFactoryTest, testRepeatedGenerationProducesStableResults) {
+  // Mutation generation should be deterministic when re-run with the same
+  // seed and source lines: the per-file Clang frontend invocations must not
+  // depend on transient process state (e.g. CWD) that changes across runs.
   SourceLines sourceLines;
   sourceLines.push_back(SourceLine(SAMPLE1_PATH, 41));
   sourceLines.push_back(SourceLine(SAMPLE1_PATH, 58));

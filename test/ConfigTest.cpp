@@ -63,7 +63,6 @@ TEST_F(ConfigTest, testWithDefaultsSetsFieldDefaults) {
   EXPECT_FALSE(cfg.timeout.has_value());
   EXPECT_EQ(0u, cfg.limit);
   EXPECT_EQ(1u, cfg.mutantsPerLine);
-  EXPECT_EQ(0u, cfg.parallelParsers);
   EXPECT_TRUE(cfg.buildCmd.empty());
   EXPECT_TRUE(cfg.testCmd.empty());
   EXPECT_FALSE(cfg.restrictGeneration);
@@ -89,7 +88,6 @@ lcov-tracefile:
 restrict: true
 generator: random
 mutants-per-line: 3
-parallel-parsers: 4
 timeout: 30
 operator:
   - AOR
@@ -112,7 +110,6 @@ operator:
   EXPECT_EQ(std::vector<fs::path>({(mTmpDir / "coverage.info").lexically_normal()}), cfg.lcovTracefiles);
   EXPECT_EQ(Generator::RANDOM, cfg.generator);
   EXPECT_EQ(3u, cfg.mutantsPerLine);
-  EXPECT_EQ(4u, cfg.parallelParsers);
   ASSERT_TRUE(cfg.timeout.has_value());
   EXPECT_EQ(30u, *cfg.timeout);
   EXPECT_EQ(std::vector<std::string>({"AOR", "ROR"}), cfg.operators);
@@ -403,23 +400,6 @@ TEST_F(ConfigTest, testStreamOperatorDefaultMutantsPerLineOmitted) {
   out << cfg;
   std::string yaml = out.str();
   EXPECT_EQ(std::string::npos, yaml.find("mutants-per-line"));
-}
-
-TEST_F(ConfigTest, testStreamOperatorWithParallelParsers) {
-  Config cfg = Config::withDefaults();
-  cfg.parallelParsers = 4;
-  std::ostringstream out;
-  out << cfg;
-  std::string yaml = out.str();
-  EXPECT_NE(std::string::npos, yaml.find("parallel-parsers: 4"));
-}
-
-TEST_F(ConfigTest, testStreamOperatorDefaultParallelParsersOmitted) {
-  Config cfg = Config::withDefaults();
-  std::ostringstream out;
-  out << cfg;
-  std::string yaml = out.str();
-  EXPECT_EQ(std::string::npos, yaml.find("parallel-parsers"));
 }
 
 TEST_F(ConfigTest, testStreamOperatorWithExtensionsAndPatterns) {

@@ -52,10 +52,6 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
     mSeed(mGroupMutation, "N", "Random seed for mutant selection (default: random)", {"seed"}),
     mOperators(mGroupMutation, "OP",
                "Mutation operators to apply (default: all). OP=AOR, BOR, LCR, ROR, SDL, SOR, UOI", {"operator"}),
-    mParallelParsers(mGroupMutation, "N",
-                     "Maximum number of Clang parsers running in parallel during mutant generation "
-                     "(0 = auto, number of CPU cores)",
-                     {"parallel-parsers"}),
     mLimit(mGroupAdvanced, "N", "Maximum number of mutants to generate (0 = unlimited)", {'l', "limit"}),
     mLcovTracefiles(mGroupAdvanced, "FILE", "skip evaluation for uncovered mutants",
                     {"lcov-tracefile"}),
@@ -92,7 +88,6 @@ void CliConfigParser::applyTo(Config* cfg) {
   if (mGenerator) cfg->generator = parseGenerator(mGenerator.Get());
   if (mMutantsPerLine) cfg->mutantsPerLine = mMutantsPerLine.Get();
   if (mOperators) cfg->operators = mOperators.Get();
-  if (mParallelParsers) cfg->parallelParsers = mParallelParsers.Get();
   if (mLcovTracefiles) {
     cfg->lcovTracefiles.clear();
     for (const auto& f : mLcovTracefiles.Get()) {
@@ -135,7 +130,6 @@ std::vector<std::string> CliConfigParser::getEffectiveCliOptions() const {
   if (mMutantsPerLine) opts.push_back("--mutants-per-line");
   if (mSeed) opts.push_back("--seed");
   if (mOperators) opts.push_back("--operator");
-  if (mParallelParsers) opts.push_back("--parallel-parsers");
   if (mLcovTracefiles) opts.push_back("--lcov-tracefile");
   if (mRestrict) opts.push_back("--restrict");
   if (mLimit) opts.push_back("--limit");

@@ -68,9 +68,6 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   if (cfg.mutantsPerLine != 1) {
     emitter << YAML::Key << "mutants-per-line" << YAML::Value << cfg.mutantsPerLine;
   }
-  if (cfg.parallelParsers != 0) {
-    emitter << YAML::Key << "parallel-parsers" << YAML::Value << cfg.parallelParsers;
-  }
   if (cfg.timeout) {
     emitter << YAML::Key << "timeout" << YAML::Value << *cfg.timeout;
   }
