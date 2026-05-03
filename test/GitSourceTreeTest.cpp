@@ -94,6 +94,48 @@ TEST_F(GitSourceTreeTest, testModifyWorksWhenInvalidMutantGiven) {
   EXPECT_THROW(tree2.modify(m, BACKUP_PATH), IOException);
 }
 
+TEST_F(GitSourceTreeTest, testModifyPreservesNoTrailingNewline) {
+  // Original file has no trailing newline. After mutation it must still have
+  // no trailing newline so build systems sensitive to the property are not
+  // impacted by the mutation.
+  fs::path src = mBaseDir / "noeol.cpp";
+  const std::string content = "int a = 1;\nint b = 2;";  // no trailing newline
+  std::ofstream(src) << content;
+
+  // Mutate "1" at line 1, column 9..10 -> "2"
+  Mutant m{"AOR", fs::path("noeol.cpp"), "", 1, 9, 1, 10, "2"};
+  GitSourceTree tree(mBaseDir);
+  fs::path backupPath = mBaseDir / "BACKUP_DIR";
+  fs::create_directories(backupPath);
+  tree.modify(m, backupPath);
+
+  std::ifstream f(src);
+  std::string mutated((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+  ASSERT_FALSE(mutated.empty());
+  EXPECT_NE('\n', mutated.back());
+  EXPECT_EQ("int a = 2;\nint b = 2;", mutated);
+}
+
+TEST_F(GitSourceTreeTest, testModifyPreservesTrailingNewline) {
+  // Original file ends with a newline. After mutation it must still end with
+  // exactly one newline.
+  fs::path src = mBaseDir / "withnl.cpp";
+  const std::string content = "int a = 1;\nint b = 2;\n";  // ends with newline
+  std::ofstream(src) << content;
+
+  Mutant m{"AOR", fs::path("withnl.cpp"), "", 1, 9, 1, 10, "2"};
+  GitSourceTree tree(mBaseDir);
+  fs::path backupPath = mBaseDir / "BACKUP_DIR";
+  fs::create_directories(backupPath);
+  tree.modify(m, backupPath);
+
+  std::ifstream f(src);
+  std::string mutated((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+  ASSERT_FALSE(mutated.empty());
+  EXPECT_EQ('\n', mutated.back());
+  EXPECT_EQ("int a = 2;\nint b = 2;\n", mutated);
+}
+
 TEST_F(GitSourceTreeTest, testBackupWorks) {
   // create a temporary copy of target file
   auto tempSubDirPath = mBaseDir / "SUB_DIR";

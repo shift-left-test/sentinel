@@ -12,10 +12,12 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <iterator>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/MutationResult.hpp"
 #include "sentinel/MutationResults.hpp"
@@ -24,6 +26,26 @@
 namespace sentinel {
 
 namespace fs = std::filesystem;
+
+namespace {
+
+bool isAllDigits(const std::string& name) {
+  if (name.empty()) return false;
+  return std::all_of(name.begin(), name.end(),
+                     [](unsigned char c) { return std::isdigit(c) != 0; });
+}
+
+// Parse an all-digit directory name into a mutant ID.
+// Returns nullopt if the value is too large to fit in int (out_of_range).
+std::optional<int> parseMutantId(const std::string& name) {
+  try {
+    return std::stoi(name);
+  } catch (const std::out_of_range&) {
+    return std::nullopt;
+  }
+}
+
+}  // namespace
 
 Workspace::Workspace(const fs::path& root) : mRoot(root) {
 }
@@ -275,9 +297,7 @@ bool Workspace::hasMutants() const {
     if (!fs::is_directory(entry.path())) {
       continue;
     }
-    const std::string name = entry.path().filename().string();
-    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
-    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
+    if (!isAllDigits(entry.path().filename().string())) {
       continue;
     }
     if (fs::exists(entry.path() / "mt.cfg")) {
@@ -295,24 +315,28 @@ MutationResults Workspace::loadResults() const {
       continue;
     }
     const std::string name = entry.path().filename().string();
-    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
-    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
+    if (!isAllDigits(name)) {
       continue;
     }
 
-    fs::path donePath = entry.path() / "mt.done";
+    auto maybeId = parseMutantId(name);
+    if (!maybeId.has_value()) {
+      Logger::warn("Skipping mutant directory '{}': ID out of range", name);
+      continue;
+    }
+    const int id = *maybeId;
+
+    const fs::path donePath = entry.path() / "mt.done";
     if (!fs::exists(donePath)) {
       continue;
     }
 
     std::ifstream in(donePath);
     if (!in) {
-      int id = std::stoi(name);
       throw std::runtime_error(fmt::format("Failed to read mt.done for mutant {}: {}", id, std::strerror(errno)));
     }
     MutationResult result;
     if (!(in >> result)) {
-      int id = std::stoi(name);
       throw std::runtime_error(fmt::format("Failed to parse mt.done for mutant {}", id));
     }
     results.push_back(result);
@@ -329,25 +353,35 @@ std::vector<std::pair<int, Mutant>> Workspace::loadMutants() const {
       continue;
     }
     const std::string name = entry.path().filename().string();
-    auto predicate = [](unsigned char c) { return std::isdigit(c) != 0; };
-    if (name.empty() || !std::all_of(name.begin(), name.end(), predicate)) {
+    if (!isAllDigits(name)) {
       continue;
     }
 
-    int id = std::stoi(name);
-    fs::path cfgPath = entry.path() / "mt.cfg";
+    auto maybeId = parseMutantId(name);
+    if (!maybeId.has_value()) {
+      Logger::warn("Skipping mutant directory '{}': ID out of range", name);
+      continue;
+    }
+    const int id = *maybeId;
+
+    const fs::path cfgPath = entry.path() / "mt.cfg";
     if (!fs::exists(cfgPath)) {
       continue;
     }
 
     std::ifstream in(cfgPath);
+    if (!in) {
+      throw std::runtime_error(fmt::format("Failed to read mt.cfg for mutant {}: {}", id, std::strerror(errno)));
+    }
     Mutant m;
-    in >> m;
+    if (!(in >> m)) {
+      throw std::runtime_error(fmt::format("Failed to parse mt.cfg for mutant {}", id));
+    }
     mutants.emplace_back(id, m);
   }
 
   std::sort(mutants.begin(), mutants.end(),
-            [](const std::pair<int, Mutant>& a, const std::pair<int, Mutant>& b) { return a.first < b.first; });
+            [](const auto& a, const auto& b) { return a.first < b.first; });
 
   return mutants;
 }

@@ -16,6 +16,7 @@
 #include "sentinel/GoogleTestXmlParser.hpp"
 #include "sentinel/QTestXmlParser.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/io.hpp"
 
 namespace sentinel {
@@ -23,6 +24,11 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 Result::Result(const std::string& path) {
+  if (!fs::is_directory(path)) {
+    throw InvalidArgumentException(
+        fmt::format("Test result directory does not exist: {}", path));
+  }
+
   auto parser1 = std::make_shared<GoogleTestXmlParser>();
   auto parser2 = std::make_shared<CTestXmlParser>();
   auto parser3 = std::make_shared<QTestXmlParser>();

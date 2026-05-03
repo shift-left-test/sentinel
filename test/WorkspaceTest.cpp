@@ -910,6 +910,45 @@ TEST_F(WorkspaceTest, testLoadMutantsIgnoresNonDirectoryEntries) {
   EXPECT_TRUE(mutants.empty());
 }
 
+TEST_F(WorkspaceTest, testLoadMutantsThrowsOnCorruptCfg) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  // Create a numeric directory with a corrupt (empty) mt.cfg file.
+  // Mutant::operator>> must fail, and loadMutants must surface that as a
+  // runtime_error rather than silently storing a default-constructed Mutant.
+  testutil::writeFile(mRoot / "00001" / "mt.cfg", "");
+
+  EXPECT_THROW(ws.loadMutants(), std::runtime_error);
+}
+
+TEST_F(WorkspaceTest, testLoadMutantsSkipsOversizedDirName) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  // Manually-created directory whose all-digit name overflows int.
+  // Must be skipped with a warning instead of crashing the process.
+  fs::create_directories(mRoot / "99999999999999999999");
+
+  Mutant m("AOR", mSrcFile, "func", 1, 1, 1, 5, "+");
+  ws.createMutant(1, m);
+
+  auto mutants = ws.loadMutants();
+  ASSERT_EQ(1u, mutants.size());
+  EXPECT_EQ(1, mutants[0].first);
+}
+
+TEST_F(WorkspaceTest, testLoadResultsSkipsOversizedDirName) {
+  Workspace ws(mRoot);
+  ws.initialize();
+
+  // Numeric-but-oversized directory must not crash loadResults.
+  testutil::writeFile(mRoot / "99999999999999999999" / "mt.done", "dummy");
+
+  auto results = ws.loadResults();
+  EXPECT_TRUE(results.empty());
+}
+
 TEST_F(WorkspaceTest, testSaveAndLoadStatusFrom) {
   Workspace ws(mRoot);
   ws.initialize();

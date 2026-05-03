@@ -10,6 +10,7 @@
 #include "sentinel/Logger.hpp"
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Result.hpp"
+#include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/string.hpp"
 #include "sentinel/util/Utf8Char.hpp"
 #include "helper/FileTestHelper.hpp"
@@ -371,6 +372,17 @@ TEST_F(ResultTest, testResultWithWrongResultFmt) {
   makeAndTestWrongResultXml(TC4_QT, "testcase");
   makeAndTestWrongResultXml(TC4_QT, "result");
   makeAndTestWrongResultXml(TC4_QT, "name");
+}
+
+TEST_F(ResultTest, testConstructorThrowsForNonExistentDirectory) {
+  fs::path missing = BASE / "does_not_exist";
+  EXPECT_THROW(Result{missing.string()}, InvalidArgumentException);
+}
+
+TEST_F(ResultTest, testConstructorThrowsForFilePath) {
+  fs::path filePath = BASE / "regular_file.txt";
+  testutil::writeFile(filePath, "not a directory");
+  EXPECT_THROW(Result{filePath.string()}, InvalidArgumentException);
 }
 
 TEST_F(ResultTest, testMutationStateIconReturnsCorrectIcons) {

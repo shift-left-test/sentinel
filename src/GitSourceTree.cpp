@@ -4,6 +4,8 @@
  */
 
 #include <fmt/core.h>
+#include <algorithm>
+#include <cstddef>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <sstream>
@@ -43,6 +45,13 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   } else {
     throw IOException(EINVAL, fmt::format("Failed to open {}", targetFilename.string()));
   }
+
+  // Detect whether the original file ends with a newline so the same property
+  // can be preserved on the mutated file. Sources without a trailing newline
+  // are valid in C/C++ and altering this can affect build-system behaviour.
+  const std::string originalContent = buffer.str();
+  const bool originalEndsWithNewline = !originalContent.empty() && originalContent.back() == '\n';
+
   std::ofstream mutatedFile(targetFilename.string(), std::ios::trunc);
 
   // If code line is out of target range, just write to mutant file.
@@ -52,12 +61,23 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   // If code line is on end_line, write the code appearing after end_col.
   std::string line;
   std::size_t lineIdx = 0;
+  std::size_t totalLines = std::count(originalContent.begin(), originalContent.end(), '\n');
+  // A non-empty file without a trailing newline still has one final line that
+  // std::count of '\n' does not include, so account for it here.
+  if (!originalContent.empty() && !originalEndsWithNewline) {
+    totalLines += 1;
+  }
 
   while (std::getline(buffer, line)) {
     lineIdx += 1;
+    const bool isLastLine = (lineIdx == totalLines);
+    const bool emitTrailingNewline = !isLastLine || originalEndsWithNewline;
 
     if (lineIdx < info.getFirst().line || lineIdx > info.getLast().line) {
-      mutatedFile << line << '\n';
+      mutatedFile << line;
+      if (emitTrailingNewline) {
+        mutatedFile << '\n';
+      }
     }
 
     if (lineIdx == info.getFirst().line) {
@@ -66,7 +86,10 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
     }
 
     if (lineIdx == info.getLast().line) {
-      mutatedFile << line.substr(info.getLast().column - 1) << '\n';
+      mutatedFile << line.substr(info.getLast().column - 1);
+      if (emitTrailingNewline) {
+        mutatedFile << '\n';
+      }
     }
   }
 
