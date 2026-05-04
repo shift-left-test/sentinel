@@ -293,18 +293,13 @@ bool Workspace::hasMutants() const {
   if (!fs::is_directory(mRoot)) {
     return false;
   }
-  for (const auto& entry : fs::directory_iterator(mRoot)) {
-    if (!fs::is_directory(entry.path())) {
-      continue;
-    }
-    if (!isAllDigits(entry.path().filename().string())) {
-      continue;
-    }
-    if (fs::exists(entry.path() / "mt.cfg")) {
-      return true;
-    }
-  }
-  return false;
+  const fs::directory_iterator begin{mRoot};
+  const fs::directory_iterator end{};
+  return std::any_of(begin, end, [](const fs::directory_entry& entry) {
+    return fs::is_directory(entry.path()) &&
+           isAllDigits(entry.path().filename().string()) &&
+           fs::exists(entry.path() / "mt.cfg");
+  });
 }
 
 MutationResults Workspace::loadResults() const {

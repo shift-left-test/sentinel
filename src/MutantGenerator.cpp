@@ -3,15 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <clang/Basic/FileManager.h>
-#include <clang/Basic/FileSystemOptions.h>
 #include <clang/Frontend/CompilerInstance.h>
-#include <clang/Frontend/PCHContainerOperations.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/Tooling.h>
 #include <fmt/core.h>
-#include <llvm/ADT/IntrusiveRefCntPtr.h>
-#include <llvm/Support/VirtualFileSystem.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <map>
@@ -98,7 +93,8 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   for (const auto& [filename, lines] : targetLines) {
     try {
       auto factory = createActionFactory(&mutables, lines, mSelectedOperators);
-      runClangToolForFile(*compileDb, filename, factory.get());
+      clang::tooling::ClangTool tool(*compileDb, {filename.string()});
+      tool.run(factory.get());
     } catch (const std::bad_alloc&) {
       rethrowAsOomError(filename);
     }
@@ -115,37 +111,6 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
 void MutantGenerator::rethrowAsOomError(const std::filesystem::path& filename) {
   throw std::runtime_error(
       fmt::format("out of memory while generating mutants for '{}'", filename.string()));
-}
-
-// ---------------------------------------------------------------------------
-// runClangToolForFile — chdir-free per-file frontend invocation
-// ---------------------------------------------------------------------------
-void MutantGenerator::runClangToolForFile(const clang::tooling::CompilationDatabase& db,
-                                          const std::filesystem::path& filename,
-                                          clang::tooling::FrontendActionFactory* actionFactory) {
-  auto compileCmds = db.getCompileCommands(filename.string());
-  if (compileCmds.empty()) {
-    return;
-  }
-
-  auto pchOps = std::make_shared<clang::PCHContainerOperations>();
-  for (auto& cmd : compileCmds) {
-    std::vector<std::string> args = cmd.CommandLine;
-    if (args.empty()) {
-      continue;
-    }
-    args.insert(args.begin() + 1, "-working-directory=" + cmd.Directory);
-    args.push_back("-ferror-limit=0");
-
-    llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs(llvm::vfs::createPhysicalFileSystem().release());
-    llvm::IntrusiveRefCntPtr<clang::FileManager> files(
-        new clang::FileManager(clang::FileSystemOptions{cmd.Directory}, vfs));
-
-    clang::IgnoringDiagConsumer diagConsumer;
-    clang::tooling::ToolInvocation invocation(args, actionFactory, files.get(), pchOps);
-    invocation.setDiagnosticConsumer(&diagConsumer);
-    invocation.run();
-  }
 }
 
 // ---------------------------------------------------------------------------

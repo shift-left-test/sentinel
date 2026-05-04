@@ -55,7 +55,8 @@ Mutants WeightedMutantGenerator::collectAllMutants(const SourceLines& sourceLine
     }
     try {
       auto factory = createDepthAwareActionFactory(&mutables, fileLines, &mDepthMap, mSelectedOperators);
-      runClangToolForFile(*compileDb, filename, factory.get());
+      clang::tooling::ClangTool tool(*compileDb, {filename.string()});
+      tool.run(factory.get());
     } catch (const std::bad_alloc&) {
       rethrowAsOomError(filename);
     }

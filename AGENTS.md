@@ -103,30 +103,24 @@ To add a new operator: add header in `include/sentinel/operators/`, implementati
 ### Parsing Model
 
 `MutantGenerator` and its subclasses parse one source file at a time in
-the main thread. LLVM/Clang's library-level thread safety is not strong
-enough to safely run multiple `ToolInvocation` instances within a single
-process (e.g. `clang::HeaderSearch::LookupFile` and other `cl::opt` /
-`ManagedStatic`-backed paths share process-global state); instead of
-working around that, sentinel keeps parsing single-threaded and lets
-users run multiple sentinel processes (one per partition) for
-concurrency. **Do not** reintroduce `std::async` / threading around the
-per-file Clang frontend invocation.
-
-`MutantGenerator::runClangToolForFile()` builds a `clang::tooling::ToolInvocation`
-per compile command and passes `-working-directory=<dir>` so the compiler resolves
-relative paths through `FileSystemOptions::WorkingDir`. **Do not** revert to
-`clang::tooling::ClangTool::run()` — that API calls `chdir()` per compile command
-and aborts via `llvm::report_fatal_error("Cannot chdir into ...")` if the
-directory does not exist, which kills the whole sentinel process.
+the main thread via `clang::tooling::ClangTool::run()`. LLVM/Clang's
+library-level thread safety is not strong enough to safely run multiple
+Clang frontend invocations within a single process (e.g.
+`clang::HeaderSearch::LookupFile` and other `cl::opt` / `ManagedStatic`-backed
+paths share process-global state); instead of working around that, sentinel
+keeps parsing single-threaded and lets users run multiple sentinel processes
+(one per partition) for concurrency. **Do not** reintroduce `std::async` /
+threading around the per-file Clang frontend invocation.
 
 `OomHandler` (`installOomHandlers()` in `main.cpp`) routes LLVM-detected
-OOM and other unrecoverable LLVM errors through a deterministic exit
-path: it emits a fixed `ERROR:` message via `write(2)`, raises
-`SIGUSR1` so `SignalHandler` runs the backup-restore / status-line
-cleanup callbacks, and then calls `_exit(137)`. **Do not** use
-`Logger`, `Console`, `fmt`, or any allocating call inside the OOM
-handler — they would re-enter the allocator and re-trigger the same
-failure.
+OOM and other unrecoverable LLVM errors — including `ClangTool::run()`'s
+`llvm::report_fatal_error("Cannot chdir into ...")` when a compile-command
+directory is missing — through a deterministic exit path: it emits a fixed
+`ERROR:` message via `write(2)`, raises `SIGUSR1` so `SignalHandler` runs
+the backup-restore / status-line cleanup callbacks, and then calls
+`_exit(137)`. **Do not** use `Logger`, `Console`, `fmt`, or any allocating
+call inside the OOM handler — they would re-enter the allocator and
+re-trigger the same failure.
 
 ### Git Integration
 

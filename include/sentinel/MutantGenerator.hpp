@@ -420,23 +420,6 @@ class MutantGenerator {
   std::unique_ptr<clang::tooling::CompilationDatabase> loadCompilationDatabase() const;
 
   /**
-   * @brief Run a single Clang frontend action against one source file.
-   *
-   * Used in place of clang::tooling::ClangTool::run() so a missing compile-command
-   * directory does not abort the process via llvm::report_fatal_error("Cannot
-   * chdir into ..."). Builds a clang::tooling::ToolInvocation per compile
-   * command and passes "-working-directory=<dir>" so relative paths resolve via
-   * FileSystemOptions::WorkingDir instead of through chdir().
-   *
-   * @param db Compilation database.
-   * @param filename Source file to analyze.
-   * @param actionFactory Factory whose create() yields the FrontendAction.
-   */
-  static void runClangToolForFile(const clang::tooling::CompilationDatabase& db,
-                                  const std::filesystem::path& filename,
-                                  clang::tooling::FrontendActionFactory* actionFactory);
-
-  /**
    * @brief Throw a std::runtime_error reporting out-of-memory while generating
    *        mutants for the given source file.
    *
