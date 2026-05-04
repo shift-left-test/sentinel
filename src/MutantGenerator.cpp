@@ -93,7 +93,9 @@ Mutants MutantGenerator::collectAllMutants(const SourceLines& sourceLines) {
   for (const auto& [filename, lines] : targetLines) {
     try {
       auto factory = createActionFactory(&mutables, lines, mSelectedOperators);
+      clang::IgnoringDiagConsumer ignoring;
       clang::tooling::ClangTool tool(*compileDb, {filename.string()});
+      tool.setDiagnosticConsumer(&ignoring);
       tool.run(factory.get());
     } catch (const std::bad_alloc&) {
       rethrowAsOomError(filename);
