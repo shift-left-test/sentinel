@@ -102,7 +102,7 @@ CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
         // 'DA:line,hit,checksum' variant - drop checksum
         const auto comma2 = hitStr.find(',');
         if (comma2 != std::string::npos) {
-          hitStr = hitStr.substr(0, comma2);
+          hitStr.resize(comma2);
         }
 
         if (hitStr == "0") continue;
