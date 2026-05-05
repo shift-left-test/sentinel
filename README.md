@@ -568,6 +568,8 @@ sentinel --lcov-tracefile=coverage.info --restrict ...
 
 This excludes uncovered lines from the report entirely instead of keeping them as SURVIVED\*. Use this when uncovered noise (e.g., code that is built into the repo but excluded from the current build configuration) is dragging down the mutation score.
 
+If a tracefile is missing at startup, Sentinel proceeds on the assumption that the build or test command will produce it; the run is aborted only if the file is still missing (or unreadable) when generation/evaluation needs it. Per-record parsing details (e.g., `SF:` paths that do not resolve in the current source tree, malformed `DA:` records) are emitted at verbose level — re-run with `--verbose` to inspect them.
+
 ---
 
 ## Mutation Operators

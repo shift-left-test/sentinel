@@ -247,6 +247,7 @@ TEST_F(ConfigValidatorTest, testNegationPatternWithoutSlashNoSlashWarning) {
 }
 
 TEST_F(ConfigValidatorTest, testWarningForNonExistentLcovTracefile) {
+  // Tracefile may be generated later by build/test - validation must not abort.
   mConfig.lcovTracefiles = {mBase / "nonexistent.info"};
   EXPECT_NO_THROW(ConfigValidator::validate(mConfig));
 }

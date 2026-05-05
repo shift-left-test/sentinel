@@ -27,7 +27,16 @@ class CoverageInfo {
   /**
    * @brief Constructor
    *
+   * Parses each lcov tracefile and aggregates the covered (filename, line)
+   * pairs into the in-memory map. Malformed records (empty `SF:` paths,
+   * `SF:` paths that cannot be resolved against the current source tree,
+   * `DA:` records appearing before any `SF:`, malformed `DA:` records) are
+   * logged at the verbose level and skipped; they are not fatal so that
+   * tracefiles produced by external tooling can be tolerated.
+   *
    * @param filenames list of lcov-format coverage result file
+   * @throw InvalidArgumentException if a tracefile does not exist or
+   *        cannot be opened
    */
   explicit CoverageInfo(const std::vector<std::string>& filenames);
 

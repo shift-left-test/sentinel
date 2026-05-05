@@ -4,6 +4,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <unistd.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
 #include <string>
@@ -32,6 +33,30 @@ TEST_F(CoverageInfoTest, testCoverWorks) {
 
 TEST_F(CoverageInfoTest, testFailWhenUnknownFileGiven) {
   EXPECT_THROW(CoverageInfo c{std::vector<std::string>(1, "unknown.info")}, InvalidArgumentException);
+}
+
+TEST_F(CoverageInfoTest, testFailWhenCoverageFileCannotBeOpened) {
+  // root bypasses POSIX read perms - skip in that case.
+  if (geteuid() == 0) {
+    GTEST_SKIP() << "skipping: cannot revoke read perms when running as root";
+  }
+  auto dir = SAMPLE_BASE / "open_fail_cov";
+  fs::create_directories(dir);
+  auto covFile = dir / "unreadable.info";
+  { std::ofstream f(covFile); f << "SF:/x\nDA:1,1\n"; }
+  std::error_code ec;
+  fs::permissions(covFile, fs::perms::none, ec);
+  ASSERT_FALSE(ec);
+
+  struct PermsRestorer {
+    fs::path path;
+    ~PermsRestorer() {
+      std::error_code ignored;
+      fs::permissions(path, fs::perms::owner_all, ignored);
+    }
+  } restorer{covFile};
+
+  EXPECT_THROW(CoverageInfo c({covFile.string()}), InvalidArgumentException);
 }
 
 TEST_F(CoverageInfoTest, testMultipleCoverageFilesMergeUnion) {
@@ -112,7 +137,7 @@ TEST_F(CoverageInfoTest, testEmptyCoverageFileProducesNoCoverage) {
   EXPECT_FALSE(c.cover(fs::canonical(SAMPLE1_PATH).string(), 35));
 }
 
-TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
+TEST_F(CoverageInfoTest, testMalformedDaLineIsIgnored) {
   auto dir = SAMPLE_BASE / "bad_cov";
   fs::create_directories(dir);
 
@@ -122,11 +147,99 @@ TEST_F(CoverageInfoTest, testMalformedDaLineThrows) {
   {
     std::ofstream f(covFile);
     f << "SF:" << srcFile << "\n"
-      << "DA:abc,def\n"
+      << "DA:abc,def\n"      // non-integer line number - skipped
+      << "DA:notacomma\n"    // missing comma - skipped
+      << "DA:35,1\n"         // valid - kept
       << "end_of_record\n";
   }
 
-  EXPECT_THROW(CoverageInfo c({covFile.string()}), std::exception);
+  // Malformed DA records are skipped with verbose log; valid records still apply.
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 35));
+}
+
+TEST_F(CoverageInfoTest, testSfCanonicalFailureIsSkipped) {
+  auto dir = SAMPLE_BASE / "sf_canon_fail_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "mixed.info";
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:/nonexistent/path/foo.cpp\n"  // canonical fails - block skipped
+      << "DA:10,1\n"                       // skipped (no current SF)
+      << "DA:11,1\n"                       // skipped
+      << "SF:" << srcFile << "\n"          // valid - kept
+      << "DA:33,1\n"                       // kept
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
+  EXPECT_FALSE(c.cover("/nonexistent/path/foo.cpp", 10));
+}
+
+TEST_F(CoverageInfoTest, testSfWithEmptyPathIsSkipped) {
+  auto dir = SAMPLE_BASE / "sf_empty_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "empty_sf.info";
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:\n"                  // empty path - block skipped
+      << "DA:10,1\n"              // skipped
+      << "SF:" << srcFile << "\n"
+      << "DA:33,1\n"
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
+}
+
+TEST_F(CoverageInfoTest, testDaBeforeSfIsIgnored) {
+  auto dir = SAMPLE_BASE / "da_before_sf_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "da_first.info";
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "DA:10,1\n"              // no preceding SF - skipped
+      << "DA:11,1\n"              // skipped
+      << "SF:" << srcFile << "\n"
+      << "DA:33,1\n"               // kept
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
+  EXPECT_FALSE(c.cover(srcFile, 10));
+  EXPECT_FALSE(c.cover(srcFile, 11));
+}
+
+TEST_F(CoverageInfoTest, testDaWithChecksumVariantIsAccepted) {
+  auto dir = SAMPLE_BASE / "da_checksum_cov";
+  fs::create_directories(dir);
+
+  auto covFile = dir / "checksum.info";
+  auto srcFile = fs::canonical(SAMPLE1_PATH).string();
+
+  {
+    std::ofstream f(covFile);
+    f << "SF:" << srcFile << "\n"
+      << "DA:33,1,abc123\n"        // 'DA:line,hit,checksum' variant
+      << "DA:35,0,deadbeef\n"      // hit=0 with checksum - not covered
+      << "end_of_record\n";
+  }
+
+  CoverageInfo c({covFile.string()});
+  EXPECT_TRUE(c.cover(srcFile, 33));
+  EXPECT_FALSE(c.cover(srcFile, 35));
 }
 
 TEST_F(CoverageInfoTest, testSfWithoutDaProducesNoCoverage) {

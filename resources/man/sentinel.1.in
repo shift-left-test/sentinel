@@ -173,6 +173,13 @@ Add \fB\-\-restrict\fR to also skip mutant generation for uncovered lines.
 This excludes uncovered lines from the report entirely instead of keeping them
 as SURVIVED*; it is useful when uncovered noise is dragging down the mutation
 score for code that is not actually built or executed.
+.PP
+If a tracefile is missing at startup, sentinel proceeds on the assumption that
+the build or test command will produce it; the run is aborted only if the file
+is still missing (or unreadable) when generation/evaluation needs it.
+Per-record parsing details (e.g., \fBSF:\fR paths that do not resolve in the
+current source tree, malformed \fBDA:\fR records) are emitted at verbose level
+\(em re-run with \fB\-\-verbose\fR to inspect them.
 .SH MUTATION OPERATORS
 .TP
 \fBAOR\fR \(em Arithmetic Operator Replacement
