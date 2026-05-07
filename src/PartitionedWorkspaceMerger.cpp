@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "sentinel/Config.hpp"
 #include "sentinel/Logger.hpp"
 #include "sentinel/PartitionedWorkspaceMerger.hpp"
 #include "sentinel/Workspace.hpp"
@@ -22,9 +23,6 @@
 namespace sentinel {
 
 namespace fs = std::filesystem;
-
-static const std::set<std::string> kExcludedConfigFields = {
-    "source-dir", "compiledb-dir", "output-dir"};
 
 static const std::vector<std::string> kMutantFiles = {
     "mt.cfg", "mt.done", "build.log", "test.log"};
@@ -126,8 +124,9 @@ void PartitionedWorkspaceMerger::validateSource(
 std::string PartitionedWorkspaceMerger::loadConfigWithoutExcludedFields(
     const std::filesystem::path& sourceDir) {
   YAML::Node node = YAML::LoadFile((sourceDir / "config.yaml").string());
-  for (const auto& field : kExcludedConfigFields) {
-    node.remove(field);
+  for (const auto& key : kWorkspaceLocalYamlKeys) {
+    // yaml-cpp's Node::remove<> has no convert<std::string_view>; cast required.
+    node.remove(std::string(key));
   }
 
   YAML::Emitter emitter;

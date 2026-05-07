@@ -412,15 +412,30 @@ TEST_F(PartitionedWorkspaceMergerTest,
   addMutant(src1, 1, MutationState::KILLED);
   addMutant(src2, 2, MutationState::SURVIVED);
 
-  // Overwrite src2 config with different source-dir and output-dir
+  // src1: set lcov-tracefile so the field is non-empty in the baseline.
   {
     Config cfg = Config::withDefaults();
     cfg.buildCmd = "make";
     cfg.testCmd = "ctest";
-    cfg.testResultDir = "/tmp/results";
-    cfg.sourceDir = "/different/source/path";
-    cfg.compileDbDir = "/different/compiledb/path";
-    cfg.outputDir = "/different/output/path";
+    cfg.testResultDir = "/workspace-a/results";
+    cfg.sourceDir = "/workspace-a/source";
+    cfg.compileDbDir = "/workspace-a/compiledb";
+    cfg.outputDir = "/workspace-a/output";
+    cfg.lcovTracefiles = {"/workspace-a/coverage.info"};
+    Workspace ws(src1);
+    ws.saveConfig(cfg);
+  }
+
+  // src2: every workspace-local path differs from src1; non-local fields match.
+  {
+    Config cfg = Config::withDefaults();
+    cfg.buildCmd = "make";
+    cfg.testCmd = "ctest";
+    cfg.testResultDir = "/workspace-b/results";
+    cfg.sourceDir = "/workspace-b/source";
+    cfg.compileDbDir = "/workspace-b/compiledb";
+    cfg.outputDir = "/workspace-b/output";
+    cfg.lcovTracefiles = {"/workspace-b/coverage.info"};
     Workspace ws(src2);
     ws.saveConfig(cfg);
   }

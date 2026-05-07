@@ -12,6 +12,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace sentinel {
@@ -148,6 +149,21 @@ struct Config {
    * @return Config with sourceDir, workDir, compileDbDir set to absolute CWD-based paths.
    */
   static Config withDefaults();
+};
+
+/**
+ * @brief YAML keys whose values are workspace-local absolute paths.
+ *
+ * Partition workspaces resolve these paths against their own checkouts, so
+ * cross-workspace config compatibility checks must skip them. Keep in sync
+ * when adding a new path-typed field to Config.
+ */
+inline constexpr std::string_view kWorkspaceLocalYamlKeys[] = {
+    "source-dir",
+    "compiledb-dir",
+    "output-dir",
+    "test-result-dir",
+    "lcov-tracefile",
 };
 
 /**
