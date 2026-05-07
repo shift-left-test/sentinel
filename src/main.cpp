@@ -73,6 +73,19 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
       sentinel::PartitionedWorkspaceMerger merger(
           workDirPath, mergeCfg.mergeWorkspaces, mergeCfg.force);
       merger.merge();
+
+      sentinel::Workspace targetWs(workDirPath);
+      if (!targetWs.isComplete()) {
+        return 0;
+      }
+
+      sentinel::Config reportCfg = sentinel::Config::withDefaults();
+      sentinel::YamlConfigParser::applyTo(&reportCfg, workDirPath / "config.yaml");
+      cliParser->applyReportOnlyTo(&reportCfg);
+
+      sentinel::StatusLine reportStatus;
+      sentinel::PipelineContext reportCtx{reportCfg, reportStatus, targetWs};
+      sentinel::ReportStage().run(&reportCtx);
       return 0;
     }
   }
