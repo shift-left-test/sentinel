@@ -65,6 +65,10 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
       if (mergeCfg.verbose) {
         sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
       }
+      if (cliParser->isClean() && fs::exists(workDirPath)) {
+        sentinel::Logger::warn("Workspace '{}' exists and will be cleared.", workDirPath);
+        fs::remove_all(workDirPath);
+      }
       sentinel::Logger::info("Merging partitions into '{}'...", workDirPath);
       sentinel::PartitionedWorkspaceMerger merger(
           workDirPath, mergeCfg.mergeWorkspaces, mergeCfg.force);
