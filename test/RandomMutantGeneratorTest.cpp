@@ -91,7 +91,7 @@ TEST_F(RandomMutantGeneratorTest, testGenerateFailWhenInvalidDirGiven) {
 
 TEST_F(RandomMutantGeneratorTest, testGenerateWorkWhenLimitNotExceeded) {
   RandomMutantGenerator generator{SAMPLE1_DIR};
-  // source line당 1개이므로 결과는 sourceLines 크기 이하
+  // At most one mutant per source line, so result size must not exceed sourceLines size.
   Mutants mutants = generator.generate(mSourceLines, 1000, kSeed);
 
   EXPECT_LE(mutants.size(), mSourceLines.size());

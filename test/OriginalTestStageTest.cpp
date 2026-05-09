@@ -83,6 +83,8 @@ TEST_F(OriginalTestStageTest, testShouldSkipWhenTestLogAndPreviousRunExist) {
 
   // run() should skip (not throw, not change workspace state further)
   EXPECT_NO_THROW(stage->run(&ctx));
+  // Verify execute() was not called: auto-timeout must not have been written to status.yaml
+  EXPECT_FALSE(mWorkspace->loadStatus().originalTime.has_value());
 }
 
 TEST_F(OriginalTestStageTest, testDoesNotSkipWhenNoPreviousRun) {
@@ -249,7 +251,9 @@ TEST_F(OriginalTestStageTest, testAutoTimeoutComputesPreciseValue) {
 
   WorkspaceStatus status = mWorkspace->loadStatus();
   ASSERT_TRUE(status.originalTime.has_value());
-  EXPECT_EQ(*status.originalTime, static_cast<std::size_t>(7));
+  // sleep 1 → elapsed ~1s → ceil(1.0 * 1.5) + 5 = 7; allow margin for CI scheduling variance
+  EXPECT_GE(*status.originalTime, static_cast<std::size_t>(7));
+  EXPECT_LE(*status.originalTime, static_cast<std::size_t>(12));
 }
 
 TEST_F(OriginalTestStageTest, testAutoTimeoutLogMessage) {

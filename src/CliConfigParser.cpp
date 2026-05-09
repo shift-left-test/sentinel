@@ -33,7 +33,7 @@ CliConfigParser::CliConfigParser(args::ArgumentParser& parser) :
                   {"compiledb-dir"}),
     mTestCmd(mGroupBuildTest, "CMD", "Shell command to run tests", {"test-command"}),
     mTestResultDir(mGroupBuildTest, "PATH", "Path to the test report directory", {"test-result-dir"}),
-    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: 1.5x original test time)",
+    mTimeout(mGroupBuildTest, "SEC", "Test time limit in seconds; 0 = no limit (default: ceil(baseline x 1.5) + 5s)",
              {"timeout"}),
     mFrom(mGroupMutation, "REV",
           "Diff base revision (e.g., HEAD~1, main, v1.0). "

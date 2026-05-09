@@ -119,7 +119,7 @@ int minus(int a, int b){
 
   MutationResults buildMRsWithUncovered() {
     auto MRs = buildStandardMRs();
-    // 첫 번째 SURVIVED (M1, AOR @ REL_PATH1)을 uncovered로 표시
+    // Mark the first SURVIVED result (M1, AOR @ REL_PATH1) as uncovered
     MRs[0].setUncovered(true);
     return MRs;
   }
@@ -434,11 +434,9 @@ TEST_F(HtmlReportTest, testSurvivedCardSubLineOmitsUncoveredWhenZero) {
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
   expectContains(content, "Not detected");
-  // sub-line의 정적 'uncovered' 토큰은 없어야 함
-  // (lcovMode=skip uncovered evaluation 등 config 영향 없음)
-  // 참고: JS 코드에 ' uncovered' 리터럴은 들어가지만 HTML 출력 시점에는 동적.
-  // 여기서는 ' uncovered' 단어가 출력에 들어가지 않음을 확인하기보다
-  // 'survivedUncovered":0'을 통한 간접 확인.
+  // No static 'uncovered' token should appear in the sub-line.
+  // Verify indirectly via '"survivedUncovered":0' rather than checking
+  // the absence of the word 'uncovered' (which also appears in JS literals).
   expectContains(content, "\"survivedUncovered\":0");
 }
 
@@ -472,11 +470,11 @@ TEST_F(HtmlReportTest, testOperatorBarShowsUncoveredCountInParens) {
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // op cnt 텍스트는 JS 빌더 안에 리터럴로 박혀 있음. 핵심 토큰 검증.
+  // The op-count text is embedded as a literal in the JS builder; verify key tokens.
   expectContains(content, "survived");
   expectContains(content, "uncovered)");
   expectContains(content, "(");
-  // bar-u CSS 클래스도 정의되어 있어야 함
+  // The .bar-u CSS class must also be defined.
   expectContains(content, ".bar-u");
 }
 
@@ -520,9 +518,9 @@ TEST_F(HtmlReportTest, testStatusChipsHelperEmittedInJs) {
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // statusChips 헬퍼 함수가 JS에 삽입되어 있음
+  // The statusChips helper function must be emitted in the JS block.
   expectContains(content, "function statusChips(");
-  // chip--surv CSS 클래스도 정의됨
+  // The .chip--surv CSS class must also be defined.
   expectContains(content, ".chip--surv");
 }
 
@@ -533,11 +531,11 @@ TEST_F(HtmlReportTest, testLegendSubItemHasInfoTooltipMarkup) {
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // legendItemSub은 카운트 우측에 ⓘ 트리거 버튼과 툴팁 컨테이너를 둔다.
+  // legendItemSub places an ⓘ trigger button and tooltip container to the right of the count.
   expectContains(content, "class=\"legend-info\"");
   expectContains(content, "role=\"tooltip\"");
   expectContains(content, "class=\"legend-tip\"");
-  // ⓘ 글리프(U+24D8)와 cursor: default 어포던스.
+  // The ⓘ glyph (U+24D8) and cursor: default affordance must be present.
   expectContains(content, "&#9432;");
   expectContains(content, "cursor: default");
 }
@@ -549,7 +547,7 @@ TEST_F(HtmlReportTest, testLegendSubLineHasPercentFormat) {
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // sub-line 텍스트에 부모 카운트 기준 퍼센트(예: " (40%)")가 포함된다.
+  // The sub-line text must include a percentage relative to the parent count (e.g., " (40%)").
   expectContains(content, "Math.round");
   expectContains(content, "%)");
 }
@@ -561,7 +559,7 @@ TEST_F(HtmlReportTest, testLegendInfoHandlerInstalled) {
   htmlreport.save(OUT_DIR);
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
-  // hover/focus/Esc 트리거 핸들러가 설치되어 있어야 한다.
+  // hover, focus, and Esc trigger handlers must be installed.
   expectContains(content, "function bindLegendInfo");
   expectContains(content, "addEventListener('mouseenter'");
   expectContains(content, "addEventListener('focus'");

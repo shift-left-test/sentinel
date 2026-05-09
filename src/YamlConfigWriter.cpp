@@ -44,7 +44,7 @@ static const char* const kYamlTemplate =
     "## Path to the test report directory\n"
     "# test-result-dir: ./test-results\n"
     "\n"
-    "## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)\n"
+    "## Test time limit in seconds (default: ceil(baseline x 1.5) + 5s; 0 = no limit)\n"
     "# timeout: 60\n"
     "\n"
     "# --- Mutation options ---\n"

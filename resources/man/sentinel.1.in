@@ -75,7 +75,7 @@ Directory where the test command writes its result files. \fBRequired.\fR
 .TP
 \fB\-\-timeout\fR=\fISEC\fR
 Test time limit in seconds. \fB0\fR = no limit.
-Default: 1.5\(mu the measured baseline run time.
+Default: ceil(baseline \(mu 1.5) + 5 seconds.
 .SS Mutation options
 .TP
 \fB\-\-from\fR=\fIREV\fR
@@ -234,7 +234,7 @@ Shell commands to build the project and run the test suite.
 Test result directory (XML files are collected automatically).
 .TP
 \fBtimeout\fR
-Test time limit in seconds (default: 1.5\(mu original test time).
+Test time limit in seconds (default: ceil(baseline \(mu 1.5) + 5s).
 .TP
 \fBextension\fR
 List of source file extensions to mutate.

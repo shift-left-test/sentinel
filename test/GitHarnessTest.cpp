@@ -281,7 +281,7 @@ TEST_F(GitHarnessTest, testCommitWorks) {
   EXPECT_EQ(git_reference_name_to_id(&head_oid, mRepo->getGitRepo(), "HEAD"), 0);
   EXPECT_EQ(git_commit_lookup(&head_commit, mRepo->getGitRepo(), &head_oid), 0);
   EXPECT_EQ(git_commit_lookup(&commit, mRepo->getGitRepo(), &latest_oid), 0);
-  EXPECT_EQ(head_commit, commit);
+  EXPECT_EQ(git_oid_cmp(git_commit_id(head_commit), git_commit_id(commit)), 0);
 
   git_commit_free(head_commit);
   git_commit_free(commit);

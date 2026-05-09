@@ -184,7 +184,7 @@ TEST_F(UniformMutantGeneratorTest, testGenerateWithZeroLimitReturnsAllCandidates
   UniformMutantGenerator generator2{SAMPLE1_DIR};
   Mutants limited = generator2.generate(mSourceLines, 1000, kSeed);
 
-  // limit=0은 limit=큰수와 동일한 결과여야 함
+  // limit=0 must produce the same result as limit=large number.
   EXPECT_EQ(unlimited.size(), limited.size());
   EXPECT_GT(unlimited.size(), 0u);
 }
