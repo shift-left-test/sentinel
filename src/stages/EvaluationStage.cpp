@@ -21,6 +21,7 @@
 #include "sentinel/Workspace.hpp"
 #include "sentinel/stages/EvaluationStage.hpp"
 #include "sentinel/util/Utf8Char.hpp"
+#include "sentinel/util/ScopeGuard.hpp"
 #include "sentinel/util/io.hpp"
 #include "sentinel/util/string.hpp"
 
@@ -137,6 +138,10 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   const fs::path actualDir = ctx->workspace.getActualDir();
 
   mRepo->getSourceTree()->modify(m, backupDir.string());
+  ScopeGuard cleanup{[&] {
+    ctx->workspace.restoreBackup(ctx->config.sourceDir);
+    fs::remove_all(actualDir);
+  }};
 
   Timestamper buildTimer;
   Subprocess buildProc(ctx->config.buildCmd, 0, ctx->workspace.getMutantBuildLog(id).string(),
@@ -167,8 +172,6 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   MutationResult result = evaluator->compare(m, actualDir, testState);
   result.setBuildSecs(buildSecs);
   result.setTestSecs(testSecs);
-  ctx->workspace.restoreBackup(ctx->config.sourceDir);
-  fs::remove_all(actualDir);
   return result;
 }
 
