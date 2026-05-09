@@ -289,6 +289,14 @@ TEST_F(ConfigTest, testPartitionParseThrowsWhenIndexExceedsCount) {
   EXPECT_THROW(Partition::parse("5/4"), std::invalid_argument);
 }
 
+TEST_F(ConfigTest, testPartitionParseThrowsOnTrailingGarbageInIndex) {
+  EXPECT_THROW(Partition::parse("1abc/2"), std::invalid_argument);
+}
+
+TEST_F(ConfigTest, testPartitionParseThrowsOnTrailingGarbageInCount) {
+  EXPECT_THROW(Partition::parse("1/2abc"), std::invalid_argument);
+}
+
 TEST_F(ConfigTest, testStreamOperatorWritesYaml) {
   Config cfg = Config::withDefaults();
   cfg.buildCmd = "make -j8";

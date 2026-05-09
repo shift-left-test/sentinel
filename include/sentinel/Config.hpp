@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_CONFIG_HPP_
 
 #include <fmt/core.h>
+#include <charconv>
 #include <filesystem>  // NOLINT
 #include <optional>
 #include <ostream>
@@ -54,10 +55,12 @@ struct Partition {
     }
     std::size_t idx = 0;
     std::size_t cnt = 0;
-    try {
-      idx = std::stoul(s.substr(0, slash));
-      cnt = std::stoul(s.substr(slash + 1));
-    } catch (...) {
+    const char* p = s.data();
+    const char* slashPtr = p + slash;
+    const char* end = p + s.size();
+    auto [idxEnd, ec1] = std::from_chars(p, slashPtr, idx);
+    auto [cntEnd, ec2] = std::from_chars(slashPtr + 1, end, cnt);
+    if (ec1 != std::errc {} || ec2 != std::errc {} || idxEnd != slashPtr || cntEnd != end) {
       throw std::invalid_argument(
           fmt::format("Invalid partition value: '{}'. N and TOTAL must be positive integers.", s));
     }

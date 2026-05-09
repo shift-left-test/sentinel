@@ -341,7 +341,8 @@ TEST_F(WorkspaceTest, testLoadStatusThrowsOnYamlTypeError) {
   std::ofstream f(mRoot / "status.yaml");
   f << "original-time: not_a_number\n";
   f.close();
-  EXPECT_THROW(ws.loadStatus(), std::runtime_error);
+  EXPECT_THROW_MESSAGE(ws.loadStatus(), std::runtime_error,
+                       AllOf(HasSubstr("status.yaml"), HasSubstr("invalid format")));
 }
 
 TEST_F(WorkspaceTest, testSaveConfigFailsWhenPathIsDirectory) {

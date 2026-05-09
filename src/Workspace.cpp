@@ -182,7 +182,7 @@ WorkspaceStatus Workspace::loadStatus() const {
   if (!fs::exists(p)) return status;
   std::ifstream f(p);
   if (!(f >> status)) {
-    throw std::runtime_error(fmt::format("Failed to read status.yaml '{}': {}", p.string(), std::strerror(errno)));
+    throw std::runtime_error(fmt::format("Failed to read status.yaml '{}': invalid format", p.string()));
   }
   return status;
 }

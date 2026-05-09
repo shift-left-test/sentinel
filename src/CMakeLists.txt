@@ -18,7 +18,7 @@ add_library(sentinel-core STATIC
   stages/OriginalBuildStage.cpp stages/OriginalTestStage.cpp
   stages/GenerationStage.cpp stages/DryRunStage.cpp stages/EvaluationStage.cpp stages/ReportStage.cpp
 )
-target_include_directories(sentinel-core PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(sentinel-core PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
 target_include_directories(sentinel-core SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 target_link_libraries(sentinel-core PUBLIC
   tinyxml2 fmt yaml-cpp libgit2package stdc++fs args ftxui-dom

@@ -70,10 +70,10 @@ endif()
 add_subdirectory(src)
 add_subdirectory(test)
 
-configure_file(${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp.in ${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp)
-configure_file(${CMAKE_SOURCE_DIR}/resources/man/sentinel.1.in ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1)
+configure_file(${CMAKE_SOURCE_DIR}/include/sentinel/version.hpp.in ${CMAKE_BINARY_DIR}/include/sentinel/version.hpp)
+configure_file(${CMAKE_SOURCE_DIR}/resources/man/sentinel.1.in ${CMAKE_BINARY_DIR}/resources/man/sentinel.1)
 
-install(FILES ${CMAKE_SOURCE_DIR}/resources/man/sentinel.1 DESTINATION man/man1)
+install(FILES ${CMAKE_BINARY_DIR}/resources/man/sentinel.1 DESTINATION man/man1)
 
 # CPack configuration
 set(CPACK_GENERATOR DEB)
