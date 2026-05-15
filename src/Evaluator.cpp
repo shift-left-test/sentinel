@@ -27,7 +27,7 @@ MutationResult Evaluator::compare(const Mutant& mut, const std::filesystem::path
                                   TestExecutionState testState) {
   std::string killingTC;
   std::string errorTC;
-  MutationState state;
+  MutationState state = MutationState::RUNTIME_ERROR;
 
   switch (testState) {
     case TestExecutionState::BUILD_FAILURE:

@@ -72,7 +72,7 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
   }
   if (version < kSupportedVersion) {
     throw std::runtime_error(fmt::format(
-        "Config file '{}': version {} is outdated. "
+        "Config file '{}': version {} is outdated (supported: {}). "
         "Run `sentinel --init` to regenerate the config file.",
         path, version, kSupportedVersion));
   }

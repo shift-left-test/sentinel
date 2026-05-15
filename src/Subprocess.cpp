@@ -82,7 +82,7 @@ int Subprocess::execute() {
 
     execlp("/bin/sh", "sh", "-c", mCmd.c_str(), nullptr);
     Console::err("Failed to execute command: {}", std::strerror(errno));
-    exit(1);
+    _exit(1);
   } else if (pid > 0) {
     // Close unused pipe
     close(pfd[1]);

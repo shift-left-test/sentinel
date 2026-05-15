@@ -172,7 +172,7 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
 
   // 11. Install signal handlers
   const std::vector<int> signals = {SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP, SIGUSR1};
-  sentinel::SignalHandler::add(signals, [ws, &cfg]() { ws->restoreBackup(cfg.sourceDir); });
+  sentinel::SignalHandler::add(signals, [ws, src = cfg.sourceDir]() { ws->restoreBackup(src); });
   sentinel::SignalHandler::add(signals, [statusLine]() { statusLine->disable(); });
 
   sentinel::installOomHandlers();

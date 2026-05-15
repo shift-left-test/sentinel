@@ -41,7 +41,7 @@ class IOException : public std::runtime_error {
    * @return errno
    */
   int error() const {
-    return -mError;
+    return mError;
   }
 
  private:
