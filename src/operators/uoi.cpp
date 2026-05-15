@@ -70,8 +70,11 @@ bool UOI::canMutate(clang::Stmt* s) {
     if (auto le = clang::dyn_cast<clang::LambdaExpr>(parent)) {
       clang::SourceRange range = le->getIntroducerRange();
       clang::SourceLocation varLoc = e->getBeginLoc();
-      if (varLoc.getRawEncoding() >= range.getBegin().getRawEncoding() &&
-          varLoc.getRawEncoding() <= range.getEnd().getRawEncoding()) {
+      // SourceLocation::getRawEncoding() is an opaque ID, not a position ordering,
+      // so comparing raw encodings can misclassify locations across FileIDs or
+      // macro expansions. Use SourceManager::isBeforeInTranslationUnit instead.
+      if (!mSrcMgr.isBeforeInTranslationUnit(varLoc, range.getBegin()) &&
+          !mSrcMgr.isBeforeInTranslationUnit(range.getEnd(), varLoc)) {
         return false;
       }
     }
