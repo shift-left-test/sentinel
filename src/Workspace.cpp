@@ -169,11 +169,28 @@ void Workspace::saveStatus(const WorkspaceStatus& status) {
   if (status.uncommitted.has_value()) current.uncommitted = status.uncommitted;
   if (status.limit.has_value()) current.limit = status.limit;
 
-  std::ofstream f(p);
-  if (!f) {
-    throw std::runtime_error(fmt::format("Failed to write status.yaml '{}': {}", p.string(), std::strerror(errno)));
+  // Write to a sibling temp file then rename atomically (POSIX rename(2))
+  // so an interrupted write does not leave a truncated status.yaml that
+  // would break resume on the next run.
+  static constexpr const char* kTmpSuffix = ".tmp";
+  fs::path tmp = p;
+  tmp += kTmpSuffix;
+  {
+    std::ofstream f(tmp);
+    if (!f) {
+      throw std::runtime_error(
+          fmt::format("Failed to write status.yaml '{}': {}", tmp.string(), std::strerror(errno)));
+    }
+    f << current;
   }
-  f << current;
+  std::error_code ec;
+  fs::rename(tmp, p, ec);
+  if (ec) {
+    std::error_code rmEc;
+    fs::remove(tmp, rmEc);
+    throw std::runtime_error(
+        fmt::format("Failed to rename '{}' to '{}': {}", tmp.string(), p.string(), ec.message()));
+  }
 }
 
 WorkspaceStatus Workspace::loadStatus() const {
