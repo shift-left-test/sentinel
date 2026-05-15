@@ -1,5 +1,5 @@
 .\" DO NOT MODIFY THIS FILE!
-.TH SENTINEL 1 "Mar 2026" "@sentinel_VERSION@" "sentinel manual"
+.TH SENTINEL 1 "May 2026" "@sentinel_VERSION@" "sentinel manual"
 .SH NAME
 sentinel \- mutation testing tool for C/C++ projects
 .SH SYNOPSIS
@@ -23,7 +23,9 @@ Print the program version and exit.
 \fB\-\-config\fR=\fIPATH\fR
 Path to a YAML config file. When specified, sentinel changes to the
 config file's directory before running, so all relative paths in the
-config and build/test commands are resolved from that location.
+config and build/test commands are resolved from that location;
+a pre-run warning is shown when this directory differs from the
+current working directory.
 When omitted, \fBsentinel.yaml\fR in the current directory is used
 automatically if it exists.
 .TP
@@ -94,7 +96,10 @@ alone or combined with \fB\-\-from\fR.
 \fB\-p\fR \fIPATTERN\fR, \fB\-\-pattern\fR=\fIPATTERN\fR
 Glob pattern to constrain the mutation scope (repeatable). Matched against
 repository-relative paths. Prefix with \fB!\fR to exclude matching files
-(e.g., \fB\-\-pattern="!*/test/*"\fR).
+(e.g., \fB\-\-pattern='!*/test/*'\fR).
+Patterns starting with \fB!\fR must be enclosed in single quotes; double
+quotes trigger bash history expansion in interactive shells and the command
+will fail with \fBevent not found\fR.
 .TP
 \fB\-\-extension\fR=\fIEXT\fR
 Source file extension to mutate (repeatable).

@@ -28,7 +28,7 @@ test-command: >-
 ## Path to the test report directory
 test-result-dir: ./build/test-results
 
-## Test time limit in seconds (default: 1.5x original test time; 0 = no limit)
+## Test time limit in seconds (default: ceil(baseline x 1.5) + 5s; 0 = no limit)
 # timeout: 60
 
 # --- Mutation options ---

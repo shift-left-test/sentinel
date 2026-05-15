@@ -56,7 +56,7 @@ cmake --build build
 Verify the tests pass:
 
 ```bash
-cd build && ctest --output-on-failure
+cd build && ctest --output-on-failure -j$(nproc)
 ```
 
 ### Build with Coverage
@@ -64,7 +64,7 @@ cd build && ctest --output-on-failure
 ```bash
 cmake -DCMAKE_TESTING_ENABLED=ON -B build
 cmake --build build
-cd build && ctest --output-on-failure
+cd build && ctest --output-on-failure -j$(nproc)
 ```
 
 After running the tests, `.gcda` / `.gcno` files are generated in the build tree. Use `gcovr` to produce an HTML report:
@@ -110,7 +110,7 @@ After generation, Sentinel shows what was created:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                        Mutant Generation Summary
-  Scope:      all (3 files, 200 lines)
+  Target:     all sources (3 files, 200 lines)
   Generator:  uniform (seed: 1234567890)
   Mutants:    30
 ────────────────────────────────────────────────────────────────────────────────────

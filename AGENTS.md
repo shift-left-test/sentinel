@@ -14,7 +14,10 @@ cmake -DCMAKE_TESTING_ENABLED=ON .
 find . -name "*.gcda" -delete  # prevent libgcov merge warnings
 make all -j
 
-# Run tests
+# Run tests (parallel, recommended)
+ctest --output-on-failure -j$(nproc)
+
+# Or run the test binary directly (single-threaded)
 ./test/unittest
 
 # Run a specific test (GoogleTest filter)
@@ -78,6 +81,15 @@ OriginalBuildStage → OriginalTestStage → GenerationStage → DryRunStage →
 
 Signal handlers restore source backups on abnormal exit.
 
+### Partition Merge Mode (`--merge-partition`)
+
+When invoked with `--merge-partition`, `main.cpp` skips the stage chain entirely
+and runs `PartitionedWorkspaceMerger` to combine per-partition workspaces from
+separate sentinel processes, then auto-generates the report. This is used to
+parallelize a single mutation run across multiple processes (one per partition),
+since per-file Clang frontend invocations cannot safely run multi-threaded
+within one process (see Parsing Model).
+
 ### Mutation Operators (`src/operators/`, `include/sentinel/operators/`)
 
 Each operator (AOR, BOR, LCR, ROR, SDL, SOR, UOI) extends `MutationOperator` and implements a Clang AST visitor that identifies replaceable tokens or statements and emits `Mutant` objects.
@@ -98,6 +110,8 @@ To add a new operator: add header in `include/sentinel/operators/`, implementati
 | `StatusLine` | Terminal status display with phase/progress tracking |
 | `ConfigValidator` | Validates the resolved `Config` before pipeline execution |
 | `Evaluator` | Compares actual vs expected test results to determine mutation outcome |
+| `OomHandler` | Routes LLVM OOM/fatal errors to a deterministic exit path (see Parsing Model) |
+| `PartitionedWorkspaceMerger` | Merges per-partition workspaces produced by separate sentinel processes |
 | `GoogleTestXmlParser`, `QTestXmlParser`, `CTestXmlParser` | Parse JUnit-style XML test reports |
 
 ### Parsing Model
@@ -136,6 +150,7 @@ re-trigger the same failure.
 | yaml-cpp | `external/yaml-cpp/` | YAML config parsing |
 | tinyxml2 | `external/tinyxml2/` | XML test report parsing |
 | args | `external/args-6.2.3/` | CLI argument parsing |
+| ftxui | `external/ftxui/` | terminal UI rendering for `StatusLine` |
 
 ### Directory Layout
 

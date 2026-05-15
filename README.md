@@ -174,11 +174,9 @@ sentinel \
   --from=HEAD~1 \
   --uncommitted \
   --limit=50 \
-  --pattern="!*/third_party/*" \
-  --pattern="!*/test/*"
+  --pattern='!*/third_party/*' \
+  --pattern='!*/test/*'
 ```
-
-### Sample Output
 
 ### Understanding the Output
 
@@ -368,7 +366,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 |--------|-------------|---------|
 | `--from=REV` | Diff base revision. Mutates lines changed between the merge-base of REV and HEAD (committed changes only). Use with `--uncommitted` to also include local changes. See [Scoping with --from and --uncommitted](#scoping-with---from-and---uncommitted). | entire codebase |
 | `--uncommitted` | Include uncommitted changes (staged + unstaged + untracked) in mutation scope. Can be used alone or combined with `--from`. | disabled |
-| `-p, --pattern=PATTERN` | Glob patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Prefix with `!` to exclude matching files. Absolute paths trigger a pre-run warning. | |
+| `-p, --pattern=PATTERN` | Glob patterns to constrain the mutation scope (repeatable). Matched against repository-relative paths. Prefix with `!` to exclude matching files. Absolute paths trigger a pre-run warning. **Shell quoting:** patterns starting with `!` must be enclosed in single quotes (`'!*/test/*'`), not double quotes — in interactive bash, `!` inside double quotes triggers history expansion and the command fails with `event not found`. YAML config values are not affected. | |
 | `--extension=EXT` | Source file extensions to mutate (repeatable) | `cxx cpp cc c c++ cu` |
 | `--generator=TYPE` | Mutant selection strategy: `uniform`, `random`, or `weighted` | `uniform` |
 | `--mutants-per-line=N` | Maximum number of mutants per source line; `0` = unlimited | `1` |
@@ -383,7 +381,7 @@ If Sentinel is interrupted, rerun it with the same `--workspace` path. It will d
 | `--lcov-tracefile=FILE` | skip evaluation for uncovered mutants (repeatable). The reports and status line show the uncovered subset of SURVIVED separately. | |
 | `--restrict` | Restrict mutant generation to lines covered by `--lcov-tracefile`. Without this flag, uncovered lines still produce mutants but their evaluation is skipped (kept in the report as SURVIVED\*). Requires `--lcov-tracefile`. | disabled |
 | `--partition=N/TOTAL` | Evaluate only the N-th contiguous slice of the full mutant list out of TOTAL partitions (1-based, e.g., `--partition=2/5`). It is recommended to set `--seed` explicitly so every partition instance generates an identical mutant list; if omitted, a random seed is used and each run may evaluate a different subset. The union of all partition results equals a single non-partitioned run. Mutant paths are stored relative to `--source-dir`, so workspace directories can be collected from multiple machines and resumed on any machine with the same source tree. When used with `--limit`, the limit is applied before slicing — setting `--limit` smaller than TOTAL triggers a pre-run warning. | disabled |
-| `--merge-partition PATH` | Merge a partitioned workspace result into the target workspace (repeatable). Combine with `--clean` to overwrite an existing target workspace. Once all partitions are collected, a report is generated automatically using `--output-dir` and `--threshold` if provided. | |
+| `--merge-partition=PATH` | Merge a partitioned workspace result into the target workspace (repeatable). Combine with `--clean` to overwrite an existing target workspace. Once all partitions are collected, a report is generated automatically using `--output-dir` and `--threshold` if provided. | |
 | `--threshold=PCT` | Fail with exit code 3 if the mutation score is below this percentage (0.0–100.0). When the run completes, a one-line score summary is always printed to stderr. If no evaluable mutants exist, the threshold is not applied. | disabled |
 
 ### Scoping with --from and --uncommitted
@@ -529,6 +527,11 @@ version: 1
 # --- Advanced options ---
 
 ## lcov tracefiles; skip evaluation for uncovered mutants (default: none)
+##
+## When set, uncovered mutants are kept in the report as SURVIVED but
+## marked separately (HTML hatch pattern, XML uncovered="true"
+## attribute, StatusLine paren count). Use --restrict to also skip
+## generation.
 # lcov-tracefile: []
 
 ## When true, restrict mutant generation to lines covered by lcov-tracefile.
