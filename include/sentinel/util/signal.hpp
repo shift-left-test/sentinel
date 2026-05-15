@@ -7,9 +7,7 @@
 #define INCLUDE_SENTINEL_UTIL_SIGNAL_HPP_
 
 #include <csignal>
-#include <algorithm>
-#include <string>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 namespace sentinel::signal {
@@ -71,13 +69,12 @@ class SaContainer {
    * @param signums target signums
    */
   explicit SaContainer(const std::vector<int>& signums) {
-    std::transform(
-        std::begin(signums), std::end(signums), std::back_inserter(signumAndSa),
-        [](int signum) -> std::tuple<int, struct sigaction*> {
-          struct sigaction* sa = new struct sigaction;
-          getSigaction(signum, sa);
-          return std::make_tuple(signum, sa);
-        });
+    mSignumAndSa.reserve(signums.size());
+    for (int signum : signums) {
+      struct sigaction sa {};
+      getSigaction(signum, &sa);
+      mSignumAndSa.emplace_back(signum, sa);
+    }
   }
 
   SaContainer(const SaContainer&) = delete;
@@ -87,15 +84,13 @@ class SaContainer {
    * @brief destructor
    */
   ~SaContainer() {
-    std::for_each(std::begin(signumAndSa), std::end(signumAndSa),
-                  [](const std::tuple<int, struct sigaction*>& current) {
-                    setSigaction(std::get<0>(current), std::get<1>(current));
-                    delete std::get<1>(current);
-                  });
+    for (auto& [signum, sa] : mSignumAndSa) {
+      setSigaction(signum, &sa);
+    }
   }
 
  private:
-  std::vector<std::tuple<int, struct sigaction*>> signumAndSa;
+  std::vector<std::pair<int, struct sigaction>> mSignumAndSa;
 };
 
 }  // namespace sentinel::signal
