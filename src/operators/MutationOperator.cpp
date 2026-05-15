@@ -33,17 +33,18 @@ namespace sentinel {
 MutationOperator::~MutationOperator() = default;
 
 std::string MutationOperator::convertStmtToString(const clang::Stmt* s) const {
-  clang::SourceLocation walkLoc = s->getBeginLoc();
-  clang::SourceLocation endLoc =
-      clang::Lexer::getLocForEndOfToken(s->getEndLoc(), 0, mContext->getSourceManager(), mContext->getLangOpts());
-  std::string ret;
-
-  while (walkLoc != endLoc) {
-    ret += *mContext->getSourceManager().getCharacterData(walkLoc);
-    walkLoc = walkLoc.getLocWithOffset(1);
+  // Use Lexer::getSourceText, which validates the SourceLocations and confines
+  // the read to a single FileID's buffer. The previous byte-by-byte walk over
+  // getCharacterData() lacked bounds checks and could read past the buffer or
+  // across FileID boundaries on macro/include edges.
+  bool invalid = false;
+  llvm::StringRef text = clang::Lexer::getSourceText(
+      clang::CharSourceRange::getTokenRange(s->getBeginLoc(), s->getEndLoc()),
+      mContext->getSourceManager(), mContext->getLangOpts(), &invalid);
+  if (invalid) {
+    return "";
   }
-
-  return ret;
+  return text.str();
 }
 
 const clang::Stmt* MutationOperator::getParentStmt(const clang::Stmt* s) const {

@@ -84,19 +84,28 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
   // A temporary solution to get the location after semicolon.
   // Tried Lexer::findLocAfterToken and Lexer::findNextToken
   // but they both do not work.
+  //
+  // getCharacterData() returns a pointer into the file buffer and does not
+  // signal EOF, so the scan must be bounded by the FileID's buffer end —
+  // otherwise a missing terminator (e.g. last statement of a file with no
+  // trailing newline) reads past the buffer.
+  bool invalid = false;
+  auto buf = mSrcMgr.getBufferData(mSrcMgr.getFileID(stmtEndLoc), &invalid);
+  if (invalid) {
+    return;
+  }
+  const char* bufEnd = buf.data() + buf.size();
   auto semiLoc = stmtEndLoc;
   auto c = mSrcMgr.getCharacterData(semiLoc);
 
-  while (true) {
+  while (c < bufEnd) {
     if (*c == ';') {
       stmtEndLoc = semiLoc.getLocWithOffset(1);
       break;
     }
-
-    if (*c == '\n' || *c == EOF) {
+    if (*c == '\n') {
       break;
     }
-
     semiLoc = semiLoc.getLocWithOffset(1);
     c = mSrcMgr.getCharacterData(semiLoc);
   }
