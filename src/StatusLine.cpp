@@ -73,6 +73,7 @@ void StatusLine::refreshTermSize() {
   auto dim = ftxui::Terminal::Size();
   mTermRows = dim.dimy;
   mTermCols = dim.dimx;
+  mDeactivateSeq = fmt::format("\0337\033[{};1H\033[2K", mTermRows);
 }
 
 void StatusLine::openTty() {
@@ -86,7 +87,7 @@ void StatusLine::closeTty() {
   }
 }
 
-void StatusLine::writeTty(const std::string& data) {
+void StatusLine::writeTty(std::string_view data) {
   if (mTtyFd < 0) {
     return;
   }
@@ -116,7 +117,8 @@ void StatusLine::activate() {
 void StatusLine::deactivate() {
   // Save cursor → move to status row → clear it → reset scroll region (DECSTBM homes
   // the cursor, so it must come before ESC 8) → restore original cursor position.
-  writeTty(fmt::format("\0337\033[{};1H\033[2K", mTermRows));
+  // Use the cached sequence so deactivate() is safe to call from a signal handler.
+  writeTty(mDeactivateSeq);
   clearScrollRegion();
   writeTty("\0338");
   closeTty();

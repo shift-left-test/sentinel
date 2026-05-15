@@ -8,6 +8,7 @@
 
 #include <csignal>
 #include <string>
+#include <string_view>
 #include <ftxui/dom/elements.hpp>
 #include "sentinel/MutationState.hpp"
 #include "sentinel/Timestamper.hpp"
@@ -141,8 +142,11 @@ class StatusLine {
   void suspend();
   void resume();
   void handleResize();
-  /** @brief Write raw data to the TTY file descriptor, retrying on EINTR. */
-  void writeTty(const std::string& data);
+  /** @brief Write raw data to the TTY file descriptor, retrying on EINTR.
+   *
+   * Takes `std::string_view` so signal-context callers can pass `const char*`
+   * literals or cached strings without constructing a temporary `std::string`. */
+  void writeTty(std::string_view data);
 
   bool mEnabled = false;
   bool mDryRun = false;
@@ -160,6 +164,9 @@ class StatusLine {
   std::size_t mAbnormal = 0;  ///< Combined BUILD_FAILURE + TIMEOUT + RUNTIME_ERROR count.
   std::size_t mUncovered = 0;  ///< Subset of mSurvived that were lcov-skipped.
   Timestamper mTimestamper;
+  /// Pre-built ANSI sequence used by deactivate(); cached so signal-context
+  /// invocations via SIGTSTP do not allocate through fmt::format.
+  std::string mDeactivateSeq;
 };
 
 }  // namespace sentinel
