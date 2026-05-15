@@ -6,11 +6,13 @@
 #ifndef INCLUDE_SENTINEL_UTIL_YAMLCOLLECTION_HPP_
 #define INCLUDE_SENTINEL_UTIL_YAMLCOLLECTION_HPP_
 
+#include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -31,6 +33,9 @@ void saveYamlCollection(const std::vector<T>& items, const std::string& path) {
     std::filesystem::create_directories(dirname);
   }
   std::ofstream ofs(path);
+  if (!ofs) {
+    throw std::runtime_error(fmt::format("Failed to open '{}' for writing", path));
+  }
   for (const auto& data : items) {
     ofs << "---\n" << data << "\n";
   }

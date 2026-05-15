@@ -5,8 +5,6 @@
 
 #include <tinyxml2/tinyxml2.h>
 #include <fmt/core.h>
-#include <cerrno>
-#include <cstring>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -63,8 +61,8 @@ void XmlReport::save(const std::filesystem::path& dirPath) {
 
   doc->InsertEndChild(pMutations);
   if (doc->SaveFile(xmlPath.c_str()) != tinyxml2::XML_SUCCESS) {
-    throw IOException(errno, fmt::format("Failed to write '{}': {}",
-                                         xmlPath.string(), std::strerror(errno)));
+    throw IOException(fmt::format("Failed to write '{}': {}",
+                                  xmlPath.string(), doc->ErrorStr()));
   }
 }
 

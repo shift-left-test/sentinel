@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <fmt/core.h>
 #include <yaml-cpp/yaml.h>
+#include <charconv>
 #include <filesystem>  // NOLINT
 #include <stdexcept>
 #include <string>
@@ -32,6 +34,28 @@ std::string generatorToString(Generator gen) {
   throw std::invalid_argument("Unknown Generator value");
 }
 
+Partition Partition::parse(const std::string& s) {
+  auto slash = s.find('/');
+  if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
+    throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. Expected format: N/TOTAL.", s));
+  }
+  std::size_t idx = 0;
+  std::size_t cnt = 0;
+  const char* p = s.data();
+  const char* slashPtr = p + slash;
+  const char* end = p + s.size();
+  auto [idxEnd, ec1] = std::from_chars(p, slashPtr, idx);
+  auto [cntEnd, ec2] = std::from_chars(slashPtr + 1, end, cnt);
+  if (ec1 != std::errc {} || ec2 != std::errc {} || idxEnd != slashPtr || cntEnd != end) {
+    throw std::invalid_argument(
+        fmt::format("Invalid partition value: '{}'. N and TOTAL must be positive integers.", s));
+  }
+  if (cnt == 0 || idx == 0 || idx > cnt) {
+    throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. N must be between 1 and TOTAL.", s));
+  }
+  return {idx, cnt};
+}
+
 Config Config::withDefaults() {
   Config cfg;
   cfg.sourceDir = fs::absolute(".").lexically_normal();
@@ -55,9 +79,15 @@ std::ostream& operator<<(std::ostream& out, const Config& cfg) {
   emitter << YAML::Key << "pattern" << YAML::Value << YAML::BeginSeq;
   for (const auto& p : cfg.patterns) emitter << p;
   emitter << YAML::EndSeq;
-  emitter << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd;
-  emitter << YAML::Key << "test-command" << YAML::Value << cfg.testCmd;
-  emitter << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir.string();
+  if (!cfg.buildCmd.empty()) {
+    emitter << YAML::Key << "build-command" << YAML::Value << cfg.buildCmd;
+  }
+  if (!cfg.testCmd.empty()) {
+    emitter << YAML::Key << "test-command" << YAML::Value << cfg.testCmd;
+  }
+  if (!cfg.testResultDir.empty()) {
+    emitter << YAML::Key << "test-result-dir" << YAML::Value << cfg.testResultDir.string();
+  }
   emitter << YAML::Key << "lcov-tracefile" << YAML::Value << YAML::BeginSeq;
   for (const auto& c : cfg.lcovTracefiles) emitter << c.string();
   emitter << YAML::EndSeq;

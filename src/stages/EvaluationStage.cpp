@@ -79,8 +79,9 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
 
     bool uncovered = false;
     if (hasCoverage) {
-      const auto absPath = fs::canonical(ctx->config.sourceDir / m.getPath());
-      uncovered = !coverageInfo.cover(absPath.string(), m.getFirst().line);
+      std::error_code ec;
+      const auto absPath = fs::canonical(ctx->config.sourceDir / m.getPath(), ec);
+      uncovered = ec || !coverageInfo.cover(absPath.string(), m.getFirst().line);
     }
 
     ctx->statusLine.setProgressCurrent(current);

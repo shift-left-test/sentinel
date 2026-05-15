@@ -1535,8 +1535,7 @@ route();
 )JS";
   ofs.close();
   if (!ofs) {
-    throw IOException(errno, fmt::format("Failed to write '{}': {}",
-                                         htmlPath.string(), std::strerror(errno)));
+    throw IOException(fmt::format("Failed to write '{}'", htmlPath.string()));
   }
 }  // NOLINT(readability/fn_size)
 

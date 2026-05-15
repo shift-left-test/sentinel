@@ -6,12 +6,9 @@
 #ifndef INCLUDE_SENTINEL_CONFIG_HPP_
 #define INCLUDE_SENTINEL_CONFIG_HPP_
 
-#include <fmt/core.h>
-#include <charconv>
 #include <filesystem>  // NOLINT
 #include <optional>
 #include <ostream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -48,27 +45,7 @@ struct Partition {
    * @return Parsed Partition.
    * @throw std::invalid_argument if the format is invalid.
    */
-  static Partition parse(const std::string& s) {
-    auto slash = s.find('/');
-    if (slash == std::string::npos || slash == 0 || slash + 1 == s.size()) {
-      throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. Expected format: N/TOTAL.", s));
-    }
-    std::size_t idx = 0;
-    std::size_t cnt = 0;
-    const char* p = s.data();
-    const char* slashPtr = p + slash;
-    const char* end = p + s.size();
-    auto [idxEnd, ec1] = std::from_chars(p, slashPtr, idx);
-    auto [cntEnd, ec2] = std::from_chars(slashPtr + 1, end, cnt);
-    if (ec1 != std::errc {} || ec2 != std::errc {} || idxEnd != slashPtr || cntEnd != end) {
-      throw std::invalid_argument(
-          fmt::format("Invalid partition value: '{}'. N and TOTAL must be positive integers.", s));
-    }
-    if (cnt == 0 || idx == 0 || idx > cnt) {
-      throw std::invalid_argument(fmt::format("Invalid partition value: '{}'. N must be between 1 and TOTAL.", s));
-    }
-    return {idx, cnt};
-  }
+  static Partition parse(const std::string& s);
 };
 
 /**

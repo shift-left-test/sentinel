@@ -36,6 +36,14 @@ class IOException : public std::runtime_error {
   }
 
   /**
+   * @brief Construct with a message only (when no errno is available).
+   *
+   * @param message of the error
+   */
+  explicit IOException(const std::string& message) : std::runtime_error(message), mError(0) {
+  }
+
+  /**
    * @brief Return the error code
    *
    * @return errno
