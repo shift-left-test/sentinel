@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <git2.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -37,6 +38,25 @@ class GitRepositoryTest : public ::testing::Test {
   fs::path mRepoName;
   std::shared_ptr<GitHarness> mRepo;
 };
+
+TEST_F(GitRepositoryTest, testCtorFailureDoesNotLeakLibgit2Init) {
+  // git_libgit2_init / shutdown are refcounted and must be balanced. If the
+  // ctor throws after init() but before the object is fully constructed, the
+  // destructor never runs and the refcount leaks.
+  int before = git_libgit2_init();
+  git_libgit2_shutdown();
+
+  fs::path missingPath = testTempDir("SENTINEL_GITREPO_MISSING_DIR");
+  fs::remove_all(missingPath);
+  ASSERT_FALSE(fs::exists(missingPath));
+
+  EXPECT_THROW(GitRepository repo(missingPath.string()),
+               fs::filesystem_error);
+
+  int after = git_libgit2_init();
+  git_libgit2_shutdown();
+  EXPECT_EQ(after, before);
+}
 
 TEST_F(GitRepositoryTest, testInvalidRepositoryThrow) {
   // Use a directory that is NOT inside any git repository so that

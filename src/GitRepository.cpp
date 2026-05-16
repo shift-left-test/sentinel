@@ -383,10 +383,8 @@ static void applyDiff(git_repository* repo,
 }
 
 GitRepository::GitRepository(const std::filesystem::path& path, const std::vector<std::string>& extensions,
-                             const std::vector<std::string>& patterns) {
-  git_libgit2_init();
-
-  mSourceRoot = fs::canonical(path);
+                             const std::vector<std::string>& patterns)
+    : mSourceRoot(fs::canonical(path)) {
   if (!extensions.empty()) {
     std::transform(extensions.begin(), extensions.end(), std::back_inserter(mExtensions),
                    [](auto extension) -> std::string {
@@ -401,6 +399,11 @@ GitRepository::GitRepository(const std::filesystem::path& path, const std::vecto
       mPatterns.push_back(pat);
     }
   }
+
+  // Pair init with the destructor's shutdown. Invoke last so that any
+  // throw earlier in the body (e.g. fs::canonical on a missing path)
+  // does not leak a libgit2 init refcount the destructor will never see.
+  git_libgit2_init();
 }
 
 GitRepository::~GitRepository() {
