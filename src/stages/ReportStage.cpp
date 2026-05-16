@@ -56,7 +56,7 @@ bool ReportStage::execute(PipelineContext* ctx) {
     Logger::info("Writing reports to '{}'...", reportCfg.outputDir);
     xmlReport.save(reportCfg.outputDir);
     HtmlReport(summary, reportCfg).save(reportCfg.outputDir);
-    Logger::info("Reports saved to '{}'", reportCfg.outputDir);
+    Logger::info("Reports saved.");
   }
 
   std::optional<double> score;
