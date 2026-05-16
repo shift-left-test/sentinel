@@ -249,6 +249,30 @@ TEST_F(ConfigTest, testYamlFieldWithWrongTypeThrows) {
   EXPECT_THROW(YamlConfigParser::applyTo(&cfg, configPath("bad-type.yaml")), std::runtime_error);
 }
 
+TEST_F(ConfigTest, testYamlEmitOmitsEmptyCommandFields) {
+  Config cfg = Config::withDefaults();
+  // buildCmd, testCmd, and testResultDir are all empty by default.
+  std::ostringstream out;
+  out << cfg;
+  const std::string yaml = out.str();
+  EXPECT_THAT(yaml, ::testing::Not(HasSubstr("build-command")));
+  EXPECT_THAT(yaml, ::testing::Not(HasSubstr("test-command")));
+  EXPECT_THAT(yaml, ::testing::Not(HasSubstr("test-result-dir")));
+}
+
+TEST_F(ConfigTest, testYamlEmitIncludesPopulatedCommandFields) {
+  Config cfg = Config::withDefaults();
+  cfg.buildCmd = "make all";
+  cfg.testCmd = "ctest";
+  cfg.testResultDir = "/tmp/results";
+  std::ostringstream out;
+  out << cfg;
+  const std::string yaml = out.str();
+  EXPECT_THAT(yaml, HasSubstr("build-command: make all"));
+  EXPECT_THAT(yaml, HasSubstr("test-command: ctest"));
+  EXPECT_THAT(yaml, HasSubstr("test-result-dir: /tmp/results"));
+}
+
 TEST_F(ConfigTest, testPartitionParseValid) {
   auto p = Partition::parse("2/4");
   EXPECT_EQ(2u, p.index);

@@ -25,6 +25,15 @@ TEST_F(ExceptionTest, testIOExceptionMessage) {
   EXPECT_STREQ("Operation not permitted", IOException(EPERM).what());
 }
 
+TEST_F(ExceptionTest, testIOExceptionStringOnlyConstructorPreservesMessage) {
+  // The string-only constructor is for cases where no errno is available
+  // (e.g. tinyxml2 SaveFile failure, ofstream close failure).
+  // It must preserve the message verbatim and not prepend a strerror string.
+  IOException e("Failed to write 'foo.xml'");
+  EXPECT_STREQ("Failed to write 'foo.xml'", e.what());
+  EXPECT_EQ(0, e.error());
+}
+
 TEST_F(ExceptionTest, testInvalidArgumentExceptionType) {
   EXPECT_THROW(throw InvalidArgumentException("test"), std::invalid_argument);
 }

@@ -445,6 +445,35 @@ TEST_F(WorkspaceTest, testSaveStatusReadModifyWrite) {
   EXPECT_EQ(*loaded.candidateCount, 200u);
 }
 
+TEST_F(WorkspaceTest, testSaveStatusRemovesTmpFileAfterSuccess) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  WorkspaceStatus s;
+  s.originalTime = 7;
+  ws.saveStatus(s);
+  // After a successful atomic write, no .tmp file should remain.
+  EXPECT_FALSE(fs::exists(mRoot / "status.yaml.tmp"));
+  EXPECT_TRUE(fs::exists(mRoot / "status.yaml"));
+}
+
+TEST_F(WorkspaceTest, testSaveStatusOverwritesStaleTmpFile) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  // Simulate a stale temp file left by a previous crashed run.
+  {
+    std::ofstream f(mRoot / "status.yaml.tmp");
+    f << "garbage that must not survive\n";
+  }
+  WorkspaceStatus s;
+  s.originalTime = 13;
+  ws.saveStatus(s);
+  // The stale temp must be replaced (gone) and the real status.yaml must be parseable.
+  EXPECT_FALSE(fs::exists(mRoot / "status.yaml.tmp"));
+  auto loaded = ws.loadStatus();
+  ASSERT_TRUE(loaded.originalTime.has_value());
+  EXPECT_EQ(*loaded.originalTime, 13u);
+}
+
 TEST_F(WorkspaceTest, testLoadStatusReturnsEmptyWhenFileAbsent) {
   Workspace ws(mRoot);
   ws.initialize();
