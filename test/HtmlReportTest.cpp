@@ -582,6 +582,31 @@ TEST_F(HtmlReportTest, testBreakdownTableHasSortableHeaders) {
   expectContains(content, "sort-arr");
 }
 
+TEST_F(HtmlReportTest, testJsonEscapesScriptCloseTag) {
+  // Regression for the script-context XSS path documented in
+  // HtmlReport::jsonEscape: source bytes containing "</script>" must be
+  // escaped before being embedded in the inline <script> JSON payload.
+  auto OUT_DIR = BASE / "OUT_DIR_XSS_SCRIPT_CLOSE";
+  fs::path xssRel = fs::path("xss_source.cpp");
+  fs::path xssFull = SOURCE_DIR / xssRel;
+  writeFile(xssFull.string(),
+            "// </script><img src=x onerror=alert(1)>\n"
+            "int xssTest(int a, int b) { return a + b; }\n");
+
+  // Mutates the '+' at column 38 of line 2 — placement is incidental;
+  // the test only needs one rendered mutant so the source file is emitted.
+  Mutant M1("AOR", xssRel, "xssTest", 2, 38, 2, 39, "-");
+  MutationResults MRs;
+  MRs.emplace_back(M1, "", "", MutationState::SURVIVED);
+
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectNotContains(content, "</script><img");
+  expectContains(content, "\\u003c/script>");
+}
+
 TEST_F(HtmlReportTest, testSkippedStatesInJson) {
   auto OUT_DIR = BASE / "OUT_DIR_SKIPPED";
   auto MRs = buildStandardMRs();

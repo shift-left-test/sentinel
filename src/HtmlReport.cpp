@@ -62,6 +62,12 @@ std::string HtmlReport::jsonEscape(const std::string& s) {
     switch (c) {
       case '"':  result += "\\\""; break;
       case '\\': result += "\\\\"; break;
+      // Escape '<' so a source line containing "</script>" cannot terminate
+      // the inline <script> block that embeds this JSON payload. The HTML
+      // parser scans for the literal "</script>" before the JS parser runs,
+      // so an unescaped '<' here would let attacker-controlled bytes in any
+      // mutated source line escape into live HTML.
+      case '<':  result += "\\u003c"; break;
       case '\n': result += "\\n"; break;
       case '\r': result += "\\r"; break;
       case '\t': result += "\\t"; break;
