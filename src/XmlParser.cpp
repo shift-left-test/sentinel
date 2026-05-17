@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/XmlParser.hpp"
 
 namespace sentinel {
@@ -42,7 +43,14 @@ void XmlParser::collect(std::vector<std::string>* passed, std::vector<std::strin
 
 void XmlParser::process(const std::string& path, std::vector<std::string>* passed, std::vector<std::string>* failed) {
   auto document = std::make_shared<tinyxml2::XMLDocument>();
-  document->LoadFile(path.c_str());
+  // Fall-through to mNext is for schema mismatch (e.g. GoogleTest vs CTest),
+  // not for malformed XML — no downstream parser can salvage a file tinyxml2
+  // rejects. Surface the error so users notice rather than silently ending
+  // up with empty test-result data.
+  if (document->LoadFile(path.c_str()) != tinyxml2::XML_SUCCESS) {
+    Logger::warn("Failed to parse XML '{}': {}", path, document->ErrorStr());
+    return;
+  }
   reset();
   if (parse(document)) {
     collect(passed, failed);

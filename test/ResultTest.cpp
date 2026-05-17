@@ -325,6 +325,23 @@ TEST_F(ResultTest, testResultWithWrongXMLFmt) {
   Result result(MUT_DIR);
 }
 
+TEST_F(ResultTest, testResultWithUnparseableXMLWarns) {
+  auto MUT_DIR = BASE / "mut_dir_unparseable_xml";
+  fs::create_directories(MUT_DIR);
+  makeResultXml(MUT_DIR, "<not really xml without a closing");
+
+  // INFO is the default level and permits WARN output; set it explicitly so
+  // a prior test that lowered the level (e.g. LoggerTest TearDown -> OFF)
+  // cannot make this test flaky depending on execution order.
+  Logger::setLevel(Logger::Level::INFO);
+  testing::internal::CaptureStderr();
+  Result result(MUT_DIR);
+  std::string captured = testing::internal::GetCapturedStderr();
+
+  EXPECT_TRUE(result.checkPassedTCEmpty());
+  EXPECT_NE(captured.find("Failed to parse XML"), std::string::npos);
+}
+
 TEST_F(ResultTest, testResultWithCTestFormatSurvived) {
   auto CTEST_ORI_DIR = BASE / "ctest_ori_dir";
   fs::create_directories(CTEST_ORI_DIR);
