@@ -13,7 +13,6 @@
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/exceptions/IOException.hpp"
-#include "sentinel/util/string.hpp"
 
 namespace sentinel {
 
@@ -26,7 +25,13 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   // Backup target file to be mutated
   fs::path targetFilename = fs::canonical(getBaseDirectory() / info.getPath());
   fs::path gitRootAbsolutePath = fs::canonical(getBaseDirectory());
-  if (!string::startsWith(targetFilename.parent_path().string(), gitRootAbsolutePath.string())) {
+  // Component-wise containment check: a raw string startsWith would let
+  // siblings whose name shares a prefix (e.g. /repo/foo vs /repo/foobar)
+  // bypass the gate. Matches GitRepository::isTargetPath's std::mismatch
+  // pattern so both paths agree on what "inside the git root" means.
+  auto mm = std::mismatch(gitRootAbsolutePath.begin(), gitRootAbsolutePath.end(),
+                          targetFilename.begin(), targetFilename.end());
+  if (mm.first != gitRootAbsolutePath.end()) {
     throw IOException(EINVAL, fmt::format("Git root does not contain {}", targetFilename.string()));
   }
   fs::path targetRelativePath = targetFilename.parent_path().lexically_relative(gitRootAbsolutePath);

@@ -41,6 +41,26 @@ TEST_F(GitSourceTreeTest, testConstructorFailWhenInvalidDirGiven) {
   EXPECT_THROW(GitSourceTree tree("unknown"), IOException);
 }
 
+TEST_F(GitSourceTreeTest, testModifyRejectsSiblingDirectoryEscape) {
+  // gitRoot's name shares a string prefix with a sibling directory's name.
+  // A raw startsWith check would let the sibling pass the containment gate;
+  // the component-wise check must reject it.
+  fs::path sibling = mBaseDir.parent_path() / (mBaseDir.filename().string() + "_sibling");
+  fs::remove_all(sibling);
+  fs::create_directories(sibling);
+  fs::path outsideFile = sibling / "outside.cpp";
+  fs::copy(SAMPLE1_PATH, outsideFile);
+
+  Mutant m{"LCR", outsideFile, "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
+  GitSourceTree tree(mBaseDir);
+  fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
+  fs::create_directories(BACKUP_PATH);
+
+  EXPECT_THROW(tree.modify(m, BACKUP_PATH), IOException);
+
+  fs::remove_all(sibling);
+}
+
 TEST_F(GitSourceTreeTest, testModifyWorksWhenValidMutantGiven) {
   Mutant m{"LCR", fs::path(mTmpFileName), "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
   GitSourceTree tree(mBaseDir);
