@@ -82,7 +82,10 @@ Mutants WeightedMutantGenerator::selectMutants(const SourceLines& sourceLines, s
   std::vector<std::pair<SourceLine, int>> sortedDepthMap;
   sortedDepthMap.reserve(mDepthMap.size());
   std::copy(mDepthMap.begin(), mDepthMap.end(), std::back_inserter(sortedDepthMap));
-  std::sort(sortedDepthMap.begin(), sortedDepthMap.end(), cmp);
+  // stable_sort preserves the input order (std::map's ordered iteration)
+  // among entries with equal depth, so the downstream selection is fully
+  // deterministic for the same seed across STL implementations.
+  std::stable_sort(sortedDepthMap.begin(), sortedDepthMap.end(), cmp);
 
   return selectFromRange(sortedDepthMap, maxMutants, randomSeed, index,
                          [](const std::pair<SourceLine, int>& elem) -> const SourceLine& { return elem.first; },
