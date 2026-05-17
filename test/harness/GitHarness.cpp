@@ -34,8 +34,11 @@ GitHarness::GitHarness(const std::string& dir_name) : repo(nullptr) {
 
   // git init
   if (git_repository_init(&repo, dir_name.c_str(), 0) != 0) {
-    std::cerr << "git init fails." << std::endl;
-    exit(1);
+    // Match the refcount fix in GitRepository's ctor (commit 344e346):
+    // libgit2's init/shutdown is refcounted, so throwing after init must
+    // release the count to avoid a leak when the caller catches.
+    git_libgit2_shutdown();
+    throw IOException(EINVAL, "git init failed");
   }
 
   repo_path = dir_name;
