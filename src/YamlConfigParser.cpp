@@ -4,11 +4,14 @@
  */
 
 #include <yaml-cpp/yaml.h>
+#include <fmt/ranges.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "sentinel/Logger.hpp"
 #include "sentinel/YamlConfigParser.hpp"
 #include "sentinel/util/formatter.hpp"
 
@@ -80,6 +83,43 @@ void YamlConfigParser::applyTo(Config* cfg, const std::filesystem::path& path) {
   const fs::path base = fs::absolute(path).parent_path();
 
   try {
+    // Mirror the version check above: declaring 'version: 1' is a contract
+    // that the file follows the v1 schema. Reject any key outside that
+    // schema rather than silently dropping it, so typos surface immediately.
+    // std::set (not unordered_set) keeps the "Valid keys" list in the error
+    // message deterministically ordered.
+    static const std::set<std::string> kKnownKeys = {
+        "version", "source-dir", "output-dir", "compiledb-dir", "test-result-dir",
+        "build-command", "test-command", "timeout", "extension", "pattern",
+        "generator", "mutants-per-line", "operator", "lcov-tracefile", "restrict",
+    };
+    // CLI-only keys are accepted in the file (so older configs still parse)
+    // but warned about, since they have no effect from YAML — the user
+    // likely intended the matching --cli option instead.
+    static const std::set<std::string> kCliOnlyKeys = {
+        "from", "seed", "limit", "threshold", "partition", "workspace",
+    };
+    std::vector<std::string> unknownKeys;
+    for (const auto& kv : root) {
+      std::string key = kv.first.as<std::string>();
+      if (kKnownKeys.count(key) != 0) {
+        continue;
+      }
+      if (kCliOnlyKeys.count(key) != 0) {
+        Logger::warn("Config file '{}': key '{}' is CLI-only and is ignored "
+                     "in YAML. Use the --{} CLI option instead.",
+                     path, key, key);
+        continue;
+      }
+      unknownKeys.push_back(key);
+    }
+    if (!unknownKeys.empty()) {
+      throw std::runtime_error(fmt::format(
+          "Config file '{}': unknown key(s) [{}] for version {}. Valid keys: [{}]",
+          path, fmt::join(unknownKeys, ", "), kSupportedVersion,
+          fmt::join(kKnownKeys, ", ")));
+    }
+
     if (root["source-dir"]) cfg->sourceDir = resolvePath(base, root["source-dir"].as<std::string>());
     if (root["output-dir"]) cfg->outputDir = resolvePath(base, root["output-dir"].as<std::string>());
     if (root["compiledb-dir"]) cfg->compileDbDir = resolvePath(base, root["compiledb-dir"].as<std::string>());

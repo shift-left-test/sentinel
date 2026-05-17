@@ -15,6 +15,7 @@
 #include "helper/TestTempDir.hpp"
 #include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/Config.hpp"
+#include "sentinel/Logger.hpp"
 #include "sentinel/YamlConfigParser.hpp"
 
 namespace fs = std::filesystem;
@@ -247,6 +248,56 @@ TEST_F(ConfigTest, testYamlFieldWithWrongTypeThrows) {
   writeFile("bad-type.yaml", "version: 1\ntimeout: [1, 2]\n");
   Config cfg;
   EXPECT_THROW(YamlConfigParser::applyTo(&cfg, configPath("bad-type.yaml")), std::runtime_error);
+}
+
+TEST_F(ConfigTest, testYamlUnknownKeyThrowsWithHelpfulMessage) {
+  // Mirrors the strict version contract: declaring 'version: 1' means
+  // unknown keys are user typos, not silently-ignored config.
+  writeFile("typo.yaml",
+            "version: 1\n"
+            "build-command: make\n"
+            "timout: 60\n");
+  Config cfg;
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("typo.yaml")),
+      std::runtime_error, HasSubstr("timout"));
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("typo.yaml")),
+      std::runtime_error, HasSubstr("timeout"));
+}
+
+TEST_F(ConfigTest, testYamlCliOnlyKeyWarnsAndIsIgnored) {
+  // CLI-only keys must surface via a warn so users see why their YAML
+  // setting isn't taking effect; they must NOT silently fall through.
+  writeFile("cli-only.yaml",
+            "version: 1\n"
+            "build-command: make\n"
+            "seed: 42\n");
+  Config cfg = Config::withDefaults();
+
+  Logger::setLevel(Logger::Level::INFO);
+  testing::internal::CaptureStderr();
+  YamlConfigParser::applyTo(&cfg, configPath("cli-only.yaml"));
+  std::string captured = testing::internal::GetCapturedStderr();
+
+  EXPECT_FALSE(cfg.seed.has_value());
+  EXPECT_NE(captured.find("seed"), std::string::npos);
+  EXPECT_NE(captured.find("CLI-only"), std::string::npos);
+}
+
+TEST_F(ConfigTest, testYamlMultipleUnknownKeysAllReported) {
+  writeFile("multi-typo.yaml",
+            "version: 1\n"
+            "build-command: make\n"
+            "timout: 60\n"
+            "extentions: [cpp]\n");
+  Config cfg;
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("multi-typo.yaml")),
+      std::runtime_error, HasSubstr("timout"));
+  EXPECT_THROW_MESSAGE(
+      YamlConfigParser::applyTo(&cfg, configPath("multi-typo.yaml")),
+      std::runtime_error, HasSubstr("extentions"));
 }
 
 TEST_F(ConfigTest, testYamlEmitOmitsEmptyCommandFields) {
