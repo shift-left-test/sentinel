@@ -26,11 +26,14 @@ add_executable(unittest
   TimestamperTest.cpp AORTest.cpp BORTest.cpp LCRTest.cpp RORTest.cpp SDLTest.cpp SORTest.cpp UOITest.cpp
   StageTest.cpp ConfigValidatorTest.cpp
   EvaluationStageTest.cpp DryRunStageTest.cpp ReportStageTest.cpp
+  GenerationStageTest.cpp
   OriginalBuildStageTest.cpp OriginalTestStageTest.cpp
   SignalHandlerTest.cpp OomHandlerTest.cpp YamlConfigWriterTest.cpp
   FormatterTest.cpp
   Utf8CharTest.cpp
   PartitionedWorkspaceMergerTest.cpp
+  XmlParserTest.cpp
+  GoogleTestXmlParserTest.cpp QTestXmlParserTest.cpp CTestXmlParserTest.cpp
 )
 target_include_directories(unittest PRIVATE
   ${CMAKE_SOURCE_DIR}/test/include
