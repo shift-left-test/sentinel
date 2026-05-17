@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <unistd.h>
 #include <csignal>
-#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <utility>
@@ -34,7 +34,10 @@ void SignalHandler::dispatch(int signum) {
   }
   Console::flush();
   if (signum != SIGUSR1) {
-    std::exit(EXIT_FAILURE);
+    // _exit (not std::exit): we are in a signal context, and std::exit runs
+    // atexit handlers and C++ static destructors which are not async-signal-
+    // safe. OomHandler uses the same pattern for the SIGUSR1 path; match it.
+    _exit(EXIT_FAILURE);
   }
 }
 
