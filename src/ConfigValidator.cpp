@@ -21,6 +21,14 @@ namespace sentinel {
 namespace fs = std::filesystem;
 
 void ConfigValidator::validate(const Config& config) {
+  // Universally applicable input sanity checks must run BEFORE the merge-mode
+  // short-circuit, so that nonsense values like --threshold=999 are caught
+  // even when the rest of the pipeline (build/test) is skipped.
+  if (config.threshold && (*config.threshold < 0.0 || *config.threshold > 100.0)) {
+    throw InvalidArgumentException(
+        fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].", *config.threshold));
+  }
+
   if (!config.mergeWorkspaces.empty()) {
     return;
   }
@@ -42,11 +50,6 @@ void ConfigValidator::validate(const Config& config) {
   if (ec) {
     throw InvalidArgumentException(
         fmt::format("--source-dir: '{}': {}", config.sourceDir.string(), ec.message()));
-  }
-
-  if (config.threshold && (*config.threshold < 0.0 || *config.threshold > 100.0)) {
-    throw InvalidArgumentException(
-        fmt::format("Invalid --threshold value: {:.1f}. Expected a percentage in [0, 100].", *config.threshold));
   }
 
   if (config.partition) {

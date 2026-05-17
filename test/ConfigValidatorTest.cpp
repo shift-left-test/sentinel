@@ -178,6 +178,24 @@ TEST_F(ConfigValidatorTest, testMergeModeSkipsRequiredFieldValidation) {
   EXPECT_NO_THROW(ConfigValidator::validate(cfg));
 }
 
+TEST_F(ConfigValidatorTest, testMergeModeStillValidatesThresholdRange) {
+  // --threshold sanity must be enforced even when build/test fields are
+  // skipped, so that obviously bogus values surface at config time rather
+  // than silently propagating into the report stage.
+  Config cfg = Config::withDefaults();
+  cfg.mergeWorkspaces = {"/data/part1"};
+  cfg.threshold = 150.0;
+  EXPECT_THROW_MESSAGE(ConfigValidator::validate(cfg), InvalidArgumentException,
+                       HasSubstr("--threshold"));
+}
+
+TEST_F(ConfigValidatorTest, testMergeModeAcceptsValidThreshold) {
+  Config cfg = Config::withDefaults();
+  cfg.mergeWorkspaces = {"/data/part1"};
+  cfg.threshold = 80.0;
+  EXPECT_NO_THROW(ConfigValidator::validate(cfg));
+}
+
 TEST_F(ConfigValidatorTest, testFromEmptyStringThrows) {
   mConfig.from = "";
   EXPECT_THROW(ConfigValidator::validate(mConfig), InvalidArgumentException);
