@@ -3,14 +3,23 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
 #include "helper/SampleFileGeneratorForTest.hpp"
+#include "helper/ThrowMessageMatcher.hpp"
 #include "sentinel/MutationFactory.hpp"
 #include "sentinel/UniformMutantGenerator.hpp"
+#include "sentinel/exceptions/IOException.hpp"
 
 namespace sentinel {
+
+namespace fs = std::filesystem;
+
+using ::testing::AllOf;
+using ::testing::HasSubstr;
 
 class MutationFactoryTest : public SampleFileGeneratorForTest {};
 
@@ -49,6 +58,24 @@ TEST_F(MutationFactoryTest, testRepeatedGenerationProducesStableResults) {
     Mutants selected = factory.generate(SAMPLE1_DIR, sourceLines, 100, 1234);
     EXPECT_GT(selected.size(), 0u);
   }
+}
+
+TEST_F(MutationFactoryTest, testGenerateThrowsClearErrorWhenSourceRootMissing) {
+  // A nonexistent gitPath must surface as a descriptive IOException rather
+  // than the raw std::filesystem_error from the no-error_code overload.
+  fs::path missingRoot = SAMPLE_BASE / "definitely-not-a-real-dir";
+  ASSERT_FALSE(fs::exists(missingRoot));
+
+  SourceLines sourceLines;
+  sourceLines.push_back(SourceLine(SAMPLE1_PATH, 58));
+
+  auto generator = std::make_shared<UniformMutantGenerator>(SAMPLE1_DIR);
+  MutationFactory factory(generator);
+
+  EXPECT_THROW_MESSAGE(
+      factory.generate(missingRoot, sourceLines, 3, 1234),
+      IOException,
+      AllOf(HasSubstr("source root"), HasSubstr(missingRoot.string())));
 }
 
 }  // namespace sentinel
