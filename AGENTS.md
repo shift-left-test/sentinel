@@ -133,8 +133,18 @@ directory is missing — through a deterministic exit path: it emits a fixed
 `ERROR:` message via `write(2)`, raises `SIGUSR1` so `SignalHandler` runs
 the backup-restore / status-line cleanup callbacks, and then calls
 `_exit(137)`. **Do not** use `Logger`, `Console`, `fmt`, or any allocating
-call inside the OOM handler — they would re-enter the allocator and
+call inside the OOM handler entry points (`onLlvmBadAlloc`, `onLlvmFatal`,
+or the `set_new_handler` lambda) — they would re-enter the allocator and
 re-trigger the same failure.
+
+The cleanup callbacks dispatched via `SIGUSR1`
+(`ws->restoreBackup`, `statusLine->disable`) **do allocate** through
+`std::filesystem` and `fmt`. They run on a best-effort basis: a recursive
+OOM during cleanup is short-circuited by `OomHandler::sInHandler` to
+`_exit(137)`, which can leave the source tree partially mutated. Recovery
+is the user's responsibility (`git checkout` or re-running sentinel) —
+a fully allocation-free cleanup would require bypassing `std::filesystem`
+for raw POSIX syscalls and is an accepted trade-off against code clarity.
 
 ### Git Integration
 
