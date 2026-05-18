@@ -27,7 +27,7 @@ constexpr std::string_view kDaPrefix = "DA:";
 
 }  // namespace
 
-CoverageInfo::CoverageInfo(const std::vector<fs::path>& filenames) {
+CoverageInfo::CoverageInfo(const std::vector<std::filesystem::path>& filenames) {
   for (const auto& tracefile : filenames) {
     const std::string filename = tracefile.string();
     if (!fs::exists(tracefile)) {
