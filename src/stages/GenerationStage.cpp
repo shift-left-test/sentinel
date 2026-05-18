@@ -154,12 +154,7 @@ bool GenerationStage::execute(PipelineContext* ctx) {
   SourceLines sourceLines = mRepo->getSourceLines(ctx->config.from, ctx->config.uncommitted);
 
   if (ctx->config.restrictGeneration && !ctx->config.lcovTracefiles.empty()) {
-    std::vector<std::string> covFiles;
-    covFiles.reserve(ctx->config.lcovTracefiles.size());
-    std::transform(ctx->config.lcovTracefiles.begin(), ctx->config.lcovTracefiles.end(),
-                   std::back_inserter(covFiles),
-                   [](const fs::path& p) { return p.string(); });
-    CoverageInfo coverageInfo(covFiles);
+    CoverageInfo coverageInfo(ctx->config.lcovTracefiles);
 
     const std::size_t before = sourceLines.size();
     SourceLines filtered;

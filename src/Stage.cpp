@@ -23,7 +23,8 @@ void Stage::run(PipelineContext* ctx) {
     ctx->statusLine.setPhase(getPhase());
     try {
       if (!execute(ctx)) {
-        ctx->statusLine.disable(); return;
+        ctx->statusLine.disable();
+        return;
       }
     } catch (...) {
       ctx->statusLine.disable();

@@ -27,18 +27,19 @@ constexpr std::string_view kDaPrefix = "DA:";
 
 }  // namespace
 
-CoverageInfo::CoverageInfo(const std::vector<std::string>& filenames) {
-  for (const auto& filename : filenames) {
-    if (!fs::exists(filename)) {
+CoverageInfo::CoverageInfo(const std::vector<fs::path>& filenames) {
+  for (const auto& tracefile : filenames) {
+    const std::string filename = tracefile.string();
+    if (!fs::exists(tracefile)) {
       throw InvalidArgumentException(fmt::format(
           "--lcov-tracefile '{}' is still missing after build and test "
           "completed.\n"
           "       Ensure your build or test command generates this file "
           "(e.g., 'lcov --capture -d . -o {}').",
-          filename, fs::path(filename).filename().string()));
+          filename, tracefile.filename().string()));
     }
 
-    std::ifstream coverageFile(filename);
+    std::ifstream coverageFile(tracefile);
     if (!coverageFile) {
       throw InvalidArgumentException(fmt::format(
           "--lcov-tracefile '{}': failed to open ({}).",

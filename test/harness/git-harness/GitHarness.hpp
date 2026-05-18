@@ -146,9 +146,9 @@ class GitHarness {
   static void libgitErrorCheck(int error, const char* msg);
 
  private:
-  std::filesystem::path repo_path;
-  git_repository* repo;
-  std::vector<git_oid> commit_ids;
+  std::filesystem::path mRepoPath;
+  git_repository* mRepo;
+  std::vector<git_oid> mCommitIds;
 };
 
 enum index_mode {

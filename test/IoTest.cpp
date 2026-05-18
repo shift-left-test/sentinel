@@ -73,20 +73,20 @@ TEST_F(IoTest, testEnsureDirectoryExistsThrowsOnPermissionDenied) {
   fs::permissions(mTestDir, fs::perms::all);
 }
 
-TEST_F(IoTest, testSyncFilesCopiesXmlOnly) {
+TEST_F(IoTest, testSyncXmlFilesCopiesXmlOnly) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
   writeFile(from / "a.xml", "<xml/>");
   writeFile(from / "b.txt", "text");
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
   EXPECT_FALSE(fs::exists(to / "b.txt"));
 }
 
-TEST_F(IoTest, testSyncFilesCopiesXmlCaseInsensitive) {
+TEST_F(IoTest, testSyncXmlFilesCopiesXmlCaseInsensitive) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
@@ -94,14 +94,14 @@ TEST_F(IoTest, testSyncFilesCopiesXmlCaseInsensitive) {
   writeFile(from / "b.XML", "<XML/>");
   writeFile(from / "c.txt", "text");
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_TRUE(fs::exists(to / "a.xml"));
   EXPECT_TRUE(fs::exists(to / "b.XML"));
   EXPECT_FALSE(fs::exists(to / "c.txt"));
 }
 
-TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
+TEST_F(IoTest, testSyncXmlFilesClearsDestinationFirst) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
@@ -109,25 +109,25 @@ TEST_F(IoTest, testSyncFilesClearsDestinationFirst) {
   writeFile(to / "old.xml", "old");
   writeFile(from / "new.xml", "<xml/>");
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_FALSE(fs::exists(to / "old.xml"));
   EXPECT_TRUE(fs::exists(to / "new.xml"));
 }
 
-TEST_F(IoTest, testSyncFilesPreservesSubdirectoryLayout) {
+TEST_F(IoTest, testSyncXmlFilesPreservesSubdirectoryLayout) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   writeFile(from / "sub1" / "result.xml", "<xml>1</xml>");
   writeFile(from / "sub2" / "result.xml", "<xml>2</xml>");
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_TRUE(fs::exists(to / "sub1" / "result.xml"));
   EXPECT_TRUE(fs::exists(to / "sub2" / "result.xml"));
 }
 
-TEST_F(IoTest, testSyncFilesNonXmlOnlyResultsInEmptyDestination) {
+TEST_F(IoTest, testSyncXmlFilesNonXmlOnlyResultsInEmptyDestination) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
@@ -135,18 +135,18 @@ TEST_F(IoTest, testSyncFilesNonXmlOnlyResultsInEmptyDestination) {
   writeFile(from / "data.txt", "text");
   writeFile(from / "report.html", "<html/>");
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_TRUE(fs::is_directory(to));
   EXPECT_TRUE(fs::is_empty(to));
 }
 
-TEST_F(IoTest, testSyncFilesEmptySourceResultsInEmptyDestination) {
+TEST_F(IoTest, testSyncXmlFilesEmptySourceResultsInEmptyDestination) {
   auto from = mTestDir / "from";
   auto to = mTestDir / "to";
   fs::create_directories(from);
 
-  io::syncFiles(from, to);
+  io::syncXmlFiles(from, to);
 
   EXPECT_TRUE(fs::is_directory(to));
   EXPECT_TRUE(fs::is_empty(to));

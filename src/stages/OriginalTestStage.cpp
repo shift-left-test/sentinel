@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <filesystem>  // NOLINT
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include "sentinel/Logger.hpp"
@@ -21,7 +20,6 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-static constexpr std::size_t kLogTailLines = 20;
 static constexpr std::size_t kAutoTimeoutPaddingSecs = 5;
 static constexpr double kAutoTimeoutFactor = 1.5;
 
@@ -53,15 +51,12 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
   const double testElapsed = testTimer.toDouble();
 
   if (testProc.isSignaled() || testProc.isSignalExit()) {
-    std::string msg = fmt::format(
-        "Original test command was killed by a signal.\n"
-        "       See: {}",
-        testLog.string());
-    if (!isVerbose(*ctx)) {
-      io::appendLogTail(&msg, testLog, kLogTailLines, "test output");
-    }
-    msg += fmt::format("\n\n       Test command: {}", ctx->config.testCmd);
-    throw std::runtime_error(msg);
+    io::throwStageFailure(
+        fmt::format("Original test command was killed by a signal.\n"
+                    "       See: {}", testLog.string()),
+        testLog, "test output",
+        fmt::format("Test command: {}", ctx->config.testCmd),
+        !isVerbose(*ctx));
   }
 
   if (!ctx->config.timeout) {
@@ -74,26 +69,18 @@ bool OriginalTestStage::execute(PipelineContext* ctx) {
 
   bool testFailed = !testProc.isSuccessfulExit();
 
-  io::syncFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir());
+  io::syncXmlFiles(ctx->config.testResultDir, ctx->workspace.getOriginalResultsDir());
 
   if (fs::is_empty(ctx->workspace.getOriginalResultsDir())) {
-    std::string msg;
-    if (testFailed) {
-      msg = fmt::format(
-          "Original test command failed with no test results.\n"
-          "       See: {}",
-          testLog.string());
-    } else {
-      msg = fmt::format(
-          "No test result files found in '{}' after running test command.\n"
-          "       See: {}",
-          ctx->config.testResultDir.string(), testLog.string());
-    }
-    if (!isVerbose(*ctx)) {
-      io::appendLogTail(&msg, testLog, kLogTailLines, "test output");
-    }
-    msg += fmt::format("\n\n       Test command: {}", ctx->config.testCmd);
-    throw std::runtime_error(msg);
+    std::string headline = testFailed
+        ? fmt::format("Original test command failed with no test results.\n"
+                      "       See: {}", testLog.string())
+        : fmt::format("No test result files found in '{}' after running test command.\n"
+                      "       See: {}", ctx->config.testResultDir.string(), testLog.string());
+    io::throwStageFailure(
+        std::move(headline), testLog, "test output",
+        fmt::format("Test command: {}", ctx->config.testCmd),
+        !isVerbose(*ctx));
   }
 
   Logger::info("Original test completed ({})", Timestamper::format(testElapsed));

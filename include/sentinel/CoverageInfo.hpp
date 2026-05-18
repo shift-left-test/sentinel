@@ -6,6 +6,7 @@
 #ifndef INCLUDE_SENTINEL_COVERAGEINFO_HPP_
 #define INCLUDE_SENTINEL_COVERAGEINFO_HPP_
 
+#include <filesystem>  // NOLINT
 #include <map>
 #include <string>
 #include <unordered_set>
@@ -34,11 +35,11 @@ class CoverageInfo {
    * logged at the verbose level and skipped; they are not fatal so that
    * tracefiles produced by external tooling can be tolerated.
    *
-   * @param filenames list of lcov-format coverage result file
+   * @param filenames list of lcov-format coverage result files
    * @throw InvalidArgumentException if a tracefile does not exist or
    *        cannot be opened
    */
-  explicit CoverageInfo(const std::vector<std::string>& filenames);
+  explicit CoverageInfo(const std::vector<std::filesystem::path>& filenames);
 
   CoverageInfo(const CoverageInfo&) = delete;
   CoverageInfo& operator=(const CoverageInfo&) = delete;

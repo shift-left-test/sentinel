@@ -30,28 +30,21 @@ bool SDL::canMutate(clang::Stmt* s) {
     return false;
   }
 
-  if (auto is = clang::dyn_cast<clang::IfStmt>(parent)) {
-    if (is->getThen() == s || is->getElse() == s) {
-      return true;
-    }
-  } else {
-    if (auto fs = clang::dyn_cast<clang::ForStmt>(parent)) {
-      if (fs->getBody() == s) {
-        return true;
-      }
-    } else {
-      if (auto ds = clang::dyn_cast<clang::DoStmt>(parent)) {
-        if (ds->getBody() == s) {
-          return true;
-        }
-      } else {
-        if (auto ws = clang::dyn_cast<clang::WhileStmt>(parent)) {
-          if (ws->getBody() == s) {
-            return true;
-          }
-        }
-      }
-    }
+  if (auto ifStmt = clang::dyn_cast<clang::IfStmt>(parent);
+      ifStmt != nullptr && (ifStmt->getThen() == s || ifStmt->getElse() == s)) {
+    return true;
+  }
+  if (auto forStmt = clang::dyn_cast<clang::ForStmt>(parent);
+      forStmt != nullptr && forStmt->getBody() == s) {
+    return true;
+  }
+  if (auto doStmt = clang::dyn_cast<clang::DoStmt>(parent);
+      doStmt != nullptr && doStmt->getBody() == s) {
+    return true;
+  }
+  if (auto whileStmt = clang::dyn_cast<clang::WhileStmt>(parent);
+      whileStmt != nullptr && whileStmt->getBody() == s) {
+    return true;
   }
 
   // Apply SDL to immediate child node of CompoundStmt node

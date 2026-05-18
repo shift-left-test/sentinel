@@ -9,12 +9,19 @@
 #include <algorithm>
 #include <cstddef>
 #include <filesystem>  // NOLINT
+#include <stdexcept>
 #include <string>
 #include "sentinel/exceptions/InvalidArgumentException.hpp"
 #include "sentinel/util/formatter.hpp"
 #include "sentinel/util/string.hpp"
 
 namespace sentinel::io {
+
+/**
+ * @brief Default number of log lines to include when attaching a log tail
+ *        to a failure message.
+ */
+inline constexpr std::size_t kDefaultLogTailLines = 20;
 
 /**
  * @brief Check whether a path has a .xml extension (case-insensitive).
@@ -50,7 +57,7 @@ inline void ensureDirectoryExists(const std::filesystem::path& dirPath) {
  * @param from Source directory to sync from.
  * @param to   Destination directory (cleared and replaced).
  */
-inline void syncFiles(const std::filesystem::path& from, const std::filesystem::path& to) {
+inline void syncXmlFiles(const std::filesystem::path& from, const std::filesystem::path& to) {
   std::filesystem::remove_all(to);
   std::filesystem::create_directories(to);
   if (std::filesystem::is_directory(from)) {
@@ -87,6 +94,31 @@ std::string readLastLines(const std::filesystem::path& path, std::size_t n);
  */
 void appendLogTail(std::string* msg, const std::filesystem::path& logPath,
                    std::size_t n, const std::string& label = "output");
+
+/**
+ * @brief Throw a std::runtime_error annotated with an optional log tail and
+ *        the originating command line.
+ *
+ * @param msg Headline message (e.g., "Original build failed.\n       See: ...").
+ * @param logPath Log file to read the tail from.
+ * @param logLabel Header label for the log tail block (e.g., "build output").
+ * @param commandSummary Final indented line appended to the message
+ *        (e.g., "Build command: make all").
+ * @param attachLogTail When true, the last kDefaultLogTailLines lines of
+ *        @p logPath are appended before the command summary.
+ */
+[[noreturn]] inline void throwStageFailure(
+    std::string msg,
+    const std::filesystem::path& logPath,
+    const std::string& logLabel,
+    const std::string& commandSummary,
+    bool attachLogTail) {
+  if (attachLogTail) {
+    appendLogTail(&msg, logPath, kDefaultLogTailLines, logLabel);
+  }
+  msg += "\n\n       " + commandSummary;
+  throw std::runtime_error(msg);
+}
 
 }  // namespace sentinel::io
 

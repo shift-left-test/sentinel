@@ -6,6 +6,7 @@
 #include <fmt/core.h>
 #include <algorithm>
 #include <filesystem>  // NOLINT
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -58,13 +59,12 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
   }
   Evaluator evaluator(ctx->workspace.getOriginalResultsDir());
 
-  std::vector<std::string> covFiles;
-  std::transform(ctx->config.lcovTracefiles.begin(), ctx->config.lcovTracefiles.end(),
-                 std::back_inserter(covFiles),
-                 [](const fs::path& p) { return p.string(); });
-  CoverageInfo coverageInfo(covFiles);
+  CoverageInfo coverageInfo(ctx->config.lcovTracefiles);
   const bool hasCoverage = !ctx->config.lcovTracefiles.empty();
 
+  // Cache canonical paths so repeated mutants on the same file do not pay the
+  // filesystem cost N times in the per-mutant hot loop.
+  std::map<fs::path, std::string> canonCache;
   std::size_t current = 0;
 
   for (const auto& [id, m] : indexedMutants) {
@@ -79,9 +79,14 @@ bool EvaluationStage::execute(PipelineContext* ctx) {
 
     bool uncovered = false;
     if (hasCoverage) {
-      std::error_code ec;
-      const auto absPath = fs::canonical(ctx->config.sourceDir / m.getPath(), ec);
-      uncovered = ec || !coverageInfo.cover(absPath.string(), m.getFirst().line);
+      const auto srcPath = ctx->config.sourceDir / m.getPath();
+      auto [it, inserted] = canonCache.emplace(srcPath, std::string{});
+      if (inserted) {
+        std::error_code ec;
+        const auto absPath = fs::canonical(srcPath, ec);
+        it->second = ec ? std::string{} : absPath.string();
+      }
+      uncovered = it->second.empty() || !coverageInfo.cover(it->second, m.getFirst().line);
     }
 
     ctx->statusLine.setProgressCurrent(current);
@@ -167,7 +172,7 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
     } else if (testProc.isSignaled() || testProc.isSignalExit()) {
       testState = TestExecutionState::RUNTIME_ERROR;
     } else {
-      io::syncFiles(ctx->config.testResultDir, actualDir);
+      io::syncXmlFiles(ctx->config.testResultDir, actualDir);
     }
   } else {
     testState = TestExecutionState::BUILD_FAILURE;
