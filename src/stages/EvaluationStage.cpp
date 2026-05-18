@@ -138,11 +138,14 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   const fs::path backupDir = ctx->workspace.getBackupDir();
   const fs::path actualDir = ctx->workspace.getActualDir();
 
-  mRepo->getSourceTree()->modify(m, backupDir.string());
+  // Install cleanup BEFORE modify so that a throw mid-modify (e.g. backup
+  // copy succeeded but the rewrite failed) still restores any partial backup
+  // and clears actualDir. restoreBackup is a no-op on an empty backup dir.
   ScopeGuard cleanup{[&] {
     ctx->workspace.restoreBackup(ctx->config.sourceDir);
     fs::remove_all(actualDir);
   }};
+  mRepo->getSourceTree()->modify(m, backupDir.string());
 
   Timestamper buildTimer;
   Subprocess buildProc(ctx->config.buildCmd, 0, ctx->workspace.getMutantBuildLog(id).string(),
