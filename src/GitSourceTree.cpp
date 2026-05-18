@@ -5,14 +5,17 @@
 
 #include <fmt/core.h>
 #include <algorithm>
+#include <cerrno>
 #include <cstddef>
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/Mutant.hpp"
 #include "sentinel/exceptions/IOException.hpp"
+#include "sentinel/util/ScopeGuard.hpp"
 
 namespace sentinel {
 
@@ -57,7 +60,22 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   const std::string originalContent = buffer.str();
   const bool originalEndsWithNewline = !originalContent.empty() && originalContent.back() == '\n';
 
-  std::ofstream mutatedFile(targetFilename.string(), std::ios::trunc);
+  // Write to a sibling temp file, then atomically rename onto the target.
+  // If anything below throws, the original file is untouched and the temp
+  // file is cleaned up by the scope guard. Keeping the temp as a sibling
+  // (not under a tmpdir) guarantees the rename stays within one filesystem
+  // and therefore stays atomic on POSIX.
+  fs::path tempPath = targetFilename;
+  tempPath += kMutatedTempSuffix;
+  ScopeGuard tempCleanup{[&] {
+    std::error_code ec;
+    fs::remove(tempPath, ec);
+  }};
+
+  std::ofstream mutatedFile(tempPath.string(), std::ios::trunc);
+  if (!mutatedFile) {
+    throw IOException(errno, fmt::format("Failed to open temporary file {}", tempPath.string()));
+  }
 
   // If code line is out of target range, just write to mutant file.
   // If code line is in target range (start_line < code_line < end_line), skip.
@@ -99,6 +117,16 @@ void GitSourceTree::modify(const Mutant& info, const std::filesystem::path& back
   }
 
   mutatedFile.close();
+  if (!mutatedFile) {
+    // ofstream's fail-bit on close (flush failure) does not reliably set
+    // errno, so we surface a message-only IOException instead of inventing
+    // a code.
+    throw IOException(fmt::format("Failed to write mutated content to {}", tempPath.string()));
+  }
+
+  // Atomic replace on POSIX. After this the temp path no longer exists, so
+  // the scope guard's fs::remove is a harmless no-op.
+  fs::rename(tempPath, targetFilename);
 }
 
 }  // namespace sentinel

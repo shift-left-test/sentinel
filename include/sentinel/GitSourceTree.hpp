@@ -8,6 +8,7 @@
 
 #include <filesystem>  // NOLINT
 #include <string>
+#include <string_view>
 #include "sentinel/Mutant.hpp"
 #include "sentinel/SourceTree.hpp"
 
@@ -18,6 +19,13 @@ namespace sentinel {
  */
 class GitSourceTree : public SourceTree {
  public:
+  /**
+   * @brief Suffix appended to the target path while modify() writes the
+   *        mutated content out-of-place. Exposed so tests can assert the
+   *        atomic-rename invariant without duplicating the literal.
+   */
+  static constexpr std::string_view kMutatedTempSuffix = ".sentinel_mutated";
+
   /**
    * @brief Default constructor
    *

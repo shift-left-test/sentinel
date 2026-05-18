@@ -6,7 +6,9 @@
 #include <gtest/gtest.h>
 #include <filesystem>  // NOLINT
 #include <fstream>
+#include <stdexcept>
 #include <string>
+#include "helper/FileTestHelper.hpp"
 #include "helper/SampleFileGeneratorForTest.hpp"
 #include "sentinel/GitSourceTree.hpp"
 #include "sentinel/exceptions/IOException.hpp"
@@ -192,6 +194,43 @@ TEST_F(GitSourceTreeTest, testBackupWorks) {
 
   origFile.close();
   mutatedFile.close();
+}
+
+TEST_F(GitSourceTreeTest, testModifyLeavesNoTemporaryFile) {
+  // The atomic-rename path writes through a sibling temp file;
+  // a successful modify must not leak it.
+  Mutant m{"LCR", fs::path(mTmpFileName), "sumOfEvenPositiveNumber", 58, 29, 58, 31, "||"};
+  GitSourceTree tree(mBaseDir);
+  fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
+  fs::create_directories(BACKUP_PATH);
+
+  tree.modify(m, BACKUP_PATH);
+
+  fs::path tempPath = mTmpFilePath;
+  tempPath += GitSourceTree::kMutatedTempSuffix;
+  EXPECT_FALSE(fs::exists(tempPath));
+}
+
+TEST_F(GitSourceTreeTest, testModifyKeepsOriginalIntactWhenWriteThrows) {
+  // Intentionally abuses std::string::substr semantics: setting last.column
+  // far past the actual line length makes line.substr(last.column - 1) throw
+  // std::out_of_range from deep inside the write loop, exercising the
+  // rollback path. If production code later adds a column-range guard, this
+  // test must be updated to trigger the throw a different way.
+  const std::string before = testutil::readFile(mTmpFilePath);
+
+  Mutant m{"LCR", fs::path(mTmpFileName), "f", 1, 1, 1, 99999, "||"};
+  GitSourceTree tree(mBaseDir);
+  fs::path BACKUP_PATH = mBaseDir / "sentineltest_backup";
+  fs::create_directories(BACKUP_PATH);
+
+  EXPECT_THROW(tree.modify(m, BACKUP_PATH), std::out_of_range);
+
+  EXPECT_EQ(before, testutil::readFile(mTmpFilePath));
+
+  fs::path tempPath = mTmpFilePath;
+  tempPath += GitSourceTree::kMutatedTempSuffix;
+  EXPECT_FALSE(fs::exists(tempPath));
 }
 
 }  // namespace sentinel
