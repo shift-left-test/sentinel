@@ -25,9 +25,19 @@ namespace sentinel {
 
 namespace fs = std::filesystem;
 
-volatile pid_t Subprocess::childPid;
-volatile bool Subprocess::timedOut;
-volatile int Subprocess::pendSig;
+// These are shared between the main thread and signal handlers.
+// is_always_lock_free is the standard precondition for signal-handler use:
+// the load/store on a lock-free atomic is async-signal-safe.
+static_assert(std::atomic<pid_t>::is_always_lock_free,
+              "std::atomic<pid_t> must be lock-free for signal-handler safety");
+static_assert(std::atomic<bool>::is_always_lock_free,
+              "std::atomic<bool> must be lock-free for signal-handler safety");
+static_assert(std::atomic<int>::is_always_lock_free,
+              "std::atomic<int> must be lock-free for signal-handler safety");
+
+std::atomic<pid_t> Subprocess::childPid{0};
+std::atomic<bool> Subprocess::timedOut{false};
+std::atomic<int> Subprocess::pendSig{0};
 
 Subprocess::Subprocess(const std::string& cmd, std::size_t sec,
                        const std::filesystem::path& logFile, bool silent) :
@@ -110,10 +120,12 @@ int Subprocess::execute() {
     // SIGALRM handler
     // NOTE: Console::err uses fmt::format which is not strictly async-signal-safe,
     // but this is acceptable for the critical SIGKILL escalation message.
-    signal::setMultipleSignalHandlers({SIGALRM}, [](int signum) {
+    signal::setMultipleSignalHandlers({SIGALRM}, [](int /*signum*/) {
       int termSignal = SIGTERM;
-      if (!Subprocess::timedOut) {
-        Subprocess::timedOut = true;
+      // First SIGALRM (was false): schedule the kill-after-grace escalation.
+      // Later SIGALRM (already true): the grace expired, escalate to SIGKILL.
+      // exchange returns the prior value, making the transition single-step.
+      if (!Subprocess::timedOut.exchange(true)) {
         alarm(kKillAfterSecs);
       } else {
         termSignal = SIGKILL;
@@ -173,7 +185,7 @@ int Subprocess::execute() {
       mTimedOut = true;
     }
 
-    auto tmpSig = Subprocess::pendSig;
+    int tmpSig = Subprocess::pendSig.load();
 
     // reset global variable
     Subprocess::childPid = 0;

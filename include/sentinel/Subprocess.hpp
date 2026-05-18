@@ -7,6 +7,7 @@
 #define INCLUDE_SENTINEL_SUBPROCESS_HPP_
 
 #include <unistd.h>
+#include <atomic>
 #include <filesystem>  // NOLINT
 #include <string>
 
@@ -16,9 +17,12 @@ namespace sentinel {
  * @brief Subprocess class
  *
  * @note Only one Subprocess may be active at a time per process.  The signal
- *       handler accesses the static members childPid, killAfterSecs, timedOut
- *       and pendSig; they are declared volatile so that the compiler does not
- *       cache their values across signal-handler boundaries.
+ *       handler accesses the static members childPid, timedOut and pendSig;
+ *       they are std::atomic so that load/store/RMW operations are
+ *       well-defined under the C++ memory model when shared between the
+ *       main thread and a signal handler. The corresponding .cpp asserts
+ *       is_always_lock_free for each type, which is the standard
+ *       precondition for signal-handler use.
  */
 class Subprocess {
  public:
@@ -86,9 +90,9 @@ class Subprocess {
   bool mSilent = false;
   bool mTimedOut = false;
   int mStatus = -1;
-  static volatile pid_t childPid;  ///< PID of the running child process.
-  static volatile bool timedOut;  ///< Set to true by the SIGALRM handler.
-  static volatile int pendSig;  ///< Pending signal to forward to child.
+  static std::atomic<pid_t> childPid;  ///< PID of the running child process.
+  static std::atomic<bool> timedOut;  ///< Set to true by the SIGALRM handler.
+  static std::atomic<int> pendSig;  ///< Pending signal to forward to child.
 };
 
 }  // namespace sentinel
