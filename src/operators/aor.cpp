@@ -20,7 +20,7 @@ bool AOR::canMutate(clang::Stmt* s) {
 }
 
 void AOR::populate(clang::Stmt* s, Mutants* mutables) {
-  auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
+  auto bo = clang::cast<clang::BinaryOperator>(s);
   clang::Expr* lhs = bo->getLHS()->IgnoreImpCasts();
   clang::Expr* rhs = bo->getRHS()->IgnoreImpCasts();
 

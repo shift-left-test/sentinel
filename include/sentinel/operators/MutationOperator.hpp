@@ -151,6 +151,21 @@ class MutationOperator {
       const std::function<bool(const std::string&)>& filter = {});
 
   /**
+   * @brief Append one Mutant to @p mutables describing a replacement of
+   *        the source range [startLoc, endLoc) with @p token.
+   *
+   * @param mutables output list to append to
+   * @param path     source file path attached to the mutant
+   * @param func     enclosing function (qualified) attached to the mutant
+   * @param startLoc inclusive start location of the replaced range
+   * @param endLoc   exclusive end location of the replaced range
+   * @param token    replacement text
+   */
+  void emitMutant(Mutants* mutables, const std::string& path, const std::string& func,
+                  clang::SourceLocation startLoc, clang::SourceLocation endLoc,
+                  const std::string& token);
+
+  /**
    * @brief Return True if the given statement is inside the condition
    *        expression of a for, while, or do-while loop.
    *

@@ -19,7 +19,7 @@ bool BOR::canMutate(clang::Stmt* s) {
 }
 
 void BOR::populate(clang::Stmt* s, Mutants* mutables) {
-  auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
+  auto bo = clang::cast<clang::BinaryOperator>(s);
   const clang::Expr* lhs = bo->getLHS()->IgnoreImpCasts();
   const clang::Expr* rhs = bo->getRHS()->IgnoreImpCasts();
 

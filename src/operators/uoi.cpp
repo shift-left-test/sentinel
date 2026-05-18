@@ -92,7 +92,7 @@ bool UOI::canMutate(clang::Stmt* s) {
 }
 
 void UOI::populate(clang::Stmt* s, Mutants* mutables) {
-  auto e = clang::dyn_cast<clang::Expr>(s);
+  auto e = clang::cast<clang::Expr>(s);
   clang::SourceLocation stmtStartLoc = e->getBeginLoc();
   clang::SourceLocation stmtEndLoc =
       clang::Lexer::getLocForEndOfToken(e->getEndLoc(), 0, mSrcMgr, mContext->getLangOpts());
@@ -106,19 +106,12 @@ void UOI::populate(clang::Stmt* s, Mutants* mutables) {
   std::string stmtStr = convertStmtToString(e);
 
   if (getExprType(e)->isArithmeticType() && !getExprType(e)->isBooleanType()) {
-    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(++(" + stmtStr + "))");
-
-    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(--(" + stmtStr + "))");
+    emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "(++(" + stmtStr + "))");
+    emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "(--(" + stmtStr + "))");
   }
 
   if (getExprType(e)->isBooleanType()) {
-    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "(!(" + stmtStr + "))");
+    emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "(!(" + stmtStr + "))");
   }
 }
 

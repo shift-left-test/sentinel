@@ -114,9 +114,7 @@ void SDL::populate(clang::Stmt* s, Mutants* mutables) {
     std::string path{mSrcMgr.getFilename(stmtStartLoc)};
     std::string func = getContainingFunctionQualifiedName(s);
 
-    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                           mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "{}");
+    emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "{}");
   }
 }
 

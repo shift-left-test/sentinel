@@ -202,10 +202,17 @@ void MutationOperator::populateBinaryReplacements(
     if (filter && !filter(mutatedToken)) {
       continue;
     }
-    mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(opStartLoc),
-                           mSrcMgr.getExpansionColumnNumber(opStartLoc), mSrcMgr.getExpansionLineNumber(opEndLoc),
-                           mSrcMgr.getExpansionColumnNumber(opEndLoc), mutatedToken);
+    emitMutant(mutables, path, func, opStartLoc, opEndLoc, mutatedToken);
   }
+}
+
+void MutationOperator::emitMutant(Mutants* mutables, const std::string& path, const std::string& func,
+                                  clang::SourceLocation startLoc, clang::SourceLocation endLoc,
+                                  const std::string& token) {
+  mutables->emplace_back(mName, path, func,
+                         mSrcMgr.getExpansionLineNumber(startLoc), mSrcMgr.getExpansionColumnNumber(startLoc),
+                         mSrcMgr.getExpansionLineNumber(endLoc), mSrcMgr.getExpansionColumnNumber(endLoc),
+                         token);
 }
 
 void resolveExpansionLineRange(clang::Stmt* s, clang::SourceManager* srcMgr,

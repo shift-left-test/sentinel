@@ -20,7 +20,7 @@ bool LCR::canMutate(clang::Stmt* s) {
 }
 
 void LCR::populate(clang::Stmt* s, Mutants* mutables) {
-  auto bo = clang::dyn_cast<clang::BinaryOperator>(s);
+  auto bo = clang::cast<clang::BinaryOperator>(s);
 
   // create mutables by changing the operator
   populateBinaryReplacements(bo, s, mLogicalOperators, mutables);
@@ -41,12 +41,8 @@ void LCR::populate(clang::Stmt* s, Mutants* mutables) {
 
   std::string path{mSrcMgr.getFilename(stmtStartLoc)};
   std::string func = getContainingFunctionQualifiedName(s);
-  mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "1");
-  mutables->emplace_back(mName, path, func, mSrcMgr.getExpansionLineNumber(stmtStartLoc),
-                         mSrcMgr.getExpansionColumnNumber(stmtStartLoc), mSrcMgr.getExpansionLineNumber(stmtEndLoc),
-                         mSrcMgr.getExpansionColumnNumber(stmtEndLoc), "0");
+  emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "1");
+  emitMutant(mutables, path, func, stmtStartLoc, stmtEndLoc, "0");
 }
 
 }  // namespace sentinel
