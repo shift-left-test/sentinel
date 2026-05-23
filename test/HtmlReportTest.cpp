@@ -157,6 +157,23 @@ TEST_F(HtmlReportTest, testSingleFileContainsEmbeddedCss) {
   expectContains(content, ".mpop");
 }
 
+TEST_F(HtmlReportTest, testScoreColorThresholdsAndLegend) {
+  auto OUT_DIR = BASE / "OUT_DIR_SCORE_LEGEND";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  expectContains(content, "SCORE_HI = 80");
+  expectContains(content, "SCORE_MID = 60");
+  expectContains(content, "score-legend");
+  expectContains(content, "sec-t--with-legend");
+  expectContains(content, " good</span>");
+  expectContains(content, " fair</span>");
+  expectContains(content, " poor</span>");
+  expectNotContains(content, "Mutation score thresholds");
+}
+
 TEST_F(HtmlReportTest, testSingleFileContainsJsonData) {
   auto OUT_DIR = BASE / "OUT_DIR_JSON";
   auto MRs = buildStandardMRs();

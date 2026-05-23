@@ -638,6 +638,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   font-size: .76rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: .06em; color: var(--text-sec); margin-bottom: 12px;
 }
+.sec-t--with-legend {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+.score-legend {
+  display: inline-flex; align-items: center; gap: 14px;
+  text-transform: none; letter-spacing: normal;
+  font-size: .72rem; font-weight: 500; color: var(--text-muted);
+}
 
 .dtbl {
   width: 100%; border-collapse: separate; border-spacing: 0;
@@ -811,8 +820,9 @@ function formatDuration(secs) {
   return s + 's';
 }
 
-function covClass(cov) { return cov >= 70 ? 'c-hi' : cov >= 40 ? 'c-mid' : 'c-lo'; }
-function fillClass(cov) { return cov >= 70 ? 'f-hi' : cov >= 40 ? 'f-mid' : 'f-lo'; }
+var SCORE_HI = 80, SCORE_MID = 60;
+function covClass(cov) { return cov >= SCORE_HI ? 'c-hi' : cov >= SCORE_MID ? 'c-mid' : 'c-lo'; }
+function fillClass(cov) { return cov >= SCORE_HI ? 'f-hi' : cov >= SCORE_MID ? 'f-mid' : 'f-lo'; }
 
 function nav(hash) { location.hash = hash; }
 
@@ -941,6 +951,17 @@ function legendItemSub(color, label, value, subLines) {
     '<button type="button" class="legend-info" aria-label="' + h(label) + ' details">' +
     '&#9432;</button>' +
     '<span class="legend-tip" role="tooltip">' + subs + '</span></span></div>';
+}
+
+function scoreLegendInline() {
+  return '<span class="score-legend">' +
+    '<span><span class="legend-dot--inline" style="background:#0f8a5f"></span>' +
+    '&ge;' + SCORE_HI + ' good</span>' +
+    '<span><span class="legend-dot--inline" style="background:#d99020"></span>' +
+    SCORE_MID + '&ndash;' + (SCORE_HI - 1) + ' fair</span>' +
+    '<span><span class="legend-dot--inline" style="background:#d44030"></span>' +
+    '&lt;' + SCORE_MID + ' poor</span>' +
+    '</span>';
 }
 
 function pctOf(part, total) {
@@ -1171,7 +1192,8 @@ function renderRoot() {
     });
   }
   rows = sortRows(rows, sort);
-  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
+  out += '<section class="tbl-sec"><div class="sec-t sec-t--with-legend">' +
+    '<span>Breakdown by File</span>' + scoreLegendInline() + '</div>' +
     '<table class="dtbl"><thead><tr>' +
     sortTh('Name', 'name', sort, '') +
     sortTh('Files', 'files', sort, 'width:70px;text-align:center') +
@@ -1247,7 +1269,8 @@ function renderDir(dirPath) {
     });
   }
   fRows = sortRows(fRows, fSort);
-  out += '<section class="tbl-sec"><div class="sec-t">Breakdown by File</div>' +
+  out += '<section class="tbl-sec"><div class="sec-t sec-t--with-legend">' +
+    '<span>Breakdown by File</span>' + scoreLegendInline() + '</div>' +
     '<table class="dtbl"><thead><tr>' +
     sortTh('Name', 'name', fSort, '') +
     sortTh('Mutation Score', 'score', fSort, 'width:300px') +
