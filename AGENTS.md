@@ -234,6 +234,7 @@ C++ syntax and style rules:
 - Namespace: `sentinel` (occasionally `sentinel::fs = std::filesystem`)
 - Member variables prefixed with `m` (e.g., `mConfig`)
 - `#include <filesystem>` must always be accompanied by `// NOLINT` (lint suppression for include order)
+- `// NOLINT(...)` may only name cpplint categories (e.g. `readability/fn_size`, `build/header_guard`); never put clang-tidy check names (e.g. `bugprone-empty-catch`) in a NOLINT — clang-tidy is not part of the toolchain and cpplint rejects unknown categories, breaking the build
 - `std::filesystem`: use the full form (`std::filesystem`) in headers; use the short alias (e.g., `namespace fs = std::filesystem; fs::...`) in implementation files, except for function parameter types which always use the full form
 - Output parameters must use pointers (`Config* cfg`), not non-const references (`Config& cfg`), per Google C++ Style Guide
 - C++17 throughout; `std::optional` used only where nullopt carries distinct meaning (e.g., `timeout`, `seed`, `threshold`, `partition`)

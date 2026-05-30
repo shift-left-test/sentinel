@@ -22,7 +22,7 @@ class ScopeGuard {
   ~ScopeGuard() {
     try {
       mFn();
-    } catch (...) {  // NOLINT(bugprone-empty-catch)
+    } catch (...) {
     }
   }
   ScopeGuard(const ScopeGuard&) = delete;
