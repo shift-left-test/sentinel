@@ -32,7 +32,7 @@ Mutants RandomMutantGenerator::selectMutants(const SourceLines& sourceLines, std
     fs::path rawPath = line.getPath();
     auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
     if (emplaceResult.second) {
-      emplaceResult.first->second = fs::canonical(rawPath);
+      emplaceResult.first->second = canonicalOrSelf(rawPath);
     }
     const fs::path& canonPath = emplaceResult.first->second;
 

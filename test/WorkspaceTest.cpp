@@ -911,6 +911,19 @@ TEST_F(WorkspaceTest, testRestoreBackupWhenBackupIsFile) {
   EXPECT_NO_THROW(ws.restoreBackup(srcRoot));
 }
 
+TEST_F(WorkspaceTest, testRestoreBackupDoesNotThrowWhenRestoreFails) {
+  Workspace ws(mRoot);
+  ws.initialize();
+  testutil::writeFile(ws.getBackupDir() / "foo.cpp", "original");
+  // srcRoot is a regular file, so copying backup/foo.cpp underneath it fails.
+  // restoreBackup runs from a noexcept ScopeGuard, so it must report the failure
+  // (best-effort) instead of throwing, which would call std::terminate.
+  auto srcRoot = mBase / "src_is_a_file";
+  testutil::writeFile(srcRoot, "i am a file, not a directory");
+
+  EXPECT_NO_THROW(ws.restoreBackup(srcRoot));
+}
+
 TEST_F(WorkspaceTest, testLoadResultsSkipsNonNumericDirectories) {
   Workspace ws(mRoot);
   ws.initialize();

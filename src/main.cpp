@@ -62,6 +62,13 @@ static int runApplication(sentinel::CliConfigParser* cliParser) {
     sentinel::Config mergeCfg = sentinel::Config::withDefaults();
     cliParser->applyTo(&mergeCfg);
     if (!mergeCfg.mergeWorkspaces.empty()) {
+      // Validate input sanity (e.g. --threshold range) before the merge-mode
+      // short-circuit skips the rest of the pipeline. ConfigValidator::validate
+      // checks the threshold range and then early-returns for merge configs, so
+      // a bad --threshold surfaces as exit 1 here instead of a false exit 3 from
+      // ReportStage later.
+      sentinel::ConfigValidator::validate(mergeCfg);
+
       if (mergeCfg.verbose) {
         sentinel::Logger::setLevel(sentinel::Logger::Level::VERBOSE);
       }

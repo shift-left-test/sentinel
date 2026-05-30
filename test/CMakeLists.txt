@@ -31,6 +31,7 @@ add_executable(unittest
   SignalHandlerTest.cpp OomHandlerTest.cpp YamlConfigWriterTest.cpp
   FormatterTest.cpp
   Utf8CharTest.cpp
+  ScopeGuardTest.cpp
   PartitionedWorkspaceMergerTest.cpp
   XmlParserTest.cpp
   GoogleTestXmlParserTest.cpp QTestXmlParserTest.cpp CTestXmlParserTest.cpp

@@ -151,6 +151,11 @@ class StatusLine {
   bool mEnabled = false;
   bool mDryRun = false;
   volatile sig_atomic_t mResized = 0;
+  /// Set by the SIGCONT handler (async-signal-safe: flag write only) and
+  /// consumed on the main thread in redraw(), so the allocating activate()/
+  /// redraw() work that restores the status line after Ctrl+Z/fg never runs in
+  /// signal context.
+  volatile sig_atomic_t mResumePending = 0;
   int mTtyFd = -1;
   static constexpr int kDefaultTermRows = 24;
   static constexpr int kDefaultTermCols = 120;

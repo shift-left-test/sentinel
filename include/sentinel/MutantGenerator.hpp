@@ -200,6 +200,19 @@ class MutantGenerator {
                                     std::size_t targetLine, std::vector<const Mutant*>* out);
 
   /**
+   * @brief Canonicalize a path, falling back to the original on failure.
+   *
+   * Single normalization rule shared by the candidate index keys and the
+   * per-line lookup keys. If the two disagreed (e.g. a symlinked or
+   * non-normalized source path canonicalized on one side only), the index
+   * lookup would miss and silently drop every candidate for that file.
+   *
+   * @param path path to canonicalize
+   * @return canonical path, or @p path unchanged if canonicalization fails
+   */
+  static std::filesystem::path canonicalOrSelf(const std::filesystem::path& path);
+
+  /**
    * @brief Select up to maxPerLine unique mutants from shuffled candidates.
    *
    * Shuffles the candidate list, finds mutants not already in selectedSet,
@@ -262,7 +275,7 @@ class MutantGenerator {
       std::filesystem::path rawPath = line.getPath();
       auto emplaceResult = pathCache.emplace(rawPath, std::filesystem::path{});
       if (emplaceResult.second) {
-        emplaceResult.first->second = std::filesystem::canonical(rawPath);
+        emplaceResult.first->second = canonicalOrSelf(rawPath);
       }
       const std::filesystem::path& canonPath = emplaceResult.first->second;
 

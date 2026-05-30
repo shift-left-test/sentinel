@@ -51,12 +51,37 @@ Workspace::Workspace(const fs::path& root) : mRoot(root) {
 }
 
 void Workspace::restoreBackup(const fs::path& srcRoot) {
+  // Best-effort and nothrow: this runs from a noexcept ScopeGuard during stack
+  // unwinding and from signal-handler cleanup, where a throw would call
+  // std::terminate. Failures are reported via the logger instead of thrown.
+  std::error_code ec;
   const fs::path backup = getBackupDir();
-  if (!fs::is_directory(backup)) return;
-  for (const auto& dirent : fs::directory_iterator(backup)) {
-    fs::copy(dirent.path(), srcRoot / dirent.path().filename(),
-             fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-    fs::remove_all(dirent.path());
+  if (!fs::is_directory(backup, ec)) return;
+
+  fs::directory_iterator it(backup, ec);
+  if (ec) {
+    Logger::warn("Failed to read backup directory '{}': {}", backup.string(), ec.message());
+    return;
+  }
+  const fs::directory_iterator end;
+  for (; it != end; it.increment(ec)) {
+    if (ec) {
+      Logger::warn("Failed to iterate backup directory '{}': {}", backup.string(), ec.message());
+      return;
+    }
+    const fs::path entry = it->path();
+    fs::copy(entry, srcRoot / entry.filename(),
+             fs::copy_options::overwrite_existing | fs::copy_options::recursive, ec);
+    if (ec) {
+      Logger::warn("Failed to restore backup '{}': {}", entry.string(), ec.message());
+      ec.clear();
+      continue;
+    }
+    fs::remove_all(entry, ec);
+    if (ec) {
+      Logger::warn("Failed to remove backup entry '{}': {}", entry.string(), ec.message());
+      ec.clear();
+    }
   }
 }
 

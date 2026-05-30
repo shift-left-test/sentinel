@@ -56,6 +56,26 @@ Mutants MutantGenerator::generate(const SourceLines& sourceLines, std::size_t ma
   mLinesByPath.clear();
 
   Mutants allMutants = collectAllMutants(sourceLines);
+  // Normalize each mutant's path to the same canonical form the per-line lookup
+  // uses, so the candidate index key (and the sort key, which is the path) match
+  // the lookup key. Otherwise a symlinked/non-normalized source path would make
+  // the index lookup miss and silently drop every candidate for that file.
+  // Memoize per distinct path: many mutants share a file and canonicalOrSelf
+  // hits the filesystem, so each path is canonicalized only once.
+  std::map<fs::path, fs::path> pathCache;
+  for (auto& m : allMutants) {
+    fs::path rawPath = m.getPath();
+    auto emplaceResult = pathCache.emplace(rawPath, fs::path{});
+    if (emplaceResult.second) {
+      emplaceResult.first->second = canonicalOrSelf(rawPath);
+    }
+    const fs::path& canon = emplaceResult.first->second;
+    if (canon != rawPath) {
+      m = Mutant(m.getOperator(), canon, m.getQualifiedFunction(),
+                 m.getFirst().line, m.getFirst().column,
+                 m.getLast().line, m.getLast().column, m.getToken());
+    }
+  }
   CandidateIndex index = buildCandidateIndex(std::move(allMutants));
   return selectMutants(sourceLines, maxMutants, randomSeed, index, mutantsPerLine);
 }
@@ -118,6 +138,15 @@ void MutantGenerator::rethrowAsOomError(const std::filesystem::path& filename) {
 // ---------------------------------------------------------------------------
 // buildCandidateIndex
 // ---------------------------------------------------------------------------
+fs::path MutantGenerator::canonicalOrSelf(const std::filesystem::path& path) {
+  std::error_code ec;
+  fs::path canonical = fs::canonical(path, ec);
+  if (ec) {
+    return path;
+  }
+  return canonical;
+}
+
 CandidateIndex MutantGenerator::buildCandidateIndex(Mutants mutants) {
   CandidateIndex index;
   std::sort(mutants.begin(), mutants.end());

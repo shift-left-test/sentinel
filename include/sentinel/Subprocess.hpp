@@ -84,6 +84,19 @@ class Subprocess {
   bool isSignalExit() const;
 
  private:
+  /**
+   * @brief Send @p sig to the running child's process group (async-signal-safe).
+   *
+   * Loads childPid and guards on a positive value so a reset-race (childPid
+   * cleared to 0 between the child exiting and the handler running) never turns
+   * kill(-0, ...) into a broadcast to sentinel's own process group. The atomic
+   * load, comparison, and kill() are all async-signal-safe, so this is callable
+   * directly from a signal handler.
+   *
+   * @param sig signal number to deliver to the child process group
+   */
+  static void killChildGroup(int sig) noexcept;
+
   std::string mCmd;
   std::size_t mSec;
   std::filesystem::path mLogFile;

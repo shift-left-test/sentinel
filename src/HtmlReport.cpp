@@ -342,6 +342,14 @@ std::string HtmlReport::buildJsonData() const {
             "Src file's line num({0}) is smaller than mutation' line num({1})",
             srcLines.size(), first.line));
       }
+      // The source is re-read from disk at report time, so it may be shorter
+      // than when the mutant was generated. Validate the end coordinate before
+      // indexing srcLines[i - 1] (out-of-bounds) or calling substr (throws).
+      if (last.line < first.line || last.line > srcLines.size()) {
+        throw InvalidArgumentException(fmt::format(
+            "Mutation end line({0}) is out of range [{1}, {2}]",
+            last.line, first.line, srcLines.size()));
+      }
 
       // Build oriCode and mutCode
       std::string oriCode;
@@ -356,8 +364,11 @@ std::string HtmlReport::buildJsonData() const {
           mutatedCodeHead = curLineContent.substr(0, first.column - 1);
         }
         if (i == last.line) {
-          mutatedCodeTail = curLineContent.substr(
-              last.column - 1, std::string::npos);
+          // Clamp the start position so a last.column past the (possibly
+          // shortened) line, or a column of 0, cannot make substr throw.
+          const std::size_t tailStart = last.column > 0 ? last.column - 1 : 0;
+          const std::size_t tailPos = std::min(tailStart, curLineContent.size());
+          mutatedCodeTail = curLineContent.substr(tailPos, std::string::npos);
         }
         oriCode.append(curLineContent);
       }

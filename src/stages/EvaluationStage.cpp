@@ -148,7 +148,8 @@ MutationResult EvaluationStage::evaluateMutant(const Mutant& m, int id, std::siz
   // and clears actualDir. restoreBackup is a no-op on an empty backup dir.
   ScopeGuard cleanup{[&] {
     ctx->workspace.restoreBackup(ctx->config.sourceDir);
-    fs::remove_all(actualDir);
+    std::error_code ec;
+    fs::remove_all(actualDir, ec);
   }};
   mRepo->getSourceTree()->modify(m, backupDir.string());
 

@@ -15,7 +15,16 @@ class ScopeGuard {
  public:
   /// @param fn callable invoked on destruction
   explicit ScopeGuard(F fn) : mFn(std::move(fn)) {}
-  ~ScopeGuard() { mFn(); }
+  /// The guard often runs during stack unwinding (cleanup on a thrown path).
+  /// Destructors are implicitly noexcept, so any exception escaping mFn() would
+  /// call std::terminate. Swallow it: scope-guard cleanup is best-effort and the
+  /// callable is expected to surface failures itself (e.g. via logging).
+  ~ScopeGuard() {
+    try {
+      mFn();
+    } catch (...) {  // NOLINT(bugprone-empty-catch)
+    }
+  }
   ScopeGuard(const ScopeGuard&) = delete;
   ScopeGuard& operator=(const ScopeGuard&) = delete;
   ScopeGuard(ScopeGuard&&) = delete;

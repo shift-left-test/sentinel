@@ -39,6 +39,13 @@ std::atomic<pid_t> Subprocess::childPid{0};
 std::atomic<bool> Subprocess::timedOut{false};
 std::atomic<int> Subprocess::pendSig{0};
 
+void Subprocess::killChildGroup(int sig) noexcept {
+  const pid_t cpid = Subprocess::childPid.load();
+  if (cpid > 0) {
+    kill(-cpid, sig);
+  }
+}
+
 Subprocess::Subprocess(const std::string& cmd, std::size_t sec,
                        const std::filesystem::path& logFile, bool silent) :
     mCmd(cmd), mSec(sec), mLogFile(logFile), mSilent(silent) {
@@ -109,9 +116,11 @@ int Subprocess::execute() {
     // And send last signal to sentinel just before return this function
     signal::setMultipleSignalHandlers({SIGABRT, SIGINT, SIGFPE, SIGILL, SIGSEGV, SIGTERM, SIGQUIT, SIGHUP},
                                       [](int signum) {
-                                        Console::err("\nStopping due to {}...", strsignal(signum));
-                                        kill(-Subprocess::childPid, SIGKILL);
+                                        // Kill and record before any output: Console::err is not
+                                        // async-signal-safe and must not block termination.
+                                        killChildGroup(SIGKILL);
                                         Subprocess::pendSig = signum;
+                                        Console::err("\nStopping due to {}...", strsignal(signum));
                                       });
 
     // Just catch SIGCHLD
@@ -129,10 +138,14 @@ int Subprocess::execute() {
         alarm(kKillAfterSecs);
       } else {
         termSignal = SIGKILL;
+      }
+      // Send the signal before any output: Console::err is not async-signal-safe
+      // and must not block termination.
+      killChildGroup(termSignal);
+      if (termSignal == SIGKILL) {
         Console::err("Failed to terminate child process within {}s. Sending {} to child process group.",
                      kKillAfterSecs, strsignal(termSignal));
       }
-      kill(-Subprocess::childPid, termSignal);
     });
 
     // Alarm setting
@@ -187,13 +200,16 @@ int Subprocess::execute() {
 
     int tmpSig = Subprocess::pendSig.load();
 
+    // Restore the original signal handlers BEFORE clearing childPid. A signal
+    // arriving in the window after childPid=0 but before sc.reset() would run
+    // our handler with childPid==0 (the kill(-0) broadcast hazard); restoring
+    // first routes any such signal through the graceful main handler instead.
+    sc.reset();
+
     // reset global variable
     Subprocess::childPid = 0;
     Subprocess::timedOut = false;
     Subprocess::pendSig = 0;
-
-    // restore signal handler
-    sc.reset();
 
     // send pending signal to sentinel
     if (tmpSig != 0) {

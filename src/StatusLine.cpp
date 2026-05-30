@@ -45,8 +45,10 @@ void handleSigtstp(int /*signum*/) {
 
 void handleSigcont(int /*signum*/) {
   if (sActiveInstance != nullptr) {
+    // Re-arming the SIGTSTP handler is async-signal-safe; defer the allocating
+    // resume() to the main thread via a flag consumed in redraw().
     signal::setSignalHandler(SIGTSTP, handleSigtstp);
-    sActiveInstance->resume();
+    sActiveInstance->mResumePending = 1;
   }
 }
 
@@ -245,6 +247,15 @@ void StatusLine::handleResize() {
 }
 
 void StatusLine::redraw() {
+  // Consume a pending SIGCONT before the mEnabled guard: while suspended,
+  // mEnabled is false, so resume() (which re-activates and redraws) must run
+  // here rather than be skipped. Reset the flag before resume() to avoid
+  // re-entrant draining via activate()->redraw().
+  if (mResumePending) {
+    mResumePending = 0;
+    resume();
+    return;
+  }
   if (!mEnabled) {
     return;
   }

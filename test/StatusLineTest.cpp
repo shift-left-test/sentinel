@@ -324,6 +324,25 @@ TEST_F(StatusLineTest, testDisableRestoresWinchHandler) {
   EXPECT_EQ(before.sa_handler, after.sa_handler);
 }
 
+TEST_F(StatusLineTest, testDisableRestoresContHandler) {
+  StatusLine sl;
+  struct sigaction before {};
+  sigaction(SIGCONT, nullptr, &before);
+
+  sl.enable();
+  sl.disable();
+
+  struct sigaction after {};
+  sigaction(SIGCONT, nullptr, &after);
+  EXPECT_EQ(before.sa_handler, after.sa_handler);
+}
+
+TEST_F(StatusLineTest, testHandleSigcontWithoutActiveInstanceDoesNotCrash) {
+  // With no active (TTY-enabled) instance the SIGCONT handler must be a safe
+  // no-op: it only sets a deferred flag, never touching the terminal.
+  EXPECT_NO_THROW(detail::handleSigcont(SIGCONT));
+}
+
 TEST_F(StatusLineTest, testHundredPercentScore) {
   StatusLine sl;
   sl.setProgressTotal(5);
