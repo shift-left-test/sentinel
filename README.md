@@ -530,6 +530,9 @@ version: 1
 ##   weighted - samples more mutants from complex code
 # generator: uniform
 
+## Maximum number of mutants per source line (default: 1; 0 = unlimited)
+# mutants-per-line: 1
+
 ## Mutation operators to use; omit to use all operators (default: all)
 # operator:
 #   - AOR  # Arithmetic Operator Replacement  (+, -, *, /)
