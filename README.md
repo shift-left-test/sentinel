@@ -128,6 +128,22 @@ filename (e.g. `sentinel_1.0.0-1~ubuntu20.04+llvm14_amd64.deb`) and declares
 a runtime dependency on the matching `clang-N` package, which `apt` will
 install automatically.
 
+#### LLVM/Clang link mode
+
+By default sentinel links LLVM/Clang as **static** libraries
+(`Clang_USE_STATIC_LIBS=ON`). Pass `-DClang_USE_STATIC_LIBS=OFF` to link the
+consolidated shared libraries (`libLLVM.so` + `libclang-cpp.so`) instead:
+
+```bash
+cmake -DClang_USE_STATIC_LIBS=OFF .
+```
+
+Shared mode is required when the static archives contain LTO bitcode rather
+than ELF objects — for example an LLVM toolchain built with LTO — because a
+plain `gcc`/`g++` driver's GNU ld cannot read bitcode archives (`error adding
+symbols: file format not recognized`). Configuration fails fast if the shared
+libraries are not present in the LLVM library directory.
+
 ---
 
 ## Usage

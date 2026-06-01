@@ -12,6 +12,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_SKIP_RPATH TRUE)
 
+# Link mode for the LLVM/Clang dependency (honored by cmake/FindClang.cmake).
+#  ON  (default): link the per-component static archives (libLLVM*.a, libclang*.a).
+#  OFF          : link the consolidated shared libraries (libLLVM.so + libclang-cpp.so),
+#                 required when the static archives hold LTO bitcode rather than ELF
+#                 objects (e.g. an LLVM toolchain built with LTO, as on Yocto/meta-clang).
+option(Clang_USE_STATIC_LIBS
+  "Link LLVM/Clang as static libraries; OFF links libLLVM.so + libclang-cpp.so" ON)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -124,18 +132,9 @@ if(EXISTS "/etc/os-release")
   unset(_sentinel_distro_ver)
 endif()
 
-execute_process(
-  COMMAND ${LLVM_CONFIG_EXECUTABLE} --version
-  OUTPUT_VARIABLE _sentinel_llvm_version
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(_sentinel_llvm_version MATCHES "^([0-9]+)")
-  set(SENTINEL_LLVM_MAJOR "${CMAKE_MATCH_1}")
-else()
-  message(FATAL_ERROR
-    "Cannot determine LLVM major version from '${_sentinel_llvm_version}'")
-endif()
-unset(_sentinel_llvm_version)
+# Reuse the LLVM major version already computed by find_package(Clang)
+# (cmake/FindClang.cmake) instead of invoking llvm-config --version again.
+set(SENTINEL_LLVM_MAJOR "${LLVM_VERSION_MAJOR}")
 
 if(SENTINEL_DISTRO_TAG)
   set(CPACK_DEBIAN_PACKAGE_RELEASE

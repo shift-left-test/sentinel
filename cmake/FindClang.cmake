@@ -8,6 +8,7 @@
 #  LLVM_LIBS              - list of llvm libs
 #  CLANG_LIBS             - list of clang libs
 #  LLVM_CLANG_LIBS        - combined list of llvm and clang libs
+#  LLVM_VERSION_MAJOR     - LLVM major version (cached; reused for packaging)
 
 # List up possible names of llvm-config executable
 # Yocto Version: LLVM Version
@@ -99,43 +100,74 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Determine the LLVM major version (exported via the cache for the versioned
+# shared-library name such as libLLVM-22.so, and reused by the top-level
+# packaging logic so llvm-config --version is only invoked once).
 execute_process(
-  COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs --link-static
-  OUTPUT_VARIABLE LLVM_LIBS
+  COMMAND ${LLVM_CONFIG_EXECUTABLE} --version
+  OUTPUT_VARIABLE LLVM_VERSION_STRING
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+if (NOT LLVM_VERSION_STRING MATCHES "^([0-9]+)")
+  message(FATAL_ERROR "Cannot determine LLVM major version from '${LLVM_VERSION_STRING}'")
+endif()
+set(LLVM_VERSION_MAJOR "${CMAKE_MATCH_1}" CACHE INTERNAL "LLVM major version")
 
-# Find Clang libraries
-macro(FIND_AND_ADD_CLANG_LIB _libname_)
-  string(TOUPPER ${_libname_} _prettylibname_)
-  find_library(CLANG_${_prettylibname_}_LIB NAMES ${_libname_} HINTS ${LLVM_LIBRARY_DIRS} ${ARGN})
-  if (CLANG_${_prettylibname_}_LIB)
-    set(CLANG_LIBS ${CLANG_LIBS} ${CLANG_${_prettylibname_}_LIB})
+# Resolve LLVM_LIBS + CLANG_LIBS according to the requested link mode
+# (Clang_USE_STATIC_LIBS, declared in the top-level CMakeLists.txt).
+if (Clang_USE_STATIC_LIBS)
+  execute_process(
+    COMMAND ${LLVM_CONFIG_EXECUTABLE} --libs --link-static
+    OUTPUT_VARIABLE LLVM_LIBS
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  # Find Clang libraries
+  macro(FIND_AND_ADD_CLANG_LIB _libname_)
+    string(TOUPPER ${_libname_} _prettylibname_)
+    find_library(CLANG_${_prettylibname_}_LIB NAMES ${_libname_} HINTS ${LLVM_LIBRARY_DIRS} ${ARGN})
+    if (CLANG_${_prettylibname_}_LIB)
+      set(CLANG_LIBS ${CLANG_LIBS} ${CLANG_${_prettylibname_}_LIB})
+    endif()
+  endmacro(FIND_AND_ADD_CLANG_LIB)
+
+  FIND_AND_ADD_CLANG_LIB(clangFrontend)
+  FIND_AND_ADD_CLANG_LIB(clangParse)
+  FIND_AND_ADD_CLANG_LIB(clangRewrite)
+  FIND_AND_ADD_CLANG_LIB(clangRewriteFrontend)
+  FIND_AND_ADD_CLANG_LIB(clangSerialization)
+  FIND_AND_ADD_CLANG_LIB(clangSema)
+  FIND_AND_ADD_CLANG_LIB(clangEdit)
+  FIND_AND_ADD_CLANG_LIB(clangLex)
+  FIND_AND_ADD_CLANG_LIB(clangAnalysis)
+  FIND_AND_ADD_CLANG_LIB(clangAST)
+  FIND_AND_ADD_CLANG_LIB(clangASTMatchers)
+  FIND_AND_ADD_CLANG_LIB(clangStaticAnalyzerFrontend)
+  FIND_AND_ADD_CLANG_LIB(clangTooling)
+  FIND_AND_ADD_CLANG_LIB(clangDriver)
+  FIND_AND_ADD_CLANG_LIB(clangAPINotes)
+  FIND_AND_ADD_CLANG_LIB(clangBasic)
+  FIND_AND_ADD_CLANG_LIB(clangSupport)
+  FIND_AND_ADD_CLANG_LIB(clangOptions)                 # LLVM 22+: getDriverOptTable(), parseMRecipOption(), etc.
+  FIND_AND_ADD_CLANG_LIB(clangAnalysisLifetimeSafety)  # LLVM 22+: clang::lifetimes::*
+
+  if (NOT CLANG_LIBS)
+    message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
   endif()
-endmacro(FIND_AND_ADD_CLANG_LIB)
-
-FIND_AND_ADD_CLANG_LIB(clangFrontend)
-FIND_AND_ADD_CLANG_LIB(clangParse)
-FIND_AND_ADD_CLANG_LIB(clangRewrite)
-FIND_AND_ADD_CLANG_LIB(clangRewriteFrontend)
-FIND_AND_ADD_CLANG_LIB(clangSerialization)
-FIND_AND_ADD_CLANG_LIB(clangSema)
-FIND_AND_ADD_CLANG_LIB(clangEdit)
-FIND_AND_ADD_CLANG_LIB(clangLex)
-FIND_AND_ADD_CLANG_LIB(clangAnalysis)
-FIND_AND_ADD_CLANG_LIB(clangAST)
-FIND_AND_ADD_CLANG_LIB(clangASTMatchers)
-FIND_AND_ADD_CLANG_LIB(clangStaticAnalyzerFrontend)
-FIND_AND_ADD_CLANG_LIB(clangTooling)
-FIND_AND_ADD_CLANG_LIB(clangDriver)
-FIND_AND_ADD_CLANG_LIB(clangAPINotes)
-FIND_AND_ADD_CLANG_LIB(clangBasic)
-FIND_AND_ADD_CLANG_LIB(clangSupport)
-FIND_AND_ADD_CLANG_LIB(clangOptions)                 # LLVM 22+: hosts getDriverOptTable(), parseMRecipOption(), etc.
-FIND_AND_ADD_CLANG_LIB(clangAnalysisLifetimeSafety)  # LLVM 22+: hosts clang::lifetimes::*
-
-if (NOT CLANG_LIBS)
-  message(FATAL_ERROR "Could NOT find Clang libraries in ${LLVM_LIBRARY_DIRS}")
+else()
+  # Shared mode: link the single consolidated shared libraries. These are already
+  # final-linked ELF objects, so a plain GNU ld can consume them even when the
+  # corresponding static archives would contain LTO bitcode. The whole API used
+  # by sentinel (clang Tooling/Frontend/AST/Lex/Basic, llvm Support) is covered
+  # by libclang-cpp + libLLVM, so there is no symbol-coverage gap.
+  find_library(CLANG_CPP_LIB NAMES clang-cpp HINTS ${LLVM_LIBRARY_DIRS})
+  find_library(LLVM_SHARED_LIB NAMES LLVM LLVM-${LLVM_VERSION_MAJOR} HINTS ${LLVM_LIBRARY_DIRS})
+  if (NOT CLANG_CPP_LIB OR NOT LLVM_SHARED_LIB)
+    message(FATAL_ERROR
+      "Clang_USE_STATIC_LIBS=OFF requires libclang-cpp.so and libLLVM.so in ${LLVM_LIBRARY_DIRS}")
+  endif()
+  set(CLANG_LIBS ${CLANG_CPP_LIB})
+  set(LLVM_LIBS ${LLVM_SHARED_LIB})
 endif()
 
 find_package(Threads REQUIRED)
