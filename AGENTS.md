@@ -196,7 +196,7 @@ Before starting any code work, always follow these steps:
   the build environment so multiple variants of the same upstream release can
   coexist without colliding:
   `sentinel_<version>-1~<distroID><distroVer>+llvm<llvmMajor>_<arch>.deb`
-  (e.g. `sentinel_1.1.0-1~ubuntu20.04+llvm14_amd64.deb`).
+  (e.g. `sentinel_1.1.0-1~ubuntu20.04+llvm12_amd64.deb`).
 - The distro tag is read from `/etc/os-release`; the LLVM major comes from
   `llvm-config --version`. The package declares `Depends: clang-<llvmMajor>`
   so the matching toolchain (and its builtin headers) is pulled in by `apt`.

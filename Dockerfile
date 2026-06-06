@@ -19,8 +19,6 @@ RUN apt-get update && \
         g++ \
         gcc \
         git-core \
-        gnupg \
-        gpg-agent \
         graphviz \
         libgmock-dev \
         libgtest-dev \
@@ -31,23 +29,15 @@ RUN apt-get update && \
         pkg-config \
         python3 \
         python3-pip \
-        software-properties-common \
-        wget \
         zlib1g-dev && \
     locale-gen en_US.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
 
-# Install LLVM 14
-RUN echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main" \
-        > /etc/apt/sources.list.d/llvm.list && \
-    wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    apt-get update && \
+# Install LLVM 12 (available in the Ubuntu 20.04 default repositories)
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libclang-14-dev \
-        llvm-14-dev && \
-    apt-get download libpolly-14-dev && \
-    dpkg --force-all -i libpolly-14-dev*.deb && \
-    rm -f libpolly-14-dev*.deb && \
+        libclang-12-dev \
+        llvm-12-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --no-cache-dir -U pip && \
