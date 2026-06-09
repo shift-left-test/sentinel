@@ -317,6 +317,20 @@ TEST_F(HtmlReportTest, testEmptyMutationResultShowsNoMutatedFileMessage) {
   expectContains(content, "sentinel");
 }
 
+TEST_F(HtmlReportTest, testEmptyReportHeaderShowsGeneratedTimestamp) {
+  MutationResults MRs;
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  auto OUT_DIR = BASE / "OUT_DIR_EMPTY_TIMESTAMP";
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // "</header>' +" (vs "</header>';" in the populated branch) is unique to the
+  // empty branch, proving its header now carries the "Generated:" badge too.
+  expectContains(content,
+      "<span class=\"badge\">Generated: ' + h(D.timestamp) + "
+      "'</span></div></header>' +");
+}
+
 TEST_F(HtmlReportTest, testConstructorFailWhenInvalidPathGiven) {
   EXPECT_THROW(
       HtmlReport(MutationSummary("unknown", "unknown"), Config{}),
