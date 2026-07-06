@@ -144,6 +144,21 @@ plain `gcc`/`g++` driver's GNU ld cannot read bitcode archives (`error adding
 symbols: file format not recognized`). Configuration fails fast if the shared
 libraries are not present in the LLVM library directory.
 
+#### LLVM installation root
+
+By default `llvm-config` is looked up in the system default locations
+(`$PATH`, `/usr/local/bin`, ...). To build against a specific LLVM
+installation, pass `LLVM_ROOT_DIR`:
+
+```bash
+cmake -DLLVM_ROOT_DIR=/opt/llvm-17 .
+```
+
+`llvm-config` must then exist under `<LLVM_ROOT_DIR>/bin`; configuration
+fails fast otherwise. The value is a CMake cache variable — an environment
+variable of the same name is ignored, and changing it in an existing build
+directory requires deleting `CMakeCache.txt` first.
+
 ---
 
 ## Usage

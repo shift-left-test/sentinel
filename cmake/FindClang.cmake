@@ -56,19 +56,25 @@ set(llvm_config_names llvm-config
                       llvm-config-3.9 llvm-config-39
                       llvm-config-3.8 llvm-config-38)
 
-# Search for llvm-config executable among the listed llvm_config_names.
-# If user specifies LLVM_ROOT_DIR, find llvm-config in there first.
-# If not, find llvm-config in system default locations such as /usr/local/bin.
-find_program(LLVM_CONFIG_EXECUTABLE
-  NAMES ${llvm_config_names}
-  PATHS ${LLVM_ROOT_DIR}/bin NO_DEFAULT_PATH
+# The guarded lookup must not run with LLVM_ROOT_DIR unset: PATHS would
+# degenerate to "/bin" and NO_DEFAULT_PATH would pin the host llvm-config.
+if(LLVM_ROOT_DIR)
+  find_program(LLVM_CONFIG_EXECUTABLE
+    NAMES ${llvm_config_names}
+    PATHS ${LLVM_ROOT_DIR}/bin NO_DEFAULT_PATH
+    DOC "Path to llvm-config tool.")
+  if(NOT LLVM_CONFIG_EXECUTABLE)
+    message(FATAL_ERROR "Could NOT find 'llvm-config' in '${LLVM_ROOT_DIR}/bin'")
+  endif()
+endif()
+find_program(LLVM_CONFIG_EXECUTABLE NAMES ${llvm_config_names}
   DOC "Path to llvm-config tool.")
-find_program(LLVM_CONFIG_EXECUTABLE NAMES ${llvm_config_names})
 mark_as_advanced(LLVM_CONFIG_EXECUTABLE)
 
 if (NOT LLVM_CONFIG_EXECUTABLE)
   message(FATAL_ERROR "Could NOT find 'llvm-config' executable")
 endif()
+message(STATUS "Found llvm-config: ${LLVM_CONFIG_EXECUTABLE}")
 
 execute_process(
   COMMAND ${LLVM_CONFIG_EXECUTABLE} --includedir
