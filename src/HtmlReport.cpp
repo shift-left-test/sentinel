@@ -141,7 +141,7 @@ std::string HtmlReport::buildConfigJson() const {
   }
   if (mConfig.threshold.has_value()) {
     addStr("threshold",
-           fmt::format("{}%", static_cast<int>(mConfig.threshold.value())),
+           fmt::format("{:.1f}%", mConfig.threshold.value()),
            comma);
   }
   if (mConfig.timeout.has_value()) {
@@ -691,7 +691,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .dtbl a:hover { text-decoration: underline; color: var(--accent-hover); }
 
 .cov-cell { display: flex; align-items: center; gap: 8px; }
-.cov-pct { font-family: var(--font-mono); font-weight: 600; font-size: .84rem; min-width: 38px; text-align: right; }
+/* min-width fits the widest score text ("100.0%") so the bars stay aligned. */
+.cov-pct { font-family: var(--font-mono); font-weight: 600; font-size: .84rem; min-width: 52px; text-align: right; }
 .cov-bar { flex: 1; height: 7px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; max-width: 160px; }
 .cov-bar__fill { height: 100%; border-radius: 4px; }
 .cov-ratio { font-size: .76rem; color: var(--text-muted); font-family: var(--font-mono); min-width: 32px; }
@@ -835,6 +836,12 @@ var SCORE_HI = 80, SCORE_MID = 60;
 function covClass(cov) { return cov >= SCORE_HI ? 'c-hi' : cov >= SCORE_MID ? 'c-mid' : 'c-lo'; }
 function fillClass(cov) { return cov >= SCORE_HI ? 'f-hi' : cov >= SCORE_MID ? 'f-mid' : 'f-lo'; }
 
+// Mutation scores round to one decimal place to match the CLI summary table.
+// Returning a number rather than formatted text keeps the covClass/fillClass
+// colour band and the CSS bar width in step with the value scoreText prints.
+function scorePct(part, total) { return total > 0 ? Math.round(1000 * part / total) / 10 : 0; }
+function scoreText(pct) { return pct.toFixed(1) + '%'; }
+
 function nav(hash) { location.hash = hash; }
 
 // { route: string, sort: { col, dir } } — reset on route change.
@@ -879,7 +886,7 @@ function sortTh(label, key, sort, extraStyle) {
 }
 
 function covCell(score, detected, total) {
-  return '<div class="cov-cell"><span class="cov-pct ' + covClass(score) + '">' + score + '%</span>' +
+  return '<div class="cov-cell"><span class="cov-pct ' + covClass(score) + '">' + scoreText(score) + '</span>' +
     '<div class="cov-bar"><div class="cov-bar__fill ' + fillClass(score) + '" style="width:' + score + '%"></div></div>' +
     '<span class="cov-ratio">' + detected + '/' + total + '</span></div>';
 }
@@ -899,7 +906,7 @@ function buildCards(score, killed, survived, skipped, valid, skippedDetail, surv
   }
   return '<section class="cards cards--4">' +
     '<div class="card card--score"><div class="card__lbl">Mutation Score</div>' +
-    '<div class="card__val">' + score + '%</div>' +
+    '<div class="card__val">' + scoreText(score) + '</div>' +
     '<div class="card__sub">' + killed + ' / ' + valid + ' valid mutants</div>' +
     '<div class="mini-bar"><div class="mini-bar__fill" style="width:' + score + '%"></div></div></div>' +
     '<div class="card card--killed"><div class="card__lbl">Killed</div>' +
@@ -1077,7 +1084,7 @@ function renderRoot() {
   var survived = sm.totalMutations - killed;
   var skipped = sm.buildFailures + sm.runtimeErrors + sm.timeouts;
   var total = killed + survived + skipped;
-  var score = sm.totalMutations > 0 ? Math.floor(100 * killed / sm.totalMutations) : 0;
+  var score = scorePct(killed, sm.totalMutations);
   var skippedDetail = formatSkippedDetail(sm.timeouts, sm.buildFailures, sm.runtimeErrors);
 
   var out = '<div class="wrap"><header class="hdr"><div class="hdr__left">' +
@@ -1193,7 +1200,7 @@ function renderRoot() {
   for (var di = 0; di < dirKeys.length; di++) {
     var dk = dirKeys[di];
     var dd = dirs[dk];
-    var ds = dd.total > 0 ? Math.floor(100 * dd.detected / dd.total) : 0;
+    var ds = scorePct(dd.detected, dd.total);
     var dn = dk === '' ? '.' : dk;
     totFiles += dd.fileCount;
     totDetected += dd.detected;
@@ -1217,7 +1224,7 @@ function renderRoot() {
       '<td style="text-align:center">' + r.files + '</td>' +
       '<td>' + covCell(r.score, r.detected, r.total) + '</td></tr>';
   }
-  var totScore = totTotal > 0 ? Math.floor(100 * totDetected / totTotal) : 0;
+  var totScore = scorePct(totDetected, totTotal);
   out += '</tbody><tfoot><tr><td>Total</td>' +
     '<td style="text-align:center">' + totFiles + '</td>' +
     '<td>' + covCell(totScore, totDetected, totTotal) +
@@ -1247,7 +1254,7 @@ function renderDir(dirPath) {
   var total = dd.total;
   var survived = total - killed;
   var skipped = dd.timeouts + dd.buildFailures + dd.runtimeErrors;
-  var score = total > 0 ? Math.floor(100 * killed / total) : 0;
+  var score = scorePct(killed, total);
   var skippedDetail = formatSkippedDetail(dd.timeouts, dd.buildFailures, dd.runtimeErrors);
   var displayName = dirPath === '' ? '.' : dirPath;
 
@@ -1271,7 +1278,7 @@ function renderDir(dirPath) {
     var fp = fKeys[fi];
     if (parentDir(fp) !== dirPath) continue;
     var fd = files[fp];
-    var fs = fd.total > 0 ? Math.floor(100 * fd.detected / fd.total) : 0;
+    var fs = scorePct(fd.detected, fd.total);
     fTotFiles++;
     fTotDetected += fd.detected;
     fTotTotal += fd.total;
@@ -1292,7 +1299,7 @@ function renderDir(dirPath) {
     out += '<tr><td><a onclick="nav(\'#/file/' + encodeURIComponent(fr.key) + '\')">' + h(fr.name) + '</a></td>' +
       '<td>' + covCell(fr.score, fr.detected, fr.total) + '</td></tr>';
   }
-  var fTotScore = fTotTotal > 0 ? Math.floor(100 * fTotDetected / fTotTotal) : 0;
+  var fTotScore = scorePct(fTotDetected, fTotTotal);
   out += '</tbody><tfoot><tr><td>Total (' + fTotFiles + ' files)</td>' +
     '<td>' + covCell(fTotScore, fTotDetected, fTotTotal) +
     '</td></tr></tfoot></table></section>';
@@ -1340,7 +1347,7 @@ function renderFile(filePath) {
 
   var fileSkipped = fileTimeout + fileBF + fileRE;
   var valid = fileKilled + fileSurvived;
-  var score = valid > 0 ? Math.floor(100 * fileKilled / valid) : 0;
+  var score = scorePct(fileKilled, valid);
   var skippedDetail = formatSkippedDetail(fileTimeout, fileBF, fileRE);
   var srcName = fileName(filePath);
   var dirPath2 = parentDir(filePath);
@@ -1365,7 +1372,7 @@ function renderFile(filePath) {
   }
   out += '<section class="cards cards--4">' +
     '<div class="card card--score"><div class="card__lbl">Mutation Score</div>' +
-    '<div class="card__val">' + score + '%</div>' +
+    '<div class="card__val">' + scoreText(score) + '</div>' +
     '<div class="card__sub">' + fileKilled + ' / ' + valid + ' valid mutants</div>' +
     '<div class="mini-bar"><div class="mini-bar__fill" style="width:' + score + '%"></div></div></div>' +
     '<div class="card card--killed"><div class="card__lbl">Killed</div>' +

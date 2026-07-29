@@ -234,7 +234,7 @@ TEST_F(HtmlReportTest, testJsonContainsConfigFields) {
 
   auto content = testutil::readFile(OUT_DIR / "index.html");
   expectContains(content, "\"seed\":\"42\"");
-  expectContains(content, "\"threshold\":\"80%\"");
+  expectContains(content, "\"threshold\":\"80.0%\"");
 }
 
 TEST_F(HtmlReportTest, testJsonContainsLcovTracefileWhenSet) {
@@ -636,6 +636,55 @@ TEST_F(HtmlReportTest, testJsonEscapesScriptCloseTag) {
   auto content = testutil::readFile(OUT_DIR / "index.html");
   expectNotContains(content, "</script><img");
   expectContains(content, "\\u003c/script>");
+}
+
+TEST_F(HtmlReportTest, testMutationScoreRoundsToOneDecimal) {
+  auto OUT_DIR = BASE / "OUT_DIR_SCORE_ROUNDING";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // Scores must round to one decimal place like the CLI summary table
+  // ("{:.1f}%"). Truncating rendered 44/62 as 70% instead of 71.0%.
+  expectContains(content, "function scorePct(part, total)");
+  expectContains(content, "Math.round(1000 * part / total) / 10");
+  // No score site may compute its own percentage by truncation.
+  expectNotContains(content, "Math.floor(100 *");
+}
+
+TEST_F(HtmlReportTest, testScoreDisplayKeepsOneDecimalAndBandUsesNumber) {
+  auto OUT_DIR = BASE / "OUT_DIR_SCORE_DISPLAY";
+  auto MRs = buildStandardMRs();
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), Config{});
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // Score cards and table cells print one decimal ("71.0%")...
+  expectContains(content, "function scoreText(pct)");
+  expectContains(content, "pct.toFixed(1)");
+  expectContains(content, "'<div class=\"card__val\">' + scoreText(score) + '</div>'");
+  // ...while the colour band is classified from the rounded number, so a
+  // score of 79.95 lands in the same band as the 80.0% it displays.
+  expectContains(content, "covClass(score) + '\">' + scoreText(score)");
+  expectNotContains(content, "+ score + '%</span>'");
+  expectNotContains(content, "+ score + '%</div>'");
+}
+
+TEST_F(HtmlReportTest, testJsonThresholdKeepsFractionalValue) {
+  auto OUT_DIR = BASE / "OUT_DIR_THRESHOLD_FRACTION";
+  auto MRs = buildStandardMRs();
+
+  Config cfg{};
+  cfg.threshold = 79.5;
+
+  HtmlReport htmlreport(MutationSummary(MRs, SOURCE_DIR), cfg);
+  htmlreport.save(OUT_DIR);
+
+  auto content = testutil::readFile(OUT_DIR / "index.html");
+  // The configuration panel must show the threshold that is actually
+  // enforced; truncating to an int reported 79% for a 79.5% gate.
+  expectContains(content, "\"threshold\":\"79.5%\"");
 }
 
 TEST_F(HtmlReportTest, testSkippedStatesInJson) {
