@@ -1,5 +1,5 @@
 .\" DO NOT MODIFY THIS FILE!
-.TH SENTINEL 1 "May 2026" "@sentinel_VERSION@" "sentinel manual"
+.TH SENTINEL 1 "July 2026" "@sentinel_VERSION@" "sentinel manual"
 .SH NAME
 sentinel \- mutation testing tool for C/C++ projects
 .SH SYNOPSIS

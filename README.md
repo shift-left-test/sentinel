@@ -3,7 +3,7 @@
 **Sentinel** is a mutation testing tool based on LLVM/Clang for C/C++ projects.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CMakeLists.txt)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](CMakeLists.txt)
 
 ---
 
@@ -58,7 +58,7 @@ Inside the Docker container:
 
 ```bash
 cd /workspace && cmake . && make all -j && make package
-sudo apt-get install ./sentinel_1.1.0-1~ubuntu20.04+llvm12_amd64.deb
+sudo apt-get install ./sentinel_1.1.1-1~ubuntu20.04+llvm12_amd64.deb
 ```
 
 The exact deb filename varies with the Ubuntu release and LLVM major version
@@ -124,7 +124,7 @@ sudo apt-get install ./sentinel_*.deb
 ```
 
 The generated deb encodes the Ubuntu release and LLVM major version in its
-filename (e.g. `sentinel_1.1.0-1~ubuntu20.04+llvm12_amd64.deb`) and declares
+filename (e.g. `sentinel_1.1.1-1~ubuntu20.04+llvm12_amd64.deb`) and declares
 a runtime dependency on the matching `clang-N` package, which `apt` will
 install automatically.
 
